@@ -1,0 +1,75 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRoleEnum {
+  admin
+  client
+}
+
+model User {
+  id       String       @unique
+  name     String
+  email    String
+  password String
+  cpf      String?
+  role     UserRoleEnum
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  bookRentalDetails BookRentalDetails[]
+}
+
+model BookDetails {
+  id    String @unique
+  name  String
+  image String
+  price Int
+
+  bookItems         BookItem[]
+  bookRentalDetails BookRentalDetails[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum BookItemStatus {
+  rented
+  available
+  lost
+}
+
+model BookItem {
+  id     String         @unique
+  status BookItemStatus
+
+  bookId String
+  book   BookDetails @relation(fields: [bookId], references: [id])
+}
+
+enum RentalStatus {
+  rented
+  finished
+}
+
+model BookRentalDetails {
+  id           String       @unique
+  rentalStatus RentalStatus
+
+  bookId String
+  userId String
+  book   BookDetails @relation(fields: [bookId], references: [id])
+  user   User        @relation(fields: [userId], references: [id])
+
+  overdueDate  DateTime
+  deliveryDate DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

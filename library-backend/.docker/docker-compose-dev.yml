@@ -1,0 +1,49 @@
+version: "3.9"
+name: "library-dev"
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .docker/Dockerfile.dev
+    env_file: ../.env.dev
+    container_name: library-api-dev
+    image: library-api
+    # Uncomment this line in case you are in M1
+    # platform: linux/amd64
+    volumes:
+      - ../:/usr/src/app
+    ports:
+      - "3000:3000"
+    # networks:
+    #   - "library-network"
+    depends_on:
+      - postgres
+
+  postgres:
+    container_name: postgres-container-dev
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "library"
+    volumes:
+      - library-postgres:/var/lib/postgresql/library-data
+    # networks:
+    #   - "library-network"
+
+  pgadmin:
+    container_name: pgadmin-container-dev
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@email.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - 5050:80
+    # networks:
+    #   - "library-network"
+
+volumes:
+  library-postgres:
