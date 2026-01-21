@@ -1,0 +1,15 @@
+import { O, TE } from "@shared/functional/monads";
+import { Paginated, RepositoryPort } from "@shared/ddd";
+import { PaginatedQueryParams } from "@src/shared/ddd/query.base";
+import { User } from "../domain/user.entity";
+
+export abstract class UserRepository implements RepositoryPort<User> {
+  findOneById!: (id: string) => TE.TaskEither<Error, O.Option<User>>;
+  findOneByCPF!: (cpf: string) => TE.TaskEither<Error, O.Option<User>>;
+  findAll!: () => TE.TaskEither<Error, User[]>;
+  findAllPaginated!: (
+    params: PaginatedQueryParams,
+  ) => TE.TaskEither<Error, Paginated<User>>;
+  deleteById!: (id: string) => TE.TaskEither<Error, void>;
+  save!: <U extends User>(user: U) => TE.TaskEither<Error, void>;
+}

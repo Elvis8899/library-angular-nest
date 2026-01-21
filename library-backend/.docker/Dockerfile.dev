@@ -1,0 +1,15 @@
+FROM node:20-slim
+
+WORKDIR /usr/src/app
+
+COPY ../package.json ../yarn.lock ./
+RUN yarn install
+COPY .. .
+RUN npx prisma generate
+
+RUN apt-get update -y && apt-get install -y openssl procps
+
+
+EXPOSE 4000
+
+ENTRYPOINT [ "sh", "/usr/src/app/.docker/entrypoint.dev.sh" ]

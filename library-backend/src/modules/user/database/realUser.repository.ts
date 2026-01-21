@@ -1,0 +1,174 @@
+import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { Prisma } from "@prisma/client";
+import { Injectable } from "@nestjs/common";
+import { A, E, FPF, O, TE } from "@shared/functional/monads";
+import { Paginated } from "@shared/ddd";
+import { noop } from "@shared/utils/noop";
+import { validateFromUnknown } from "@shared/utils/validateWith";
+import { PaginatedQueryParams } from "@shared/ddd/query.base";
+import { unknownException } from "@src/shared/utils/unknownException";
+import { UserRepository } from "./user.repository.port";
+import { User, UserRoleEnum } from "../domain/user.entity";
+import { formatToCPF } from "../domain/value-object/document";
+
+@Injectable()
+export class RealUserRepository implements UserRepository {
+  constructor(private prisma: PrismaService) {}
+
+  private baseValidator = validateFromUnknown(User, "User");
+
+  private defaultErrorException = unknownException;
+
+  private findMany = TE.tryCatchK(
+    this.prisma.user.findMany,
+    this.defaultErrorException,
+  );
+
+  private findFirst = TE.tryCatchK(
+    this.prisma.user.findFirst,
+    this.defaultErrorException,
+  );
+  private findUnique = TE.tryCatchK(
+    this.prisma.user.findUnique,
+    this.defaultErrorException,
+  );
+
+  private count = TE.tryCatchK(
+    this.prisma.user.count,
+    this.defaultErrorException,
+  );
+
+  private delete = TE.tryCatchK(
+    this.prisma.user.delete,
+    this.defaultErrorException,
+  );
+
+  private upsert = TE.tryCatchK(
+    this.prisma.user.upsert,
+    this.defaultErrorException,
+  );
+
+  private update = TE.tryCatchK(
+    this.prisma.user.update,
+    this.defaultErrorException,
+  );
+
+  private includeAll: Prisma.UserInclude = {
+    bookRentalDetails: true,
+  };
+  private paginatedFindMany =
+    <S extends User>(validator: (value: unknown) => E.Either<Error, S>) =>
+    (where: Prisma.UserWhereInput) =>
+    (query: PaginatedQueryParams): TE.TaskEither<Error, Paginated<S>> => {
+      return FPF.pipe(
+        TE.of(query),
+        TE.let("skip", ({ page, limit, offset }) => limit * page + offset),
+        TE.chain((parsedQuery) =>
+          FPF.pipe(
+            TE.of({ page: parsedQuery.page, limit: parsedQuery.limit }),
+            TE.apS(
+              "data",
+              FPF.pipe(
+                this.findMany({
+                  where,
+                  skip: parsedQuery.offset,
+                  take: parsedQuery.limit,
+                  orderBy: { createdAt: "desc" },
+                  include: this.includeAll,
+                }),
+                TE.chainEitherK(A.traverse(E.Applicative)(validator)),
+              ),
+            ),
+            TE.apS(
+              "count",
+              this.count({
+                where,
+              }),
+            ),
+          ),
+        ),
+      );
+    };
+
+  findAll = (): TE.TaskEither<Error, User[]> => {
+    return FPF.pipe(
+      this.findMany({
+        include: this.includeAll,
+      }),
+      TE.chainEitherK(A.traverse(E.Applicative)(this.baseValidator)),
+    );
+  };
+
+  findAllPaginated = (
+    params: PaginatedQueryParams,
+  ): TE.TaskEither<Error, Paginated<User>> => {
+    const where: Prisma.UserWhereInput = {};
+    return this.paginatedFindMany(this.baseValidator)(where)(params);
+  };
+
+  findOneById = (userId: string): TE.TaskEither<Error, O.Option<User>> => {
+    return FPF.pipe(
+      this.findUnique({
+        where: {
+          id: userId,
+        },
+        include: this.includeAll,
+      }),
+      TE.chainEitherK(
+        FPF.flow(
+          O.fromNullable,
+          O.map(this.baseValidator),
+          O.sequence(E.Applicative),
+        ),
+      ),
+    );
+  };
+
+  findOneByCPF = (cpf: string): TE.TaskEither<Error, O.Option<User>> => {
+    return FPF.pipe(
+      this.findFirst({
+        where: {
+          role: UserRoleEnum.Client,
+          cpf: formatToCPF(cpf),
+        },
+        include: this.includeAll,
+      }),
+      TE.chainEitherK(
+        FPF.flow(
+          O.fromNullable,
+          O.map(this.baseValidator),
+          O.sequence(E.Applicative),
+        ),
+      ),
+    );
+  };
+
+  deleteById = (userId: string): TE.TaskEither<Error, void> => {
+    return FPF.pipe(
+      this.delete({
+        where: {
+          id: userId,
+        },
+      }),
+      TE.map(noop),
+    );
+  };
+
+  save = (user: User): TE.TaskEither<Error, void> => {
+    return FPF.pipe(
+      this.upsert({
+        where: {
+          id: user.id,
+        },
+        update: {
+          name: user.name,
+        },
+        create: {
+          ...user,
+        },
+      }),
+
+      TE.map(noop),
+    );
+  };
+}

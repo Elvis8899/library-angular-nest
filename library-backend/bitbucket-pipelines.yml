@@ -1,0 +1,40 @@
+options:
+  docker: true
+image: atlassian/default-image:3
+
+pipelines:
+  branches:
+    main:
+      - step:
+          name: Migrate Prisma
+          services:
+            - docker
+          script:
+            - pipe: atlassian/ssh-run:0.8.1
+              variables:
+                SSH_USER: ubuntu
+                SERVER: $SERVER_PROD
+                SSH_KEY: $SSH_KEY_PROD # Optional
+                COMMAND: "cd library-backend/ && make dockerMigrate"
+
+          condition:
+            changesets:
+              includePaths:
+                - "prisma/migrations/**"
+
+      - step:
+          name: Build Prod
+          services:
+            - docker
+          script:
+            - pipe: atlassian/ssh-run:0.8.1
+              variables:
+                SSH_USER: ubuntu
+                SERVER: $SERVER_PROD
+                SSH_KEY: $SSH_KEY_PROD # Optional
+                COMMAND: "cd library-backend/ && make dockerProd"
+
+          condition:
+            changesets:
+              includePaths:
+                - "src/**"

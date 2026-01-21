@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": false,
+    "target": "ES2017",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": true,
+    "strict": true,
+    "paths": {
+      "@src": ["src"],
+      "@src/*": ["src/*"],
+      "@test": ["test"],
+      "@test/*": ["test/*"],
+      "@shared": ["src/shared"],
+      "@shared/*": ["src/shared/*"],
+      "@user": ["src/modules/user"],
+      "@user/*": ["src/modules/user/*"],
+      "@configs": ["src/configs"],
+      "@configs/*": ["src/configs/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}
