@@ -13,6 +13,7 @@ import { UUID } from "@src/shared/uuid/entities/uuid";
 import { User } from "../../domain/user.entity";
 import { userCPFAlreadyExistsException } from "../../domain/user.errors";
 import { USER_CREATED } from "../../domain/events/userCreated.event";
+import { hashPassword } from "@src/modules/auth/util/signTokenParams";
 
 export class CreateUser implements ICommand {
   constructor(public readonly props: CreateUserDto) {}
@@ -38,13 +39,23 @@ export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
         fromInputRE(UUID, "uuid")(this.uuidGeneratorService.generateUUID()),
       ),
       RE.chain(fromInputRE(User, "User")),
+
       RTE.fromReaderEither,
 
+      //Encrypt password
+
+      RTE.chainW((user) =>
+        FPF.pipe(
+          user.password,
+          RTE.fromTaskK((v) => () => hashPassword(v)),
+          RTE.map((password) => ({ ...user, password })),
+        ),
+      ),
       //Check cpf unicity
       RTE.tap(
         FPF.flow(
           (user) => user.cpf,
-          performRTE(this.userRepository.findOneByCPF, "get user by cpf"),
+          performRTE(this.userRepository.findByCPF, "get user by cpf"),
           RTE.chainW(
             FPF.flow(
               O.fromPredicate(O.isNone),

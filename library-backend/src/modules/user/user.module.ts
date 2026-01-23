@@ -11,19 +11,22 @@ import { UpdateUserHandler } from "./commands/updateUser/updateUser.command";
 import { DeleteUserHandler } from "./commands/deleteUser/deleteUser.command";
 import { PaginatedUsersQueryHandler } from "./queries/paginatedUsers/paginatedUsers.query";
 import { PaginatedUserController } from "./queries/paginatedUsers/paginatedUsers.controller";
+import { GetUserByIdController } from "./queries/getUserById/getUserById.controller";
+import { GetUserByIdQueryHandler } from "./queries/getUserById/getUserById.query";
 
 const controllers = [
   CreateUserController,
   UpdateUserController,
   DeleteUserController,
   PaginatedUserController,
+  GetUserByIdController,
 ];
 const commandHandlers = [
   CreateUserHandler,
   UpdateUserHandler,
   DeleteUserHandler,
 ];
-const queryHandlers = [PaginatedUsersQueryHandler];
+const queryHandlers = [PaginatedUsersQueryHandler, GetUserByIdQueryHandler];
 // const subscribers = [EndpointReponseSubscriber];
 const services = [RealUUIDGeneratorService];
 const repositories = [

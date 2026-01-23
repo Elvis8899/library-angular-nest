@@ -1,0 +1,43 @@
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Put,
+} from "@nestjs/common";
+import { CommandBus, QueryBus } from "@nestjs/cqrs";
+import {
+  ApiOperation,
+  ApiTags,
+  ApiUnprocessableEntityResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+} from "@nestjs/swagger";
+import { noop } from "@shared/utils/noop";
+import { CreateBookInfoDto } from "../../dtos/bookInfo.dto";
+import { UpdateBookInfo } from "./updateBookInfo.command";
+
+@Controller("v1/")
+@ApiTags("Livros")
+export class UpdateBookInfoController {
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Put("bookInfos/:id")
+  @HttpCode(HttpStatus.OK)
+  @ApiCreatedResponse({ description: "Livro atualizado com sucesso." })
+  @ApiUnprocessableEntityResponse({ description: "Livro inválido." })
+  @ApiNotFoundResponse({ description: "Livro não encontrado." })
+  @ApiOperation({ summary: "Atualizar Livro" })
+  async updateBookInfo(
+    @Body() updateModuleDto: CreateBookInfoDto,
+    @Param("id") id: string,
+  ): Promise<void> {
+    return this.commandBus
+      .execute(new UpdateBookInfo(updateModuleDto, id))
+      .then(noop);
+  }
+}

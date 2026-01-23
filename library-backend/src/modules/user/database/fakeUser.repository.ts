@@ -13,12 +13,20 @@ export class FakeUserRepository
 {
   baseValidator = validateFromUnknown(User, "User");
 
-  findOneByCPF = (cpf: string): TE.TaskEither<Error, O.Option<User>> =>
+  findByCPF = (cpf: string): TE.TaskEither<Error, O.Option<User>> =>
     FPF.pipe(
       this.findFirst(
         (item) =>
           item.role === UserRoleEnum.Client && item.cpf === formatToCPF(cpf),
       ),
+      TE.chainEitherK(
+        FPF.flow(O.map(this.baseValidator), O.sequence(E.Applicative)),
+      ),
+    );
+
+  findByEmail = (email: string): TE.TaskEither<Error, O.Option<User>> =>
+    FPF.pipe(
+      this.findFirst((item) => item.email === email),
       TE.chainEitherK(
         FPF.flow(O.map(this.baseValidator), O.sequence(E.Applicative)),
       ),

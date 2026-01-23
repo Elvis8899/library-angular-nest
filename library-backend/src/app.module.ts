@@ -6,6 +6,8 @@ import { PrismaModule } from "@src/shared/prisma/prisma.module";
 import { CqrsModule } from "@nestjs/cqrs";
 import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
 import { UserModule } from "./modules/user/user.module";
+import { BookInfoModule } from "./modules/book/bookInfo.module";
+import { LoginModule } from "./modules/auth/login.module";
 
 type NestModuleImport =
   | Type
@@ -22,7 +24,10 @@ const appModules: NestModuleImport[] = [
   }),
   PrismaModule,
   //
+  LoginModule,
+  //
   UserModule,
+  BookInfoModule,
 ];
 
 // Infrastructure Modules (DB, config) used by the server

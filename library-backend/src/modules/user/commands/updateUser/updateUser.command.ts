@@ -16,6 +16,7 @@ import {
   userNotFoundException,
 } from "../../domain/user.errors";
 import { USER_UPDATED } from "../../domain/events/userUpdated.event";
+import { hashPassword } from "@src/modules/auth/util/signTokenParams";
 
 export class UpdateUser implements ICommand {
   constructor(
@@ -48,8 +49,18 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
       RTE.tap(
         FPF.flow(
           (data) => data.id,
-          performRTE(this.userRepository.findOneById, "get user by id"),
+          performRTE(this.userRepository.findById, "get user by id"),
           RTE.chainW(RTE.fromOption<Error>(userNotFoundException)),
+        ),
+      ),
+
+      //Encrypt password
+
+      RTE.chainW((user) =>
+        FPF.pipe(
+          user.password,
+          RTE.fromTaskK((v) => () => hashPassword(v)),
+          RTE.map((password) => ({ ...user, password })),
         ),
       ),
 
@@ -58,7 +69,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
         FPF.pipe(
           validatedDatas,
           (user) => user.cpf,
-          performRTE(this.userRepository.findOneByCPF, "get user by cpf"),
+          performRTE(this.userRepository.findByCPF, "get user by cpf"),
           RTE.chainW(
             FPF.flow(
               O.filter((user) => user.id !== validatedDatas.id),

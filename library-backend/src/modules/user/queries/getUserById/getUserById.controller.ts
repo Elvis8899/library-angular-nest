@@ -11,14 +11,14 @@ import { GetUserByIdQuery } from "./getUserById.query";
 
 @Controller("v1/")
 @ApiTags("Usuários")
-export class GetUserByIdontroller {
+export class GetUserByIdController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
 
   @Get("users/:id")
-  @ApiOperation({ summary: "Listar Usuários" })
+  @ApiOperation({ summary: "Encontrar um usuário pelo ID" })
   @ApiNotFoundResponse({ description: "Usuário não encontrado." })
   @ApiResponse({
     status: HttpStatus.OK,

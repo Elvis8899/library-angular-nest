@@ -50,27 +50,29 @@ afterEach(async () => {
 });
 
 describe("[e2e] GET /v1/users", () => {
-  const v1Route = "/v1/users";
+  const v1Route = (id: string) => "/v1/users/" + id;
 
   it("Should respond 200 with user List", async () => {
     const user = new UserBuilder().withName("Test").build();
     await executeTask(userRepository.save(user));
 
-    const response = await request(app.getHttpServer()).get(v1Route).query({
-      limit: 10,
-      page: 0,
-    });
+    const response = await request(app.getHttpServer())
+      .get(v1Route(user.id))
+      .query({
+        limit: 10,
+        page: 0,
+      });
     expect(response.status).toBe(200);
-    expect(response.body.count).toBe(1);
-    expect(response.body.data.length).toBe(1);
+    expect(response.body.id).toBe(user.id);
   });
 
-  it("Should respond 200 with empty list", async () => {
-    const response = await request(app.getHttpServer()).get(v1Route).query({
-      limit: 100,
-      page: 1,
-    });
-    expect(response.status).toBe(200);
-    expect(response.body.count).toBe(0);
+  it("Should respond 404 when user not found", async () => {
+    const response = await request(app.getHttpServer())
+      .get(v1Route("00000000-0000-0000-0001-000000000000"))
+      .query({
+        limit: 100,
+        page: 1,
+      });
+    expect(response.status).toBe(404);
   });
 });

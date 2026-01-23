@@ -106,7 +106,7 @@ export class RealUserRepository implements UserRepository {
     return this.paginatedFindMany(this.baseValidator)(where)(params);
   };
 
-  findOneById = (userId: string): TE.TaskEither<Error, O.Option<User>> => {
+  findById = (userId: string): TE.TaskEither<Error, O.Option<User>> => {
     return FPF.pipe(
       this.findUnique({
         where: {
@@ -124,12 +124,30 @@ export class RealUserRepository implements UserRepository {
     );
   };
 
-  findOneByCPF = (cpf: string): TE.TaskEither<Error, O.Option<User>> => {
+  findByCPF = (cpf: string): TE.TaskEither<Error, O.Option<User>> => {
     return FPF.pipe(
       this.findFirst({
         where: {
           role: UserRoleEnum.Client,
           cpf: formatToCPF(cpf),
+        },
+        include: this.includeAll,
+      }),
+      TE.chainEitherK(
+        FPF.flow(
+          O.fromNullable,
+          O.map(this.baseValidator),
+          O.sequence(E.Applicative),
+        ),
+      ),
+    );
+  };
+
+  findByEmail = (email: string): TE.TaskEither<Error, O.Option<User>> => {
+    return FPF.pipe(
+      this.findFirst({
+        where: {
+          email: email,
         },
         include: this.includeAll,
       }),

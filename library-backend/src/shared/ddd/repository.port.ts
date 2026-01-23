@@ -24,7 +24,7 @@ export class Paginated<T> {
 
 export interface RepositoryPort<Entity> {
   findAll(): TE.TaskEither<Error, Entity[]>;
-  findOneById(id: string): TE.TaskEither<Error, O.Option<Entity>>;
+  findById(id: string): TE.TaskEither<Error, O.Option<Entity>>;
   findAllPaginated(
     params: PaginatedQueryParams,
   ): TE.TaskEither<Error, Paginated<Entity>>;

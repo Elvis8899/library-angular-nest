@@ -1,0 +1,30 @@
+<section class="main-container">
+  <h2>Users List <button (click)="goToAddUser()" type="submit">{{ 'Criar Usuário'  }}</button></h2>
+
+  <div class="user-table-container">
+    <table class="user-table">
+      <thead>
+        <tr>
+          <th>Full Name</th>
+          <th>Email</th>
+          <th>CPF</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (!isLoading) {
+          @for (user of users; track user.id) {
+            <tr (click)="userClicked()">              
+              <td>{{ user.name }} </td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.cpf }}</td>
+            </tr>
+          }
+        } @else {
+          <tr>
+            <td colspan="5" style="text-align: center">Loading...</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

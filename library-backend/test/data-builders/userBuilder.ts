@@ -59,6 +59,16 @@ export class UserBuilder {
     return this;
   }
 
+  withEmail(email: string) {
+    this.overrides.email = formatToCPF(email);
+    return this;
+  }
+
+  withPassword(password: string) {
+    this.overrides.password = password;
+    return this;
+  }
+
   withRole(role: UserRoleEnum) {
     this.overrides.role = role;
     return this;

@@ -46,7 +46,7 @@ describe("[Integration] User repository", () => {
 
     await executeTask(userRepository.save(user));
     //When we retrieve him by name
-    const savedUser = await executeTask(userRepository.findOneByCPF(cpf));
+    const savedUser = await executeTask(userRepository.findByCPF(cpf));
 
     //Then we should have retrieved him
 
@@ -63,7 +63,7 @@ describe("[Integration] User repository", () => {
     // When we retrieve him by another cpf
     const fakeCpf = "12345678902";
     //When we retrieve him by name
-    const savedUser = await executeTask(userRepository.findOneByCPF(fakeCpf));
+    const savedUser = await executeTask(userRepository.findByCPF(fakeCpf));
 
     //Then we should have retrieved none
     return expect(savedUser).toMatchObject(O.none);
@@ -103,7 +103,7 @@ describe("[Integration] User repository", () => {
 
     // Should be able to retrieve it
     const [resultById, resultPaginated, resultAll] = await Promise.all([
-      executeTask(userRepository.findOneById(user.id)),
+      executeTask(userRepository.findById(user.id)),
       executeTask(
         userRepository.findAllPaginated({ page: 0, limit: 10, offset: 0 }),
       ),
@@ -193,8 +193,8 @@ describe("[Integration] User repository", () => {
     //When we try to retrieve
     const [resultById, resultByName, resultPaginated, resultAll] =
       await Promise.all([
-        executeTask(userRepository.findOneById(unsaveUser.id)),
-        executeTask(userRepository.findOneByCPF(unsaveUser.cpf)),
+        executeTask(userRepository.findById(unsaveUser.id)),
+        executeTask(userRepository.findByCPF(unsaveUser.cpf)),
         executeTask(
           userRepository.findAllPaginated({ page: 0, limit: 10, offset: 0 }),
         ),

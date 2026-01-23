@@ -75,7 +75,7 @@ export abstract class FakeRepositoryBase<
     return this.paginatedFindMany(Boolean)(this.baseValidator)(params);
   };
 
-  findOneById = (itemId: EntityId): TE.TaskEither<Error, O.Option<Entity>> =>
+  findById = (itemId: EntityId): TE.TaskEither<Error, O.Option<Entity>> =>
     FPF.pipe(
       this.findFirst((item) => item.id === itemId),
       TE.chainEitherK(

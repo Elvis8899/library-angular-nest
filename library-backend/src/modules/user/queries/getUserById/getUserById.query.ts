@@ -36,10 +36,7 @@ export class GetUserByIdQueryHandler
       fromInputRE(UUID, "UUID"),
       RTE.fromReaderEither,
       RTE.chain(
-        performRTE(
-          this.userRepository.findOneById,
-          "get user in storage system.",
-        ),
+        performRTE(this.userRepository.findById, "get user in storage system."),
       ),
       RTE.chainW(RTE.fromOption<Error>(userNotFoundException)),
     )({ logger: this.logger });
