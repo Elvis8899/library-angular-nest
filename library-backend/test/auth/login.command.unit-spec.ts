@@ -1,0 +1,87 @@
+import { Test } from "@nestjs/testing";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { executeTask } from "@shared/utils/executeTask";
+import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
+import { PinoLogger } from "nestjs-pino";
+import { UserRepository } from "@src/modules/user/database/user.repository.port";
+import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { FakeUserRepository } from "@src/modules/user/database/fakeUser.repository";
+import { UserBuilder } from "@test/data-builders/userBuilder";
+import {
+  LoginCommand,
+  LoginCommandHandler,
+} from "@src/modules/auth/commands/login/login.command";
+import { hashPassword } from "@src/modules/auth/util/signTokenParams";
+import { JwtService } from "@nestjs/jwt";
+import { WrongAuthException } from "@src/modules/auth/domain/auth.errors";
+
+//Adapters
+let userRepository: UserRepository;
+
+describe("[Unit] Create User", () => {
+  let loginCommandHandler: LoginCommandHandler;
+
+  beforeEach(async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [DomainEventPublisherModule],
+      providers: [
+        {
+          provide: DomainEventPublisherModule,
+          useClass: DomainEventPublisher,
+        },
+        JwtService,
+        LoginCommandHandler,
+        RealUUIDGeneratorService,
+        { provide: UserRepository, useClass: FakeUserRepository },
+        { provide: PinoLogger, useClass: FakeLoggerService },
+      ],
+    }).compile();
+
+    userRepository = moduleRef.get<UserRepository>(UserRepository);
+    loginCommandHandler =
+      moduleRef.get<LoginCommandHandler>(LoginCommandHandler);
+  });
+
+  it("Should login user if user is valid", async () => {
+    //Given a potentially valid user
+    const password = "123456";
+    const hash = await hashPassword(password);
+    const user = new UserBuilder().withPassword(hash);
+    await executeTask(userRepository.save(user.build()));
+
+    //When we create a user
+    const result = await loginCommandHandler.execute(
+      new LoginCommand(user.withPassword(password).buildCreateDTO()),
+    );
+
+    //Then it should have logged the user
+    expect(result.accessToken).toBeTruthy();
+  });
+
+  it("Should not login a user if email is invalid", async () => {
+    const password = "123456";
+    const hash = await hashPassword(password);
+    //Given a potentially invalid name
+    const user = new UserBuilder().withPassword(hash).buildCreateDTO();
+    //When we create a user
+    const resultPromise = loginCommandHandler.execute(new LoginCommand(user));
+
+    //Then it should have thrown an error and not have created a user
+    await expect(resultPromise).rejects.toBeInstanceOf(WrongAuthException);
+  });
+
+  it("Should not login a user if password is invalid", async () => {
+    //Given an existing user
+    const password = "123456";
+    const hash = await hashPassword(password);
+    const user = new UserBuilder().withPassword(hash);
+    await executeTask(userRepository.save(user.build()));
+
+    const resultPromise = loginCommandHandler.execute(
+      new LoginCommand(user.buildCreateDTO()),
+    );
+
+    await expect(resultPromise).rejects.toBeInstanceOf(WrongAuthException);
+  });
+});

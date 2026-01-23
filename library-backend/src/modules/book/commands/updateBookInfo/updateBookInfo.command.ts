@@ -1,0 +1,80 @@
+import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
+import { FPF, RE, RTE } from "@shared/functional/monads";
+import { performRTE } from "@shared/utils/perform";
+import { executeTask } from "@shared/utils/executeTask";
+import { fromInputRE } from "@src/shared/utils/fromInput";
+import { noop } from "@shared/utils/noop";
+import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { PinoLogger } from "nestjs-pino";
+import { BookInfoRepository } from "../../database/bookInfo.repository.port";
+import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { CreateBookInfoDto } from "../../dtos/bookInfo.dto";
+import { UUID } from "@src/shared/uuid/entities/uuid";
+import { BookInfo } from "../../domain/bookInfo.entity";
+import { bookInfoNotFoundException } from "../../domain/bookInfo.errors";
+import { BOOK_INFO_UPDATED } from "../../domain/events/bookInfoUpdated.event";
+
+export class UpdateBookInfo implements ICommand {
+  constructor(
+    public readonly props: CreateBookInfoDto,
+    public readonly id: string,
+  ) {}
+}
+
+@CommandHandler(UpdateBookInfo)
+export class UpdateBookInfoHandler
+  implements ICommandHandler<UpdateBookInfo, void>
+{
+  constructor(
+    private readonly uuidGeneratorService: RealUUIDGeneratorService,
+    private readonly bookInfoRepository: BookInfoRepository,
+    private readonly domainEventPublisher: DomainEventPublisher,
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext("UpdateBookInfo");
+  }
+
+  execute(command: UpdateBookInfo): Promise<void> {
+    this.logger.info(command.props, "UpdateBookInfo command received");
+    const task = FPF.pipe(
+      //Data validation
+      RE.of(command.props),
+      RE.bind("id", () => fromInputRE(UUID, "uuid")(command.id)),
+      RE.chain(fromInputRE(BookInfo, "bookInfo")),
+      RTE.fromReaderEither,
+
+      //Validate BookInfo exists
+      RTE.tap(
+        FPF.flow(
+          (data) => data.id,
+          performRTE(this.bookInfoRepository.findById, "get bookInfo by id"),
+          RTE.chainW(RTE.fromOption<Error>(bookInfoNotFoundException)),
+        ),
+      ),
+
+      //Store entity
+      RTE.tap(
+        performRTE(
+          this.bookInfoRepository.save,
+          "save bookInfo in storage system.",
+        ),
+      ),
+
+      //Emit domain event
+      RTE.chain((bookInfo) =>
+        performRTE(
+          this.domainEventPublisher.publishEvent,
+          "emit bookInfo Updated event.",
+        )({
+          eventKey: BOOK_INFO_UPDATED,
+          payload: {
+            id: bookInfo.id,
+            name: bookInfo.name,
+          },
+        }),
+      ),
+      RTE.map(noop),
+    )({ logger: this.logger });
+    return executeTask(task);
+  }
+}

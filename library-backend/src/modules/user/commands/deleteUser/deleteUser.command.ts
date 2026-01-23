@@ -38,7 +38,7 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUser, void> {
       // Validate User exists
       RTE.chain(
         FPF.flow(
-          performRTE(this.userRepository.findOneById, "get user by id"),
+          performRTE(this.userRepository.findById, "get user by id"),
           RTE.chain((_) => RTE.fromOption<Error>(userNotFoundException)(_)),
         ),
       ),

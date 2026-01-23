@@ -16,7 +16,7 @@ enum UserRoleEnum {
 model User {
   id       String       @unique
   name     String
-  email    String
+  email    String       @unique
   password String
   cpf      String?
   role     UserRoleEnum
@@ -26,7 +26,7 @@ model User {
   bookRentalDetails BookRentalDetails[]
 }
 
-model BookDetails {
+model BookInfo {
   id    String @unique
   name  String
   image String
@@ -42,15 +42,15 @@ model BookDetails {
 enum BookItemStatus {
   rented
   available
-  lost
 }
 
 model BookItem {
   id     String         @unique
   status BookItemStatus
 
-  bookId String
-  book   BookDetails @relation(fields: [bookId], references: [id])
+  bookId     String
+  book       BookInfo            @relation(fields: [bookId], references: [id])
+  bookRental BookRentalDetails[]
 }
 
 enum RentalStatus {
@@ -62,14 +62,16 @@ model BookRentalDetails {
   id           String       @unique
   rentalStatus RentalStatus
 
-  bookId String
-  userId String
-  book   BookDetails @relation(fields: [bookId], references: [id])
-  user   User        @relation(fields: [userId], references: [id])
+  bookItemId String
+  bookItem   BookItem @relation(fields: [bookItemId], references: [id])
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
 
   overdueDate  DateTime
   deliveryDate DateTime
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  bookInfo   BookInfo? @relation(fields: [bookInfoId], references: [id])
+  bookInfoId String?
 }

@@ -4,8 +4,9 @@ import { PaginatedQueryParams } from "@src/shared/ddd/query.base";
 import { User } from "../domain/user.entity";
 
 export abstract class UserRepository implements RepositoryPort<User> {
-  findOneById!: (id: string) => TE.TaskEither<Error, O.Option<User>>;
-  findOneByCPF!: (cpf: string) => TE.TaskEither<Error, O.Option<User>>;
+  findById!: (id: string) => TE.TaskEither<Error, O.Option<User>>;
+  findByEmail!: (cpf: string) => TE.TaskEither<Error, O.Option<User>>;
+  findByCPF!: (cpf: string) => TE.TaskEither<Error, O.Option<User>>;
   findAll!: () => TE.TaskEither<Error, User[]>;
   findAllPaginated!: (
     params: PaginatedQueryParams,
