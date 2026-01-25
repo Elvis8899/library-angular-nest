@@ -45,7 +45,11 @@ export enum LogLevel {
 /**
  * Log output handler function.
  */
-export type LogOutput = (source: string | undefined, level: LogLevel, ...objects: any[]) => void;
+export type LogOutput = (
+  source: string | undefined,
+  level: LogLevel,
+  ...objects: any[]
+) => void;
 
 export class Logger {
   /**
@@ -82,7 +86,7 @@ export class Logger {
    * Works the same as console.log().
    */
   info(...objects: any[]) {
-    this._log(console.info, LogLevel.Info, objects);
+    this._log(console.log, LogLevel.Info, objects);
   }
 
   /**
@@ -101,11 +105,19 @@ export class Logger {
     this._log(console.error, LogLevel.Error, objects);
   }
 
-  private _log(func: (...args: any[]) => void, level: LogLevel, objects: any[]) {
+  private _log(
+    func: (...args: any[]) => void,
+    level: LogLevel,
+    objects: any[]
+  ) {
     if (level <= Logger.level) {
-      const log = this._source ? ['[' + this._source + ']'].concat(objects) : objects;
+      const log = this._source
+        ? ["[" + this._source + "]"].concat(objects)
+        : objects;
       func.apply(console, log);
-      Logger.outputs.forEach((output) => output.apply(output, [this._source, level, ...objects]));
+      Logger.outputs.forEach((output) =>
+        output.apply(output, [this._source, level, ...objects])
+      );
     }
   }
 }

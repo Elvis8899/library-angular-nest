@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z, ZodTypeAny } from "zod";
 
 // export type OrderBy = { field: string | true; param: "asc" | "desc" };
 
@@ -39,3 +39,17 @@ export const PaginatedQueryValidator = z
   }));
 
 export type PaginatedQueryValidator = z.infer<typeof PaginatedQueryValidator>;
+
+/**
+ * Base validator for paginated return
+ */
+
+export const PaginatedReturnValidator = <Validator extends ZodTypeAny>(
+  dataType: Validator,
+) =>
+  z.object({
+    count: z.number(),
+    limit: z.number(),
+    page: z.number(),
+    data: z.array(dataType),
+  });

@@ -1,15 +1,15 @@
-import { Injectable } from '@angular/core';
-import { CredentialsService, PERMISSIONS, ROLE } from '@app/auth';
-import { Credentials } from '@core/entities';
-import { appSetting } from '@core/constants';
+import { inject, Injectable } from "@angular/core";
+import { CredentialsService, PERMISSIONS, ROLE } from "@app/auth";
+import { Credentials } from "@core/entities";
+import { appPermissionsSetting } from "@core/constants";
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class PermissionService {
-  private readonly _credentials: Credentials;
-
-  constructor(private readonly _credentialsService: CredentialsService) {
+  private readonly _credentials: Credentials | null;
+  private readonly _credentialsService = inject(CredentialsService);
+  constructor() {
     this._credentials = this._credentialsService.credentials;
     if (!this._credentials) {
       this._credentials = this._credentialsService.credentials;
@@ -17,7 +17,7 @@ export class PermissionService {
   }
 
   get userRole(): ROLE {
-    return this._credentials.user.role;
+    return this._credentials?.user?.role || ROLE.GUEST;
   }
 
   /**
@@ -32,11 +32,11 @@ export class PermissionService {
    */
   hasRole(requiredRoles: ROLE[]): boolean {
     const credentials = this._credentialsService.credentials;
-    if (!credentials || !credentials.roles) {
+    if (!credentials || !credentials.user.role) {
       return false;
     }
     // Check if any of the user's roles match the required roles
-    return requiredRoles.some((role) => credentials.roles.includes(role));
+    return requiredRoles.some((role) => credentials.user.role.includes(role));
   }
 
   /**
@@ -54,14 +54,13 @@ export class PermissionService {
       return false;
     }
 
-    const { roles } = credentials;
+    const {
+      user: { role },
+    } = credentials;
 
-    for (const role of roles) {
-      // TODO: Implement the permissions as per your application requirements, provided above this file.
-      const rolePermissions = appSetting.role[role];
-      if (rolePermissions && this._checkPermission(rolePermissions, permission)) {
-        return true;
-      }
+    const rolePermissions = appPermissionsSetting[role];
+    if (rolePermissions && this._checkPermission(rolePermissions, permission)) {
+      return true;
     }
 
     return false;
@@ -70,17 +69,10 @@ export class PermissionService {
   /* The `private _checkPermission` method is a helper function within the `PermissionService` class.
   Its purpose is to check if a user has a specific permission based on their roles and the
   application settings defined in the `appSetting` object. */
-  private _checkPermission(rolePermissions: any, permission: PERMISSIONS): boolean {
-    const keys = permission.split('.');
-    let currentLevel = rolePermissions;
-
-    for (const key of keys) {
-      if (!currentLevel[key]) {
-        return false;
-      }
-      currentLevel = currentLevel[key];
-    }
-
-    return currentLevel === true;
+  private _checkPermission(
+    rolePermissions: Record<PERMISSIONS, boolean>,
+    permission: PERMISSIONS
+  ): boolean {
+    return rolePermissions[permission] === true;
   }
 }

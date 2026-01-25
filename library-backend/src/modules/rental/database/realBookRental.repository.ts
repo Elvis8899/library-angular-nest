@@ -1,0 +1,177 @@
+import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { Prisma } from "@prisma/client";
+import { Injectable } from "@nestjs/common";
+import { A, E, FPF, O, TE } from "@shared/functional/monads";
+import { Paginated } from "@shared/ddd";
+import { noop } from "@shared/utils/noop";
+import { validateFromUnknown } from "@shared/utils/validateWith";
+import { PaginatedQueryParams } from "@shared/ddd/query.base";
+import { unknownException } from "@src/shared/utils/unknownException";
+import {
+  BookRentalFindAllQuery,
+  BookRentalRepository,
+} from "./bookRental.repository.port";
+import { BookRental } from "../domain/bookRental.entity";
+
+@Injectable()
+export class RealBookRentalRepository implements BookRentalRepository {
+  constructor(private prisma: PrismaService) {}
+
+  private baseValidator = validateFromUnknown(BookRental, "BookRental");
+
+  private defaultErrorException = unknownException;
+
+  private findMany = TE.tryCatchK(
+    this.prisma.bookRentalDetails.findMany,
+    this.defaultErrorException,
+  );
+
+  private findFirst = TE.tryCatchK(
+    this.prisma.bookRentalDetails.findFirst,
+    this.defaultErrorException,
+  );
+  private findUnique = TE.tryCatchK(
+    this.prisma.bookRentalDetails.findUnique,
+    this.defaultErrorException,
+  );
+
+  private count = TE.tryCatchK(
+    this.prisma.bookRentalDetails.count,
+    this.defaultErrorException,
+  );
+
+  private delete = TE.tryCatchK(
+    this.prisma.bookRentalDetails.delete,
+    this.defaultErrorException,
+  );
+
+  private upsert = TE.tryCatchK(
+    this.prisma.bookRentalDetails.upsert,
+    this.defaultErrorException,
+  );
+
+  private update = TE.tryCatchK(
+    this.prisma.bookRentalDetails.update,
+    this.defaultErrorException,
+  );
+
+  private addItem = TE.tryCatchK(
+    this.prisma.bookItem.create,
+    this.defaultErrorException,
+  );
+
+  private removeItem = TE.tryCatchK(
+    this.prisma.bookItem.delete,
+    this.defaultErrorException,
+  );
+
+  private includeAll: Prisma.BookRentalDetailsInclude = {
+    bookItem: { include: { book: true } },
+    user: true,
+  };
+  private paginatedFindMany =
+    <S extends BookRental>(validator: (value: unknown) => E.Either<Error, S>) =>
+    (where: Prisma.BookRentalDetailsWhereInput) =>
+    (query: PaginatedQueryParams): TE.TaskEither<Error, Paginated<S>> => {
+      return FPF.pipe(
+        TE.of(query),
+        TE.let("skip", ({ page, limit, offset }) => limit * page + offset),
+        TE.chain((parsedQuery) =>
+          FPF.pipe(
+            TE.of({ page: parsedQuery.page, limit: parsedQuery.limit }),
+            TE.apS(
+              "data",
+              FPF.pipe(
+                this.findMany({
+                  where,
+                  skip: parsedQuery.offset,
+                  take: parsedQuery.limit,
+                  orderBy: { createdAt: "desc" },
+                  include: this.includeAll,
+                }),
+                TE.chainEitherK(A.traverse(E.Applicative)(validator)),
+              ),
+            ),
+            TE.apS(
+              "count",
+              this.count({
+                where,
+              }),
+            ),
+          ),
+        ),
+      );
+    };
+
+  findAll = (): TE.TaskEither<Error, BookRental[]> => {
+    return FPF.pipe(
+      this.findMany({
+        include: this.includeAll,
+      }),
+      TE.chainEitherK(A.traverse(E.Applicative)(this.baseValidator)),
+    );
+  };
+
+  findAllPaginated = (
+    params: PaginatedQueryParams<BookRentalFindAllQuery>,
+  ): TE.TaskEither<Error, Paginated<BookRental>> => {
+    const where: Prisma.BookRentalDetailsWhereInput = {};
+    if (params.query) {
+      where.rentalStatus = params.query.status;
+      where.userId = params.query.userId;
+    }
+    return this.paginatedFindMany(this.baseValidator)(where)(params);
+  };
+
+  findById = (
+    bookRentalId: string,
+  ): TE.TaskEither<Error, O.Option<BookRental>> => {
+    return FPF.pipe(
+      this.findUnique({
+        where: {
+          id: bookRentalId,
+        },
+        include: this.includeAll,
+      }),
+      TE.chainEitherK(
+        FPF.flow(
+          O.fromNullable,
+          O.map(this.baseValidator),
+          O.sequence(E.Applicative),
+        ),
+      ),
+    );
+  };
+
+  deleteById = (bookRentalId: string): TE.TaskEither<Error, void> => {
+    return FPF.pipe(
+      this.delete({
+        where: {
+          id: bookRentalId,
+        },
+      }),
+      TE.map(noop),
+    );
+  };
+
+  save = (bookRentalRaw: Partial<BookRental>): TE.TaskEither<Error, void> => {
+    const { bookItem, user, ...bookRental } = bookRentalRaw;
+    return FPF.pipe(
+      this.upsert({
+        where: {
+          id: bookRental.id,
+        },
+        update: {
+          rentalStatus: bookRental.rentalStatus,
+          overdueDate: bookRental.overdueDate,
+          deliveryDate: bookRental.deliveryDate,
+        },
+        create: {
+          ...(bookRental as Omit<BookRental, "bookItem" | "user">),
+        },
+      }),
+
+      TE.map(noop),
+    );
+  };
+}

@@ -1,24 +1,31 @@
-import { Injectable } from '@angular/core';
-import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
-import { Observable, Subject, takeUntil, throwError } from 'rxjs';
-import { TranslateService } from '@ngx-translate/core';
-import { catchError, finalize } from 'rxjs/operators';
-import { CredentialsService } from '@auth';
+import { inject, Injectable } from "@angular/core";
+import {
+  HttpErrorResponse,
+  HttpEvent,
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+} from "@angular/common/http";
+import { Observable, Subject, takeUntil, throwError } from "rxjs";
+import { TranslateService } from "@ngx-translate/core";
+import { catchError, finalize } from "rxjs/operators";
+import { CredentialsService } from "@auth";
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class ApiPrefixInterceptor implements HttpInterceptor {
   private readonly _ongoingRequests = new Map<string, Subject<any>>();
 
-  constructor(
-    private readonly _credentialsService: CredentialsService,
-    private readonly _translateService: TranslateService,
-  ) {}
+  private readonly _credentialsService = inject(CredentialsService);
+  private readonly _translateService = inject(TranslateService);
 
-  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  intercept(
+    request: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
     // If the request has the 'noauth' header, don't add the Authorization header
-    if (request.headers.get('noauth')) {
+    if (request.headers.get("noauth")) {
       return next.handle(request);
     }
     console.log(request.url);
@@ -28,11 +35,14 @@ export class ApiPrefixInterceptor implements HttpInterceptor {
 
     if (accessToken) {
       if (!(request.body instanceof FormData)) {
-        headers = headers.set('content-type', 'application/json');
+        headers = headers.set("content-type", "application/json");
       }
-      headers = headers.set('Authorization', `Bearer ${accessToken}`);
+      headers = headers.set("Authorization", `Bearer ${accessToken}`);
     }
-    headers = headers.set('Accept-Language', currentLang).set('Content-Language', currentLang).set('lang', currentLang);
+    headers = headers
+      .set("Accept-Language", currentLang)
+      .set("Content-Language", currentLang)
+      .set("lang", currentLang);
 
     request = request.clone({ headers });
 
@@ -53,16 +63,17 @@ export class ApiPrefixInterceptor implements HttpInterceptor {
       return next.handle(request).pipe(
         takeUntil(cancelSubject),
         catchError((error: HttpErrorResponse) => {
+          console.log("api error", error);
           if (error.status === 401 || error.status === 403) {
             this._credentialsService.setCredentials();
-            window.location.href = '/login';
+            window.location.href = "/login";
           }
           return throwError(error);
         }),
         finalize(() => {
           this._ongoingRequests.delete(requestKey);
           cancelSubject.complete();
-        }),
+        })
       );
     }
   }

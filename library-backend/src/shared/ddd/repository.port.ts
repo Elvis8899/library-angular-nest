@@ -9,10 +9,10 @@ import { PaginatedQueryParams } from "@shared/ddd/query.base";
 */
 
 export class Paginated<T> {
-  readonly count: number;
-  readonly limit: number;
-  readonly page: number;
-  readonly data: readonly T[];
+  count: number;
+  limit: number;
+  page: number;
+  data: T[];
 
   constructor(props: Paginated<T>) {
     this.count = props.count;
@@ -22,13 +22,31 @@ export class Paginated<T> {
   }
 }
 
-export interface RepositoryPort<Entity> {
+export interface RepositoryFindAllPort<Entity> {
   findAll(): TE.TaskEither<Error, Entity[]>;
-  findById(id: string): TE.TaskEither<Error, O.Option<Entity>>;
-  findAllPaginated(
-    params: PaginatedQueryParams,
-  ): TE.TaskEither<Error, Paginated<Entity>>;
-  //
-  save(entity: Entity): TE.TaskEither<Error, void>;
-  deleteById(entity: string): TE.TaskEither<Error, void>;
 }
+
+export interface RepositoryFindByIdPort<Entity> {
+  findById(id: string): TE.TaskEither<Error, O.Option<Entity>>;
+}
+
+export interface RepositoryFindAllPaginatedPort<Entity, Query = undefined> {
+  findAllPaginated(
+    params: PaginatedQueryParams<Query>,
+  ): TE.TaskEither<Error, Paginated<Entity>>;
+}
+
+export interface RepositorySavePort<Entity> {
+  save(entity: Partial<Entity>): TE.TaskEither<Error, void>;
+}
+
+export interface RepositoryDeleteByIdPort {
+  deleteById(id: string): TE.TaskEither<Error, void>;
+}
+
+export interface RepositoryDefaultPort<Entity, Query = undefined>
+  extends RepositoryFindAllPort<Entity>,
+    RepositoryFindByIdPort<Entity>,
+    RepositoryFindAllPaginatedPort<Entity, Query>,
+    RepositorySavePort<Entity>,
+    RepositoryDeleteByIdPort {}

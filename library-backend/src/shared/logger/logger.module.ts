@@ -19,7 +19,7 @@ export const getGenReqId: GenReqId = (req) => req.requestId || uuid.v4();
     PinoLoggerModule.forRoot({
       pinoHttp: {
         name: "library",
-        level: logConfig.level,
+        level: "debug", //logConfig.level,
         transport: logConfig.transport,
         genReqId: getGenReqId,
         formatters: { bindings: () => ({}) },

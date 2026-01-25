@@ -1,19 +1,27 @@
-import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  ValidatorFn,
+} from "@angular/forms";
 
-const removeNonNumeric = (v: string) => v.replace(/\D/g, '');
-const cpfMask = (v: string) => v.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
+const removeNonNumeric = (v: string) => v.replace(/\D/g, "");
+// const cpfMask = (v: string) =>
+//   v.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
 export function validateCPF(): ValidatorFn {
-  return (control: AbstractControl): { [key: string]: any } | null => {
+  return (control: AbstractControl): Record<string, unknown> | null => {
     // Custom validation logic
     if (control.value && removeNonNumeric(control.value).length != 11) {
-      return { custom: { message: 'CPF inválido' } };
+      return { custom: { message: "CPF inválido" } };
     }
     return null;
   };
 }
 
 export function arrayNotEmptyValidator(): ValidatorFn {
-  return (control: AbstractControl): Record<string, any> | null => {
+  return (control: AbstractControl): Record<string, unknown> | null => {
     const isArray = Array.isArray(control.value);
     const isEmpty = isArray && control.value.length === 0;
     return isEmpty ? { arrayNotEmpty: { value: control.value } } : null;
@@ -24,7 +32,9 @@ export function isValidDate(dateString: string): boolean {
   return /^\d{4}[-/]\d{2}[-/]\d{2}$/.test(dateString);
 }
 
-export function validateCustomDate(control: FormControl): ValidationErrors | null {
+export function validateCustomDate(
+  control: FormControl
+): ValidationErrors | null {
   if (!/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(control.value)) {
     return { invalidDateFormat: true };
   }
@@ -32,12 +42,12 @@ export function validateCustomDate(control: FormControl): ValidationErrors | nul
 }
 
 // mustMatch validator function
-export function mustMatch(controlName: string, matchingControlName: string): ValidatorFn {
+export function mustMatch(controlName: string, matchingControlName: string) {
   return (formGroup: FormGroup): ValidationErrors | null => {
     const control = formGroup.controls[controlName];
     const matchingControl = formGroup.controls[matchingControlName];
 
-    if (matchingControl.errors && !matchingControl.errors['mustMatch']) {
+    if (matchingControl.errors && !matchingControl.errors["mustMatch"]) {
       return null;
     }
 
@@ -58,14 +68,17 @@ export function mustMatch(controlName: string, matchingControlName: string): Val
  * @param endControlName The form control name for the end time.
  * @returns A validator function.
  */
-export function timeRangeValidator(startControlName: string, endControlName: string) {
+export function timeRangeValidator(
+  startControlName: string,
+  endControlName: string
+) {
   return (group: FormGroup): ValidationErrors | null => {
     const startTime = group.get(startControlName)?.value;
     const endTime = group.get(endControlName)?.value;
 
     if (startTime && endTime) {
-      const [startHour, startMinute] = startTime.split(':').map(Number);
-      const [endHour, endMinute] = endTime.split(':').map(Number);
+      const [startHour, startMinute] = startTime.split(":").map(Number);
+      const [endHour, endMinute] = endTime.split(":").map(Number);
 
       const startDate = new Date(1970, 0, 1, startHour, startMinute);
       const endDate = new Date(1970, 0, 1, endHour, endMinute);
@@ -90,7 +103,10 @@ export function timeRangeValidator(startControlName: string, endControlName: str
  * @param endControlName The form control name for the end date.
  * @returns A validator function that adds an error if the end date is not after the start date.
  */
-export function dateRangeValidator(startControlName: string, endControlName: string): ValidatorFn {
+export function dateRangeValidator(
+  startControlName: string,
+  endControlName: string
+): ValidatorFn {
   return (group: AbstractControl): ValidationErrors | null => {
     if (!(group instanceof FormGroup)) return null;
 
@@ -114,9 +130,13 @@ export function dateRangeValidator(startControlName: string, endControlName: str
 
     // If everything is fine, clear errors related to the date range from the end date control
     const endControlErrors = group.get(endControlName)?.errors;
-    if (endControlErrors?.['dateRangeInvalid']) {
-      delete endControlErrors['dateRangeInvalid'];
-      group.get(endControlName)?.setErrors(Object.keys(endControlErrors).length ? endControlErrors : null);
+    if (endControlErrors?.["dateRangeInvalid"]) {
+      delete endControlErrors["dateRangeInvalid"];
+      group
+        .get(endControlName)
+        ?.setErrors(
+          Object.keys(endControlErrors).length ? endControlErrors : null
+        );
     }
 
     // Return null if no validation errors
@@ -132,8 +152,13 @@ export function dateRangeValidator(startControlName: string, endControlName: str
  * @param controlName The name of the control outside the FormArray to compare against the array's date control.
  * @returns A validator function that applies the specified validation.
  */
-export function dateRangeArrayAndControlValidator(form: FormGroup, arrayPath: string, arrayDateControlName: string, controlName: string): ValidatorFn {
-  return (control: AbstractControl): { [key: string]: any } | null => {
+export function dateRangeArrayAndControlValidator(
+  form: FormGroup,
+  arrayPath: string,
+  arrayDateControlName: string,
+  controlName: string
+): ValidatorFn {
+  return (control: AbstractControl): Record<string, unknown> | null => {
     const dateArray = form?.get(arrayPath) as FormArray;
     const endDateControl = control.get(controlName);
     const endDate = endDateControl?.value;
@@ -148,7 +173,9 @@ export function dateRangeArrayAndControlValidator(form: FormGroup, arrayPath: st
 
         // Set true if invalid, false otherwise
         const isInvalid = end <= start;
-        endDateControl?.setErrors(isInvalid ? { dateRangeInvalid: true } : null);
+        endDateControl?.setErrors(
+          isInvalid ? { dateRangeInvalid: true } : null
+        );
         return isInvalid ? { dateRangeInvalid: true } : null;
       }
     }
@@ -165,14 +192,19 @@ export function dateRangeArrayAndControlValidator(form: FormGroup, arrayPath: st
  * @param fieldName The name of the field within the form groups to check for uniqueness.
  * @returns A validator function.
  */
-export function uniqueFieldValidator(parentControl: AbstractControl, fieldName: string): ValidatorFn {
+export function uniqueFieldValidator(
+  parentControl: AbstractControl,
+  fieldName: string
+): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const currentValue = control.value;
     let occurrences = 0;
 
     // Handling for FormArray
     if (parentControl instanceof FormArray) {
-      occurrences = parentControl.controls.filter((ctrl) => ctrl.get(fieldName)?.value === currentValue).length;
+      occurrences = parentControl.controls.filter(
+        (ctrl) => ctrl.get(fieldName)?.value === currentValue
+      ).length;
     }
     // Handling for FormGroup
     else if (parentControl instanceof FormGroup) {

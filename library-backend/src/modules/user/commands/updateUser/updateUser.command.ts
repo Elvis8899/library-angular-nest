@@ -65,14 +65,28 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
       ),
 
       // Check cpf unicity
-      RTE.tap((validatedDatas) =>
+      RTE.tap((user) =>
         FPF.pipe(
-          validatedDatas,
-          (user) => user.cpf,
+          user.cpf,
           performRTE(this.userRepository.findByCPF, "get user by cpf"),
           RTE.chainW(
             FPF.flow(
-              O.filter((user) => user.id !== validatedDatas.id),
+              O.filter((u) => u.id !== user.id),
+              O.fromPredicate(O.isNone),
+              RTE.fromOption(userCPFAlreadyExistsException),
+            ),
+          ),
+        ),
+      ),
+
+      //Check email unicity
+      RTE.tap((user) =>
+        FPF.pipe(
+          user.cpf,
+          performRTE(this.userRepository.findByEmail, "get user by email"),
+          RTE.chainW(
+            FPF.flow(
+              O.filter((u) => u.id !== user.id),
               O.fromPredicate(O.isNone),
               RTE.fromOption(userCPFAlreadyExistsException),
             ),

@@ -1,0 +1,41 @@
+<section class="main-container">
+  <h2 translate>Rentals</h2>
+
+  <div class="book-table-container">
+    <table class="book-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Cliente</th>
+          <th>Data de Emprestimo / Entrega</th>
+          <th>Multas</th>
+          <!-- <th>Preço</th>
+          <th>Disponibilidade</th>-->
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (!isLoading) {
+          @for (rental of rentals; track rental.id) {
+            <tr (click)="bookClicked()">
+              <td>{{ rental.bookName }}</td>
+              <td>{{ rental.userName }}</td>
+              <td>
+                {{ getDateOnly(rental.createdAt) }} /
+                {{ getDateOnly(rental.overdueDate) }}
+              </td>
+              <td>{{ bookFinesText(rental) }}</td>
+              <td>
+                <button (click)="returnBook(rental)">devolver</button>
+              </td>
+            </tr>
+          }
+        } @else {
+          <tr>
+            <td colspan="5" style="text-align: center">Loading...</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

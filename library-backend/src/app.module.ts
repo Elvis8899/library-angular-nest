@@ -8,6 +8,7 @@ import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domai
 import { UserModule } from "./modules/user/user.module";
 import { BookInfoModule } from "./modules/book/bookInfo.module";
 import { LoginModule } from "./modules/auth/login.module";
+import { BookRentalModule } from "./modules/rental/bookRental.module";
 
 type NestModuleImport =
   | Type
@@ -28,6 +29,7 @@ const appModules: NestModuleImport[] = [
   //
   UserModule,
   BookInfoModule,
+  BookRentalModule,
 ];
 
 // Infrastructure Modules (DB, config) used by the server

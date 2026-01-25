@@ -1,4 +1,4 @@
-.add-user-wrapper{
+.add-user-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -7,7 +7,7 @@
   margin: 0;
   background-color: var(--white);
   position: relative;
-} 
+}
 .add-user-div {
   width: 500px;
   padding: 40px;
@@ -74,5 +74,5 @@
 }
 
 .text-danger {
-  color: red !important
+  color: red !important;
 }

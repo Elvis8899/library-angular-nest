@@ -1,17 +1,17 @@
-import { Injectable } from '@angular/core';
-import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { inject, Injectable } from "@angular/core";
+import { LangChangeEvent, TranslateService } from "@ngx-translate/core";
+import { BehaviorSubject, Observable, Subscription } from "rxjs";
 
-import ptBR from '../../translations/pt-BR.json';
-import enUS from '../../translations/en-US.json';
-import { Logger } from '@app/@core/services';
-import { environment } from '@env/environment';
+import { ptBR } from "../../translations/pt-BR";
+import { enUS } from "../../translations/en-US";
+import { Logger } from "@app/@core/services";
+import { environment } from "@env/environment";
 
-const log = new Logger('I18nService');
-const languageKey = 'language';
+const log = new Logger("I18nService");
+const languageKey = "language";
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class I18nService {
   defaultLanguage!: string;
@@ -19,14 +19,20 @@ export class I18nService {
 
   private _langChangeSubscription!: Subscription;
   private readonly _languageSubject: BehaviorSubject<string>;
+  private readonly _translateService = inject(TranslateService);
 
-  constructor(private readonly _translateService: TranslateService) {
+  constructor() {
     // Initialize the BehaviorSubject with an initial value
-    this._languageSubject = new BehaviorSubject<string>(localStorage.getItem(languageKey) || environment.defaultLanguage || this._translateService.getBrowserCultureLang() || '');
+    this._languageSubject = new BehaviorSubject<string>(
+      localStorage.getItem(languageKey) ||
+        environment.defaultLanguage ||
+        this._translateService.getBrowserCultureLang() ||
+        ""
+    );
 
     // Embed languages to avoid extra HTTP requests
-    _translateService.setTranslation('pt-BR', ptBR);
-    _translateService.setTranslation('en-US', enUS);
+    this._translateService.setTranslation("pt-BR", ptBR);
+    this._translateService.setTranslation("en-US", enUS);
   }
 
   /**
@@ -52,7 +58,12 @@ export class I18nService {
    * @param language The IETF language code to set.
    */
   set language(language: string) {
-    let newLanguage = language || localStorage.getItem(languageKey) || environment.defaultLanguage || this._translateService.getBrowserCultureLang() || '';
+    let newLanguage =
+      language ||
+      localStorage.getItem(languageKey) ||
+      environment.defaultLanguage ||
+      this._translateService.getBrowserCultureLang() ||
+      "";
     let isSupportedLanguage = this.supportedLanguages.includes(newLanguage);
 
     if (language !== this._languageSubject.value) {
@@ -61,8 +72,11 @@ export class I18nService {
 
     // If no exact match is found, search without the region
     if (newLanguage && !isSupportedLanguage) {
-      newLanguage = newLanguage.split('-')[0];
-      newLanguage = this.supportedLanguages.find((supportedLanguage) => supportedLanguage.startsWith(newLanguage)) || '';
+      newLanguage = newLanguage.split("-")[0];
+      newLanguage =
+        this.supportedLanguages.find((supportedLanguage) =>
+          supportedLanguage.startsWith(newLanguage)
+        ) || "";
       isSupportedLanguage = Boolean(newLanguage);
     }
 
@@ -87,12 +101,15 @@ export class I18nService {
     this.defaultLanguage = defaultLanguage;
     this.supportedLanguages = supportedLanguages;
     log.debug(`Initializing with default language: ${defaultLanguage}`);
-    this.language = '';
+    this.language = "";
 
     // Warning: this subscription will always be alive for the app's lifetime
-    this._langChangeSubscription = this._translateService.onLangChange.subscribe((event: LangChangeEvent) => {
-      localStorage.setItem(languageKey, event.lang);
-    });
+    this._langChangeSubscription =
+      this._translateService.onLangChange.subscribe(
+        (event: LangChangeEvent) => {
+          localStorage.setItem(languageKey, event.lang);
+        }
+      );
   }
 
   /**

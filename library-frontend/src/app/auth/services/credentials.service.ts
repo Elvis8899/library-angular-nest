@@ -1,24 +1,25 @@
-import { Injectable } from '@angular/core';
-import { Credentials } from '@core/entities';
+import { Injectable } from "@angular/core";
+import { Credentials } from "@core/entities";
 
-const credentialsKey = 'credentials';
+const credentialsKey = "credentials";
 
 /**
  * Provides storage for authentication credentials.
  * The Credentials interface should be replaced with proper implementation.
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class CredentialsService {
+  private _credentials: Credentials | null = null;
   constructor() {
-    const savedCredentials = sessionStorage.getItem(credentialsKey) || localStorage.getItem(credentialsKey);
+    const savedCredentials =
+      sessionStorage.getItem(credentialsKey) ||
+      localStorage.getItem(credentialsKey);
     if (savedCredentials) {
       this._credentials = JSON.parse(savedCredentials);
     }
   }
-
-  private _credentials: Credentials | null = null;
 
   /**
    * Gets the user credentials.
@@ -37,7 +38,7 @@ export class CredentialsService {
   }
 
   isAdmin(): boolean {
-    return this.credentials?.roles?.includes('admin') || false;
+    return this.credentials?.user.role?.includes("admin") || false;
   }
 
   /**

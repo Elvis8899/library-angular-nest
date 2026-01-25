@@ -1,6 +1,6 @@
-import { Expose } from 'class-transformer';
-import { InitializableEntity } from '@app/@core/entities/utils/intializable.entity';
-import { ROLE } from '@app/auth';
+import { Expose } from "class-transformer";
+import { InitializableEntity } from "@app/@core/entities/utils/intializable.entity";
+import { ROLE } from "@app/auth";
 
 export class Credentials extends InitializableEntity {
   user: {
@@ -8,15 +8,18 @@ export class Credentials extends InitializableEntity {
     name: string;
     email: string;
     role: ROLE;
+  } = {
+    id: "",
+    name: "",
+    email: "",
+    role: ROLE.GUEST,
   };
 
-  @Expose({ name: 'access_token' })
-  accessToken = '';
+  @Expose({ name: "access_token" })
+  accessToken = "";
 
-  @Expose({ name: 'refresh_token' })
-  refreshToken = '';
-
-  roles: string[] = [];
+  @Expose({ name: "refresh_token" })
+  refreshToken = "";
 
   constructor(init?: Partial<Credentials>) {
     super(init);
@@ -24,6 +27,6 @@ export class Credentials extends InitializableEntity {
   }
 
   get fullName() {
-    return this.user?.name || '';
+    return this.user?.name || "";
   }
 }

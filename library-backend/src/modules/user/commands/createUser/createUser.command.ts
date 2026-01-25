@@ -65,6 +65,20 @@ export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
         ),
       ),
 
+      //Check email unicity
+      RTE.tap(
+        FPF.flow(
+          (user) => user.email,
+          performRTE(this.userRepository.findByEmail, "get user by email"),
+          RTE.chainW(
+            FPF.flow(
+              O.fromPredicate(O.isNone),
+              RTE.fromOption(userCPFAlreadyExistsException),
+            ),
+          ),
+        ),
+      ),
+
       //Store entity
       RTE.tap(
         performRTE(this.userRepository.save, "save user in storage system."),

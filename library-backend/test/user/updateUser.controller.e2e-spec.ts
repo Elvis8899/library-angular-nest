@@ -85,6 +85,7 @@ describe("[e2e] PUT /v1/users/{userId}", () => {
     // With User Saved with cpf to repeat
     const user = new UserBuilder(2)
       .withCPF("12345678902")
+      .withEmail("usertwo@example.com")
       .withRole(UserRoleEnum.Client)
       .build();
     await executeTask(userRepository.save(user));

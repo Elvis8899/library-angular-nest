@@ -1,29 +1,31 @@
-import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
+import { inject, Injectable } from "@angular/core";
+import {
+  ActivatedRouteSnapshot,
+  Router,
+  RouterStateSnapshot,
+} from "@angular/router";
 
-import { Logger } from '@app/@core/services';
-import { UntilDestroy } from '@ngneat/until-destroy';
-import { CredentialsService } from '@app/auth';
+import { Logger } from "@app/@core/services";
+import { UntilDestroy } from "@ngneat/until-destroy";
+import { CredentialsService } from "@app/auth";
 
-const log = new Logger('AuthenticationGuard');
+const log = new Logger("AuthenticationGuard");
 
 /* The `AlreadyLoggedCheckGuard` class is a guard in TypeScript that checks if a user is already
-authenticated and redirects them to the dashboard if they are. */
+authenticated and redirects them to the initial page if they are. */
 @UntilDestroy()
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class AlreadyLoggedCheckGuard {
-  constructor(
-    private readonly _credentialsService: CredentialsService,
-    private readonly _router: Router,
-  ) {}
+  private readonly _credentialsService = inject(CredentialsService);
+  private readonly _router = inject(Router);
 
   async canActivate(): Promise<boolean> {
     const isAuthenticated = this._credentialsService.isAuthenticated();
     const isAdmin = this._credentialsService.isAdmin();
     if (isAuthenticated) {
-      const page = isAdmin ? '/users/list' : '/books';
+      const page = isAdmin ? "/users/list" : "/books";
       this._router.navigateByUrl(page);
       return false;
     } else {
@@ -35,21 +37,24 @@ export class AlreadyLoggedCheckGuard {
 /* The AuthenticationGuard class in TypeScript is used to check if a user is authenticated and redirect
 to the login page if not. */
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class AuthenticationGuard {
-  constructor(
-    private readonly _router: Router,
-    private readonly _credentialsService: CredentialsService,
-  ) {}
-
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+  private readonly _credentialsService = inject(CredentialsService);
+  private readonly _router = inject(Router);
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): boolean {
     if (this._credentialsService.isAuthenticated()) {
       return true;
     }
 
-    log.debug('Not authenticated, redirecting and adding redirect url...');
-    this._router.navigate(['/login'], { queryParams: { redirect: state.url }, replaceUrl: true });
+    log.debug("Not authenticated, redirecting and adding redirect url...");
+    this._router.navigate(["/login"], {
+      queryParams: { redirect: state.url },
+      replaceUrl: true,
+    });
     return false;
   }
 }

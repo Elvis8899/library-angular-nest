@@ -1,20 +1,20 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { ListUsersComponent } from '@app/pages/users/listUsers/listUsers.component';
-import { AddUsersComponent } from './addUser/addUser.component';
+import { NgModule } from "@angular/core";
+import { RouterModule, Routes } from "@angular/router";
+import { ListUsersComponent } from "@app/pages/users/listUsers/listUsers.component";
+import { AddUsersComponent } from "./addUser/addUser.component";
 
 const routes: Routes = [
   {
-    path: '',
-    redirectTo: 'list',
-    pathMatch: 'full',
+    path: "",
+    redirectTo: "list",
+    pathMatch: "full",
   },
   {
-    path: 'list',
+    path: "list",
     component: ListUsersComponent,
   },
   {
-    path: 'add',
+    path: "add",
     component: AddUsersComponent,
   },
 ];

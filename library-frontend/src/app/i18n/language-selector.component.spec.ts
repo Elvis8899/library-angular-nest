@@ -1,17 +1,16 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule } from '@ngx-translate/core';
+import { waitForAsync, ComponentFixture, TestBed } from "@angular/core/testing";
+import { TranslateModule } from "@ngx-translate/core";
 
-import { I18nService } from './i18n.service';
-import { LanguageSelectorComponent } from './language-selector.component';
+import { I18nService } from "./i18n.service";
+import { LanguageSelectorComponent } from "./language-selector.component";
 
-describe('LanguageSelectorComponent', () => {
+describe("LanguageSelectorComponent", () => {
   let component: LanguageSelectorComponent;
   let fixture: ComponentFixture<LanguageSelectorComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot()],
-      declarations: [LanguageSelectorComponent],
+      imports: [TranslateModule.forRoot(), LanguageSelectorComponent],
       providers: [I18nService],
     }).compileComponents();
   }));
@@ -22,7 +21,7 @@ describe('LanguageSelectorComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

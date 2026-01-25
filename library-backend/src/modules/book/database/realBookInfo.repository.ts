@@ -9,6 +9,7 @@ import { PaginatedQueryParams } from "@shared/ddd/query.base";
 import { unknownException } from "@src/shared/utils/unknownException";
 import { BookInfoRepository } from "./bookInfo.repository.port";
 import { BookInfo } from "../domain/bookInfo.entity";
+import { BookItem } from "../domain/value-object/bookItem.entity";
 
 @Injectable()
 export class RealBookInfoRepository implements BookInfoRepository {
@@ -52,9 +53,28 @@ export class RealBookInfoRepository implements BookInfoRepository {
     this.defaultErrorException,
   );
 
+  private findUniqueItem = TE.tryCatchK(
+    this.prisma.bookItem.findUnique,
+    this.defaultErrorException,
+  );
+
+  private addItem = TE.tryCatchK(
+    this.prisma.bookItem.create,
+    this.defaultErrorException,
+  );
+
+  private removeItem = TE.tryCatchK(
+    this.prisma.bookItem.delete,
+    this.defaultErrorException,
+  );
+
+  private updateItem = TE.tryCatchK(
+    this.prisma.bookItem.update,
+    this.defaultErrorException,
+  );
+
   private includeAll: Prisma.BookInfoInclude = {
     bookItems: true,
-    bookRentalDetails: true,
   };
   private paginatedFindMany =
     <S extends BookInfo>(validator: (value: unknown) => E.Either<Error, S>) =>
@@ -135,7 +155,8 @@ export class RealBookInfoRepository implements BookInfoRepository {
     );
   };
 
-  save = (bookInfo: BookInfo): TE.TaskEither<Error, void> => {
+  save = (bookInfoRaw: BookInfo): TE.TaskEither<Error, void> => {
+    const { bookItems, ...bookInfo } = bookInfoRaw;
     return FPF.pipe(
       this.upsert({
         where: {
@@ -152,4 +173,54 @@ export class RealBookInfoRepository implements BookInfoRepository {
       TE.map(noop),
     );
   };
+
+  findBookItemById = (
+    bookItemId: string,
+  ): TE.TaskEither<Error, O.Option<BookItem>> => {
+    return FPF.pipe(
+      this.findUniqueItem({
+        where: {
+          id: bookItemId,
+        },
+      }),
+      TE.chainEitherK(
+        FPF.flow(
+          O.fromNullable,
+          O.map(validateFromUnknown(BookItem, "BookItem")),
+          O.sequence(E.Applicative),
+        ),
+      ),
+    );
+  };
+
+  createBookItem = (bookItem: BookItem): TE.TaskEither<Error, void> => {
+    return FPF.pipe(
+      this.addItem({
+        data: { ...bookItem },
+      }),
+      TE.map(noop),
+    );
+  };
+  deleteBookItem = (bookItemId: string): TE.TaskEither<Error, void> =>
+    FPF.pipe(
+      this.removeItem({
+        where: {
+          id: bookItemId,
+        },
+      }),
+      TE.map(noop),
+    );
+
+  updateBookItem = (bookItem: Partial<BookItem>): TE.TaskEither<Error, void> =>
+    FPF.pipe(
+      this.updateItem({
+        where: {
+          id: bookItem.id,
+        },
+        data: {
+          ...bookItem,
+        },
+      }),
+      TE.map(noop),
+    );
 }

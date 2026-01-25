@@ -32,8 +32,10 @@ CREATE TABLE "BookInfo" (
 -- CreateTable
 CREATE TABLE "BookItem" (
     "id" TEXT NOT NULL,
-    "status" "BookItemStatus" NOT NULL,
-    "bookId" TEXT NOT NULL
+    "status" "BookItemStatus" NOT NULL DEFAULT 'available',
+    "bookId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -43,14 +45,16 @@ CREATE TABLE "BookRentalDetails" (
     "bookItemId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "overdueDate" TIMESTAMP(3) NOT NULL,
-    "deliveryDate" TIMESTAMP(3) NOT NULL,
+    "deliveryDate" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "bookInfoId" TEXT
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_id_key" ON "User"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "BookInfo_id_key" ON "BookInfo"("id");
@@ -62,13 +66,10 @@ CREATE UNIQUE INDEX "BookItem_id_key" ON "BookItem"("id");
 CREATE UNIQUE INDEX "BookRentalDetails_id_key" ON "BookRentalDetails"("id");
 
 -- AddForeignKey
-ALTER TABLE "BookItem" ADD CONSTRAINT "BookItem_bookId_fkey" FOREIGN KEY ("bookId") REFERENCES "BookInfo"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "BookItem" ADD CONSTRAINT "BookItem_bookId_fkey" FOREIGN KEY ("bookId") REFERENCES "BookInfo"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "BookRentalDetails" ADD CONSTRAINT "BookRentalDetails_bookItemId_fkey" FOREIGN KEY ("bookItemId") REFERENCES "BookItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "BookRentalDetails" ADD CONSTRAINT "BookRentalDetails_bookItemId_fkey" FOREIGN KEY ("bookItemId") REFERENCES "BookItem"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "BookRentalDetails" ADD CONSTRAINT "BookRentalDetails_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "BookRentalDetails" ADD CONSTRAINT "BookRentalDetails_bookInfoId_fkey" FOREIGN KEY ("bookInfoId") REFERENCES "BookInfo"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "BookRentalDetails" ADD CONSTRAINT "BookRentalDetails_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -13,6 +13,14 @@ import { PaginatedBookInfosQueryHandler } from "./queries/paginatedBookInfos/pag
 import { PaginatedBookInfoController } from "./queries/paginatedBookInfos/paginatedBookInfos.controller";
 import { GetBookInfoByIdController } from "./queries/getBookById/getBookInfoById.controller";
 import { GetBookInfoByIdQueryHandler } from "./queries/getBookById/getBookInfoById.query";
+import { CreateBookInfoSubscriber } from "./subscriber/createBookInfo.subscriber";
+import { AddBookItemHandler } from "./commands/addBookItem/addBookItem.command";
+import { AddBookItemController } from "./commands/addBookItem/addBookItem.controller";
+import { RemoveBookItemController } from "./commands/removeBookItem/removeBookItem.controller";
+import { RemoveBookItemHandler } from "./commands/removeBookItem/removeBookItem.command";
+import { BookRentSubscriber } from "./subscriber/bookRent.subscriber";
+import { BookReturnSubscriber } from "./subscriber/bookReturn.subscriber";
+import { ChangeBookItemStatusHandler } from "./commands/changeBookItemStatus/changeBookItemStatus.command";
 
 const controllers = [
   CreateBookInfoController,
@@ -20,17 +28,26 @@ const controllers = [
   DeleteBookInfoController,
   PaginatedBookInfoController,
   GetBookInfoByIdController,
+  AddBookItemController,
+  RemoveBookItemController,
 ];
 const commandHandlers = [
   CreateBookInfoHandler,
   UpdateBookInfoHandler,
   DeleteBookInfoHandler,
+  AddBookItemHandler,
+  RemoveBookItemHandler,
+  ChangeBookItemStatusHandler,
 ];
 const queryHandlers = [
   PaginatedBookInfosQueryHandler,
   GetBookInfoByIdQueryHandler,
 ];
-// const subscribers = [EndpointReponseSubscriber];
+const subscribers = [
+  CreateBookInfoSubscriber,
+  BookRentSubscriber,
+  BookReturnSubscriber,
+];
 const services = [RealUUIDGeneratorService];
 const repositories = [
   {
@@ -48,7 +65,7 @@ const repositories = [
     ...queryHandlers,
     ...services,
     ...repositories,
-    // ...subscribers,
+    ...subscribers,
   ],
 })
 export class BookInfoModule {}

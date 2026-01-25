@@ -3,6 +3,7 @@ import * as Apply from "fp-ts/Apply";
 import * as Eq from "fp-ts/Eq";
 import * as M from "fp-ts/Monoid";
 import * as Predicate from "fp-ts/Predicate";
+import * as Refinement from "fp-ts/Refinement";
 
 //
 import * as ID from "fp-ts/Identity";
@@ -23,6 +24,7 @@ import * as R from "fp-ts/Reader";
 export {
   FPF,
   Predicate,
+  Refinement,
   A,
   ID,
   Rec,

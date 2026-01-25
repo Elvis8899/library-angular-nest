@@ -9,7 +9,7 @@ export class UserBuilder {
   private id = UUID.parse("b8a11695-3c71-45b4-9dd8-14900412f4e1");
 
   private name = "usuario 1";
-  private email = "7XhHs@example.com";
+  private email = "userone@example.com";
   private password = "123456";
   private cpf = formatToCPF("12345678901");
   private role: UserRoleEnum = UserRoleEnum.Client;
@@ -60,7 +60,7 @@ export class UserBuilder {
   }
 
   withEmail(email: string) {
-    this.overrides.email = formatToCPF(email);
+    this.overrides.email = email;
     return this;
   }
 

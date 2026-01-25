@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Injectable } from "@angular/core";
+import { Observable } from "rxjs";
 
 interface CacheContent {
   data: any;
@@ -8,7 +8,7 @@ interface CacheContent {
 }
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class CacheService {
   private readonly _cache = new Map<string, CacheContent>();
@@ -103,7 +103,9 @@ export class CacheService {
    * @param count - The `count` parameter is a number that represents the number of cache
    */
   evictCache(count = 1): void {
-    const entries = Array.from(this._cache.entries()).sort((a, b) => a[1].lastAccessed - b[1].lastAccessed);
+    const entries = Array.from(this._cache.entries()).sort(
+      (a, b) => a[1].lastAccessed - b[1].lastAccessed
+    );
     entries.slice(0, count).forEach(([key]) => this._cache.delete(key));
   }
 }

@@ -1,6 +1,12 @@
-import { inject } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivateChildFn, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
-import { PERMISSIONS, PermissionService, ROLE } from '@auth';
+import { inject } from "@angular/core";
+import {
+  ActivatedRouteSnapshot,
+  CanActivateChildFn,
+  CanActivateFn,
+  Router,
+  RouterStateSnapshot,
+} from "@angular/router";
+import { PERMISSIONS, PermissionService, ROLE } from "@auth";
 
 /**
  * The `PermissionGuard` function checks for required roles and permissions before
@@ -18,18 +24,23 @@ import { PERMISSIONS, PermissionService, ROLE } from '@auth';
  * roles or permissions, the function will call the `handleUnauthorized` function and return the result
  * of that function, which is typically a redirect to an unauthorized page or action.
  */
-export const PermissionGuard: CanActivateFn & CanActivateChildFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+export const PermissionGuard: CanActivateFn & CanActivateChildFn = (
+  route: ActivatedRouteSnapshot,
+  state: RouterStateSnapshot
+) => {
   const permissionService = inject(PermissionService);
   const router = inject(Router);
 
   // Check if roles are specified in the route and validate them
-  const requiredRoles = route.data['roles'] as ROLE[] | undefined;
+  const requiredRoles = route.data["roles"] as ROLE[] | undefined;
   if (requiredRoles?.length && !permissionService.hasRole(requiredRoles)) {
     return handleUnauthorized(router);
   }
 
   // Check permissions
-  const requiredPermissions = route.data['permissions'] as PERMISSIONS[] | undefined;
+  const requiredPermissions = route.data["permissions"] as
+    | PERMISSIONS[]
+    | undefined;
   if (requiredPermissions?.length) {
     if (!checkPermissions(requiredPermissions, permissionService)) {
       return handleUnauthorized(router);
@@ -41,12 +52,15 @@ export const PermissionGuard: CanActivateFn & CanActivateChildFn = (route: Activ
 
 // Utility function to handle unauthorized access
 function handleUnauthorized(router: Router): boolean {
-  router.navigate(['/unauthorized']);
+  router.navigate(["/unauthorized"]);
   return false;
 }
 
 // Utility function to check permissions
-function checkPermissions(permissions: PERMISSIONS[], permissionService: PermissionService): boolean {
+function checkPermissions(
+  permissions: PERMISSIONS[],
+  permissionService: PermissionService
+): boolean {
   // Just an additional layer to check for special permissions, if you dont have any ignore it
   const specialPermissionHandlers = {};
 

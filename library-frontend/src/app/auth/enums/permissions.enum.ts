@@ -21,8 +21,8 @@
  */
 
 export enum PERMISSIONS {
-  CREATE_USER = 'create.user',
-  ACCESS_USER = 'access.user',
-  CREATE_BOOK = 'create.book',
-  ACCESS_BOOK = 'access.book',
+  CREATE_USER = "create.user",
+  ACCESS_USER = "access.user",
+  CREATE_BOOK = "create.book",
+  ACCESS_BOOK = "access.book",
 }

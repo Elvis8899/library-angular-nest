@@ -1,19 +1,25 @@
-import { Component, OnInit } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
-import { environment } from '@env/environment';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { filter } from 'rxjs/operators';
-import { NavMode, ShellService } from '@app/shell/services/shell.service';
-import { webSidebarMenuItems } from '@core/constants';
-import { CredentialsService } from '@auth';
-import { NavMenuItem } from '@core/interfaces';
+import { Component, inject, OnInit } from "@angular/core";
+import {
+  NavigationEnd,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+} from "@angular/router";
+import { environment } from "@env/environment";
+import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
+import { filter } from "rxjs/operators";
+import { NavMode, ShellService } from "@app/shell/services/shell.service";
+import { webSidebarMenuItems } from "@core/constants";
+import { NavMenuItem } from "@core/interfaces";
+import { NgClass } from "@angular/common";
+import { TranslatePipe } from "@ngx-translate/core";
 
 @UntilDestroy({ checkProperties: true })
 @Component({
-  selector: 'app-sidebar',
-  templateUrl: './sidebar.component.html',
-  styleUrls: ['./sidebar.component.scss'],
-  standalone: false,
+  selector: "app-sidebar",
+  templateUrl: "./sidebar.component.html",
+  styleUrls: ["./sidebar.component.scss"],
+  imports: [NgClass, RouterLink, RouterLinkActive, TranslatePipe],
 })
 export class SidebarComponent implements OnInit {
   version: string = environment.version;
@@ -22,25 +28,30 @@ export class SidebarComponent implements OnInit {
   sidebarExtendedItem = -1;
   navExpanded = true;
 
-  constructor(
-    private readonly _router: Router,
-    private readonly _credentialsService: CredentialsService,
-    public shellService: ShellService,
-  ) {
+  private readonly _shellService = inject(ShellService);
+  private readonly _router = inject(Router);
+
+  constructor() {
     this.sidebarItems = webSidebarMenuItems;
   }
 
   ngOnInit(): void {
-    this.shellService.activeNavTab(this.sidebarItems, this.sidebarExtendedItem);
+    this._shellService.activeNavTab(
+      this.sidebarItems,
+      this.sidebarExtendedItem
+    );
 
     this._router.events
       .pipe(untilDestroyed(this))
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
-        this.shellService.activeNavTab(this.sidebarItems, this.sidebarExtendedItem);
+        this._shellService.activeNavTab(
+          this.sidebarItems,
+          this.sidebarExtendedItem
+        );
       });
 
-    this.shellService.navMode$.pipe(untilDestroyed(this)).subscribe((mode) => {
+    this._shellService.navMode$.pipe(untilDestroyed(this)).subscribe((mode) => {
       /**
        * Change the second condition to mode === NavMode.Locked to make navbar by default collapsed
        */
@@ -49,7 +60,7 @@ export class SidebarComponent implements OnInit {
   }
 
   toggleSidebar(isEnterEvent: boolean): void {
-    this.shellService.navMode$.pipe(untilDestroyed(this)).subscribe((mode) => {
+    this._shellService.navMode$.pipe(untilDestroyed(this)).subscribe((mode) => {
       if (isEnterEvent) {
         this.navExpanded = true;
       } else if (!isEnterEvent && mode === NavMode.Free) {
@@ -68,10 +79,14 @@ export class SidebarComponent implements OnInit {
       this.sidebarExtendedItem = -1; // Toggle the same item
     }
 
-    this.shellService.activateNavItem(index, this.sidebarItems);
+    this._shellService.activateNavItem(index, this.sidebarItems);
   }
 
   activateSidebarSubItem(index: number, subItem: NavMenuItem): void {
-    this.shellService.activateNavSubItem(index, subItem, this.sidebarItems);
+    this._shellService.activateNavSubItem(index, subItem, this.sidebarItems);
+  }
+
+  isItemAllowed(item: NavMenuItem): boolean {
+    return this._shellService.allowedAccess(item);
   }
 }

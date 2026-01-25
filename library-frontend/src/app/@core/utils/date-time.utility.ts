@@ -1,4 +1,4 @@
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService } from "@ngx-translate/core";
 
 export class DateTimeUtility {
   /**
@@ -26,16 +26,22 @@ export class DateTimeUtility {
    * of the month, and the `number` property represents the number of the month (1 for January, 2 for
    * February, and so on).
    */
-  static getMonths(translateService?: TranslateService): { name: string; number: number }[] {
+  static getMonths(
+    translateService?: TranslateService
+  ): { name: string; number: number }[] {
     const months = [
       {
-        name: translateService ? translateService.instant('calendar.' + 'all') : 'All',
+        name: translateService
+          ? translateService.instant("calendar." + "all")
+          : "All",
         number: 0,
       },
     ];
     for (let i = 0; i < 12; i++) {
-      const name = new Date(0, i).toLocaleString('en', { month: 'long' });
-      const txName = translateService ? translateService.instant('calendar.' + name.toLowerCase()) : name;
+      const name = new Date(0, i).toLocaleString("en", { month: "long" });
+      const txName = translateService
+        ? translateService.instant("calendar." + name.toLowerCase())
+        : name;
       months.push({
         name: txName,
         number: i + 1,
@@ -55,7 +61,12 @@ export class DateTimeUtility {
    * @param keyValue - The `keyValue` parameter is an optional boolean that determines whether the array returned is number or key value pair.
    * @returns an array of numbers or strings representing the days of the specified month and year.
    */
-  static getDays(translateService: TranslateService, month?: number, year?: number, keyValue = true): (number | string | { name: string; number: number })[] {
+  static getDays(
+    translateService: TranslateService,
+    month?: number,
+    year?: number,
+    keyValue = true
+  ): (number | string | { name: string; number: number })[] {
     const now = new Date();
     month = month ?? now.getMonth(); // 0-indexed
     year = year ?? now.getFullYear();
@@ -63,23 +74,30 @@ export class DateTimeUtility {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const daysArray: (number | string | { name: string; number: number })[] = [
       {
-        name: translateService ? translateService.instant('calendar.' + 'all') : 'All',
+        name: translateService
+          ? translateService.instant("calendar." + "all")
+          : "All",
         number: 0,
       },
     ];
 
     for (let i = 1; i <= daysInMonth; i++) {
-      const isToday = i === now.getDate() && month === now.getMonth() && year === now.getFullYear();
+      const isToday =
+        i === now.getDate() &&
+        month === now.getMonth() &&
+        year === now.getFullYear();
 
       if (keyValue) {
         const dayObj = {
-          name: isToday ? translateService.instant('calendar.' + 'current') : i.toString().toLowerCase(),
+          name: isToday
+            ? translateService.instant("calendar." + "current")
+            : i.toString().toLowerCase(),
           number: i,
         };
         daysArray.push(dayObj);
       } else {
         if (isToday) {
-          daysArray.push(translateService.instant('calendar.' + 'current'));
+          daysArray.push(translateService.instant("calendar." + "current"));
         } else {
           daysArray.push(i);
         }
@@ -92,12 +110,22 @@ export class DateTimeUtility {
    * The function `getWeekDays` returns an array of objects containing the names and numbers of the days
    * @param translateService
    */
-  static getWeekDays(translateService: TranslateService): { name: string; number: number }[] {
+  static getWeekDays(
+    translateService: TranslateService
+  ): { name: string; number: number }[] {
     const daysArray: { name: string; number: number }[] = [];
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const days = [
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+    ];
     for (let i = 0; i < days.length; i++) {
       const dayObj = {
-        name: translateService.instant('calendar.' + days[i]),
+        name: translateService.instant("calendar." + days[i]),
         number: i,
       };
       daysArray.push(dayObj);
@@ -114,7 +142,9 @@ export class DateTimeUtility {
     const dateObj = new Date(date);
     const day = dateObj.getDate();
     if (translateService) {
-      return translateService.instant('calendar.' + day.toString().toLowerCase());
+      return translateService.instant(
+        "calendar." + day.toString().toLowerCase()
+      );
     }
     return `${day}`;
   }
@@ -127,9 +157,11 @@ export class DateTimeUtility {
   static getMonth(date: string, translateService?: TranslateService): string {
     const dateObj = new Date(date);
     const month = dateObj.getMonth();
-    const monthName = new Date(0, month).toLocaleString('en', { month: 'long' });
+    const monthName = new Date(0, month).toLocaleString("en", {
+      month: "long",
+    });
     if (translateService) {
-      return translateService.instant('calendar.' + monthName.toLowerCase());
+      return translateService.instant("calendar." + monthName.toLowerCase());
     }
     return monthName;
   }
@@ -147,9 +179,9 @@ export class DateTimeUtility {
    * The function `getDateOnly` returns the date part of a given date string.
    * @param date
    */
-  static getDateOnly(date: string): string {
+  static getDateOnly(date: Date | string): string {
     const dateObj = new Date(date);
-    return dateObj.toISOString().split('T')[0];
+    return dateObj.toISOString().split("T")[0];
   }
 
   /**
@@ -157,23 +189,28 @@ export class DateTimeUtility {
    * @param endDateStr
    * @param translateService
    */
-  static getRemainingTime(endDateStr: string, translateService?: TranslateService): string {
+  static getRemainingTime(
+    endDateStr: string,
+    translateService?: TranslateService
+  ): string {
     const endDate = new Date(endDateStr);
     const currentTime = new Date();
     const remainingTime = endDate.getTime() - currentTime.getTime();
 
     if (remainingTime <= 0) {
       // Assuming 'Expired' or its equivalent is also defined within your translations
-      return translateService ? translateService.instant('dates&filters.expired') : 'Expired';
+      return translateService
+        ? translateService.instant("dates&filters.expired")
+        : "Expired";
     }
 
     // Helper function to translate labels
     const translateLabel = (label: string, count: number): string => {
       if (translateService) {
-        const translationKey = `dates&filters.${label}${count === 1 ? '' : 's'}`; // Adjusted to match your object structure
+        const translationKey = `dates&filters.${label}${count === 1 ? "" : "s"}`; // Adjusted to match your object structure
         return `${count} ${translateService.instant(translationKey)}`;
       } else {
-        return `${count} ${label}${count === 1 ? '' : 's'}`;
+        return `${count} ${label}${count === 1 ? "" : "s"}`;
       }
     };
 
@@ -185,26 +222,26 @@ export class DateTimeUtility {
 
     const years = Math.floor(remainingTime / millisecondsPerYear);
     if (years > 0) {
-      return translateLabel('year', years);
+      return translateLabel("year", years);
     }
 
     const months = Math.floor(remainingTime / millisecondsPerMonth);
     if (months > 0) {
-      return translateLabel('month', months);
+      return translateLabel("month", months);
     }
 
     const days = Math.floor(remainingTime / millisecondsPerDay);
     if (days > 0) {
-      return translateLabel('day', days);
+      return translateLabel("day", days);
     }
 
     const hours = Math.floor(remainingTime / millisecondsPerHour);
     if (hours > 0) {
-      return translateLabel('hour', hours);
+      return translateLabel("hour", hours);
     }
 
     const minutes = Math.floor(remainingTime / millisecondsPerMinute);
-    return translateLabel('minute', minutes);
+    return translateLabel("minute", minutes);
   }
 
   /**
@@ -221,32 +258,37 @@ export class DateTimeUtility {
 
     // Check if the timestamp is in the future
     if (differenceMs < 0) {
-      return translateService ? translateService.instant('in the future') : 'in the future';
+      return translateService
+        ? translateService.instant("in the future")
+        : "in the future";
     }
 
     // Calculate the difference in minutes
     const differenceMinutes = Math.round(differenceMs / (1000 * 60));
 
     // Helper function to translate time units
-    const translate = (key: string, value: string | number) => (translateService ? `${translateService.instant(key, { value })}` : `${value} ${key}`);
+    const translate = (key: string, value: string | number) =>
+      translateService
+        ? `${translateService.instant(key, { value })}`
+        : `${value} ${key}`;
 
     // Return a string indicating the time elapsed
     if (differenceMinutes < 1) {
-      return translate('just now', '');
+      return translate("just now", "");
     } else if (differenceMinutes < 60) {
-      return translate('m ago', differenceMinutes);
+      return translate("m ago", differenceMinutes);
     } else if (differenceMinutes < 1440) {
       const hours = Math.floor(differenceMinutes / 60);
-      return translate('h ago', hours);
+      return translate("h ago", hours);
     } else if (differenceMinutes < 10080) {
       const days = Math.floor(differenceMinutes / 1440);
-      return translate('d ago', days);
+      return translate("d ago", days);
     } else if (differenceMinutes < 43800) {
       const weeks = Math.floor(differenceMinutes / 10080);
-      return translate('w ago', weeks);
+      return translate("w ago", weeks);
     } else {
       const months = Math.floor(differenceMinutes / 43800);
-      return translate('mo ago', months);
+      return translate("mo ago", months);
     }
   }
 
@@ -267,8 +309,8 @@ export class DateTimeUtility {
    * @returns {string}
    */
   static formatDateToUTCString(dateStr: string): string {
-    const date = new Date(dateStr + 'T00:00:00Z'); // Append time part to ensure it's interpreted as UTC
-    return date.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z'; // Formats as YYYYMMDDTHHMMSSZ
+    const date = new Date(dateStr + "T00:00:00Z"); // Append time part to ensure it's interpreted as UTC
+    return date.toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z"; // Formats as YYYYMMDDTHHMMSSZ
   }
 
   /**

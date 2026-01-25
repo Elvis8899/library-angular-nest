@@ -1,4 +1,4 @@
-export class PaginatedResponse<Data> {
+export interface PaginatedResponse<Data> {
   count: number;
   limit: number;
   page: number;

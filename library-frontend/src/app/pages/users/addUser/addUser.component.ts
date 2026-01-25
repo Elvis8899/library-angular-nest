@@ -1,59 +1,63 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { validateCPF } from '@app/@core/utils';
-import { ROLE } from '@app/auth';
-import { UserService } from '@app/auth/services/user.service';
-import { UserEntity } from '@core/entities';
-import { HotToastService } from '@ngxpert/hot-toast';
+import { Component, inject, OnInit } from "@angular/core";
+import { FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
+import { Router } from "@angular/router";
+import { validateCPF } from "@app/@core/utils";
+import { ROLE } from "@app/auth";
+import { UserService } from "@app/auth/services/user.service";
+import { UserEntity } from "@core/entities";
+import { HotToastService } from "@ngxpert/hot-toast";
+import { NgIf } from "@angular/common";
+import { noop } from "rxjs";
 
 @Component({
-  selector: 'app-list',
-  templateUrl: './addUser.component.html',
-  styleUrl: './addUser.component.scss',
-  standalone: false,
+  selector: "app-list",
+  templateUrl: "./addUser.component.html",
+  styleUrl: "./addUser.component.scss",
+  imports: [ReactiveFormsModule, NgIf],
 })
 export class AddUsersComponent implements OnInit {
-  constructor(
-    private readonly _userService: UserService,
-    private readonly _router: Router,
+  ngOnInit = noop;
+  private readonly _userService = inject(UserService);
+  private readonly _router = inject(Router);
 
-    private fb: FormBuilder,
-  ) {}
+  private readonly _fb = inject(FormBuilder);
 
-  addUserForm = this.fb.group({
-    name: ['', [Validators.required, Validators.minLength(4)]],
-    email: ['', [Validators.email, Validators.required, Validators.minLength(4)]],
-    cpf: ['', [validateCPF(), Validators.required, Validators.minLength(4)]],
-    password: ['', [Validators.required, Validators.minLength(4)]],
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  addUserForm = this._fb.group({
+    name: ["", [Validators.required, Validators.minLength(4)]],
+    email: [
+      "",
+      [Validators.email, Validators.required, Validators.minLength(4)],
+    ],
+    cpf: ["", [validateCPF(), Validators.required, Validators.minLength(4)]],
+    password: ["", [Validators.required, Validators.minLength(4)]],
   });
-
-  users: UserEntity[] = [];
-  isLoading = true;
 
   private readonly _toast = inject(HotToastService);
 
-  ngOnInit() {}
-
   onSubmit() {
-    console.log(this.addUserForm);
-    this._userService.addUser({ ...this.addUserForm.value, role: ROLE.CLIENT }).subscribe({
-      next: (res) => {
-        this._toast.success('User created successfully');
-        this._router.navigate(['/users/list']);
-      },
-      error: (error) => {
-        this._toast.error(error?.error?.message);
-        console.error(error);
-      },
-    });
+    this._userService
+      .addUser({
+        ...this.addUserForm.value,
+        role: ROLE.CLIENT,
+      } as Partial<UserEntity>)
+      .subscribe({
+        next: () => {
+          this._toast.success("User created successfully");
+          this._router.navigate(["/users/list"]);
+        },
+        error: (error: Error) => {
+          this._toast.error(error?.message);
+          console.error(error);
+        },
+      });
   }
 
   goToAddUser() {
-    this._router.navigate(['/users/add']);
+    this._router.navigate(["/users/add"]);
   }
 
   userClicked() {
-    this._toast.show('User clicked');
+    this._toast.show("User clicked");
   }
 }

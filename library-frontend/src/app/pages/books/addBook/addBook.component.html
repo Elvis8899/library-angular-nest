@@ -1,0 +1,64 @@
+<div class="add-book-wrapper">
+  <div class="add-book-div">
+    <form (ngSubmit)="onSubmit()" [formGroup]="addBookForm">
+      <h2>Create Book</h2>
+      <div class="form-group">
+        <label for="name">Name:</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          formControlName="name"
+          required
+        />
+        <div
+          class="text-danger"
+          *ngIf="
+            addBookForm.get('name')?.invalid && addBookForm.get('name')?.touched
+          "
+        >
+          <small>Nome inválido</small>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="image">Imagem:</label>
+        <input
+          type="text"
+          id="image"
+          name="image"
+          formControlName="image"
+          required
+        />
+        <div
+          class="text-danger"
+          *ngIf="
+            addBookForm.get('image')?.invalid &&
+            addBookForm.get('image')?.touched
+          "
+        >
+          <small>Imagem inválida</small>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="price">Preço:</label>
+        <input
+          type="number"
+          id="price"
+          name="price"
+          formControlName="price"
+          required
+        />
+        <div
+          class="text-danger"
+          *ngIf="
+            addBookForm.get('price')?.invalid &&
+            addBookForm.get('price')?.touched
+          "
+        >
+          <small>CPF inválido</small>
+        </div>
+      </div>
+      <button type="submit" [disabled]="!addBookForm.valid">Create Book</button>
+    </form>
+  </div>
+</div>

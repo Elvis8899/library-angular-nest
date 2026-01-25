@@ -5,23 +5,31 @@
  * @param {string[]} [whitelist=[]] - An optional array of property names that should not be deleted if empty.
  * @returns An object with null, undefined, and empty properties removed, except for the properties in the whitelist.
  */
-export function removeNullAndUndefinedProperties(object: any, whitelist: string[] = []): any {
+export function removeNullAndUndefinedProperties(
+  object: any,
+  whitelist: string[] = []
+): any {
   // Check if the input is null, undefined, or an empty string, return null for those cases
-  if (object === null || object === undefined || object === '') {
+  if (object === null || object === undefined || object === "") {
     return null;
   }
 
   // Handle arrays: map over items, remove unwanted values, and filter out nulls after the transformation
   if (Array.isArray(object)) {
-    return object.map((item) => removeNullAndUndefinedProperties(item, whitelist)).filter((item) => item !== null && item !== undefined && item !== '');
+    return object
+      .map((item) => removeNullAndUndefinedProperties(item, whitelist))
+      .filter((item) => item !== null && item !== undefined && item !== "");
   }
 
   // For objects: create a new object, recursively remove unwanted values, and include properties that aren't null, undefined, or an empty string
-  if (typeof object === 'object') {
+  if (typeof object === "object") {
     const result: any = {};
     for (const key of Object.keys(object)) {
       const value = removeNullAndUndefinedProperties(object[key], whitelist);
-      if (whitelist.includes(key) || (value !== null && value !== undefined && value !== '')) {
+      if (
+        whitelist.includes(key) ||
+        (value !== null && value !== undefined && value !== "")
+      ) {
         result[key] = value;
       }
     }
@@ -38,13 +46,13 @@ export function removeNullAndUndefinedProperties(object: any, whitelist: string[
  * @returns Object
  */
 
-export function sortObjectByKeys(obj: any) {
+export function sortObjectByKeys<T extends Record<string, unknown>>(obj: T): T {
   return Object.keys(obj)
     .sort()
     .reduce((accumulator, key) => {
-      accumulator[key] = obj[key];
+      (accumulator as Record<string, unknown>)[key] = obj[key];
       return accumulator;
-    }, {});
+    }, {}) as T;
 }
 
 /**
@@ -55,8 +63,13 @@ export function sortObjectByKeys(obj: any) {
  * @returns new object without excluded keys
  */
 
-export function OmitProperties(object: NonNullable<unknown>, excludeKeys: Set<string>): NonNullable<unknown> {
-  const filteredPairs = Object.entries(object).filter(([key]) => !excludeKeys.has(key));
+export function OmitProperties(
+  object: NonNullable<unknown>,
+  excludeKeys: Set<string>
+): NonNullable<unknown> {
+  const filteredPairs = Object.entries(object).filter(
+    ([key]) => !excludeKeys.has(key)
+  );
   return Object.fromEntries(filteredPairs);
 }
 
