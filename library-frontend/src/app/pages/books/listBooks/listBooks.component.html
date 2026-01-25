@@ -1,0 +1,48 @@
+<section class="main-container">
+  <h2 translate>
+    Books List<button (click)="goToAddBook()" type="submit" translate>
+      {{ "Create Book" }}
+    </button>
+  </h2>
+
+  <div class="book-table-container">
+    <table class="book-table">
+      <thead>
+        <tr>
+          <th>Imagem</th>
+          <th>Nome</th>
+          <th>Preço</th>
+          <th>Disponibilidade</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (!isLoading) {
+          @for (book of books; track book.id) {
+            <tr>
+              <td><img [src]="book.image" alt="{{ book.name }}" /></td>
+              <td>{{ book.name }}</td>
+              <td>{{ book.price }}</td>
+              <td>{{ bookAvailabilityRatio(book) }}</td>
+              <td>
+                <button
+                  [disabled]="!isBookAvailable(book)"
+                  (click)="openRentBookDialog(book)"
+                >
+                  emprestar
+                </button>
+                <button>adicionar</button>
+                <button>remover</button>
+                <button>deletar</button>
+              </td>
+            </tr>
+          }
+        } @else {
+          <tr>
+            <td colspan="5" style="text-align: center">Loading...</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

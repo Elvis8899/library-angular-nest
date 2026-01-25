@@ -277,7 +277,12 @@ nav {
   .divider {
     display: block;
     height: 1px;
-    background: linear-gradient(270deg, rgba(97, 98, 100, 0) 0%, #616264 51.38%, rgba(97, 98, 100, 0) 100%);
+    background: linear-gradient(
+      270deg,
+      rgba(97, 98, 100, 0) 0%,
+      #616264 51.38%,
+      rgba(97, 98, 100, 0) 100%
+    );
   }
 
   footer {

@@ -1,11 +1,17 @@
-import { Component, ElementRef, HostListener, Input } from '@angular/core';
-import { I18nService } from './i18n.service';
-import { NgClass } from '@angular/common';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  inject,
+  Input,
+} from "@angular/core";
+import { I18nService } from "./i18n.service";
+import { NgClass } from "@angular/common";
 
 @Component({
-  selector: 'app-language-selector',
-  templateUrl: './language-selector.component.html',
-  styleUrls: ['./language-selector.component.scss'],
+  selector: "app-language-selector",
+  templateUrl: "./language-selector.component.html",
+  styleUrls: ["./language-selector.component.scss"],
   imports: [NgClass],
 })
 export class LanguageSelectorComponent {
@@ -14,15 +20,13 @@ export class LanguageSelectorComponent {
   isDropdownOpen = false;
   protected readonly open = open;
 
-  constructor(
-    private readonly _i18nService: I18nService,
-    private readonly _eRef: ElementRef,
-  ) {}
+  private readonly _i18nService = inject(I18nService);
+  private readonly _eRef = inject(ElementRef);
 
   get currentLanguage(): string {
     const language = this._i18nService.language;
-    const parts = language.split('-');
-    return parts.length > 1 ? parts[1] : '';
+    const parts = language.split("-");
+    return parts.length > 1 ? parts[1] : "";
   }
 
   get languages(): string[] {
@@ -33,7 +37,7 @@ export class LanguageSelectorComponent {
    * Listener to handle click events outside of the dropdown component.
    * Helps in closing the dropdown if clicked outside.
    */
-  @HostListener('document:click', ['$event'])
+  @HostListener("document:click", ["$event"])
   onClickOutside(event: Event) {
     if (!this._eRef?.nativeElement?.contains(event.target)) {
       this.isDropdownOpen = false;
@@ -50,7 +54,7 @@ export class LanguageSelectorComponent {
   }
 
   getLanguageCode(language: string): string {
-    const parts = language.split('-');
-    return parts.length > 1 ? parts[1] : '';
+    const parts = language.split("-");
+    return parts.length > 1 ? parts[1] : "";
   }
 }

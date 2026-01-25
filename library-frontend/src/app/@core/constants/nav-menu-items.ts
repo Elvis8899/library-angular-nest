@@ -1,5 +1,5 @@
-import { ROLE } from '@app/auth';
-import { NavMenuItem } from '@core/interfaces';
+import { ROLE } from "@app/auth";
+import { NavMenuItem } from "@core/interfaces";
 
 // THIS FILE CONTAINS THE NAVIGATION MENU ITEMS FOR THE SIDEBAR AND ALL OTHER NAVIGATION MENUS WHICH ARE USED IN THE APPLICATION AND ARE CONSTANT
 
@@ -8,31 +8,38 @@ import { NavMenuItem } from '@core/interfaces';
  */
 export const webSidebarMenuItems: NavMenuItem[] = [
   {
-    href: '/users',
-    title: 'Users',
+    href: "/users",
+    title: "Users",
     active: true,
-    icon: 'fa-users',
+    icon: "fa-users",
     roles: [ROLE.ADMIN],
   },
   {
-    href: '/books',
-    title: 'Books',
+    href: "/books",
+    title: "Books",
     active: false,
-    icon: 'fa-money-bill-alt',
+    icon: "fa-money-bill-alt",
     roles: [ROLE.ADMIN, ROLE.CLIENT],
   },
   {
-    href: '/logout',
-    title: 'Logout',
+    href: "/rentals",
+    title: "Rentals",
     active: false,
-    icon: 'fa-sign-out-alt',
+    icon: "fa-money-bill-alt",
     roles: [ROLE.ADMIN, ROLE.CLIENT],
   },
   {
-    href: '/settings',
-    title: 'Settings',
+    href: "/logout",
+    title: "Logout",
     active: false,
-    icon: 'fa-cog',
+    icon: "fa-sign-out-alt",
+    roles: [ROLE.ADMIN, ROLE.CLIENT],
+  },
+  {
+    href: "/settings",
+    title: "Settings",
+    active: false,
+    icon: "fa-cog",
     divider: true,
   },
 ];

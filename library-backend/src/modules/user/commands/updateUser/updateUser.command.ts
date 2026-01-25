@@ -1,24 +1,22 @@
-import { hashPassword } from "@auth/util/signTokenParams";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
-import { executeTask } from "@shared/utils/application/executeTask";
-import { fromInputRE } from "@shared/utils/application/fromInput";
-import { FPF, O, RE, RTE } from "@shared/utils/application/monads";
-import { noop } from "@shared/utils/application/noop";
-import { performRTE } from "@shared/utils/application/perform";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UUID } from "@shared/uuid/entities/uuid";
-import { UserRepository } from "@user/database/user.repository.port";
-import { USER_UPDATED } from "@user/domain/events/userUpdated.event";
-import { User } from "@user/domain/user.entity";
+import { FPF, O, RE, RTE } from "@shared/functional/monads";
+import { performRTE } from "@shared/utils/perform";
+import { executeTask } from "@shared/utils/executeTask";
+import { fromInputRE } from "@src/shared/utils/fromInput";
+import { noop } from "@shared/utils/noop";
+import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { PinoLogger } from "nestjs-pino";
+import { UserRepository } from "../../database/user.repository.port";
+import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { CreateUserDto } from "../../dtos/user.dto";
+import { UUID } from "@src/shared/uuid/entities/uuid";
+import { User } from "../../domain/user.entity";
 import {
   userCPFAlreadyExistsException,
-  userEmailAlreadyExistsException,
   userNotFoundException,
-} from "@user/domain/user.errors";
-import { CheckedDocumentType } from "@user/domain/valueObject/document";
-import { CreateUserDto } from "@user/dtos/user.dto";
-import { PinoLogger } from "nestjs-pino";
+} from "../../domain/user.errors";
+import { USER_UPDATED } from "../../domain/events/userUpdated.event";
+import { hashPassword } from "@src/modules/auth/util/signTokenParams";
 
 export class UpdateUser implements ICommand {
   constructor(
@@ -45,7 +43,6 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
       RE.of(command.props),
       RE.bind("id", () => fromInputRE(UUID, "uuid")(command.id)),
       RE.chain(fromInputRE(User, "user")),
-      RE.tap((user) => fromInputRE(CheckedDocumentType, "cpf")(user.cpf)),
       RTE.fromReaderEither,
 
       //Validate User exists
@@ -85,13 +82,13 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
       //Check email unicity
       RTE.tap((user) =>
         FPF.pipe(
-          user.email,
+          user.cpf,
           performRTE(this.userRepository.findByEmail, "get user by email"),
           RTE.chainW(
             FPF.flow(
               O.filter((u) => u.id !== user.id),
               O.fromPredicate(O.isNone),
-              RTE.fromOption(userEmailAlreadyExistsException),
+              RTE.fromOption(userCPFAlreadyExistsException),
             ),
           ),
         ),
@@ -100,14 +97,6 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
       //Store entity
       RTE.tap(
         performRTE(this.userRepository.save, "save user in storage system."),
-      ),
-
-      //Revoke existing sessions, as password, role or email may have changed
-      RTE.tap((user) =>
-        performRTE(
-          this.userRepository.incrementTokenVersion,
-          "revoke user refresh tokens",
-        )(user.id),
       ),
 
       //Emit domain event

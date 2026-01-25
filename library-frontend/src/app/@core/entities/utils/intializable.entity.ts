@@ -27,7 +27,7 @@
  */
 
 export class InitializableEntity {
-  constructor(initialValues?: Record<string, any>) {
+  constructor(initialValues?: Record<string, unknown>) {
     this.initEntity(initialValues);
   }
 
@@ -35,10 +35,11 @@ export class InitializableEntity {
     if (initialValues) {
       // Convert a possible class to object
       for (const k in this) {
-        // @ts-ignore
-        if (initialValues[k]) {
-          // @ts-ignore
-          this[k] = initialValues[k];
+        if (initialValues[k as string as keyof T]) {
+          this[k] = initialValues[k as string as keyof T] as this[Extract<
+            keyof this,
+            string
+          >];
         }
       }
     }

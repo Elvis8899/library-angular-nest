@@ -1,10 +1,10 @@
-import { Route, Router, Routes } from '@angular/router';
+import { Route, Router, Routes } from "@angular/router";
 
-import { AuthenticationGuard, PERMISSIONS, PermissionService } from '@app/auth';
-import { ShellComponent } from '@app/shell/shell.component';
-import { BehaviorSubject } from 'rxjs';
-import { Injectable } from '@angular/core';
-import { NavMenuItem } from '@core/interfaces';
+import { AuthenticationGuard, PERMISSIONS, PermissionService } from "@app/auth";
+import { ShellComponent } from "@app/shell/shell.component";
+import { BehaviorSubject } from "rxjs";
+import { inject, Injectable } from "@angular/core";
+import { NavMenuItem } from "@core/interfaces";
 
 /**
  * Provides helper methods to create routes.
@@ -17,7 +17,7 @@ export class Shell {
    */
   static childRoutes(routes: Routes): Route {
     return {
-      path: '',
+      path: "",
       component: ShellComponent,
       children: routes,
       canActivate: [AuthenticationGuard],
@@ -28,7 +28,7 @@ export class Shell {
 }
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class ShellService {
   navicon = new BehaviorSubject<NavMode>(NavMode.Free);
@@ -36,10 +36,8 @@ export class ShellService {
   navMode$ = this.navModeSubject.asObservable();
   navicon$ = this.navModeSubject.asObservable();
 
-  constructor(
-    private readonly _router: Router,
-    public readonly _permissionService: PermissionService,
-  ) {}
+  private readonly _router = inject(Router);
+  private readonly _permissionService = inject(PermissionService);
 
   allowedAccess(item: NavMenuItem): boolean {
     if (item.roles && item.roles.length) {
@@ -47,7 +45,9 @@ export class ShellService {
     }
 
     if (item.permissions && item.permissions.length) {
-      return item.permissions.some((permission: PERMISSIONS) => this._permissionService.hasPermission(permission));
+      return item.permissions.some((permission: PERMISSIONS) =>
+        this._permissionService.hasPermission(permission)
+      );
     }
 
     return true;
@@ -55,16 +55,24 @@ export class ShellService {
 
   toggleNavMode(): void {
     const mode = this.navModeSubject.getValue();
-    this.navModeSubject.next(mode === NavMode.Free ? NavMode.Locked : NavMode.Free);
+    this.navModeSubject.next(
+      mode === NavMode.Free ? NavMode.Locked : NavMode.Free
+    );
     this.navicon.next(mode === NavMode.Free ? NavMode.Locked : NavMode.Free);
   }
 
   activeNavTab(items: NavMenuItem[], extendedItem: number): void {
     items.forEach((item, index) => {
       if (item.href) {
-        const urlSegments = this._router.url.split('/').filter((segment) => segment.length > 0);
-        const hrefSegments = item.href.split('/').filter((segment) => segment.length > 0);
-        const isActive = hrefSegments.every((segment, i) => segment === urlSegments[i]);
+        const urlSegments = this._router.url
+          .split("/")
+          .filter((segment) => segment.length > 0);
+        const hrefSegments = item.href
+          .split("/")
+          .filter((segment) => segment.length > 0);
+        const isActive = hrefSegments.every(
+          (segment, i) => segment === urlSegments[i]
+        );
 
         item.active = isActive;
 
@@ -75,8 +83,12 @@ export class ShellService {
         if (item.subItems) {
           item.subItems.forEach((subItem) => {
             if (subItem.href) {
-              const subItemHrefSegments = subItem.href.split('/').filter((segment) => segment.length > 0);
-              subItem.active = subItemHrefSegments.every((segment, i) => segment === urlSegments[i]);
+              const subItemHrefSegments = subItem.href
+                .split("/")
+                .filter((segment) => segment.length > 0);
+              subItem.active = subItemHrefSegments.every(
+                (segment, i) => segment === urlSegments[i]
+              );
             }
           });
         }
@@ -92,16 +104,17 @@ export class ShellService {
 
     setTimeout(() => {
       const element = document.getElementById(`menu-item-${index}`);
-      const navElement = document.querySelector('nav');
+      const navElement = document.querySelector("nav");
 
       if (element && navElement) {
         const elementRect = element.getBoundingClientRect();
         const navRect = navElement.getBoundingClientRect();
 
         const relativeTop = elementRect.top - navRect.top;
-        const desiredScrollPosition = navElement.scrollTop + relativeTop - navRect.height / 2;
+        const desiredScrollPosition =
+          navElement.scrollTop + relativeTop - navRect.height / 2;
 
-        navElement.scrollTo({ top: desiredScrollPosition, behavior: 'smooth' });
+        navElement.scrollTo({ top: desiredScrollPosition, behavior: "smooth" });
       }
     }, 0);
 
@@ -119,12 +132,16 @@ export class ShellService {
     }
   }
 
-  activateNavSubItem(i: number, subItem: NavMenuItem, sidebarItems: NavMenuItem[]) {
+  activateNavSubItem(
+    i: number,
+    subItem: NavMenuItem,
+    sidebarItems: NavMenuItem[]
+  ) {
     if (subItem.disabled) return;
     subItem.active = true;
     sidebarItems[i].active = true;
     // disable all other subitems
-    sidebarItems[i].subItems.forEach((item) => {
+    sidebarItems[i].subItems?.forEach((item) => {
       if (item !== subItem) {
         item.active = false;
       }
@@ -134,13 +151,13 @@ export class ShellService {
     }
 
     if (subItem.url) {
-      window.open(subItem.url, '_blank');
+      window.open(subItem.url, "_blank");
     }
   }
 
   getCurrentActiveRoute(lastSegmentOnly = true): string {
     const url = this._router.url;
-    const urlSegments = url.split('/');
+    const urlSegments = url.split("/");
     const lastSegment = urlSegments[urlSegments.length - 1];
     return lastSegmentOnly ? lastSegment : url;
   }

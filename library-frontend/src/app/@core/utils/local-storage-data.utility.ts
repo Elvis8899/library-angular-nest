@@ -1,13 +1,13 @@
-import { Credentials } from '@core/entities';
+import { Credentials } from "@core/entities";
 
 /**
  * List of local storage keys
  */
 export enum LocalStorageKeys {
-  TOKEN = 'token',
-  REFRESH_TOKEN = 'refreshToken',
-  USER_ID = 'id',
-  CREDENTIALS = 'credentials',
+  // TOKEN = 'token',
+  // REFRESH_TOKEN = 'refreshToken',
+  // USER_ID = 'id',
+  CREDENTIALS = "credentials",
 }
 
 // const prefix = '@app:';
@@ -16,15 +16,29 @@ export enum LocalStorageKeys {
 // const secretKeyName = '@entry';
 // const secretKeyValue = 'xx1029384756';
 
-export const GetCredentials = () => getDataFromLocalStorage(LocalStorageKeys.CREDENTIALS) as Credentials;
+export const GetCredentials = () => {
+  const credentials = getDataFromLocalStorage(
+    LocalStorageKeys.CREDENTIALS
+  ) as Credentials;
+  if (!credentials) {
+    window.location.href = "/logout";
+  }
+  return credentials;
+};
 
-export const SetCredentials = (credentials: Credentials) => saveDataToLocalStorage(LocalStorageKeys.CREDENTIALS, credentials);
+export const SetCredentials = (credentials: Credentials) =>
+  saveDataToLocalStorage(LocalStorageKeys.CREDENTIALS, credentials);
 
-export const GetToken = () => getDataFromLocalStorage(LocalStorageKeys.CREDENTIALS)[LocalStorageKeys.TOKEN];
+export const GetToken = () =>
+  getDataFromLocalStorage<Credentials>(LocalStorageKeys.CREDENTIALS)
+    ?.accessToken;
 
-export const GetRefreshToken = () => getDataFromLocalStorage(LocalStorageKeys.CREDENTIALS)[LocalStorageKeys.REFRESH_TOKEN];
+export const GetRefreshToken = () =>
+  getDataFromLocalStorage<Credentials>(LocalStorageKeys.CREDENTIALS)
+    ?.refreshToken;
 
-export const GetUserId = () => getDataFromLocalStorage(LocalStorageKeys.CREDENTIALS)[LocalStorageKeys.USER_ID];
+export const GetUserId = () =>
+  getDataFromLocalStorage<Credentials>(LocalStorageKeys.CREDENTIALS)?.user?.id;
 
 export const ClearStorage = () => clearStorage();
 
@@ -42,7 +56,7 @@ export const RemoveAuthData = () => {
 //   return result;
 // };
 
-const saveDataToLocalStorage = (key: any, value: any) => {
+const saveDataToLocalStorage = (key: string, value: unknown) => {
   // if (prodEnv) {
   //   key = btoa(prefix + key.toString()); // Encode key as base64
   //   key = xorWithSecretKey(key, secretKey); // XOR the key with the secret key
@@ -53,7 +67,7 @@ const saveDataToLocalStorage = (key: any, value: any) => {
   localStorage.setItem(key, JSON.stringify(value));
 };
 
-const getDataFromLocalStorage = (key: any) => {
+const getDataFromLocalStorage = <T>(key: string): T | null => {
   // const isSecretKey = localStorage.getItem(secretKeyName) === secretKeyValue;
   // if (prodEnv && isSecretKey) {
   //   key = btoa(prefix + key.toString()); // Encode key as base64
@@ -64,7 +78,9 @@ const getDataFromLocalStorage = (key: any) => {
   //   return JSON.parse(atob(decodedValue)); // Decode base64 value
   // }
   const data = localStorage.getItem(key);
-  if (!data) window.location.href = '/logout';
+  if (!data) {
+    return null;
+  }
   return JSON.parse(data);
 };
 

@@ -1,2 +1,2 @@
-export * from './app-settings';
-export * from './nav-menu-items';
+export * from "./app-settings";
+export * from "./nav-menu-items";

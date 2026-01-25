@@ -1,6 +1,7 @@
 import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { PaginatedResponseDto } from "@src/shared/api/paginated.response.base";
 import { BaseEntityDto } from "@src/shared/utils/baseEntity.dto";
+import { BookItemStatusEnum } from "../domain/value-object/bookItem.entity";
 
 export class BookInfoDto extends BaseEntityDto {
   @ApiProperty({
@@ -26,7 +27,31 @@ export class CreateBookInfoDto extends OmitType(BookInfoDto, [
   "updatedAt",
 ]) {}
 
+export class BookItemDto extends BaseEntityDto {
+  @ApiProperty({
+    description: "ID do exemplar",
+    required: true,
+  })
+  id!: string;
+  @ApiProperty({
+    description: "Status do exemplar",
+    required: false,
+  })
+  status?: BookItemStatusEnum;
+  @ApiProperty({
+    description: "Id do Livro do Exemplar",
+    required: true,
+  })
+  bookId!: string;
+}
+
+export class CreateBookItemDto extends OmitType(BookItemDto, [
+  "id",
+  "createdAt",
+  "updatedAt",
+]) {}
+
 export class PaginatedBookInfoResponseDto extends PaginatedResponseDto<BookInfoDto> {
   @ApiProperty({ type: BookInfoDto, isArray: true })
-  readonly data!: readonly BookInfoDto[];
+  data!: BookInfoDto[];
 }

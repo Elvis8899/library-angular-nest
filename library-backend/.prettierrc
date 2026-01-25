@@ -15,6 +15,5 @@
   "requirePragma": false,
   "semi": true,
   "tabWidth": 2,
-  "useTabs": false,
-  "vueIndentScriptAndStyle": false
+  "useTabs": false
 }

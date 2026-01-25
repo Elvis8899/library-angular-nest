@@ -32,8 +32,7 @@ model BookInfo {
   image String
   price Int
 
-  bookItems         BookItem[]
-  bookRentalDetails BookRentalDetails[]
+  bookItems BookItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -46,11 +45,14 @@ enum BookItemStatus {
 
 model BookItem {
   id     String         @unique
-  status BookItemStatus
+  status BookItemStatus @default(available)
 
   bookId     String
-  book       BookInfo            @relation(fields: [bookId], references: [id])
+  book       BookInfo            @relation(fields: [bookId], references: [id], onDelete: Cascade)
   bookRental BookRentalDetails[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum RentalStatus {
@@ -63,15 +65,13 @@ model BookRentalDetails {
   rentalStatus RentalStatus
 
   bookItemId String
-  bookItem   BookItem @relation(fields: [bookItemId], references: [id])
+  bookItem   BookItem @relation(fields: [bookItemId], references: [id], onDelete: Cascade)
   userId     String
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   overdueDate  DateTime
-  deliveryDate DateTime
+  deliveryDate DateTime?
 
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  bookInfo   BookInfo? @relation(fields: [bookInfoId], references: [id])
-  bookInfoId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

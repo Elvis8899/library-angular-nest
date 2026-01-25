@@ -1,4 +1,4 @@
-import { InitializableEntity } from '@app/@core/entities/utils/intializable.entity';
+import { InitializableEntity } from "@app/@core/entities/utils/intializable.entity";
 
 export class PaginatedEntity extends InitializableEntity {
   pagination: Pagination;

@@ -41,5 +41,5 @@ export class CreateUserDto extends OmitType(UserDto, [
 
 export class PaginatedUserResponseDto extends PaginatedResponseDto<UserDto> {
   @ApiProperty({ type: UserDto, isArray: true })
-  readonly data!: readonly UserDto[];
+  data!: UserDto[];
 }

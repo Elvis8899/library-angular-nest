@@ -6,11 +6,11 @@
  * @param fromIndex
  * @param toIndex
  */
-import { humanize } from '@core/utils/humanize-slug.utility';
-import { TranslateService } from '@ngx-translate/core';
-import { Logger } from '../services/misc/logger.service';
+import { humanize } from "@core/utils/humanize-slug.utility";
+import { TranslateService } from "@ngx-translate/core";
+import { Logger } from "../services";
 
-const log = new Logger('Array Utility');
+const log = new Logger("Array Utility");
 
 /**
  * The function `MoveItemInArray` repositions an item within an array from a specified index to another
@@ -24,7 +24,11 @@ const log = new Logger('Array Utility');
  * index to another within the array.
  * @example MoveItemInArray([1, 2, 3, 4, 5], 1, 3) => [1, 3, 4, 2, 5]
  */
-export function MoveItemInArray<T>(workArray: T[], fromIndex: number, toIndex: number): T[] {
+export function MoveItemInArray<T>(
+  workArray: T[],
+  fromIndex: number,
+  toIndex: number
+): T[] {
   if (toIndex === fromIndex) {
     return workArray;
   }
@@ -51,30 +55,31 @@ export function MoveItemInArray<T>(workArray: T[], fromIndex: number, toIndex: n
 export function BeautifyArrayOfNumbers(input: any): number[] {
   let array: any[];
 
-  if (typeof input === 'string') {
+  if (typeof input === "string") {
     try {
       const parsed = JSON.parse(input);
       // Ensure the parsed result is an array
       array = Array.isArray(parsed) ? parsed : [parsed];
     } catch (error) {
-      log.error('Error parsing input string:', error);
+      log.error("Error parsing input string:", error);
       return [];
     }
   } else if (Array.isArray(input)) {
     array = input;
   } else {
     // If the input is neither an array nor a string, log an error
-    log.error('Input is not an array or a string:', input);
+    log.error("Input is not an array or a string:", input);
     return [];
   }
 
   return array.map((item) => {
-    if (typeof item === 'string') {
+    if (typeof item === "string") {
       try {
         // This handles stringifies numbers
         return Number(JSON.parse(item));
       } catch (error) {
         // If parsing fails, convert directly to Number
+        log.error("Error parsing stringified number:", error);
         return Number(item);
       }
     }
@@ -95,13 +100,16 @@ export function BeautifyArrayOfNumbers(input: any): number[] {
  * If `keyArray` is set to `false` or not provided, it returns an array of enum values as strings.
  * @example EnumToStringArray({ A: 1, B: 2, C: 3 }) => ['A', 'B', 'C'], EnumToStringArray({ A: 1, B: 2, C: 3 }, true) => ['A', 'B', 'C']
  */
-export function EnumToStringArray<T>(enumObj: T, keyArray = false): string[] {
+export function EnumToStringArray<T extends Record<string, string | number>>(
+  enumObj: T,
+  keyArray = false
+): string[] {
   if (keyArray) {
     return Object.keys(enumObj).filter((key) => isNaN(Number(key)));
   } else {
     return Object.keys(enumObj)
       .filter((key) => isNaN(Number(key)))
-      .map((key) => enumObj[key]);
+      .map((key) => enumObj[key].toString());
   }
 }
 
@@ -125,8 +133,17 @@ export function EnumToStringArray<T>(enumObj: T, keyArray = false): string[] {
  * `value` property is the corresponding value of the enum object.
  * @example EnumToKeyValueArray({ A: 1, B: 2, C: 3 }) => [{ key: 'A', value: 1 }, { key: 'B', value: 2 }, { key: 'C', value: 3 }]
  */
-export function EnumToKeyValueArray<T>(enumObj: T, translateService?: TranslateService, keyCaseSpilt = true): { key: string; value: string }[] {
+export function EnumToKeyValueArray<T extends Record<string, string | number>>(
+  enumObj: T,
+  translateService?: TranslateService,
+  keyCaseSpilt = true
+): { key: string; value: string }[] {
   return Object.keys(enumObj)
     .filter((key) => isNaN(Number(key)))
-    .map((key) => ({ key: translateService ? translateService.instant(humanize(key, keyCaseSpilt)) : humanize(key, keyCaseSpilt), value: enumObj[key] }));
+    .map((key) => ({
+      key: translateService
+        ? translateService.instant(humanize(key, keyCaseSpilt))
+        : humanize(key, keyCaseSpilt),
+      value: enumObj[key].toString(),
+    }));
 }

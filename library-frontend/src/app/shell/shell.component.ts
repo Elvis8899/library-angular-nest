@@ -1,32 +1,23 @@
-import { Component, OnInit } from '@angular/core';
-import { ShellService } from '@app/shell/services/shell.service';
-import { UntilDestroy } from '@ngneat/until-destroy';
-import { Router } from '@angular/router';
-
+import { CommonModule } from "@angular/common";
+import { Component, OnInit } from "@angular/core";
+import { UntilDestroy } from "@ngneat/until-destroy";
+import { SidebarComponent } from "./components/sidebar/sidebar.component";
+import { HeaderComponent } from "./components/header/header.component";
+import { RouterModule } from "@angular/router";
 @UntilDestroy()
 @Component({
-  selector: 'app-shell',
-  templateUrl: './shell.component.html',
-  standalone: false,
+  selector: "app-shell",
+  templateUrl: "./shell.component.html",
+  imports: [CommonModule, SidebarComponent, HeaderComponent, RouterModule],
 })
 export class ShellComponent implements OnInit {
   isSidebarActive = false;
 
-  constructor(
-    private readonly _shellService: ShellService,
-    private readonly _router: Router,
-  ) {}
-
-  ngOnInit() {}
+  ngOnInit() {
+    this.isSidebarActive = false;
+  }
 
   sidebarToggle(toggleState: boolean) {
     this.isSidebarActive = toggleState;
-  }
-
-  private _reloadCurrentRoute(path?: string) {
-    const currentUrl = path || this._router.url;
-    this._router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-      this._router.navigate([currentUrl]);
-    });
   }
 }

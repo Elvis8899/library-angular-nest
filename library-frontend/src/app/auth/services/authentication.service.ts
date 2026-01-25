@@ -1,8 +1,8 @@
-import { inject, Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { inject, Injectable } from "@angular/core";
+import { Observable, of } from "rxjs";
 
-import { Credentials } from '@core/entities';
-import { UserService } from './user.service';
+import { Credentials } from "@core/entities";
+import { UserService } from "./user.service";
 
 export interface LoginContext {
   email: string;
@@ -16,12 +16,10 @@ export interface LoginContext {
  * The login/logout methods should be replaced with proper implementation.
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class AuthenticationService {
-  constructor() {}
-
-  private userService = inject(UserService);
+  private readonly _userService = inject(UserService);
 
   /**
    * Authenticates the user.
@@ -29,7 +27,7 @@ export class AuthenticationService {
    * @return The user credentials.
    */
   login(context: LoginContext): Observable<Credentials> {
-    return this.userService.login(context);
+    return this._userService.login(context);
   }
 
   /**

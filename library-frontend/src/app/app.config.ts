@@ -1,15 +1,35 @@
-import { ApplicationConfig, enableProdMode, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
-import { PreloadAllModules, provideRouter, RouteReuseStrategy, withEnabledBlockingInitialNavigation, withInMemoryScrolling, withPreloading, withRouterConfig } from '@angular/router';
+import {
+  ApplicationConfig,
+  enableProdMode,
+  importProvidersFrom,
+  provideZoneChangeDetection,
+} from "@angular/core";
+import {
+  PreloadAllModules,
+  provideRouter,
+  RouteReuseStrategy,
+  withEnabledBlockingInitialNavigation,
+  withInMemoryScrolling,
+  withPreloading,
+  withRouterConfig,
+} from "@angular/router";
 
-import { routes } from './app.routes';
-import { TranslateModule } from '@ngx-translate/core';
-import { environment } from '@env/environment';
-import { ShellModule } from './shell/shell.module';
-import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { ApiPrefixInterceptor, ErrorHandlerInterceptor } from '@core/interceptors';
-import { RouteReusableStrategy } from '@core/helpers';
-import { provideServiceWorker } from '@angular/service-worker';
-import { provideHotToastConfig } from '@ngxpert/hot-toast';
+import { routes } from "./app.routes";
+import { TranslateModule } from "@ngx-translate/core";
+import { environment } from "@env/environment";
+import { ShellModule } from "./shell/shell.module";
+import {
+  HTTP_INTERCEPTORS,
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from "@angular/common/http";
+import {
+  ApiPrefixInterceptor,
+  ErrorHandlerInterceptor,
+} from "@core/interceptors";
+import { RouteReusableStrategy } from "@core/helpers";
+import { provideServiceWorker } from "@angular/service-worker";
+import { provideHotToastConfig } from "@ngxpert/hot-toast";
 
 if (environment.production) {
   enableProdMode();
@@ -24,24 +44,24 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(TranslateModule.forRoot(), ShellModule),
 
     // provideServiceWorker is required for Angular's service workers
-    provideServiceWorker('ngsw-worker.js', {
+    provideServiceWorker("ngsw-worker.js", {
       enabled: environment.production,
-      scope: '/',
-      registrationStrategy: 'registerWhenStable:30000',
+      scope: "/",
+      registrationStrategy: "registerWhenStable:30000",
     }),
     // provideRouter is required for Angular's router with additional configuration
     provideRouter(
       routes,
       withRouterConfig({
-        onSameUrlNavigation: 'reload',
-        paramsInheritanceStrategy: 'always',
+        onSameUrlNavigation: "reload",
+        paramsInheritanceStrategy: "always",
       }),
       withEnabledBlockingInitialNavigation(),
       withInMemoryScrolling({
-        scrollPositionRestoration: 'enabled',
-        anchorScrolling: 'enabled',
+        scrollPositionRestoration: "enabled",
+        anchorScrolling: "enabled",
       }),
-      withPreloading(PreloadAllModules),
+      withPreloading(PreloadAllModules)
     ),
 
     // provideHotToastConfig is required for HotToastModule by ngneat
@@ -49,8 +69,8 @@ export const appConfig: ApplicationConfig = {
       reverseOrder: true,
       dismissible: true,
       autoClose: true,
-      position: 'top-right',
-      theme: 'snackbar',
+      position: "top-right",
+      theme: "snackbar",
     }),
 
     // provideHttpClient is required for Angular's HttpClient with additional configuration, which includes interceptors from DI (dependency injection) , means to use class based interceptors

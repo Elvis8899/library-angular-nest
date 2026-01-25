@@ -1,3 +1,5 @@
+import { PERMISSIONS } from "@app/auth";
+
 export interface NavMenuItem {
   title: string;
   href: string;
@@ -8,5 +10,5 @@ export interface NavMenuItem {
   disabled?: boolean;
   divider?: boolean;
   roles?: string[];
-  permissions?: string[];
+  permissions?: PERMISSIONS[];
 }

@@ -21,24 +21,25 @@ export function humanize(str: string, caseSplit = false): string {
 
   if (caseSplit) {
     // Insert a space before all caps in camelCase or PascalCase strings, avoid the first character
-    str = str.replace(/(.)([A-Z])/g, '$1 $2');
+    str = str.replace(/(.)([A-Z])/g, "$1 $2");
   }
 
   // Determine the split pattern based on the existence of certain characters
   let frags;
-  if (str.includes('_')) {
-    frags = str.split('_');
-  } else if (str.includes('-')) {
-    frags = str.split('-');
+  if (str.includes("_")) {
+    frags = str.split("_");
+  } else if (str.includes("-")) {
+    frags = str.split("-");
   } else {
-    frags = str.split(' ');
+    frags = str.split(" ");
   }
 
   for (let i = 0; i < frags.length; i++) {
-    frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1).toLowerCase();
+    frags[i] =
+      frags[i].charAt(0).toUpperCase() + frags[i].slice(1).toLowerCase();
   }
 
-  return frags.join(' ');
+  return frags.join(" ");
 }
 
 /**
@@ -55,6 +56,6 @@ export function humanize(str: string, caseSplit = false): string {
  * lowercase.
  * @example deHumanize('Hello World') => 'hello_world', deHumanize('Hello World', '-') => 'hello-world'
  */
-export function deHumanize(str: string, operator = '_') {
-  return str.toLowerCase().split(' ').join(operator);
+export function deHumanize(str: string, operator = "_") {
+  return str.toLowerCase().split(" ").join(operator);
 }
