@@ -1,6 +1,5 @@
 import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
-// import { APP_GUARD } from "@nestjs/core";
 import { authConfig } from "./auth.config";
 import { UserRepository } from "../user/database/user.repository.port";
 import { RealUserRepository } from "../user/database/realUser.repository";
@@ -28,6 +27,7 @@ const repositories = [
   imports: [
     CqrsModule,
     JwtModule.registerAsync({
+      global: true,
       useFactory: () => {
         return authConfig;
       },

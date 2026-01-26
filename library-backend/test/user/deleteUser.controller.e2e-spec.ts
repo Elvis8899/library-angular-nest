@@ -12,6 +12,10 @@ import { PinoLogger } from "nestjs-pino";
 import { executeTask } from "@src/shared/utils/executeTask";
 import { UserRepository } from "@src/modules/user/database/user.repository.port";
 import { UserBuilder } from "@test/data-builders/userBuilder";
+import { AuthGuard } from "@src/modules/auth/guards/auth.guard";
+import { RequestJWTPayload } from "@src/modules/auth/domain/login.entity";
+import { ExecutionContext } from "@nestjs/common";
+import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
 
 let app: NestFastifyApplication;
 let testingModule: TestingModule;
@@ -24,6 +28,23 @@ beforeAll(async () => {
   })
     .overrideProvider(PinoLogger)
     .useClass(FakeLoggerService)
+    .overrideGuard(AuthGuard)
+    .useValue({
+      canActivate: (context: ExecutionContext) => {
+        const request = context.switchToHttp().getRequest();
+        const user: RequestJWTPayload = {
+          sub: "abc123",
+          email: "admin@admin.com",
+          role: UserRoleEnum.Admin,
+          iat: 0,
+          exp: 0,
+          aud: "",
+          iss: "",
+        };
+        request.user = user;
+        return true;
+      },
+    })
     .compile();
 
   app = testingModule.createNestApplication<NestFastifyApplication>(

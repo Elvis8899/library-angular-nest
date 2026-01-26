@@ -1,3 +1,4 @@
+import { UserRoleEnum } from "@prisma/client";
 import { z } from "zod";
 
 export const LoginInput = z.object({
@@ -6,3 +7,13 @@ export const LoginInput = z.object({
 });
 
 export type User = z.infer<typeof LoginInput>;
+
+export type RequestJWTPayload = {
+  sub: string;
+  email: string;
+  role: UserRoleEnum;
+  iat: number;
+  exp: number;
+  aud: string;
+  iss: string;
+};
