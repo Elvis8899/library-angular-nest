@@ -15,6 +15,13 @@
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": true,
+    //
+    "noUncheckedIndexedAccess": true,
+    "alwaysStrict": true,
+    "noImplicitThis": true,
+    "strictBindCallApply": true,
+    "useUnknownInCatchVariables": true,
+    //
     "strict": true,
     "paths": {
       "@src": ["src"],

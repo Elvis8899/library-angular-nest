@@ -66,6 +66,6 @@ describe("[Unit] Endpoint Response - Subscriber", () => {
     await expect(resultPromise).resolves.toBe(undefined);
     // and  should have created a bookItem
     const bookItems = await executeTask(bookInfoRepository.findAll());
-    expect(bookItems[0].bookItems.length).toEqual(1);
+    expect(bookItems[0]?.bookItems.length).toEqual(2);
   });
 });

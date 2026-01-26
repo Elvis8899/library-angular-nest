@@ -78,9 +78,10 @@ export class FakeBookInfoRepository
             A.findIndex((item) => item.id === bookItem.id),
 
             O.chain((index) =>
-              A.updateAt(index, { ...book.bookItems[index], ...bookItem })(
-                book.bookItems,
-              ),
+              A.updateAt(index, {
+                ...book.bookItems[index],
+                ...bookItem,
+              } as BookItem)(book.bookItems),
             ),
             O.map((bookItems) => {
               book.bookItems = bookItems;

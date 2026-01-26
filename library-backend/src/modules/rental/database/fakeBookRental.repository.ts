@@ -15,9 +15,6 @@ export class FakeBookRentalRepository
   extends FakeRepositoryBase<BookRental, BookRentalFindAllQuery>
   implements BookRentalRepository
 {
-  constructor(private bookRepository: FakeBookRentalRepository) {
-    super();
-  }
   baseValidator = validateFromUnknown(BookRental, "baseValidator");
 
   findAllPaginated = (

@@ -62,7 +62,7 @@ describe("[Integration] BookInfo repository", () => {
     },
   );
 
-  it.each([["book", bookInfoBuilder.build()]])(
+  it.each([["book", bookInfoBuilder.withBookItems([]).build()]])(
     "Successfully get %s after save",
     async (_: string, bookInfo: BookInfo) => {
       //Given an inexisting bookInfo in database

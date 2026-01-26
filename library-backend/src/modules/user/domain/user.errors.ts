@@ -16,3 +16,12 @@ export const userCPFAlreadyExistsException = () =>
   new UserCPFAlreadyExistsException();
 
 export const userNotFoundException = () => new UserNotFoundException();
+
+export class UserEmailAlreadyExistsException extends ConflictException {
+  constructor() {
+    super("O Email informado já está sendo utilizado por outro usuário.");
+  }
+}
+
+export const userEmailAlreadyExistsException = () =>
+  new UserEmailAlreadyExistsException();

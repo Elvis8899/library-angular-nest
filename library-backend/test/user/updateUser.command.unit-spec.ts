@@ -16,6 +16,7 @@ import { FakeUserRepository } from "@src/modules/user/database/fakeUser.reposito
 import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
 import {
   UserCPFAlreadyExistsException,
+  UserEmailAlreadyExistsException,
   UserNotFoundException,
 } from "@src/modules/user/domain/user.errors";
 
@@ -151,6 +152,28 @@ describe("[Unit] Update User", () => {
     //Then it should have thrown an error and not have updated the user
     await expect(resultPromise).rejects.toBeInstanceOf(
       UserCPFAlreadyExistsException,
+    );
+  });
+
+  it("Should not update an user if email already exists", async () => {
+    // Given a potentially valid name
+    // When an user with the same name exists
+    const secondUserBuilder = new UserBuilder(2)
+      .withCPF("12345678902")
+      .withEmail("usertwo@example.com");
+    const secondUser = secondUserBuilder.build();
+    const repeatEmail = userBuilder.build().email;
+    await userRepository.save(secondUser);
+
+    //When we update the user to have same name
+    const userDTO = secondUserBuilder.withEmail(repeatEmail).buildCreateDTO();
+    const resultPromise = updateUserHandler.execute(
+      new UpdateUser(userDTO, secondUser.id),
+    );
+
+    //Then it should have thrown an error and not have updated the user
+    await expect(resultPromise).rejects.toBeInstanceOf(
+      UserEmailAlreadyExistsException,
     );
   });
 });

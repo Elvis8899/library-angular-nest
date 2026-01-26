@@ -1,4 +1,5 @@
 import { BookInfo } from "@src/modules/book/domain/bookInfo.entity";
+import { BookItemStatusEnum } from "@src/modules/book/domain/value-object/bookItem.entity";
 import { CreateBookInfoDto } from "@src/modules/book/dtos/bookInfo.dto";
 import { FPF } from "@src/shared/functional/monads";
 import { UUID } from "@src/shared/uuid/entities/uuid";
@@ -10,6 +11,13 @@ export class BookInfoBuilder {
   private name = "livro 1";
   private image = "7XhHs@example.com";
   private price = 100;
+  private bookItems = [
+    {
+      id: "b8a11695-3c71-45b4-9dd8-14900412f4e1",
+      status: BookItemStatusEnum.Available,
+      bookId: this.id,
+    },
+  ];
 
   private defaultProperties: z.input<typeof BookInfo>;
   private overrides: z.input<typeof BookInfo>;
@@ -26,6 +34,7 @@ export class BookInfoBuilder {
       name: this.name,
       image: this.image,
       price: this.price,
+      bookItems: this.bookItems,
     };
     this.overrides = {
       ...this.defaultProperties,
@@ -49,6 +58,10 @@ export class BookInfoBuilder {
     return this;
   }
 
+  withBookItems(bookItems: z.input<typeof BookInfo>["bookItems"]) {
+    this.overrides.bookItems = bookItems;
+    return this;
+  }
   build(): BookInfo {
     return BookInfo.parse({
       ...this.defaultProperties,

@@ -53,7 +53,7 @@ describe("[Unit] Date Type", () => {
 
     // It Should return an error
     expect(res.success).toBe(false);
-    expect(res.error?.errors[0].message).toBe("Invalid date");
+    expect(res.error?.errors[0]?.message).toBe("Invalid date");
   });
 
   it("Should return error on invalid Date", async () => {
@@ -64,7 +64,7 @@ describe("[Unit] Date Type", () => {
 
     // It Should return an error
     expect(res.success).toBe(false);
-    expect(res.error?.errors[0].message).toBe("Invalid input");
+    expect(res.error?.errors[0]?.message).toBe("Invalid input");
   });
   it("Should return error on invalid Date", async () => {
     // With an invalid date input type
@@ -73,6 +73,6 @@ describe("[Unit] Date Type", () => {
 
     // It Should return an error
     expect(res.success).toBe(false);
-    expect(res.error?.errors[0].message).toBe("Invalid input");
+    expect(res.error?.errors[0]?.message).toBe("Invalid input");
   });
 });

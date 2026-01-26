@@ -118,7 +118,7 @@ export abstract class FakeRepositoryBase<
       O.fold(
         () => O.some(A.append<Entity>(entity as Entity)(this.dbItems)),
         (index) =>
-          A.updateAt(index, { ...this.dbItems[index], ...entity })(
+          A.updateAt(index, { ...this.dbItems[index], ...entity } as Entity)(
             this.dbItems,
           ),
       ),
