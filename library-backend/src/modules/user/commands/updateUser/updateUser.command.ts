@@ -13,6 +13,7 @@ import { UUID } from "@src/shared/uuid/entities/uuid";
 import { User } from "../../domain/user.entity";
 import {
   userCPFAlreadyExistsException,
+  userEmailAlreadyExistsException,
   userNotFoundException,
 } from "../../domain/user.errors";
 import { USER_UPDATED } from "../../domain/events/userUpdated.event";
@@ -82,13 +83,13 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
       //Check email unicity
       RTE.tap((user) =>
         FPF.pipe(
-          user.cpf,
+          user.email,
           performRTE(this.userRepository.findByEmail, "get user by email"),
           RTE.chainW(
             FPF.flow(
               O.filter((u) => u.id !== user.id),
               O.fromPredicate(O.isNone),
-              RTE.fromOption(userCPFAlreadyExistsException),
+              RTE.fromOption(userEmailAlreadyExistsException),
             ),
           ),
         ),
