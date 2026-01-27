@@ -1,7 +1,7 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
-import { BookEntity } from "@app/@core/entities";
+import { BookEntity, BookItemEntity } from "@app/@core/entities";
 import { PaginatedResponse } from "@app/@core/entities/utils/paginatedResponse.entity";
 
 @Injectable({
@@ -22,15 +22,21 @@ export class BookService {
     return this._http.get<BookEntity>(`/v1/bookInfos/${book.id}`);
   }
 
-  editBook(book: BookEntity): Observable<string> {
-    return this._http.put(`/v1/bookInfos/${book.id}`, book, {
-      responseType: "text",
-    });
+  editBook(book: BookEntity): Observable<null> {
+    return this._http.put<null>(`/v1/bookInfos/${book.id}`, book);
   }
 
-  deleteBook(book: BookEntity): Observable<string> {
-    return this._http.delete(`/v1/bookInfos/${book.id}`, {
-      responseType: "text",
+  deleteBook(book: BookEntity): Observable<null> {
+    return this._http.delete<null>(`/v1/bookInfos/${book.id}`);
+  }
+
+  addBookItem(bookItem: Partial<BookItemEntity>): Observable<null> {
+    return this._http.post<null>("/v1/bookInfos/item", bookItem);
+  }
+
+  deleteBookItem(bookItemId: string): Observable<null> {
+    return this._http.delete<null>(`/v1/bookInfos/item/${bookItemId}`, {
+      body: {},
     });
   }
 }

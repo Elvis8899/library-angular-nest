@@ -17,6 +17,7 @@ import {
   RemoveBookItemHandler,
 } from "@src/modules/book/commands/removeBookItem/removeBookItem.command";
 import { BookItemStatusEnum } from "@src/modules/book/domain/value-object/bookItem.entity";
+import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 
 //Adapters
 let bookInfoRepository: BookInfoRepository;
@@ -49,7 +50,7 @@ describe("[Unit] Delete BookInfo", () => {
 
     const bookInfo = new BookInfoBuilder().build();
     await executeTask(bookInfoRepository.save(bookInfo));
-    const id = bookInfo.bookItems[0]?.id || "";
+    const id = createTestId(TableNameEnum.BookItem, 0);
 
     //When we delete a bookInfo
     const resultPromise = removeBookItemHandler.execute(new RemoveBookItem(id));
@@ -66,14 +67,14 @@ describe("[Unit] Delete BookInfo", () => {
     const bookInfo = new BookInfoBuilder()
       .withBookItems([
         {
-          id: "b8a11695-3c71-45b4-9dd8-14900412f4e1",
+          id: createTestId(TableNameEnum.BookItem, 0),
           status: BookItemStatusEnum.Rented,
-          bookId: "b8a11695-3c71-45b4-9dd8-14900412f4e1",
+          bookId: createTestId(TableNameEnum.BookInfo, 0),
         },
       ])
       .build();
     await executeTask(bookInfoRepository.save(bookInfo));
-    const id = bookInfo.bookItems[0]?.id || "";
+    const id = createTestId(TableNameEnum.BookItem, 0);
 
     //When we delete a bookInfo
     const resultPromise = removeBookItemHandler.execute(new RemoveBookItem(id));
@@ -91,7 +92,7 @@ describe("[Unit] Delete BookInfo", () => {
 
     const bookInfo = new BookInfoBuilder().build();
     await executeTask(bookInfoRepository.save(bookInfo));
-    const newId = "00000000-0000-0000-0000-000000000000";
+    const newId = createTestId(TableNameEnum.None, 0);
 
     //When we delete a bookInfo
     const resultPromise = removeBookItemHandler.execute(
@@ -112,7 +113,7 @@ describe("[Unit] Delete BookInfo", () => {
 
     const bookInfo = new BookInfoBuilder().build();
     await executeTask(bookInfoRepository.save(bookInfo));
-    const id = bookInfo.id;
+    const id = createTestId(TableNameEnum.BookItem, 0);
 
     //When we delete a bookInfo
     await removeBookItemHandler.execute(new RemoveBookItem(id));
@@ -129,7 +130,7 @@ describe("[Unit] Delete BookInfo", () => {
     const bookInfo = new BookInfoBuilder().build();
     await executeTask(bookInfoRepository.save(bookInfo));
 
-    const newId = "00000000-0000-0000-0000-000000000010";
+    const newId = createTestId(TableNameEnum.None, 0);
     //When we delete a bookInfo
     const resultPromise = removeBookItemHandler.execute(
       new RemoveBookItem(newId),

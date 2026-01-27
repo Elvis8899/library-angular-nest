@@ -1,0 +1,83 @@
+import { NestFastifyApplication } from "@nestjs/platform-fastify";
+import { Test, TestingModule } from "@nestjs/testing";
+import { AppModule } from "@src/app.module";
+import { createTestApp } from "@test/util/createTestApp";
+import request from "supertest";
+
+import { AuthGuard } from "@auth/guards/auth.guard";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
+import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { executeTask } from "@shared/utils/application/executeTask";
+import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
+import { UserBuilder } from "@test/dataBuilders/userBuilder";
+import { UserRepository } from "@user/database/user.repository.port";
+import { PinoLogger } from "nestjs-pino";
+
+let app: NestFastifyApplication;
+let testingModule: TestingModule;
+let prismaService: PrismaService;
+
+let userRepository: UserRepository;
+beforeAll(async () => {
+  testingModule = await Test.createTestingModule({
+    imports: [AppModule],
+  })
+    .overrideProvider(PinoLogger)
+    .useClass(FakeLoggerService)
+    .overrideGuard(AuthGuard)
+    .useValue(new MockAuthGuardBuilder())
+    .compile();
+
+  app = await createTestApp(testingModule);
+  prismaService = testingModule.get<PrismaService>(PrismaService);
+
+  userRepository = testingModule.get<UserRepository>(UserRepository);
+
+  await app.init();
+  await app.getHttpAdapter().getInstance().ready();
+});
+
+afterAll(async () => {
+  await app.close();
+  await prismaService.$disconnect();
+});
+
+beforeEach(async () => {
+  await prismaService.user.deleteMany();
+});
+
+afterEach(async () => {
+  await prismaService.user.deleteMany();
+});
+
+describe("[e2e] DELETE /v1/users/:id", () => {
+  const v1Route = (userId: string) => "/v1/users/" + userId;
+
+  it("Should respond 200 for deleted user", async () => {
+    const user = new UserBuilder().withName("Test").build();
+    await executeTask(userRepository.save(user));
+
+    const response = await request(app.getHttpServer()).delete(
+      v1Route(user.id),
+    );
+
+    expect(response.status).toBe(200);
+    const userAmount = await prismaService.user.count();
+    expect(userAmount).toBe(0);
+  });
+
+  it("Should respond 422 for invalid id", async () => {
+    const response = await request(app.getHttpServer()).delete(
+      v1Route("fakeId"),
+    );
+    expect(response.status).toBe(422);
+  });
+
+  it("Should respond 404 for user not found", async () => {
+    const user = new UserBuilder().withName("Test").build();
+    const response = await request(app.getHttpServer()).delete(
+      v1Route(user.id),
+    );
+    expect(response.status).toBe(404);
+  });
+});

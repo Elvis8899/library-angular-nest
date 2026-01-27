@@ -31,9 +31,11 @@
                 >
                   emprestar
                 </button>
-                <button>adicionar</button>
-                <button>remover</button>
-                <button>deletar</button>
+                @if (isAdmin()) {
+                  <button (click)="addBookItem(book)">adicionar</button>
+                  <button (click)="removeBookItem(book)">remover</button>
+                  <button>deletar</button>
+                }
               </td>
             </tr>
           }

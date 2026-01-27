@@ -66,6 +66,19 @@ describe("RolesGuard", () => {
     expect(result).toBe(false);
   });
 
+  it("should deny access when user is undefined", () => {
+    const mockContext = createMockExecutionContext({
+      user: undefined,
+    });
+    jest
+      .spyOn(reflector, "getAllAndOverride")
+      .mockReturnValue([UserRoleEnum.Admin]);
+
+    const result = guard.canActivate(mockContext);
+
+    expect(result).toBe(false);
+  });
+
   function createMockExecutionContext(request: {
     user?: Partial<RequestJWTPayload>;
   }): ExecutionContext {

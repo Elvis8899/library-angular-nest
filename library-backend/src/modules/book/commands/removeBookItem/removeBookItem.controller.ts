@@ -24,7 +24,7 @@ export class RemoveBookItemController {
     private readonly queryBus: QueryBus,
   ) {}
 
-  @Delete("bookInfos/:id/item")
+  @Delete("bookInfos/item/:id")
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: "Remove um exemplar de um Livro",

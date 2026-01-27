@@ -1,5 +1,5 @@
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { A, FPF, RTE } from "@shared/functional/monads";
+import { FPF, O, RTE } from "@shared/functional/monads";
 import { performRTE } from "@shared/utils/perform";
 import { executeTask } from "@shared/utils/executeTask";
 import { fromInputRE } from "@src/shared/utils/fromInput";
@@ -41,19 +41,22 @@ export class RemoveBookItemHandler
       fromInputRE(UUID, "id"),
       RTE.fromReaderEither,
 
-      // Validate BookInfo exists
+      // Validate BookItem exists
       RTE.chain(
         FPF.flow(
-          performRTE(this.bookInfoRepository.findById, "get bookInfo by id"),
+          performRTE(
+            this.bookInfoRepository.findBookItemById,
+            "get bookItem by id",
+          ),
           RTE.chain((_) => RTE.fromOption<Error>(bookInfoNotFoundException)(_)),
         ),
       ),
 
-      // Get First BookItem entity
-      RTE.chainW((existingBookInfo) =>
-        FPF.pipe(
-          existingBookInfo.bookItems,
-          A.findFirst((item) => item.status === BookItemStatusEnum.Available),
+      // Validate it is available
+      RTE.chainW(
+        FPF.flow(
+          O.of,
+          O.filter((item) => item.status === BookItemStatusEnum.Available),
           RTE.fromOption<Error>(availableBookItemNotFoundException),
         ),
       ),

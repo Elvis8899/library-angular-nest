@@ -17,3 +17,7 @@ export type RequestJWTPayload = {
   aud: string;
   iss: string;
 };
+
+export type AuthenticatedRequest = {
+  user: RequestJWTPayload;
+};
