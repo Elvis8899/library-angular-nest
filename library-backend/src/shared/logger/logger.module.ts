@@ -2,7 +2,7 @@ import { Global, Module } from "@nestjs/common";
 import { LoggerModule as PinoLoggerModule } from "nestjs-pino";
 import { stdTimeFunctions } from "pino";
 import * as uuid from "uuid";
-import { logConfig } from "@configs/logger.config";
+import { logConfig } from "@src/shared/logger/logger.config";
 import { GenReqId } from "pino-http";
 
 declare module "http" {

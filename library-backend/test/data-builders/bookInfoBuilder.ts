@@ -3,17 +3,18 @@ import { BookItemStatusEnum } from "@src/modules/book/domain/value-object/bookIt
 import { CreateBookInfoDto } from "@src/modules/book/dtos/bookInfo.dto";
 import { FPF } from "@src/shared/functional/monads";
 import { UUID } from "@src/shared/uuid/entities/uuid";
+import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { z } from "zod";
 
 export class BookInfoBuilder {
-  private id = UUID.parse("b8a11695-3c71-45b4-9dd8-14900412f4e1");
+  private id = UUID.parse(createTestId(TableNameEnum.BookInfo, 0));
 
   private name = "livro 1";
-  private image = "7XhHs@example.com";
+  private image = "user0@example.com";
   private price = 100;
   private bookItems = [
     {
-      id: "b8a11695-3c71-45b4-9dd8-14900412f4e1",
+      id: createTestId(TableNameEnum.BookItem, 0),
       status: BookItemStatusEnum.Available,
       bookId: this.id,
     },
@@ -25,9 +26,7 @@ export class BookInfoBuilder {
   constructor(index?: number) {
     if (index) {
       this.name = "livro " + index;
-      this.id =
-        "00000000-0000-0000-0001-" +
-        (index * 1e-12).toFixed(12).replace("0.", "");
+      this.id = createTestId(TableNameEnum.BookInfo, index);
     }
     this.defaultProperties = {
       id: this.id,

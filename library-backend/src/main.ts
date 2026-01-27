@@ -9,6 +9,7 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import fastifyRequestContext from "@fastify/request-context";
 import helmet from "@fastify/helmet";
 import { contentParser } from "fastify-file-interceptor";
+import { RequestJWTPayload } from "./modules/auth/domain/login.entity";
 // import * as multipart from "@fastify/multipart";
 
 async function bootstrap() {
@@ -18,6 +19,13 @@ async function bootstrap() {
     { bufferLogs: true },
   );
 
+  const fastifyInstance = app.getHttpAdapter().getInstance();
+  fastifyInstance.decorateRequest("user", null);
+  fastifyInstance.addHook("preHandler", (req, reply, next) => {
+    (req as typeof req & { user: RequestJWTPayload }).user =
+      (req as typeof req & { user: RequestJWTPayload }).user || {};
+    next();
+  });
   const logger = app.get(Logger);
   app.useLogger(logger);
 

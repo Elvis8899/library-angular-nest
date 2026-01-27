@@ -6,6 +6,11 @@ import { O } from "@shared/functional/monads";
 import { RealBookInfoRepository } from "@src/modules/book/database/realBookInfo.repository";
 import { BookInfo } from "@src/modules/book/domain/bookInfo.entity";
 import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
+import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import {
+  BookItem,
+  BookItemStatusEnum,
+} from "@src/modules/book/domain/value-object/bookItem.entity";
 
 let prismaService: PrismaService;
 let bookInfoRepository: RealBookInfoRepository;
@@ -73,6 +78,7 @@ describe("[Integration] BookInfo repository", () => {
       // Should be able to retrieve it
       const [resultById, resultPaginated, resultAll] = await Promise.all([
         executeTask(bookInfoRepository.findById(bookInfo.id)),
+
         executeTask(
           bookInfoRepository.findAllPaginated({
             page: 0,
@@ -95,7 +101,7 @@ describe("[Integration] BookInfo repository", () => {
   it("Successfully delete bookInfo after save", async () => {
     //Given an inexisting bookInfo in database
     const bookInfo = bookInfoBuilder
-      .withId("c017f4a9-c458-4ea7-829c-021c6a608534")
+      .withId(createTestId(TableNameEnum.None, 0))
       .build();
 
     await executeTask(bookInfoRepository.save(bookInfo));
@@ -117,7 +123,7 @@ describe("[Integration] BookInfo repository", () => {
   it("Should not delete bookInfo with wrong id", async () => {
     //Given an inexisting bookInfo in database
     const bookInfo = bookInfoBuilder
-      .withId("c017f4a9-c458-4ea7-829c-021c6a608534")
+      .withId(createTestId(TableNameEnum.None, 0))
       .build();
 
     await executeTask(bookInfoRepository.save(bookInfo));
@@ -141,7 +147,7 @@ describe("[Integration] BookInfo repository", () => {
   it("Return null when there is no bookInfo", async () => {
     //Given no existing bookInfos in database
     const unsaveBookInfo = bookInfoBuilder
-      .withId("c017f4a9-c458-4ea7-829c-021c6a608534")
+      .withId(createTestId(TableNameEnum.None, 0))
       .build();
 
     //When we try to retrieve
@@ -161,5 +167,113 @@ describe("[Integration] BookInfo repository", () => {
     expect(resultPaginated.count).toBe(0);
     expect(resultPaginated.data.length).toBe(0);
     expect(resultAll.length).toBe(0);
+  });
+
+  it("Successfully save bookItem", async () => {
+    const bookInfo = bookInfoBuilder.build();
+    await saveBookInfo(bookInfo);
+    //Given an inexisting bookItem in database
+    const bookItem = BookItem.parse({
+      id: createTestId(TableNameEnum.BookItem, 0),
+      status: BookItemStatusEnum.Available,
+      bookId: createTestId(TableNameEnum.BookInfo, 0),
+    });
+    //When we save him
+    await executeTask(bookInfoRepository.createBookItem(bookItem));
+
+    //Then we should have saved him
+    const savedBookItem = await prismaService.bookItem.findUnique({
+      where: {
+        id: bookItem.id,
+      },
+    });
+    return expect(savedBookItem).toMatchObject({
+      id: bookItem.id,
+      status: bookItem.status,
+      bookId: bookItem.bookId,
+    });
+  });
+
+  it("Successfully delete bookItem", async () => {
+    const bookInfo = bookInfoBuilder.build();
+    await saveBookInfo(bookInfo);
+    //Given an existing bookItem in database
+    const bookItem = BookItem.parse({
+      id: createTestId(TableNameEnum.BookItem, 0),
+      status: BookItemStatusEnum.Available,
+      bookId: createTestId(TableNameEnum.BookInfo, 0),
+    });
+
+    await executeTask(bookInfoRepository.createBookItem(bookItem));
+
+    //When we delete him
+
+    await executeTask(bookInfoRepository.deleteBookItem(bookItem.id));
+    //Then we should have deleted him
+    const savedBookItem = await prismaService.bookItem.findUnique({
+      where: {
+        id: bookItem.id,
+      },
+    });
+    return expect(savedBookItem).toBe(null);
+  });
+
+  it("Successfully find bookItem by id", async () => {
+    const bookInfo = bookInfoBuilder.build();
+    await saveBookInfo(bookInfo);
+    //Given an existing bookItem in database
+    const bookItem = BookItem.parse({
+      id: createTestId(TableNameEnum.BookItem, 0),
+      status: BookItemStatusEnum.Available,
+      bookId: createTestId(TableNameEnum.BookInfo, 0),
+    });
+
+    await executeTask(bookInfoRepository.createBookItem(bookItem));
+
+    //When we find him by id
+
+    const result = await executeTask(
+      bookInfoRepository.findBookItemById(bookItem.id),
+    );
+    //Then we should have deleted him
+
+    return expect(result).toMatchObject(
+      O.some({
+        id: bookItem.id,
+        status: bookItem.status,
+        bookId: bookItem.bookId,
+      }),
+    );
+  });
+
+  it("Successfully update bookItem", async () => {
+    const bookInfo = bookInfoBuilder.build();
+    await saveBookInfo(bookInfo);
+    //Given an existing bookItem in database
+    const bookItem = BookItem.parse({
+      id: createTestId(TableNameEnum.BookItem, 0),
+      status: BookItemStatusEnum.Available,
+      bookId: createTestId(TableNameEnum.BookInfo, 0),
+    });
+
+    await executeTask(bookInfoRepository.createBookItem(bookItem));
+
+    //When we find update him
+    const newBookItem = BookItem.parse({
+      ...bookItem,
+      status: BookItemStatusEnum.Rented,
+    });
+    await executeTask(bookInfoRepository.updateBookItem(newBookItem));
+    //Then we should have updated him
+    const savedBookItem = await prismaService.bookItem.findUnique({
+      where: {
+        id: bookItem.id,
+      },
+    });
+    return expect(savedBookItem).toMatchObject({
+      id: bookItem.id,
+      status: newBookItem.status,
+      bookId: bookItem.bookId,
+    });
   });
 });

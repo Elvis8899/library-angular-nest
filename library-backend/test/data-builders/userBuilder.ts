@@ -3,10 +3,11 @@ import { formatToCPF } from "@src/modules/user/domain/value-object/document";
 import { CreateUserDto } from "@src/modules/user/dtos/user.dto";
 import { FPF } from "@src/shared/functional/monads";
 import { UUID } from "@src/shared/uuid/entities/uuid";
+import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { z } from "zod";
 
 export class UserBuilder {
-  private id = UUID.parse("b8a11695-3c71-45b4-9dd8-14900412f4e1");
+  private id = UUID.parse(createTestId(TableNameEnum.User, 0));
 
   private name = "usuario 1";
   private email = "userone@example.com";
@@ -20,9 +21,7 @@ export class UserBuilder {
   constructor(index?: number) {
     if (index) {
       this.name = "usuario " + index;
-      this.id =
-        "00000000-0000-0000-0001-" +
-        (index * 1e-12).toFixed(12).replace("0.", "");
+      this.id = createTestId(TableNameEnum.User, index);
     }
     this.defaultProperties = {
       id: this.id,

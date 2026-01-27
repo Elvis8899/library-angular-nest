@@ -6,6 +6,7 @@ import { O } from "@shared/functional/monads";
 import { RealUserRepository } from "@src/modules/user/database/realUser.repository";
 import { User, UserRoleEnum } from "@src/modules/user/domain/user.entity";
 import { UserBuilder } from "@test/data-builders/userBuilder";
+import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 
 let prismaService: PrismaService;
 let userRepository: RealUserRepository;
@@ -55,7 +56,7 @@ describe("[Integration] User repository", () => {
     return expect(savedUser).toMatchObject(O.some(userToCompare));
   });
 
-  it("Fails to get user by name", async () => {
+  it("Fails to get user by cpf", async () => {
     //Given an existing user in database
     const cpf = "12345678901";
     const user = userBuilder.withCPF(cpf).build();
@@ -102,17 +103,20 @@ describe("[Integration] User repository", () => {
     await saveUser(user);
 
     // Should be able to retrieve it
-    const [resultById, resultPaginated, resultAll] = await Promise.all([
-      executeTask(userRepository.findById(user.id)),
-      executeTask(
-        userRepository.findAllPaginated({ page: 0, limit: 10, offset: 0 }),
-      ),
-      executeTask(userRepository.findAll()),
-    ]);
+    const [resultById, resultByEmail, resultPaginated, resultAll] =
+      await Promise.all([
+        executeTask(userRepository.findById(user.id)),
+        executeTask(userRepository.findByEmail(user.email)),
+        executeTask(
+          userRepository.findAllPaginated({ page: 0, limit: 10, offset: 0 }),
+        ),
+        executeTask(userRepository.findAll()),
+      ]);
 
     const { createdAt, updatedAt, ...userToCompare } = user;
 
     expect(resultById).toMatchObject(O.some(userToCompare));
+    expect(resultByEmail).toMatchObject(O.some(userToCompare));
     expect(resultPaginated.count).toBe(1);
     expect(resultPaginated.data.length).toBe(1);
     expect(resultAll.length).toBe(1);
@@ -121,7 +125,7 @@ describe("[Integration] User repository", () => {
   it("Successfully delete user after save", async () => {
     //Given an inexisting user in database
     const user = userBuilder
-      .withId("c017f4a9-c458-4ea7-829c-021c6a608534")
+      .withId(createTestId(TableNameEnum.None, 0))
       .build();
 
     await executeTask(userRepository.save(user));
@@ -143,7 +147,7 @@ describe("[Integration] User repository", () => {
   it("Should not delete user with wrong id", async () => {
     //Given an inexisting user in database
     const user = userBuilder
-      .withId("c017f4a9-c458-4ea7-829c-021c6a608534")
+      .withId(createTestId(TableNameEnum.None, 0))
       .build();
 
     await executeTask(userRepository.save(user));
@@ -167,7 +171,7 @@ describe("[Integration] User repository", () => {
   it("Successfully save admin without cpf", async () => {
     //Given an inexisting user in database
     const user = userBuilder
-      .withId("c017f4a9-c458-4ea7-829c-021c6a608534")
+      .withId(createTestId(TableNameEnum.None, 0))
       .withRole(UserRoleEnum.Admin)
       .build();
 
@@ -177,7 +181,7 @@ describe("[Integration] User repository", () => {
 
     const savedUser = await prismaService.user.findUnique({
       where: {
-        id: "c017f4a9-c458-4ea7-829c-021c6a608534",
+        id: createTestId(TableNameEnum.None, 0),
       },
     });
 
@@ -187,7 +191,7 @@ describe("[Integration] User repository", () => {
   it("Return null when there is no user", async () => {
     //Given no existing users in database
     const unsaveUser = userBuilder
-      .withId("c017f4a9-c458-4ea7-829c-021c6a608534")
+      .withId(createTestId(TableNameEnum.None, 0))
       .build();
 
     //When we try to retrieve

@@ -8,7 +8,7 @@ import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/do
 import { PinoLogger } from "nestjs-pino";
 import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UUID } from "@src/shared/uuid/entities/uuid";
-import { BookRentalDto } from "../../dtos/bookRental.dto";
+import { CreateBookRentalDto } from "../../dtos/bookRental.dto";
 import { BookRentalRepository } from "../../database/bookRental.repository.port";
 import { BookRental } from "../../domain/bookRental.entity";
 import { UserRepository } from "@src/modules/user/database/user.repository.port";
@@ -19,7 +19,7 @@ import { bookRentalNotAvailableException } from "../../domain/bookRental.errors"
 import { BookItemStatusEnum } from "@src/modules/book/domain/value-object/bookItem.entity";
 
 export class RentBookCommand implements ICommand {
-  constructor(public readonly props: BookRentalDto) {}
+  constructor(public readonly props: CreateBookRentalDto) {}
 }
 
 @CommandHandler(RentBookCommand)

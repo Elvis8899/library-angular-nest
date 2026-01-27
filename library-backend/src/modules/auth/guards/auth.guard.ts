@@ -25,7 +25,7 @@ export class AuthGuard implements CanActivate {
         await this.jwtService.verifyAsync<RequestJWTPayload>(token);
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
-      request["user"] = payload;
+      request.user = payload;
     } catch {
       throw new UnauthorizedException();
     }

@@ -18,7 +18,7 @@ import { DateType } from "@src/shared/utils/DateType";
 import { BOOK_RENTAL_RETURNED } from "../../domain/events/bookReturned.event";
 
 export class ReturnBookCommand implements ICommand {
-  constructor(public readonly id: string) {}
+  constructor(public readonly bookRentalId: string) {}
 }
 
 @CommandHandler(ReturnBookCommand)
@@ -35,13 +35,16 @@ export class ReturnBookCommandHandler
   }
 
   execute(command: ReturnBookCommand): Promise<void> {
-    this.logger.info(command.id, "ReturnBookCommand command received");
+    this.logger.info(
+      command.bookRentalId,
+      "ReturnBookCommand command received",
+    );
     const task = FPF.pipe(
       //Data validation
       RE.of({
         rentalStatus: RentalStatusEnum.Finished,
       }),
-      RE.bind("id", () => fromInputRE(UUID, "uuid")(command.id)),
+      RE.bind("id", () => fromInputRE(UUID, "uuid")(command.bookRentalId)),
       RE.bind("deliveryDate", () => fromInputRE(DateType, "date")(new Date())),
 
       RTE.fromReaderEither,
@@ -50,7 +53,10 @@ export class ReturnBookCommandHandler
       RTE.chain((data) =>
         FPF.pipe(
           data.id,
-          performRTE(this.bookRentalRepository.findById, "get bookInfo by id"),
+          performRTE(
+            this.bookRentalRepository.findById,
+            "get book rental by id",
+          ),
           RTE.chainW(RTE.fromOption<Error>(bookRentalNotFoundException)),
           RTE.filterOrElseW(
             (bookRental) =>

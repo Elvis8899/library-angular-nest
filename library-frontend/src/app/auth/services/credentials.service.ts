@@ -41,6 +41,9 @@ export class CredentialsService {
     return this.credentials?.user.role?.includes("admin") || false;
   }
 
+  userId(): string {
+    return this.credentials?.user.id || "";
+  }
   /**
    * Sets the user credentials.
    * The credentials may be persisted across sessions by setting the `remember` parameter to true.

@@ -28,7 +28,7 @@ import { MatInputModule } from "@angular/material/input";
 import { UserService } from "@app/auth/services/user.service";
 import { RentalService } from "@app/auth/services/rental.service";
 import { BookRentEntity } from "@app/@core/entities/bookRental.entity";
-import { ROLE } from "@app/auth";
+import { CredentialsService, ROLE } from "@app/auth";
 
 export interface DialogData {
   users: UserEntity[];
@@ -55,10 +55,20 @@ export class ListBooksComponent implements OnInit {
   private readonly _bookService = inject(BookService);
   private readonly _rentalService = inject(RentalService);
   private readonly _router = inject(Router);
+  private readonly _credentialsService = inject(CredentialsService);
   private readonly _cd = inject(ChangeDetectorRef);
   private readonly _toast = inject(HotToastService);
 
   openRentBookDialog(book: BookEntity) {
+    if (!this.isAdmin()) {
+      return this.rentBook({
+        bookItemId:
+          book.bookItems.find(
+            (item) => item.status === BookItemStatusEnum.Available
+          )?.id || "",
+        userId: this._credentialsService.userId(),
+      });
+    }
     const dialogRef = this.dialog.open(DialogOverviewExampleDialogComponent, {
       data: {
         users: this.users.filter((u) => u.role !== ROLE.ADMIN),
@@ -66,8 +76,6 @@ export class ListBooksComponent implements OnInit {
       },
     });
     dialogRef.afterClosed().subscribe((result: string) => {
-      console.log("The dialog was closed");
-      console.log("result", result);
       if (result !== undefined) {
         const bookItemId = book.bookItems.find(
           (item) => item.status === BookItemStatusEnum.Available
@@ -141,6 +149,41 @@ export class ListBooksComponent implements OnInit {
         console.error(error);
       },
     });
+  }
+  addBookItem(book: BookEntity) {
+    this.isLoading = true;
+    this._bookService.addBookItem({ bookId: book.id }).subscribe({
+      next: (res) => {
+        this.refresh();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this._toast.error(error?.message);
+        console.error(error);
+      },
+    });
+  }
+  removeBookItem(book: BookEntity) {
+    const id =
+      book.bookItems.find(
+        (item) => item.status === BookItemStatusEnum.Available
+      )?.id || "";
+    if (id === "") {
+      this._toast.error("Sem livros disponíveis para remoção");
+      return;
+    }
+    this._bookService.deleteBookItem(id).subscribe({
+      next: (res) => {
+        this.refresh();
+      },
+      error: (error) => {
+        this._toast.error(error?.message);
+        console.error(error);
+      },
+    });
+  }
+  isAdmin() {
+    return this._credentialsService.isAdmin();
   }
 }
 

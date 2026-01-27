@@ -5,35 +5,33 @@ import {
 } from "@src/modules/rental/domain/bookRental.entity";
 import { CreateBookRentalDto } from "@src/modules/rental/dtos/bookRental.dto";
 import { FPF } from "@src/shared/functional/monads";
-import { UUID } from "@src/shared/uuid/entities/uuid";
+import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { z } from "zod";
 
 export class BookRentalBuilder {
-  private id = UUID.parse("b8a11695-3c71-45b4-9dd8-14900412f4e1");
+  private id!: string;
 
   private rentalStatus = RentalStatusEnum.Rented;
-  private bookItemId = "b8a11695-3c71-45b4-9dd8-14900412f4e1";
-  private userId = "b8a11695-3c71-45b4-9dd8-14900412f4e1";
+  private bookItemId = createTestId(TableNameEnum.BookItem, 0);
+  private userId = createTestId(TableNameEnum.User, 0);
 
   // private overdueDate = undefined;
   // private deliveryDate = undefined;
-  //private bookItem = "";
-  // private user = "";
+  private bookItem = undefined;
+  private user = undefined;
 
   private defaultProperties: z.input<typeof BookRental>;
   private overrides: z.input<typeof BookRental>;
 
-  constructor(index?: number) {
-    if (index) {
-      this.id =
-        "00000000-0000-0000-0001-" +
-        (index * 1e-12).toFixed(12).replace("0.", "");
-    }
+  constructor(index = 0) {
+    this.id = createTestId(TableNameEnum.BookRentalDetails, index);
     this.defaultProperties = {
       id: this.id,
       rentalStatus: this.rentalStatus,
       bookItemId: this.bookItemId,
       userId: this.userId,
+      bookItem: this.bookItem,
+      user: this.user,
     };
     this.overrides = {
       ...this.defaultProperties,
@@ -57,16 +55,6 @@ export class BookRentalBuilder {
     return this;
   }
 
-  withUserId(userId: string) {
-    this.overrides.userId = userId;
-    return this;
-  }
-
-  withBookItemId(bookItemId: string) {
-    this.overrides.bookItemId = bookItemId;
-    return this;
-  }
-
   withOverdueDate(overdueDate: Date) {
     this.overrides.overdueDate = overdueDate;
     return this;
@@ -79,6 +67,16 @@ export class BookRentalBuilder {
 
   withUpdatedAt(updatedAt: Date) {
     this.overrides.updatedAt = updatedAt;
+    return this;
+  }
+
+  withBookItem(bookItem?: { book: { name: string; price: number } }) {
+    this.overrides.bookItem = bookItem;
+    return this;
+  }
+
+  withUser(user?: { name: string }) {
+    this.overrides.user = user;
     return this;
   }
 
@@ -96,13 +94,13 @@ export class BookRentalBuilder {
     });
   }
   buildCreateDTO(): CreateBookRentalDto {
-    const user = {
+    const rental = {
       ...this.defaultProperties,
       ...this.overrides,
     };
-
     return FPF.unsafeCoerce({
-      ...user,
+      ...rental,
+      id: undefined,
     });
   }
 }
