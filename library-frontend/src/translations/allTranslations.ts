@@ -13,6 +13,8 @@ type keys =
   | "Dashboard"
   | "Logout"
   | "Users List"
-  | "Create User";
+  | "Create User"
+  | "Books List"
+  | "Add Book";
 
 export type AllTranslations = Record<keys, StrictTranslation>;

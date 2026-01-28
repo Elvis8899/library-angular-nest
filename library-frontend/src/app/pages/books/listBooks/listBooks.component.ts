@@ -29,6 +29,10 @@ import { UserService } from "@app/auth/services/user.service";
 import { RentalService } from "@app/auth/services/rental.service";
 import { BookRentEntity } from "@app/@core/entities/bookRental.entity";
 import { CredentialsService, ROLE } from "@app/auth";
+import { TranslateModule } from "@ngx-translate/core";
+import { Logger } from "@app/@core/services";
+
+const log = new Logger("ListBooksComponent");
 
 export interface DialogData {
   users: UserEntity[];
@@ -40,7 +44,13 @@ export interface DialogData {
   selector: "app-list",
   templateUrl: "./listBooks.component.html",
   styleUrl: "./listBooks.component.scss",
-  imports: [MatFormFieldModule, MatInputModule, FormsModule, MatButtonModule],
+  imports: [
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
+    MatButtonModule,
+    TranslateModule,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListBooksComponent implements OnInit {
@@ -101,7 +111,7 @@ export class ListBooksComponent implements OnInit {
       },
       error: (error) => {
         //    this.isLoading = false;
-        console.error(error);
+        log.error(error);
       },
     });
     this._userService.getPaginatedUsers().subscribe({
@@ -110,7 +120,7 @@ export class ListBooksComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error(error);
+        log.error(error);
       },
     });
   }
@@ -124,7 +134,7 @@ export class ListBooksComponent implements OnInit {
   }
 
   isBookAvailable(book: BookEntity) {
-    console.log(book);
+    log.info(book);
     return book.bookItems.some(
       (item) => item.status === BookItemStatusEnum.Available
     );
@@ -146,7 +156,7 @@ export class ListBooksComponent implements OnInit {
       },
       error: (error: Error) => {
         this._toast.error(error?.message);
-        console.error(error);
+        log.error(error);
       },
     });
   }
@@ -159,7 +169,7 @@ export class ListBooksComponent implements OnInit {
       },
       error: (error) => {
         this._toast.error(error?.message);
-        console.error(error);
+        log.error(error);
       },
     });
   }
@@ -178,7 +188,7 @@ export class ListBooksComponent implements OnInit {
       },
       error: (error) => {
         this._toast.error(error?.message);
-        console.error(error);
+        log.error(error);
       },
     });
   }

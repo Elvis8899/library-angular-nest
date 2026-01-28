@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Simple logger system with the possibility of registering custom outputs.
  *

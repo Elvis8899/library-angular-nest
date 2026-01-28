@@ -1,11 +1,13 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
+import { Logger } from "@app/@core/services";
 import { AuthenticationService, CredentialsService } from "@auth";
+
+const log = new Logger("LogoutComponent");
 
 @Component({
   selector: "app-logout",
-  templateUrl: "./logout.component.html",
-  styleUrls: ["./logout.component.scss"],
+  template: "<p>Logged Out!</p>",
 })
 export class LogoutComponent implements OnInit {
   private readonly _authService = inject(AuthenticationService);
@@ -27,7 +29,7 @@ export class LogoutComponent implements OnInit {
           });
         },
         error: () => {
-          console.error("Error logging out");
+          log.error("Error logging out");
         },
       });
     }

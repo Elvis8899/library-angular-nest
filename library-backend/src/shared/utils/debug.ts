@@ -39,7 +39,7 @@ export class DebugClass {
   /**
    * Passthrough. Usefull for using a break point
    */
-  passthrough<U = unknown>(a: U) {
+  passthrough<U>(a: U) {
     return a;
   }
 

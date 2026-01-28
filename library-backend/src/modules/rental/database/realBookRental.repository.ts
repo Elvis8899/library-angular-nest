@@ -22,46 +22,48 @@ export class RealBookRentalRepository implements BookRentalRepository {
   private defaultErrorException = unknownException;
 
   private findMany = TE.tryCatchK(
-    this.prisma.bookRentalDetails.findMany,
+    this.prisma.bookRentalDetails.findMany.bind(this.prisma.bookRentalDetails),
     this.defaultErrorException,
   );
 
   private findFirst = TE.tryCatchK(
-    this.prisma.bookRentalDetails.findFirst,
+    this.prisma.bookRentalDetails.findFirst.bind(this.prisma.bookRentalDetails),
     this.defaultErrorException,
   );
   private findUnique = TE.tryCatchK(
-    this.prisma.bookRentalDetails.findUnique,
+    this.prisma.bookRentalDetails.findUnique.bind(
+      this.prisma.bookRentalDetails,
+    ),
     this.defaultErrorException,
   );
 
   private count = TE.tryCatchK(
-    this.prisma.bookRentalDetails.count,
+    this.prisma.bookRentalDetails.count.bind(this.prisma.bookRentalDetails),
     this.defaultErrorException,
   );
 
   private delete = TE.tryCatchK(
-    this.prisma.bookRentalDetails.delete,
+    this.prisma.bookRentalDetails.delete.bind(this.prisma.bookRentalDetails),
     this.defaultErrorException,
   );
 
   private upsert = TE.tryCatchK(
-    this.prisma.bookRentalDetails.upsert,
+    this.prisma.bookRentalDetails.upsert.bind(this.prisma.bookRentalDetails),
     this.defaultErrorException,
   );
 
   private update = TE.tryCatchK(
-    this.prisma.bookRentalDetails.update,
+    this.prisma.bookRentalDetails.update.bind(this.prisma.bookRentalDetails),
     this.defaultErrorException,
   );
 
   private addItem = TE.tryCatchK(
-    this.prisma.bookItem.create,
+    this.prisma.bookItem.create.bind(this.prisma.bookItem),
     this.defaultErrorException,
   );
 
   private removeItem = TE.tryCatchK(
-    this.prisma.bookItem.delete,
+    this.prisma.bookItem.delete.bind(this.prisma.bookItem),
     this.defaultErrorException,
   );
 
@@ -155,7 +157,7 @@ export class RealBookRentalRepository implements BookRentalRepository {
   };
 
   save = (bookRentalRaw: Partial<BookRental>): TE.TaskEither<Error, void> => {
-    const { bookItem, user, ...bookRental } = bookRentalRaw;
+    const { bookItem: _, user: __, ...bookRental } = bookRentalRaw;
     return FPF.pipe(
       this.upsert({
         where: {

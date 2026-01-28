@@ -6,11 +6,19 @@
   "[prisma]": {
     "editor.defaultFormatter": "Prisma.prisma"
   },
-  "[html]":{
+  "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "[scss]":{
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[mjs]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsx-tags]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
-
 }

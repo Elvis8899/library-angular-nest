@@ -22,7 +22,7 @@ import { AppUpdateService, Logger } from "@core/services";
   styleUrl: "./app.component.scss",
 })
 export class AppComponent implements OnInit, OnDestroy {
-  title = "angular-boilerplate";
+  title = "library-frontend";
 
   private readonly _router = inject(Router);
   private readonly _titleService = inject(Title);
@@ -53,7 +53,6 @@ export class AppComponent implements OnInit, OnDestroy {
           this._router.routerState,
           this._router.routerState.root
         );
-
         if (titles.length === 0) {
           this._titleService.setTitle(this._translateService.instant("Home"));
         } else {

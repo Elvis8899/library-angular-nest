@@ -47,12 +47,12 @@ describe("[Unit] Create BookInfo", () => {
     const bookInfo = new BookInfoBuilder().buildCreateDTO();
 
     //When we create a bookInfo
-    const result = await createBookInfoHandler.execute(
+    const resultPromise = createBookInfoHandler.execute(
       new CreateBookInfo(bookInfo),
     );
 
     //Then it should have created a bookInfo
-    expect(result).toEqual(undefined);
+    await expect(resultPromise).resolves.toEqual(undefined);
 
     const bookInfos = await executeTask(bookInfoRepository.findAll());
     expect(bookInfos.length).toEqual(1);
@@ -63,12 +63,12 @@ describe("[Unit] Create BookInfo", () => {
 
     const bookInfo = new BookInfoBuilder().buildCreateDTO();
     //When we create a bookInfo
-    const result = await createBookInfoHandler.execute(
+    const resultPromise = createBookInfoHandler.execute(
       new CreateBookInfo(bookInfo),
     );
 
     //Then it should have created a bookInfo
-    expect(result).toEqual(undefined);
+    await expect(resultPromise).resolves.toEqual(undefined);
 
     const bookInfos = await executeTask(bookInfoRepository.findAll());
     expect(bookInfos.length).toEqual(1);

@@ -9,11 +9,9 @@ export enum BookItemStatusEnum {
 export const BookItem = z
   .object({
     id: UUID,
-    status: z
-      .nativeEnum(BookItemStatusEnum)
-      .default(BookItemStatusEnum.Available),
+    status: z.enum(BookItemStatusEnum).default(BookItemStatusEnum.Available),
     bookId: UUID,
   })
-  .merge(BaseDateEntity);
+  .and(BaseDateEntity);
 
 export type BookItem = z.infer<typeof BookItem>;

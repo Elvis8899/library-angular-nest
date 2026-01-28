@@ -27,10 +27,10 @@ export class PaginatedBookRentalsQuery implements IQuery {
 }
 
 @QueryHandler(PaginatedBookRentalsQuery)
-export class PaginatedBookRentalsQueryHandler
-  implements
-    IQueryHandler<PaginatedBookRentalsQuery, Paginated<BookRentalDetails>>
-{
+export class PaginatedBookRentalsQueryHandler implements IQueryHandler<
+  PaginatedBookRentalsQuery,
+  Paginated<BookRentalDetails>
+> {
   constructor(
     private readonly userRepository: BookRentalRepository,
     private readonly logger: PinoLogger,
@@ -53,7 +53,7 @@ export class PaginatedBookRentalsQueryHandler
       RE.bind("query", () =>
         Apply.sequenceS(RE.Applicative)({
           status: fromInputRE(
-            z.nativeEnum(RentalStatusEnum).optional(),
+            z.enum(RentalStatusEnum).optional(),
             "status",
           )(query.status),
           userId: fromInputRE(UUID.optional(), "uuid")(query.userId),

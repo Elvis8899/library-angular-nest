@@ -17,9 +17,10 @@ export class PaginatedUsersQuery implements IQuery {
 }
 
 @QueryHandler(PaginatedUsersQuery)
-export class PaginatedUsersQueryHandler
-  implements IQueryHandler<PaginatedUsersQuery, Paginated<User>>
-{
+export class PaginatedUsersQueryHandler implements IQueryHandler<
+  PaginatedUsersQuery,
+  Paginated<User>
+> {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly logger: PinoLogger,

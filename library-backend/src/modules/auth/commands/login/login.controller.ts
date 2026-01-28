@@ -27,6 +27,8 @@ export class LoginController {
   })
   @ApiUnauthorizedResponse({ description: "Forbidden" })
   public async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
-    return this.commandBus.execute<LoginCommand>(new LoginCommand(loginDto));
+    return this.commandBus.execute<LoginCommand, AuthResponseDto>(
+      new LoginCommand(loginDto),
+    );
   }
 }

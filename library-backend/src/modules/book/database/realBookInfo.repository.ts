@@ -20,56 +20,56 @@ export class RealBookInfoRepository implements BookInfoRepository {
   private defaultErrorException = unknownException;
 
   private findMany = TE.tryCatchK(
-    this.prisma.bookInfo.findMany,
+    this.prisma.bookInfo.findMany.bind(this.prisma.bookInfo),
     this.defaultErrorException,
   );
 
   private findFirst = TE.tryCatchK(
-    this.prisma.bookInfo.findFirst,
+    this.prisma.bookInfo.findFirst.bind(this.prisma.bookInfo),
     this.defaultErrorException,
   );
   private findUnique = TE.tryCatchK(
-    this.prisma.bookInfo.findUnique,
+    this.prisma.bookInfo.findUnique.bind(this.prisma.bookInfo),
     this.defaultErrorException,
   );
 
   private count = TE.tryCatchK(
-    this.prisma.bookInfo.count,
+    this.prisma.bookInfo.count.bind(this.prisma.bookInfo),
     this.defaultErrorException,
   );
 
   private delete = TE.tryCatchK(
-    this.prisma.bookInfo.delete,
+    this.prisma.bookInfo.delete.bind(this.prisma.bookInfo),
     this.defaultErrorException,
   );
 
   private upsert = TE.tryCatchK(
-    this.prisma.bookInfo.upsert,
+    this.prisma.bookInfo.upsert.bind(this.prisma.bookInfo),
     this.defaultErrorException,
   );
 
   private update = TE.tryCatchK(
-    this.prisma.bookInfo.update,
+    this.prisma.bookInfo.update.bind(this.prisma.bookInfo),
     this.defaultErrorException,
   );
 
   private findUniqueItem = TE.tryCatchK(
-    this.prisma.bookItem.findUnique,
+    this.prisma.bookItem.findUnique.bind(this.prisma.bookItem),
     this.defaultErrorException,
   );
 
   private addItem = TE.tryCatchK(
-    this.prisma.bookItem.create,
+    this.prisma.bookItem.create.bind(this.prisma.bookItem),
     this.defaultErrorException,
   );
 
   private removeItem = TE.tryCatchK(
-    this.prisma.bookItem.delete,
+    this.prisma.bookItem.delete.bind(this.prisma.bookItem),
     this.defaultErrorException,
   );
 
   private updateItem = TE.tryCatchK(
-    this.prisma.bookItem.update,
+    this.prisma.bookItem.update.bind(this.prisma.bookItem),
     this.defaultErrorException,
   );
 
@@ -156,7 +156,7 @@ export class RealBookInfoRepository implements BookInfoRepository {
   };
 
   save = (bookInfoRaw: BookInfo): TE.TaskEither<Error, void> => {
-    const { bookItems, ...bookInfo } = bookInfoRaw;
+    const { bookItems: _, ...bookInfo } = bookInfoRaw;
     return FPF.pipe(
       this.upsert({
         where: {

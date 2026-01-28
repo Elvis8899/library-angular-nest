@@ -16,8 +16,7 @@ import { PaginatedQueryParams } from "@shared/ddd/query.base";
 export abstract class FakeRepositoryBase<
   Entity extends { id: string },
   Query = undefined,
-> implements RepositoryDefaultPort<Entity>
-{
+> implements RepositoryDefaultPort<Entity> {
   protected dbItems: Entity[] = [];
 
   abstract baseValidator: (value: unknown) => E.Either<Error, Entity>;

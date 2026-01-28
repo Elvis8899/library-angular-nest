@@ -7,7 +7,9 @@ import { E, TE } from "@shared/functional/monads";
  * @param task: a TaskEither
  */
 export const executeTask = <E, A>(task: TE.TaskEither<E, A>): Promise<A> =>
-  new Promise(async (resolve, reject) => {
-    const result = await task();
-    return E.fold(reject, resolve)(result);
+  new Promise((resolve, reject) => {
+    (async () => {
+      const result = await task();
+      E.fold(reject, resolve)(result);
+    })().catch(reject);
   });

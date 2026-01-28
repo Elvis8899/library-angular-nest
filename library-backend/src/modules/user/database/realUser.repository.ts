@@ -20,36 +20,36 @@ export class RealUserRepository implements UserRepository {
   private defaultErrorException = unknownException;
 
   private findMany = TE.tryCatchK(
-    this.prisma.user.findMany,
+    this.prisma.user.findMany.bind(this.prisma.user),
     this.defaultErrorException,
   );
 
   private findFirst = TE.tryCatchK(
-    this.prisma.user.findFirst,
+    this.prisma.user.findFirst.bind(this.prisma.user),
     this.defaultErrorException,
   );
   private findUnique = TE.tryCatchK(
-    this.prisma.user.findUnique,
+    this.prisma.user.findUnique.bind(this.prisma.user),
     this.defaultErrorException,
   );
 
   private count = TE.tryCatchK(
-    this.prisma.user.count,
+    this.prisma.user.count.bind(this.prisma.user),
     this.defaultErrorException,
   );
 
   private delete = TE.tryCatchK(
-    this.prisma.user.delete,
+    this.prisma.user.delete.bind(this.prisma.user),
     this.defaultErrorException,
   );
 
   private upsert = TE.tryCatchK(
-    this.prisma.user.upsert,
+    this.prisma.user.upsert.bind(this.prisma.user),
     this.defaultErrorException,
   );
 
   private update = TE.tryCatchK(
-    this.prisma.user.update,
+    this.prisma.user.update.bind(this.prisma.user),
     this.defaultErrorException,
   );
 

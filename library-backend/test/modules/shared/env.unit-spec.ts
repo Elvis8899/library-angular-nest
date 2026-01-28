@@ -1,13 +1,13 @@
 import { getBaseEnvPath } from "@src/shared/utils/dotenv";
 
 describe("[Unit] Environment", () => {
-  it("Should return base env path for test", async () => {
+  it("Should return base env path for test", () => {
     //
     const res = getBaseEnvPath("test");
 
     expect(res).toBe("../../../.env.test");
   });
-  it("Should return default base env path", async () => {
+  it("Should return default base env path", () => {
     //
     const res = getBaseEnvPath(undefined);
 

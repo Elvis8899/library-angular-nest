@@ -48,10 +48,10 @@ describe("[Unit] Create User", () => {
     const user = new UserBuilder().buildCreateDTO();
 
     //When we create a user
-    const result = await createUserHandler.execute(new CreateUser(user));
+    const resultPromise = createUserHandler.execute(new CreateUser(user));
 
     //Then it should have created a user
-    expect(result).toEqual(undefined);
+    await expect(resultPromise).resolves.toEqual(undefined);
 
     const users = await executeTask(userRepository.findAll());
     expect(users.length).toEqual(1);
@@ -65,10 +65,10 @@ describe("[Unit] Create User", () => {
       .withCPF("")
       .buildCreateDTO();
     //When we create a user
-    const result = await createUserHandler.execute(new CreateUser(user));
+    const resultPromise = createUserHandler.execute(new CreateUser(user));
 
     //Then it should have created a user
-    expect(result).toEqual(undefined);
+    await expect(resultPromise).resolves.toEqual(undefined);
 
     const users = await executeTask(userRepository.findAll());
     expect(users.length).toEqual(1);

@@ -36,7 +36,7 @@ export class FakeBookInfoRepository
       ),
       O.chain((book) =>
         FPF.pipe(
-          book.bookItems || [],
+          book.bookItems,
           A.findFirst((item) => item.id === bookItemId),
           O.map(validateFromUnknown(BookItem, "BookItem")),
         ),
@@ -55,7 +55,7 @@ export class FakeBookInfoRepository
       ),
       O.chain((book) =>
         FPF.pipe(
-          book.bookItems || [],
+          book.bookItems,
           A.findIndex((item) => item.id === bookItemId),
           O.chain((index) => A.deleteAt(index)(book.bookItems)),
           O.map((items) => (book.bookItems = items)),
@@ -74,7 +74,7 @@ export class FakeBookInfoRepository
         ),
         O.chain((book) =>
           FPF.pipe(
-            book.bookItems || [],
+            book.bookItems,
             A.findIndex((item) => item.id === bookItem.id),
 
             O.chain((index) =>

@@ -16,7 +16,7 @@ beforeAll(async () => {
 });
 
 describe("[Unit] Logger", () => {
-  it("Logger should return uuid if requestId is missing in request", async () => {
+  it("Logger should return uuid if requestId is missing in request", () => {
     // When getting req id
     const res = getGenReqId(FPF.unsafeCoerce({}), FPF.unsafeCoerce({}));
 

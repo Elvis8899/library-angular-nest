@@ -17,9 +17,10 @@ export class PaginatedBookInfosQuery implements IQuery {
 }
 
 @QueryHandler(PaginatedBookInfosQuery)
-export class PaginatedBookInfosQueryHandler
-  implements IQueryHandler<PaginatedBookInfosQuery, Paginated<BookInfo>>
-{
+export class PaginatedBookInfosQueryHandler implements IQueryHandler<
+  PaginatedBookInfosQuery,
+  Paginated<BookInfo>
+> {
   constructor(
     private readonly bookInfoRepository: BookInfoRepository,
     private readonly logger: PinoLogger,

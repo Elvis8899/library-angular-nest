@@ -26,7 +26,7 @@ export class GetUserByIdController {
   })
   async paginatedUsers(@Param("id") id: string): Promise<UserDto> {
     return this.queryBus
-      .execute<GetUserByIdQuery>(new GetUserByIdQuery(id))
+      .execute<GetUserByIdQuery, UserDto>(new GetUserByIdQuery(id))
       .then((result) => result);
   }
 }

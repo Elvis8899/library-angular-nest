@@ -51,9 +51,9 @@ describe("[Integration] User repository", () => {
 
     //Then we should have retrieved him
 
-    const { createdAt, updatedAt, ...userToCompare } = user;
+    const { createdAt: _, updatedAt: __, ...userToCompare } = user;
 
-    return expect(savedUser).toMatchObject(O.some(userToCompare));
+    expect(savedUser).toMatchObject(O.some(userToCompare));
   });
 
   it("Fails to get user by cpf", async () => {
@@ -67,7 +67,7 @@ describe("[Integration] User repository", () => {
     const savedUser = await executeTask(userRepository.findByCPF(fakeCpf));
 
     //Then we should have retrieved none
-    return expect(savedUser).toMatchObject(O.none);
+    expect(savedUser).toMatchObject(O.none);
   });
 
   it.each([
@@ -86,7 +86,7 @@ describe("[Integration] User repository", () => {
       },
     });
 
-    return expect(savedUser).toMatchObject({
+    expect(savedUser).toMatchObject({
       id: user.id,
       name: user.name,
       role: user.role,
@@ -113,7 +113,7 @@ describe("[Integration] User repository", () => {
         executeTask(userRepository.findAll()),
       ]);
 
-    const { createdAt, updatedAt, ...userToCompare } = user;
+    const { createdAt: ___, updatedAt: __, ...userToCompare } = user;
 
     expect(resultById).toMatchObject(O.some(userToCompare));
     expect(resultByEmail).toMatchObject(O.some(userToCompare));
@@ -165,7 +165,7 @@ describe("[Integration] User repository", () => {
     );
     const savedUsers = await prismaService.user.findMany({});
 
-    return expect(savedUsers.length).toBe(1);
+    expect(savedUsers.length).toBe(1);
   });
 
   it("Successfully save admin without cpf", async () => {
@@ -185,7 +185,7 @@ describe("[Integration] User repository", () => {
       },
     });
 
-    return expect(savedUser?.id).toBe(user.id);
+    expect(savedUser?.id).toBe(user.id);
   });
 
   it("Return null when there is no user", async () => {

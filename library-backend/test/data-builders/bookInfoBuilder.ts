@@ -25,7 +25,7 @@ export class BookInfoBuilder {
 
   constructor(index?: number) {
     if (index) {
-      this.name = "livro " + index;
+      this.name = "livro " + index.toString();
       this.id = createTestId(TableNameEnum.BookInfo, index);
     }
     this.defaultProperties = {

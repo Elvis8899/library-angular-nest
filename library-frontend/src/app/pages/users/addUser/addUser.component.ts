@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
+import { Logger } from "@app/@core/services";
 import { validateCPF } from "@app/@core/utils";
 import { ROLE } from "@app/auth";
 import { UserService } from "@app/auth/services/user.service";
@@ -8,6 +9,7 @@ import { UserEntity } from "@core/entities";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { noop } from "rxjs";
 
+const log = new Logger("AddUsersComponent");
 @Component({
   selector: "app-list",
   templateUrl: "./addUser.component.html",
@@ -46,7 +48,7 @@ export class AddUsersComponent implements OnInit {
         },
         error: (error: Error) => {
           this._toast.error(error?.message);
-          console.error(error);
+          log.error(error);
         },
       });
   }

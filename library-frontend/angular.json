@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "angular-boilerplate": {
+    "library-frontend": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -19,10 +19,14 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/angular-boilerplate",
+            "outputPath": "dist/library-frontend",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "polyfills": ["zone.js", "@angular/localize/init", "reflect-metadata"],
+            "polyfills": [
+              "zone.js",
+              "@angular/localize/init",
+              "reflect-metadata"
+            ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -69,11 +73,11 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "angular-boilerplate:build:production"
+              "buildTarget": "library-frontend:build:production"
             },
             "development": {
               "proxyConfig": "proxy.conf.json",
-              "buildTarget": "angular-boilerplate:build:development"
+              "buildTarget": "library-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -82,22 +86,7 @@
           "builder": "@angular/build:extract-i18n"
         },
         "test": {
-          "builder": "@angular/build:karma",
-          "options": {
-            "polyfills": ["zone.js", "zone.js/testing", "@angular/localize/init"],
-            "tsConfig": "tsconfig.spec.json",
-            "inlineStyleLanguage": "scss",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              },
-              "src/robots.txt",
-              "src/assets"
-            ],
-            "styles": ["src/styles.scss"],
-            "scripts": []
-          }
+          "builder": "@angular/build:unit-test"
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",

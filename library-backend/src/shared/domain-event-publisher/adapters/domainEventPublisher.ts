@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
-import { FPF, TE } from "@shared/functional/monads";
+import { E, FPF, TE } from "@shared/functional/monads";
 import { DomainEvent } from "@shared/domain-event-publisher/domain/domainEvent";
 import { validateWith } from "@src/shared/utils/validateWith";
 import { unknownException } from "@src/shared/utils/unknownException";
@@ -14,8 +14,8 @@ export class DomainEventPublisher {
       domainEvent,
       validateWith(DomainEvent, "DomainEvent"),
       TE.fromEither,
-      TE.chainW(
-        TE.tryCatchK(async (event: DomainEvent) => {
+      TE.chainEitherK(
+        E.tryCatchK((event: DomainEvent) => {
           this.eventEmitter.emit(event.eventKey, event.payload);
         }, unknownException),
       ),

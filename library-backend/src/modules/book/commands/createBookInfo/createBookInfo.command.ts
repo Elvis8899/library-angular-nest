@@ -18,9 +18,10 @@ export class CreateBookInfo implements ICommand {
 }
 
 @CommandHandler(CreateBookInfo)
-export class CreateBookInfoHandler
-  implements ICommandHandler<CreateBookInfo, void>
-{
+export class CreateBookInfoHandler implements ICommandHandler<
+  CreateBookInfo,
+  void
+> {
   constructor(
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly bookInfoRepository: BookInfoRepository,

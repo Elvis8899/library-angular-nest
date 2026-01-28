@@ -16,7 +16,7 @@ beforeAll(async () => {
 });
 
 describe("[Unit] Debugger", () => {
-  it("Debug helpers should successfully work", async () => {
+  it("Debug helpers should successfully work", () => {
     // With a debugger helper
     debug = new DebugClass(logger);
 
@@ -31,7 +31,7 @@ describe("[Unit] Debugger", () => {
     const pipedValue = FPF.pipe(
       2,
       debug.time("time"),
-      debug.passthrough,
+      debug.passthrough.bind(debug),
       debug.timeEnd("time"),
       debug.printTime(true),
       debug.time("time2"),
@@ -53,7 +53,7 @@ describe("[Unit] Debugger", () => {
     expect(spyPrintTime).toHaveBeenCalled();
   });
 
-  it("Should create debugger with default console", async () => {
+  it("Should create debugger with default console", () => {
     // Debug creation should not fail with default console
     expect(new DebugClass()).toBeTruthy();
   });

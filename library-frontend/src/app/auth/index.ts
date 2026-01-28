@@ -1,6 +1,4 @@
-export * from "./auth.module";
-export * from "./auth.routing";
-export * from "./login/login.component";
+export * from "../pages/auth/login/login.component";
 export * from "./guard/authentication.guard";
 
 // Services

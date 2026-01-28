@@ -7,7 +7,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { TranslateDirective, TranslatePipe } from "@ngx-translate/core";
-import { LanguageSelectorComponent } from "../../i18n/language-selector.component";
+import { LanguageSelectorComponent } from "@app/i18n";
 
 @UntilDestroy()
 @Component({
@@ -54,18 +54,12 @@ export class LoginComponent {
           // Navigate to the home page or any other page after successful login.
           if (credentials) {
             this._credentialsService.setCredentials(credentials);
-            console.log("Login successful");
             const route =
               credentials.user?.role === "admin" ? "/users/list" : "/books";
-            this._router
-              .navigate(
-                [this._route.snapshot.queryParams["redirect"] || route],
-                { replaceUrl: true }
-              )
-              .then(() => {
-                // Handle the navigation
-                console.log("Navigated to initial route");
-              });
+            this._router.navigate(
+              [this._route.snapshot.queryParams["redirect"] || route],
+              { replaceUrl: true }
+            );
           }
         },
         error: (error) => {

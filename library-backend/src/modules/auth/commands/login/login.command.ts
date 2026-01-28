@@ -21,9 +21,10 @@ export class LoginCommand implements ICommand {
 }
 
 @CommandHandler(LoginCommand)
-export class LoginCommandHandler
-  implements ICommandHandler<LoginCommand, AuthResponseDto>
-{
+export class LoginCommandHandler implements ICommandHandler<
+  LoginCommand,
+  AuthResponseDto
+> {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,

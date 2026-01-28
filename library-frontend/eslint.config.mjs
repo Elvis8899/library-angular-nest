@@ -41,6 +41,7 @@ export default defineConfig(
     processor: angular.processInlineTemplates,
     // Override specific rules for TypeScript files (these will take priority over the extended configs above)
     rules: {
+      'no-console': ['error'],
       '@angular-eslint/directive-selector': [
         'error',
         {

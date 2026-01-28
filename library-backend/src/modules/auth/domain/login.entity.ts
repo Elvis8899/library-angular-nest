@@ -1,8 +1,8 @@
-import { UserRoleEnum } from "@prisma/client";
+import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
 import { z } from "zod";
 
 export const LoginInput = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(1),
 });
 
@@ -19,5 +19,5 @@ export type RequestJWTPayload = {
 };
 
 export type AuthenticatedRequest = {
-  user: RequestJWTPayload;
+  user?: RequestJWTPayload;
 };

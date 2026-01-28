@@ -59,7 +59,7 @@ describe("[Unit] Endpoint Response - Subscriber", () => {
     });
     //When the function is called
     const resultPromise = createBookInfoSubscriber.afterBookInfoCreatedEvent(
-      responseWatcherEvent["payload"],
+      responseWatcherEvent.payload,
     );
 
     //Then it should resolve to undefined

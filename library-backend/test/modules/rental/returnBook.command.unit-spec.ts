@@ -85,12 +85,12 @@ describe("[Unit] Update BookInfo", () => {
     const bookRental = bookRentalBuilder.build();
     await executeTask(bookRentalRepository.save(bookRental));
     //When we update it
-    const result = await returnBookCommandHandler.execute(
+    const resultPromise = returnBookCommandHandler.execute(
       new ReturnBookCommand(bookRentalBuilder.build().id),
     );
 
     //Then it should have suscessfully updated
-    expect(result).toEqual(undefined);
+    await expect(resultPromise).resolves.toEqual(undefined);
 
     const bookRentals = await executeTask(bookRentalRepository.findAll());
     expect(bookRentals.length).toEqual(1);
@@ -144,12 +144,12 @@ describe("[Unit] Update BookInfo", () => {
 
     const spy = jest.spyOn(eventBookInfo, "publishEvent");
 
-    const result = await returnBookCommandHandler.execute(
+    const resultPromise = returnBookCommandHandler.execute(
       new ReturnBookCommand(bookRentalBuilder.build().id),
     );
 
     //Then it should have suscessfully updated
-    expect(result).toEqual(undefined);
+    await expect(resultPromise).resolves.toEqual(undefined);
 
     //And it should have emitted an event
     expect(spy).toHaveBeenCalledTimes(1);

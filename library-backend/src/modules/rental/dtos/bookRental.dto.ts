@@ -31,7 +31,7 @@ export class BookRentalDto extends BaseEntityDto {
     description: "Status da Locação",
     required: true,
     enum: RentalStatus,
-    default: RentalStatus["rented"],
+    default: RentalStatus.rented,
   })
   rentalStatus!: RentalStatus;
 }

@@ -4,6 +4,9 @@ import { UserService } from "@app/auth/services/user.service";
 import { UserEntity } from "@core/entities";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { TranslateDirective } from "@ngx-translate/core";
+import { Logger } from "@app/@core/services";
+
+const log = new Logger("ListUsersComponent");
 
 @Component({
   selector: "app-list",
@@ -26,7 +29,7 @@ export class ListUsersComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error(error);
+        log.error(error);
       },
     });
   }

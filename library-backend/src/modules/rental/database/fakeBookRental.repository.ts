@@ -21,8 +21,10 @@ export class FakeBookRentalRepository
     params: PaginatedQueryParams<BookRentalFindAllQuery>,
   ): TE.TaskEither<Error, Paginated<BookRental>> => {
     const filter = (item: BookRental) =>
-      (params.query.status ? item.rentalStatus == params.query.status : true) &&
-      (params.query.userId ? item.userId == params.query.userId : true);
+      (params.query?.status
+        ? item.rentalStatus == params.query.status
+        : true) &&
+      (params.query?.userId ? item.userId == params.query.userId : true);
     return this.paginatedFindMany(filter)(this.baseValidator)(params);
   };
 }

@@ -1,10 +1,7 @@
 import { FPF } from "../functional/monads";
 
-export const getEntityAmount = <Entity extends object>(
-  entity: Entity,
-): number =>
+export const getEntityAmount = (entity: object): number =>
   "amount" in entity && typeof entity.amount === "number" ? entity.amount : 1;
 
-export const multiplyByAmount = <Entity extends object, Result extends number>(
-  fn: (entity: Entity) => Result,
-) => FPF.flow((entity: Entity) => getEntityAmount(entity) * fn(entity));
+export const multiplyByAmount = (fn: (entity: object) => number) =>
+  FPF.flow((entity: object) => getEntityAmount(entity) * fn(entity));

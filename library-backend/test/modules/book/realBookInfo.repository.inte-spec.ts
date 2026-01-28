@@ -60,7 +60,7 @@ describe("[Integration] BookInfo repository", () => {
         },
       });
 
-      return expect(savedBookInfo).toMatchObject({
+      expect(savedBookInfo).toMatchObject({
         id: bookInfo.id,
         name: bookInfo.name,
       });
@@ -89,7 +89,7 @@ describe("[Integration] BookInfo repository", () => {
         executeTask(bookInfoRepository.findAll()),
       ]);
 
-      const { createdAt, updatedAt, ...bookInfoToCompare } = bookInfo;
+      const { createdAt: __, updatedAt: ___, ...bookInfoToCompare } = bookInfo;
 
       expect(resultById).toMatchObject(O.some(bookInfoToCompare));
       expect(resultPaginated.count).toBe(1);
@@ -141,7 +141,7 @@ describe("[Integration] BookInfo repository", () => {
     );
     const savedBookInfos = await prismaService.bookInfo.findMany({});
 
-    return expect(savedBookInfos.length).toBe(1);
+    expect(savedBookInfos.length).toBe(1);
   });
 
   it("Return null when there is no bookInfo", async () => {
@@ -187,7 +187,7 @@ describe("[Integration] BookInfo repository", () => {
         id: bookItem.id,
       },
     });
-    return expect(savedBookItem).toMatchObject({
+    expect(savedBookItem).toMatchObject({
       id: bookItem.id,
       status: bookItem.status,
       bookId: bookItem.bookId,
@@ -215,7 +215,7 @@ describe("[Integration] BookInfo repository", () => {
         id: bookItem.id,
       },
     });
-    return expect(savedBookItem).toBe(null);
+    expect(savedBookItem).toBe(null);
   });
 
   it("Successfully find bookItem by id", async () => {
@@ -237,7 +237,7 @@ describe("[Integration] BookInfo repository", () => {
     );
     //Then we should have deleted him
 
-    return expect(result).toMatchObject(
+    expect(result).toMatchObject(
       O.some({
         id: bookItem.id,
         status: bookItem.status,
@@ -270,7 +270,7 @@ describe("[Integration] BookInfo repository", () => {
         id: bookItem.id,
       },
     });
-    return expect(savedBookItem).toMatchObject({
+    expect(savedBookItem).toMatchObject({
       id: bookItem.id,
       status: newBookItem.status,
       bookId: bookItem.bookId,

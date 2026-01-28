@@ -1,6 +1,6 @@
 import { UnprocessableEntityException } from "@nestjs/common";
 import { E, FPF, ID } from "@shared/functional/monads";
-import { ZodTypeAny, z } from "zod";
+import { z } from "zod";
 
 /**
  * Decode, Either scope using zod. (Was io-ts)
@@ -12,7 +12,7 @@ import { ZodTypeAny, z } from "zod";
  * @param validator : an zod validator
  */
 
-export function validateWith<Validator extends ZodTypeAny>(
+export function validateWith<Validator extends z.ZodType>(
   validator: Validator,
   dataKind: string,
 ): (input: z.input<Validator>) => E.Either<Error, z.output<Validator>> {
@@ -32,7 +32,7 @@ export function validateWith<Validator extends ZodTypeAny>(
 }
 
 // For use on DB
-export const validateFromUnknown = <Validator extends ZodTypeAny>(
+export const validateFromUnknown = <Validator extends z.ZodType>(
   validator: Validator,
   dataKind: string,
 ) => FPF.flow(FPF.unsafeCoerce, validateWith<Validator>(validator, dataKind));

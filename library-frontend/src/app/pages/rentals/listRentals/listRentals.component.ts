@@ -1,9 +1,12 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { BookRentalEntity } from "@app/@core/entities/bookRental.entity";
+import { Logger } from "@app/@core/services";
 import { DateTimeUtility } from "@app/@core/utils";
 import { RentalService } from "@app/auth/services/rental.service";
 import { HotToastService } from "@ngxpert/hot-toast";
+
+const log = new Logger("ListRentalsComponent");
 
 @Component({
   selector: "app-list",
@@ -32,7 +35,7 @@ export class ListRentalsComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error(error);
+        log.error(error);
         this.isLoading = false;
       },
     });
@@ -59,7 +62,7 @@ export class ListRentalsComponent implements OnInit {
       },
       error: (error: Error) => {
         this._toast.error(error?.message);
-        console.error(error);
+        log.error(error);
       },
     });
   }

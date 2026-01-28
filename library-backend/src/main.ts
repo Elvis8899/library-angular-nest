@@ -22,8 +22,8 @@ async function bootstrap() {
   const fastifyInstance = app.getHttpAdapter().getInstance();
   fastifyInstance.decorateRequest("user", null);
   fastifyInstance.addHook("preHandler", (req, reply, next) => {
-    (req as typeof req & { user: RequestJWTPayload }).user =
-      (req as typeof req & { user: RequestJWTPayload }).user || {};
+    (req as typeof req & { user?: Partial<RequestJWTPayload> }).user =
+      (req as typeof req & { user?: RequestJWTPayload }).user || {};
     next();
   });
   const logger = app.get(Logger);
@@ -83,7 +83,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup("swagger", app, document);
 
-  app.register(fastifyRequestContext);
+  await app.register(fastifyRequestContext);
 
   await app.register(contentParser);
   // await app.register(multipart, {
@@ -120,7 +120,11 @@ async function bootstrap() {
 
   await app.listen(port, host);
 
-  logger.log(`API-Gateway is listening on port ${port}`);
+  logger.log(`API-Gateway is listening on port ${port.toString()}`);
 }
 
-bootstrap();
+bootstrap().catch((error: unknown) => {
+  /* eslint-disable-next-line no-console -- Main file - cant use logger */
+  console.error(error);
+  process.exit(1);
+});

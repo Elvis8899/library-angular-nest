@@ -1,7 +1,7 @@
 import { DateType } from "@src/shared/utils/DateType";
 
 describe("[Unit] Date Type", () => {
-  it("Should parse string dates", async () => {
+  it("Should parse string dates", () => {
     // With a valid date input
     const date = "2022-01-01T00:00:00.000Z";
 
@@ -12,7 +12,7 @@ describe("[Unit] Date Type", () => {
     expect(res.data).toBeInstanceOf(Date);
   });
 
-  it("Should parse number dates", async () => {
+  it("Should parse number dates", () => {
     // With a valid date input
     const date = 1577836800000;
 
@@ -23,7 +23,7 @@ describe("[Unit] Date Type", () => {
     expect(res.data).toBeInstanceOf(Date);
   });
 
-  it("Should parse Date dates", async () => {
+  it("Should parse Date dates", () => {
     // With a valid date input
     const date = new Date();
 
@@ -34,7 +34,7 @@ describe("[Unit] Date Type", () => {
     expect(res.data).toBeInstanceOf(Date);
   });
 
-  it("Should parse null", async () => {
+  it("Should parse null", () => {
     // With a valid date input
     const date = null;
 
@@ -45,7 +45,7 @@ describe("[Unit] Date Type", () => {
     expect(res.data).toBeInstanceOf(Date);
   });
 
-  it("Should return error on invalid Date", async () => {
+  it("Should return error on invalid Date", () => {
     // With an invalid date input
     const date = "asdasd";
 
@@ -58,7 +58,7 @@ describe("[Unit] Date Type", () => {
     );
   });
 
-  it("Should return error on invalid Date", async () => {
+  it("Should return error on invalid Date", () => {
     // With an invalid date input type
     const date = {};
 
@@ -68,7 +68,7 @@ describe("[Unit] Date Type", () => {
     expect(res.success).toBe(false);
     expect(res.error?.issues[0]?.message).toBe("Invalid input");
   });
-  it("Should return error on invalid Date", async () => {
+  it("Should return error on invalid Date", () => {
     // With an invalid date input type
 
     const res = DateType.safeParse([]);

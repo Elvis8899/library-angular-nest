@@ -12,9 +12,7 @@ import { PinoLogger } from "nestjs-pino";
 import { executeTask } from "@src/shared/utils/executeTask";
 import { BookInfoRepository } from "@src/modules/book/database/bookInfo.repository.port";
 import { AuthGuard } from "@src/modules/auth/guards/auth.guard";
-import { ExecutionContext } from "@nestjs/common";
-import { RequestJWTPayload } from "@src/modules/auth/domain/login.entity";
-import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
+import { mockAuthGuard } from "@test/data-builders/mockAuthGuard";
 
 let app: NestFastifyApplication;
 let testingModule: TestingModule;
@@ -28,22 +26,7 @@ beforeAll(async () => {
     .overrideProvider(PinoLogger)
     .useClass(FakeLoggerService)
     .overrideGuard(AuthGuard)
-    .useValue({
-      canActivate: (context: ExecutionContext) => {
-        const request = context.switchToHttp().getRequest();
-        const user: RequestJWTPayload = {
-          sub: "abc123",
-          email: "admin@admin.com",
-          role: UserRoleEnum.Admin,
-          iat: 0,
-          exp: 0,
-          aud: "",
-          iss: "",
-        };
-        request.user = user;
-        return true;
-      },
-    })
+    .useValue(mockAuthGuard())
     .compile();
 
   app = testingModule.createNestApplication<NestFastifyApplication>(
@@ -83,8 +66,8 @@ describe("[e2e] GET /v1/bookInfos", () => {
       page: 0,
     });
     expect(response.status).toBe(200);
-    expect(response.body.count).toBe(1);
-    expect(response.body.data.length).toBe(1);
+    expect(response.body?.count).toBe(1);
+    expect(response.body?.data?.length).toBe(1);
   });
 
   it("Should respond 200 with empty list", async () => {
@@ -93,6 +76,6 @@ describe("[e2e] GET /v1/bookInfos", () => {
       page: 1,
     });
     expect(response.status).toBe(200);
-    expect(response.body.count).toBe(0);
+    expect(response.body?.count).toBe(0);
   });
 });

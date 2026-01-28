@@ -1,3 +1,4 @@
+import { vi, type Mock } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { TranslateService, LangChangeEvent } from "@ngx-translate/core";
 import { noop, Subject } from "rxjs";
@@ -28,7 +29,7 @@ class MockTranslateService {
 describe("I18nService", () => {
   let i18nService: I18nService;
   let translateService: TranslateService;
-  let onLangChangeSpy: jasmine.Spy;
+  let onLangChangeSpy: Mock;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -42,11 +43,11 @@ describe("I18nService", () => {
     translateService = TestBed.inject(TranslateService);
 
     // Create spies
-    onLangChangeSpy = jasmine.createSpy("onLangChangeSpy");
+    onLangChangeSpy = vi.fn();
     translateService.onLangChange.subscribe((event: LangChangeEvent) => {
       onLangChangeSpy(event.lang);
     });
-    spyOn(translateService, "use").and.callThrough();
+    vi.spyOn(translateService, "use");
   });
 
   afterEach(() => {

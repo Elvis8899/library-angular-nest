@@ -22,9 +22,10 @@ export class UpdateBookInfo implements ICommand {
 }
 
 @CommandHandler(UpdateBookInfo)
-export class UpdateBookInfoHandler
-  implements ICommandHandler<UpdateBookInfo, void>
-{
+export class UpdateBookInfoHandler implements ICommandHandler<
+  UpdateBookInfo,
+  void
+> {
   constructor(
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly bookInfoRepository: BookInfoRepository,

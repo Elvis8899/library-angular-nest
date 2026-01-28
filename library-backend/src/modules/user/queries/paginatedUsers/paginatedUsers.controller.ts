@@ -11,8 +11,9 @@ import { PaginatedQueryRequestDto } from "@src/shared/api/paginated-query.reques
 import { PaginatedUsersQuery } from "./paginatedUsers.query";
 import { RolesGuard } from "@src/modules/auth/guards/roles.guard";
 import { Roles } from "@src/modules/auth/decorators/roles.decorator";
-import { UserRoleEnum } from "../../domain/user.entity";
+import { User, UserRoleEnum } from "../../domain/user.entity";
 import { AuthGuard } from "@src/modules/auth/guards/auth.guard";
+import { Paginated } from "@src/shared/ddd";
 
 @Controller("v1/")
 @ApiTags("Usuários")
@@ -36,7 +37,10 @@ export class PaginatedUserController {
     @Query() queryParams: PaginatedQueryRequestDto,
   ): Promise<PaginatedUserResponseDto> {
     return this.queryBus
-      .execute<PaginatedUsersQuery>(new PaginatedUsersQuery(queryParams))
+      .execute<
+        PaginatedUsersQuery,
+        Paginated<User>
+      >(new PaginatedUsersQuery(queryParams))
       .then((result) => new PaginatedUserResponseDto(result));
   }
 }

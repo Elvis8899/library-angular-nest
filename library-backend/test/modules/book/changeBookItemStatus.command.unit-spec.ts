@@ -49,7 +49,7 @@ describe("[Unit] Update BookInfo", () => {
 
     bookInfoBuilder.reset();
     const originalBookInfo = bookInfoBuilder.build();
-    await bookInfoRepository.save(originalBookInfo);
+    await executeTask(bookInfoRepository.save(originalBookInfo));
   });
 
   it("Should update bookInfo if bookInfo is valid", async () => {
@@ -57,7 +57,7 @@ describe("[Unit] Update BookInfo", () => {
     const { bookItems } = bookInfoBuilder.build();
 
     //When we update it
-    const result = await changeBookItemStatusHandler.execute(
+    const resultPromise = changeBookItemStatusHandler.execute(
       new ChangeBookItemStatus(
         bookItems[0]?.id || "",
         BookItemStatusEnum.Rented,
@@ -65,7 +65,7 @@ describe("[Unit] Update BookInfo", () => {
     );
 
     //Then it should have suscessfully updated
-    expect(result).toEqual(undefined);
+    await expect(resultPromise).resolves.toEqual(undefined);
 
     const bookInfos = await executeTask(bookInfoRepository.findAll());
     expect(bookInfos.length).toEqual(1);
@@ -78,7 +78,7 @@ describe("[Unit] Update BookInfo", () => {
 
     //When we update it without optional keys
     // bookInfoDTO.cpf = "";
-    const result = await changeBookItemStatusHandler.execute(
+    const resultPromise = changeBookItemStatusHandler.execute(
       new ChangeBookItemStatus(
         bookItems[0]?.id || "",
         BookItemStatusEnum.Rented,
@@ -86,7 +86,7 @@ describe("[Unit] Update BookInfo", () => {
     );
 
     //Then it should have updated the bookInfo
-    expect(result).toEqual(undefined);
+    await expect(resultPromise).resolves.toEqual(undefined);
 
     const bookInfos = await executeTask(bookInfoRepository.findAll());
     expect(bookInfos.length).toEqual(1);

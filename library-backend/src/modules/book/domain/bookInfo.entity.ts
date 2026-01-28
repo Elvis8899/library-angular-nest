@@ -11,6 +11,6 @@ export const BookInfo = z
     price: z.number(),
     bookItems: z.array(BookItem).optional().default([]),
   })
-  .merge(BaseDateEntity);
+  .and(BaseDateEntity);
 
 export type BookInfo = z.infer<typeof BookInfo>;

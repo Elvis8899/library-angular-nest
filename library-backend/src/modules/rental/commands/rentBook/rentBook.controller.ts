@@ -50,7 +50,7 @@ export class RentBookController {
     @Body() bookRentalInput: BookRentalDto,
     @Request() req: AuthenticatedRequest,
   ): Promise<void> {
-    if (req.user.role !== UserRoleEnum.Admin) {
+    if (req.user && req.user.role !== UserRoleEnum.Admin) {
       bookRentalInput.userId = req.user.sub;
     }
     return this.commandBus

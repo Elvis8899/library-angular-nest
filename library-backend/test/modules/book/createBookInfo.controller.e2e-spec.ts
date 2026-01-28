@@ -12,9 +12,7 @@ import { PinoLogger } from "nestjs-pino";
 import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
 import { unsafeCoerce } from "fp-ts/lib/function";
 import { AuthGuard } from "@src/modules/auth/guards/auth.guard";
-import { ExecutionContext } from "@nestjs/common";
-import { RequestJWTPayload } from "@src/modules/auth/domain/login.entity";
-import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
+import { mockAuthGuard } from "@test/data-builders/mockAuthGuard";
 
 let app: NestFastifyApplication;
 let testingModule: TestingModule;
@@ -27,22 +25,7 @@ beforeAll(async () => {
     .overrideProvider(PinoLogger)
     .useClass(FakeLoggerService)
     .overrideGuard(AuthGuard)
-    .useValue({
-      canActivate: (context: ExecutionContext) => {
-        const request = context.switchToHttp().getRequest();
-        const user: RequestJWTPayload = {
-          sub: "abc123",
-          email: "admin@admin.com",
-          role: UserRoleEnum.Admin,
-          iat: 0,
-          exp: 0,
-          aud: "",
-          iss: "",
-        };
-        request.user = user;
-        return true;
-      },
-    })
+    .useValue(mockAuthGuard())
     .compile();
 
   app = testingModule.createNestApplication<NestFastifyApplication>(

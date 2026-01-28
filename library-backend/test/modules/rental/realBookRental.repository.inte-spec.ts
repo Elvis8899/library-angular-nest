@@ -80,7 +80,7 @@ describe("[Integration] BookRental repository", () => {
         },
       });
 
-      return expect(savedBookRental).toMatchObject({
+      expect(savedBookRental).toMatchObject({
         id: bookRental.id,
       });
     },
@@ -108,7 +108,11 @@ describe("[Integration] BookRental repository", () => {
         executeTask(bookRentalRepository.findAll()),
       ]);
 
-      const { createdAt, updatedAt, ...bookRentalToCompare } = bookRental;
+      const {
+        createdAt: ___,
+        updatedAt: __,
+        ...bookRentalToCompare
+      } = bookRental;
 
       const { name: bookName, price } = new BookInfoBuilder().build();
       const { name: userName } = new UserBuilder().build();
@@ -168,7 +172,7 @@ describe("[Integration] BookRental repository", () => {
     );
     const savedBookRentals = await prismaService.bookRentalDetails.findMany({});
 
-    return expect(savedBookRentals.length).toBe(1);
+    expect(savedBookRentals.length).toBe(1);
   });
 
   it("Successfully save admin without cpf", async () => {
@@ -185,7 +189,7 @@ describe("[Integration] BookRental repository", () => {
       },
     });
 
-    return expect(savedBookRental?.id).toBe(bookRental.id);
+    expect(savedBookRental?.id).toBe(bookRental.id);
   });
 
   it("Return null when there is no bookRental", async () => {
