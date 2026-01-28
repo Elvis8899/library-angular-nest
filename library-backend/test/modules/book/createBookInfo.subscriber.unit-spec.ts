@@ -1,21 +1,21 @@
-import { AddBookItemHandler } from "@book/commands/addBookItem/addBookItem.command";
-import { CreateBookInfoHandler } from "@book/commands/createBookInfo/createBookInfo.command";
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
+import { Test } from "@nestjs/testing";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
+import { PinoLogger } from "nestjs-pino";
+import { CqrsModule } from "@nestjs/cqrs";
+import { CreateBookInfoSubscriber } from "@src/modules/book/subscriber/createBookInfo.subscriber";
+import { CreateBookInfoHandler } from "@src/modules/book/commands/createBookInfo/createBookInfo.command";
+import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { BookInfoRepository } from "@src/modules/book/database/bookInfo.repository.port";
+import { FakeBookInfoRepository } from "@src/modules/book/database/fakeBookInfo.repository";
 import {
   BOOK_INFO_CREATED,
   BookInfoCreatedEvent,
-} from "@book/domain/events/bookInfoCreated.event";
-import { CreateBookInfoSubscriber } from "@book/subscriber/createBookInfo.subscriber";
-import { CqrsModule } from "@nestjs/cqrs";
-import { Test } from "@nestjs/testing";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
-import { executeTask } from "@shared/utils/application/executeTask";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
-import { PinoLogger } from "nestjs-pino";
+} from "@src/modules/book/domain/events/bookInfoCreated.event";
+import { AddBookItemHandler } from "@src/modules/book/commands/addBookItem/addBookItem.command";
+import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
+import { executeTask } from "@src/shared/utils/executeTask";
 
 describe("[Unit] Endpoint Response - Subscriber", () => {
   let createBookInfoSubscriber: CreateBookInfoSubscriber;

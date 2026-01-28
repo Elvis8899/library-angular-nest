@@ -80,7 +80,7 @@ describe("[Unit] Update BookInfo", () => {
     // Given a potentially valid book rental
     const bookRental = bookRentalBuilder.buildCreateDTO();
     //When we update it
-    const result = await rentBookCommandHandler.execute(
+    const resultPromise = rentBookCommandHandler.execute(
       new RentBookCommand({
         bookItemId: bookRental.bookItemId,
         userId: bookRental.userId,
@@ -88,7 +88,7 @@ describe("[Unit] Update BookInfo", () => {
     );
 
     //Then it should have suscessfully updated
-    expect(result).toEqual(undefined);
+    await expect(resultPromise).resolves.toEqual(undefined);
 
     const bookRentals = await executeTask(bookRentalRepository.findAll());
     expect(bookRentals.length).toEqual(1);
@@ -98,16 +98,18 @@ describe("[Unit] Update BookInfo", () => {
     // Given a potentially valid book rental
     const bookRental = bookRentalBuilder.buildCreateDTO();
     // and book is not available
-    await bookInfoRepository.save(
-      new BookInfoBuilder()
-        .withBookItems([
-          {
-            id: createTestId(TableNameEnum.BookItem, 0),
-            status: BookItemStatusEnum.Rented,
-            bookId: createTestId(TableNameEnum.BookInfo, 0),
-          },
-        ])
-        .build(),
+    await executeTask(
+      bookInfoRepository.save(
+        new BookInfoBuilder()
+          .withBookItems([
+            {
+              id: createTestId(TableNameEnum.BookItem, 0),
+              status: BookItemStatusEnum.Rented,
+              bookId: createTestId(TableNameEnum.BookInfo, 0),
+            },
+          ])
+          .build(),
+      ),
     );
     //When we try renting it
     const resultPromise = rentBookCommandHandler.execute(

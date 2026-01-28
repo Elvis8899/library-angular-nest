@@ -20,7 +20,7 @@ export class UserBuilder {
 
   constructor(index?: number) {
     if (index) {
-      this.name = "usuario " + index;
+      this.name = "usuario " + index.toString();
       this.id = createTestId(TableNameEnum.User, index);
     }
     this.defaultProperties = {

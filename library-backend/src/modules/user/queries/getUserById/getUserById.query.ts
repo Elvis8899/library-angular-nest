@@ -14,9 +14,10 @@ export class GetUserByIdQuery implements IQuery {
 }
 
 @QueryHandler(GetUserByIdQuery)
-export class GetUserByIdQueryHandler
-  implements IQueryHandler<GetUserByIdQuery, User>
-{
+export class GetUserByIdQueryHandler implements IQueryHandler<
+  GetUserByIdQuery,
+  User
+> {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly logger: PinoLogger,

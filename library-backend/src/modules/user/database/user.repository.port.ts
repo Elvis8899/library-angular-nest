@@ -12,5 +12,5 @@ export abstract class UserRepository implements RepositoryDefaultPort<User> {
     params: PaginatedQueryParams,
   ) => TE.TaskEither<Error, Paginated<User>>;
   deleteById!: (id: string) => TE.TaskEither<Error, void>;
-  save!: <U extends User>(user: U) => TE.TaskEither<Error, void>;
+  save!: (user: User) => TE.TaskEither<Error, void>;
 }

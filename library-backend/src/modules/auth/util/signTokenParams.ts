@@ -2,9 +2,9 @@ import { JwtSignOptions } from "@nestjs/jwt";
 import { authConfig } from "../auth.config";
 import * as bcrypt from "bcrypt";
 
-export const getSignTokenParams = <T extends object>(
+export const getSignTokenParams = (
   sub: string,
-  payload: T,
+  payload: object,
 ): {
   payload: object;
   signOptions: JwtSignOptions;

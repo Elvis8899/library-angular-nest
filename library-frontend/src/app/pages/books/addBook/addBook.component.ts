@@ -1,9 +1,12 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
+import { Logger } from "@app/@core/services";
 import { BookService } from "@app/auth/services/book.service";
 import { BookEntity } from "@core/entities";
 import { HotToastService } from "@ngxpert/hot-toast";
+
+const log = new Logger("AddBookComponent");
 
 @Component({
   selector: "app-list",
@@ -37,7 +40,7 @@ export class AddBooksComponent implements OnInit {
         },
         error: (error: Error) => {
           this._toast.error(error?.message);
-          console.error(error);
+          log.error(error);
         },
       });
   }

@@ -28,10 +28,10 @@ export class ApiPrefixInterceptor implements HttpInterceptor {
     if (request.headers.get("noauth")) {
       return next.handle(request);
     }
-    console.log(request.url);
+
     let headers = request.headers;
     const { accessToken } = this._credentialsService.credentials || {};
-    const currentLang = this._translateService.currentLang.substring(0, 2);
+    const currentLang = this._translateService.getCurrentLang().substring(0, 2);
 
     if (accessToken) {
       if (!(request.body instanceof FormData)) {
@@ -65,12 +65,11 @@ export class ApiPrefixInterceptor implements HttpInterceptor {
       return next.handle(request).pipe(
         takeUntil(cancelSubject),
         catchError((error: HttpErrorResponse) => {
-          console.log("api error", error);
           if (error.status === 401 || error.status === 403) {
             this._credentialsService.setCredentials();
             window.location.href = "/login";
           }
-          return throwError(error);
+          return throwError(() => error);
         }),
         finalize(() => {
           this._ongoingRequests.delete(requestKey);

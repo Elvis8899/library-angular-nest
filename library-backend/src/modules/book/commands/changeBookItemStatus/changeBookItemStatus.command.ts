@@ -21,9 +21,10 @@ export class ChangeBookItemStatus implements ICommand {
 }
 
 @CommandHandler(ChangeBookItemStatus)
-export class ChangeBookItemStatusHandler
-  implements ICommandHandler<ChangeBookItemStatus, void>
-{
+export class ChangeBookItemStatusHandler implements ICommandHandler<
+  ChangeBookItemStatus,
+  void
+> {
   constructor(
     private readonly bookInfoRepository: BookInfoRepository,
     private readonly domainEventPublisher: DomainEventPublisher,
@@ -38,7 +39,7 @@ export class ChangeBookItemStatusHandler
       //Data validation
       Apply.sequenceS(RE.Applicative)({
         status: fromInputRE(
-          z.nativeEnum(BookItemStatusEnum),
+          z.enum(BookItemStatusEnum),
           "status",
         )(command.status),
         id: fromInputRE(UUID, "uuid")(command.id),

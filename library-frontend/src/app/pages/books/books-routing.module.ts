@@ -12,10 +12,12 @@ const routes: Routes = [
   {
     path: "list",
     component: ListBooksComponent,
+    data: { title: "Books List" },
   },
   {
     path: "add",
     component: AddBooksComponent,
+    data: { title: "Add Book" },
   },
 ];
 

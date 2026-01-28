@@ -52,7 +52,7 @@ describe("[Unit] Update User", () => {
     userBuilder.reset();
     const originalUser = userBuilder.build();
     originalUserId = originalUser.id;
-    await userRepository.save(originalUser);
+    await executeTask(userRepository.save(originalUser));
   });
 
   it("Should update user if user is valid", async () => {
@@ -60,12 +60,12 @@ describe("[Unit] Update User", () => {
     const userDTO = userBuilder.buildCreateDTO();
 
     //When we update it
-    const result = await updateUserHandler.execute(
+    const resultPromise = updateUserHandler.execute(
       new UpdateUser(userDTO, originalUserId),
     );
 
     //Then it should have suscessfully updated
-    expect(result).toEqual(undefined);
+    await expect(resultPromise).resolves.toEqual(undefined);
 
     const users = await executeTask(userRepository.findAll());
     expect(users.length).toEqual(1);
@@ -77,12 +77,12 @@ describe("[Unit] Update User", () => {
 
     //When we update it without optional keys
     userDTO.cpf = "";
-    const result = await updateUserHandler.execute(
+    const resultPromise = updateUserHandler.execute(
       new UpdateUser(userDTO, originalUserId),
     );
 
     //Then it should have updated the user
-    expect(result).toEqual(undefined);
+    await expect(resultPromise).resolves.toEqual(undefined);
 
     const users = await executeTask(userRepository.findAll());
     expect(users.length).toEqual(1);
@@ -141,7 +141,7 @@ describe("[Unit] Update User", () => {
     const user = new UserBuilder(2).build();
 
     const repeatCPF = user.cpf;
-    await userRepository.save(user);
+    await executeTask(userRepository.save(user));
 
     //When we update the user to have same name
     const userDTO = userBuilder.withCPF(repeatCPF).buildCreateDTO();
@@ -163,7 +163,7 @@ describe("[Unit] Update User", () => {
       .withEmail("usertwo@example.com");
     const secondUser = secondUserBuilder.build();
     const repeatEmail = userBuilder.build().email;
-    await userRepository.save(secondUser);
+    await executeTask(userRepository.save(secondUser));
 
     //When we update the user to have same name
     const userDTO = secondUserBuilder.withEmail(repeatEmail).buildCreateDTO();

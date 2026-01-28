@@ -21,9 +21,10 @@ export class RemoveBookItem implements ICommand {
 }
 
 @CommandHandler(RemoveBookItem)
-export class RemoveBookItemHandler
-  implements ICommandHandler<RemoveBookItem, void>
-{
+export class RemoveBookItemHandler implements ICommandHandler<
+  RemoveBookItem,
+  void
+> {
   constructor(
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly bookInfoRepository: BookInfoRepository,

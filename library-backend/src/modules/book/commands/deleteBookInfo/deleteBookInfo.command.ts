@@ -17,9 +17,10 @@ export class DeleteBookInfo implements ICommand {
 }
 
 @CommandHandler(DeleteBookInfo)
-export class DeleteBookInfoHandler
-  implements ICommandHandler<DeleteBookInfo, void>
-{
+export class DeleteBookInfoHandler implements ICommandHandler<
+  DeleteBookInfo,
+  void
+> {
   constructor(
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly bookInfoRepository: BookInfoRepository,

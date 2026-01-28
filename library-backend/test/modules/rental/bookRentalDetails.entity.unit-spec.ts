@@ -4,7 +4,7 @@ import { BookRentalDetails } from "@src/modules/rental/domain/bookRental.entity"
 describe("[Unit] Update BookInfo", () => {
   const bookRentalBuilder = new BookRentalBuilder();
 
-  it("Should return fines if book is not overdue", async () => {
+  it("Should return fines if book is not overdue", () => {
     const bookRentalDetails = BookRentalDetails.parse(
       bookRentalBuilder.build(),
     );
@@ -17,7 +17,7 @@ describe("[Unit] Update BookInfo", () => {
     });
   });
 
-  it("Should return fines if book is overdue", async () => {
+  it("Should return fines if book is overdue", () => {
     const bookRentalDetails = BookRentalDetails.parse(
       bookRentalBuilder
         .withOverdueDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))

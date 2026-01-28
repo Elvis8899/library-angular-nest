@@ -5,7 +5,7 @@ import {
   inject,
   Input,
 } from "@angular/core";
-import { I18nService } from "./i18n.service";
+import { I18nService } from "../i18n.service";
 import { NgClass } from "@angular/common";
 
 @Component({
@@ -24,7 +24,7 @@ export class LanguageSelectorComponent {
   private readonly _eRef = inject(ElementRef);
 
   get currentLanguage(): string {
-    const language = this._i18nService.language;
+    const language = this._i18nService.language || "";
     const parts = language.split("-");
     return parts.length > 1 ? parts[1] : "";
   }

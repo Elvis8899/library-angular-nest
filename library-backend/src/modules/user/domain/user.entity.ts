@@ -12,17 +12,14 @@ export const User = z
   .object({
     id: UUID,
     name: z.string().min(1),
-    email: z.string().email(),
+    email: z.email(),
     password: z.string(),
     cpf: DocumentType.optional().default("").or(z.literal("")),
-    role: z.nativeEnum(UserRoleEnum),
+    role: z.enum(UserRoleEnum),
   })
-  .merge(BaseDateEntity)
+  .and(BaseDateEntity)
   .refine((user) => {
-    return (
-      user.role === UserRoleEnum.Admin ||
-      (user.role === UserRoleEnum.Client && user.cpf)
-    );
+    return user.role === UserRoleEnum.Admin || user.cpf;
   }, "CPF ou CNPJ inválido");
 
 export type User = z.infer<typeof User>;

@@ -13,13 +13,11 @@ const getMidnightDate = (date: Date) => new Date(date.setHours(23, 59, 59, 0));
 export const BookRental = z
   .object({
     id: UUID,
-    rentalStatus: z
-      .nativeEnum(RentalStatusEnum)
-      .default(RentalStatusEnum.Rented),
+    rentalStatus: z.enum(RentalStatusEnum).default(RentalStatusEnum.Rented),
     bookItemId: z.string(),
     bookItem: z
       .object({
-        book: z.object({ name: z.string(), price: z.number() }),
+        book: z.object({ name: z.string(), price: z.number() }).optional(),
       })
       .optional(),
     user: z.object({ name: z.string() }).optional(),
@@ -32,7 +30,7 @@ export const BookRental = z
     ),
     deliveryDate: DateType.optional(),
   })
-  .merge(BaseDateEntity);
+  .and(BaseDateEntity);
 
 export type BookRental = z.infer<typeof BookRental>;
 

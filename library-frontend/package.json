@@ -1,5 +1,5 @@
 {
-  "name": "angular-boilerplate",
+  "name": "library-frontend",
   "version": "0.0.0",
   "packageManager": "yarn@1.22.22",
   "scripts": {
@@ -7,7 +7,7 @@
     "start": "ng serve",
     "serve": "ng serve --host 0.0.0.0",
     "build": "ng build",
-    "build:serve": "npx http-server -p 8080 -c-1 dist/angular-boilerplate/browser",
+    "build:serve": "npx http-server -p 8080 -c-1 dist/library-frontend/browser",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
@@ -50,7 +50,6 @@
     "@angular/compiler-cli": "^21.1.1",
     "@angular/language-service": "^21.1.1",
     "@angular/localize": "21.1.1",
-    "@colsen1991/ngx-translate-extract-marker": "3.0.1",
     "@eslint/js": "^9.30.0",
     "@ngx-rocket/scripts": "^5.2.3",
     "@types/jasmine": "~5.1.0",
@@ -63,11 +62,7 @@
     "globals": "^15.9.0",
     "husky": "^9.1.6",
     "jasmine-core": "~5.2.0",
-    "karma": "~6.4.0",
-    "karma-chrome-launcher": "~3.2.0",
-    "karma-coverage": "~2.2.0",
-    "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.1.0",
+    "jsdom": "^27.4.0",
     "postcss": "^8.5.6",
     "prettier": "3.6.2",
     "pretty-quick": "4.2.2",
@@ -78,6 +73,7 @@
     "stylelint-config-standard": "~40.0.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.54.0"
+    "typescript-eslint": "^8.54.0",
+    "vitest": "^4.0.18"
   }
 }

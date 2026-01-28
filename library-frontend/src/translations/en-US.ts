@@ -15,4 +15,6 @@ export const enUS: AllTranslations = {
   Logout: "Logout",
   "Users List": "Users List",
   "Create User": "Create User",
+  "Books List": "Books List",
+  "Add Book": "Add Book",
 };

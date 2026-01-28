@@ -16,10 +16,14 @@ import {
 import { PaginatedBookRentalResponseDto } from "../../dtos/bookRental.dto";
 import { PaginatedQueryRequestDto } from "@src/shared/api/paginated-query.request.dto";
 import { PaginatedBookRentalsQuery } from "./paginatedBookRentals.query";
-import { RentalStatusEnum } from "../../domain/bookRental.entity";
+import {
+  BookRentalDetails,
+  RentalStatusEnum,
+} from "../../domain/bookRental.entity";
 import { AuthenticatedRequest } from "@src/modules/auth/domain/login.entity";
 import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
 import { AuthGuard } from "@src/modules/auth/guards/auth.guard";
+import { Paginated } from "@src/shared/ddd";
 
 @Controller("v1/bookRentals")
 @ApiBearerAuth()
@@ -45,9 +49,10 @@ export class PaginatedBookRentalsController {
     const userId = user?.role === UserRoleEnum.Admin ? undefined : user?.sub;
     const status = RentalStatusEnum.Rented;
     return this.queryBus
-      .execute<PaginatedBookRentalsQuery>(
-        new PaginatedBookRentalsQuery(queryParams, status, userId),
-      )
+      .execute<
+        PaginatedBookRentalsQuery,
+        Paginated<BookRentalDetails>
+      >(new PaginatedBookRentalsQuery(queryParams, status, userId))
       .then((result) => new PaginatedBookRentalResponseDto(result));
   }
 }

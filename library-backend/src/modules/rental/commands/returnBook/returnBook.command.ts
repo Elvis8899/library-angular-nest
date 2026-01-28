@@ -22,9 +22,10 @@ export class ReturnBookCommand implements ICommand {
 }
 
 @CommandHandler(ReturnBookCommand)
-export class ReturnBookCommandHandler
-  implements ICommandHandler<ReturnBookCommand, void>
-{
+export class ReturnBookCommandHandler implements ICommandHandler<
+  ReturnBookCommand,
+  void
+> {
   constructor(
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly bookRentalRepository: BookRentalRepository,

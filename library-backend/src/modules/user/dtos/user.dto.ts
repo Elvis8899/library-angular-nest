@@ -28,7 +28,7 @@ export class UserDto extends BaseEntityDto {
     description: "Role do Usuario",
     required: true,
     enum: UserRoleEnum,
-    default: UserRoleEnum["Client"],
+    default: UserRoleEnum.Client,
   })
   role!: UserRoleEnum;
 }

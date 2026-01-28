@@ -45,7 +45,8 @@ export interface RepositoryDeleteByIdPort {
 }
 
 export interface RepositoryDefaultPort<Entity, Query = undefined>
-  extends RepositoryFindAllPort<Entity>,
+  extends
+    RepositoryFindAllPort<Entity>,
     RepositoryFindByIdPort<Entity>,
     RepositoryFindAllPaginatedPort<Entity, Query>,
     RepositorySavePort<Entity>,

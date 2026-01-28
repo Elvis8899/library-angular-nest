@@ -14,9 +14,10 @@ export class GetBookInfoByIdQuery implements IQuery {
 }
 
 @QueryHandler(GetBookInfoByIdQuery)
-export class GetBookInfoByIdQueryHandler
-  implements IQueryHandler<GetBookInfoByIdQuery, BookInfo>
-{
+export class GetBookInfoByIdQueryHandler implements IQueryHandler<
+  GetBookInfoByIdQuery,
+  BookInfo
+> {
   constructor(
     private readonly bookInfoRepository: BookInfoRepository,
     private readonly logger: PinoLogger,

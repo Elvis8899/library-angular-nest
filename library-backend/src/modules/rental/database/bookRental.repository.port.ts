@@ -8,9 +8,7 @@ export type BookRentalFindAllQuery = {
   status?: RentalStatusEnum;
 };
 
-export abstract class BookRentalRepository
-  implements RepositoryDefaultPort<BookRental>
-{
+export abstract class BookRentalRepository implements RepositoryDefaultPort<BookRental> {
   findById!: (id: string) => TE.TaskEither<Error, O.Option<BookRental>>;
   findAll!: () => TE.TaskEither<Error, BookRental[]>;
   findAllPaginated!: (

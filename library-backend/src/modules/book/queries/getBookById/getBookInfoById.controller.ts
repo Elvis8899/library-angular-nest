@@ -26,7 +26,7 @@ export class GetBookInfoByIdController {
   })
   async paginatedBookInfos(@Param("id") id: string): Promise<BookInfoDto> {
     return this.queryBus
-      .execute<GetBookInfoByIdQuery>(new GetBookInfoByIdQuery(id))
+      .execute<GetBookInfoByIdQuery, BookInfoDto>(new GetBookInfoByIdQuery(id))
       .then((result) => result);
   }
 }
