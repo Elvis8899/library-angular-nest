@@ -1,8 +1,10 @@
 <nav [class.pb]="navExpanded" [class.squeeze]="!navExpanded">
   <span
     (click)="toggleSidebar(!navExpanded)"
+    (keyup)="toggleSidebar(!navExpanded)"
     [ngClass]="{ open: navExpanded }"
     class="toggle-icon"
+    tabindex="0"
   >
     <!-- TODO: You can put any icon here, below span is just temporary for demo purpose  -->
     <span style="color: var(--gray-400)"><</span>
@@ -20,10 +22,12 @@
           @if (!item.divider) {
             <a
               (click)="activateSidebarItem(i)"
+              (keyup)="activateSidebarItem(i)"
               [class.active]="item.active"
               [ngClass]="{ disabled: item.disabled }"
               class="menu-item"
               id="menu-item-{{ i }}"
+              tabindex="1"
             >
               <div class="item">
                 @if (item.icon) {

@@ -11,14 +11,13 @@
           formControlName="name"
           required
         />
-        <div
-          class="text-danger"
-          *ngIf="
-            addBookForm.get('name')?.invalid && addBookForm.get('name')?.touched
-          "
-        >
-          <small>Nome inválido</small>
-        </div>
+        @if (
+          addBookForm.get("name")?.invalid && addBookForm.get("name")?.touched
+        ) {
+          <div class="text-danger">
+            <small>Nome inválido</small>
+          </div>
+        }
       </div>
       <div class="form-group">
         <label for="image">Imagem:</label>
@@ -29,15 +28,13 @@
           formControlName="image"
           required
         />
-        <div
-          class="text-danger"
-          *ngIf="
-            addBookForm.get('image')?.invalid &&
-            addBookForm.get('image')?.touched
-          "
-        >
-          <small>Imagem inválida</small>
-        </div>
+        @if (
+          addBookForm.get("image")?.invalid && addBookForm.get("image")?.touched
+        ) {
+          <div class="text-danger">
+            <small>Imagem inválida</small>
+          </div>
+        }
       </div>
       <div class="form-group">
         <label for="price">Preço:</label>
@@ -48,15 +45,13 @@
           formControlName="price"
           required
         />
-        <div
-          class="text-danger"
-          *ngIf="
-            addBookForm.get('price')?.invalid &&
-            addBookForm.get('price')?.touched
-          "
-        >
-          <small>CPF inválido</small>
-        </div>
+        @if (
+          addBookForm.get("price")?.invalid && addBookForm.get("price")?.touched
+        ) {
+          <div class="text-danger">
+            <small>CPF inválido</small>
+          </div>
+        }
       </div>
       <button type="submit" [disabled]="!addBookForm.valid">Create Book</button>
     </form>

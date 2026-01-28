@@ -6,7 +6,7 @@ import { humanize } from "@core/utils";
   standalone: true,
 })
 export class HumanizePipe implements PipeTransform {
-  transform(value: any, caseSplit = false): any {
+  transform(value: string, caseSplit = false): string {
     return humanize(value, caseSplit);
   }
 }

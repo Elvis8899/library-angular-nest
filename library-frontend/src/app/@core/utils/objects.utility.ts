@@ -1,14 +1,14 @@
 /**
  * The function removes null, undefined, and empty properties from an object recursively,
  * except for the properties specified in the whitelist.
- * @param {any} object - The input object from which you want to remove null, undefined, and empty properties.
+ * @param {object} object - The input object from which you want to remove null, undefined, and empty properties.
  * @param {string[]} [whitelist=[]] - An optional array of property names that should not be deleted if empty.
  * @returns An object with null, undefined, and empty properties removed, except for the properties in the whitelist.
  */
 export function removeNullAndUndefinedProperties(
-  object: any,
+  object: unknown,
   whitelist: string[] = []
-): any {
+): unknown {
   // Check if the input is null, undefined, or an empty string, return null for those cases
   if (object === null || object === undefined || object === "") {
     return null;
@@ -23,9 +23,12 @@ export function removeNullAndUndefinedProperties(
 
   // For objects: create a new object, recursively remove unwanted values, and include properties that aren't null, undefined, or an empty string
   if (typeof object === "object") {
-    const result: any = {};
+    const result: Record<string, unknown> = {};
     for (const key of Object.keys(object)) {
-      const value = removeNullAndUndefinedProperties(object[key], whitelist);
+      const value = removeNullAndUndefinedProperties(
+        (object as Record<string, unknown>)[key],
+        whitelist
+      );
       if (
         whitelist.includes(key) ||
         (value !== null && value !== undefined && value !== "")
@@ -79,6 +82,6 @@ export function OmitProperties(
  * @returns new object with only included keys
  * @param obj
  */
-export function checkIfObjectIsEmpty(obj: any): boolean {
+export function checkIfObjectIsEmpty(obj: object): boolean {
   return Object.keys(obj).length === 0;
 }

@@ -15,15 +15,15 @@ import { CredentialsService } from "@auth";
   providedIn: "root",
 })
 export class ApiPrefixInterceptor implements HttpInterceptor {
-  private readonly _ongoingRequests = new Map<string, Subject<any>>();
+  private readonly _ongoingRequests = new Map<string, Subject<unknown>>();
 
   private readonly _credentialsService = inject(CredentialsService);
   private readonly _translateService = inject(TranslateService);
 
-  intercept(
-    request: HttpRequest<any>,
+  intercept<T>(
+    request: HttpRequest<T>,
     next: HttpHandler
-  ): Observable<HttpEvent<any>> {
+  ): Observable<HttpEvent<T>> {
     // If the request has the 'noauth' header, don't add the Authorization header
     if (request.headers.get("noauth")) {
       return next.handle(request);
@@ -53,11 +53,13 @@ export class ApiPrefixInterceptor implements HttpInterceptor {
 
     const requestKey = this._getRequestKey(request);
 
-    const ongoingRequest = this._ongoingRequests.get(requestKey);
+    const ongoingRequest = this._ongoingRequests.get(requestKey) as Subject<
+      HttpEvent<T>
+    >;
     if (ongoingRequest) {
       return ongoingRequest.asObservable();
     } else {
-      const cancelSubject = new Subject<any>();
+      const cancelSubject = new Subject<unknown>();
       this._ongoingRequests.set(requestKey, cancelSubject);
 
       return next.handle(request).pipe(
@@ -78,7 +80,7 @@ export class ApiPrefixInterceptor implements HttpInterceptor {
     }
   }
 
-  private _getRequestKey(req: HttpRequest<any>): string {
+  private _getRequestKey(req: HttpRequest<unknown>): string {
     return `${req.method} ${req.urlWithParams}`;
   }
 }

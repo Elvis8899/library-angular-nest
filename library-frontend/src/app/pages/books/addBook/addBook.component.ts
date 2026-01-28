@@ -13,7 +13,7 @@ import { HotToastService } from "@ngxpert/hot-toast";
 })
 export class AddBooksComponent implements OnInit {
   private readonly _fb = inject(FormBuilder);
-  // eslint-disable-next-line @typescript-eslint/member-ordering
+
   addBookForm = this._fb.group({
     name: ["", [Validators.required, Validators.minLength(4)]],
     image: ["", [Validators.required, Validators.minLength(4)]],

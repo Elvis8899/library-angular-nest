@@ -48,7 +48,7 @@ export enum LogLevel {
 export type LogOutput = (
   source: string | undefined,
   level: LogLevel,
-  ...objects: any[]
+  ...objects: unknown[]
 ) => void;
 
 export class Logger {
@@ -77,7 +77,7 @@ export class Logger {
    * Logs messages or objects  with the debug level.
    * Works the same as console.log().
    */
-  debug(...objects: any[]) {
+  debug(...objects: unknown[]) {
     this._log(console.log, LogLevel.Debug, objects);
   }
 
@@ -85,7 +85,7 @@ export class Logger {
    * Logs messages or objects  with the info level.
    * Works the same as console.log().
    */
-  info(...objects: any[]) {
+  info(...objects: unknown[]) {
     this._log(console.log, LogLevel.Info, objects);
   }
 
@@ -93,7 +93,7 @@ export class Logger {
    * Logs messages or objects  with the warning level.
    * Works the same as console.log().
    */
-  warn(...objects: any[]) {
+  warn(...objects: unknown[]) {
     this._log(console.warn, LogLevel.Warning, objects);
   }
 
@@ -101,18 +101,18 @@ export class Logger {
    * Logs messages or objects  with the error level.
    * Works the same as console.log().
    */
-  error(...objects: any[]) {
+  error(...objects: unknown[]) {
     this._log(console.error, LogLevel.Error, objects);
   }
 
   private _log(
-    func: (...args: any[]) => void,
+    func: (...args: unknown[]) => void,
     level: LogLevel,
-    objects: any[]
+    objects: unknown[]
   ) {
     if (level <= Logger.level) {
       const log = this._source
-        ? ["[" + this._source + "]"].concat(objects)
+        ? ["[" + this._source + "]"].concat(objects as [])
         : objects;
       func.apply(console, log);
       Logger.outputs.forEach((output) =>

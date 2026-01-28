@@ -153,7 +153,7 @@ export class ListBooksComponent implements OnInit {
   addBookItem(book: BookEntity) {
     this.isLoading = true;
     this._bookService.addBookItem({ bookId: book.id }).subscribe({
-      next: (res) => {
+      next: () => {
         this.refresh();
         this.isLoading = false;
       },
@@ -173,7 +173,7 @@ export class ListBooksComponent implements OnInit {
       return;
     }
     this._bookService.deleteBookItem(id).subscribe({
-      next: (res) => {
+      next: () => {
         this.refresh();
       },
       error: (error) => {
