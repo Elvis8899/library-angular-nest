@@ -19,7 +19,6 @@ import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
 let app: NestFastifyApplication;
 let testingModule: TestingModule;
 let prismaService: PrismaService;
-const bookInfoBuilder = new BookInfoBuilder(1);
 
 beforeAll(async () => {
   testingModule = await Test.createTestingModule({
@@ -56,24 +55,16 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await prismaService.bookInfo.deleteMany();
   await app.close();
   await prismaService.$disconnect();
-});
-
-beforeEach(async () => {
-  await prismaService.bookInfo.deleteMany();
-  bookInfoBuilder.reset();
-});
-
-afterEach(async () => {
-  await prismaService.bookInfo.deleteMany();
 });
 
 describe("[e2e] POST /v1/bookInfos", () => {
   const v1Route = "/v1/bookInfos";
 
   it("Should respond 201 for a valid bookInfo", async () => {
-    const bookInfo = bookInfoBuilder.withName("Test").buildCreateDTO();
+    const bookInfo = new BookInfoBuilder(0).withName("Test").buildCreateDTO();
     const response = await request(app.getHttpServer())
       .post(v1Route)
       .send(bookInfo);
@@ -81,7 +72,7 @@ describe("[e2e] POST /v1/bookInfos", () => {
   });
 
   it("Should respond 422 for invalid name", async () => {
-    const bookInfo = bookInfoBuilder.withName("").buildCreateDTO();
+    const bookInfo = new BookInfoBuilder(1).withName("").buildCreateDTO();
     const response = await request(app.getHttpServer())
       .post(v1Route)
       .send(bookInfo);
@@ -89,7 +80,9 @@ describe("[e2e] POST /v1/bookInfos", () => {
   });
 
   it("Should respond 422 for invalid name type", async () => {
-    const bookInfo = bookInfoBuilder.withName(unsafeCoerce(1)).buildCreateDTO();
+    const bookInfo = new BookInfoBuilder(2)
+      .withName(unsafeCoerce(1))
+      .buildCreateDTO();
     const response = await request(app.getHttpServer())
       .post(v1Route)
       .send(bookInfo);

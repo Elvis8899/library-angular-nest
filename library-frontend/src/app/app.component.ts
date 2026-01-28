@@ -48,7 +48,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     merge(this._translateService.onLangChange, onNavigationEnd)
       .pipe(untilDestroyed(this))
-      .subscribe((event) => {
+      .subscribe(() => {
         const titles = this.getTitle(
           this._router.routerState,
           this._router.routerState.root

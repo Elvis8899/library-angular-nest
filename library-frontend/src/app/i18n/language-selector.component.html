@@ -1,14 +1,20 @@
 <div
   (click)="$event.stopPropagation(); $event.preventDefault()"
+  (keyup)="$event.stopPropagation(); $event.preventDefault()"
   [class.nav-item]="inNavbar"
   [class.open]="isDropdownOpen"
   class="language-selector"
+  tabindex="0"
 >
   <div
     class="dropdown-toggle"
     (click)="
       $event.stopPropagation(); $event.preventDefault(); toggleDropdown()
     "
+    (keyup)="
+      $event.stopPropagation(); $event.preventDefault(); toggleDropdown()
+    "
+    tabindex="1"
   >
     Lang: {{ currentLanguage }}
   </div>
@@ -18,8 +24,10 @@
         @for (language of languages; track language) {
           <li
             (click)="setLanguage(language)"
+            (keyup)="setLanguage(language)"
             [class.selected]="getLanguageCode(language) === currentLanguage"
             class="selectable-list-popover__list__item"
+            tabindex="2"
           >
             <div class="icon"></div>
             {{ language }}

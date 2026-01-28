@@ -20,17 +20,17 @@ const log = new Logger("ErrorHandlerInterceptor");
   providedIn: "root",
 })
 export class ErrorHandlerInterceptor implements HttpInterceptor {
-  intercept(
-    request: HttpRequest<any>,
+  intercept<T>(
+    request: HttpRequest<T>,
     next: HttpHandler
-  ): Observable<HttpEvent<any>> {
+  ): Observable<HttpEvent<T>> {
     return next
       .handle(request)
-      .pipe(catchError((error) => this._errorHandler(error)));
+      .pipe(catchError((error) => this._errorHandler<T>(error)));
   }
 
   //TODO: Customize the default error handler here if needed
-  private _errorHandler(response: HttpEvent<any>): Observable<HttpEvent<any>> {
+  private _errorHandler<T>(response: HttpEvent<T>): Observable<HttpEvent<T>> {
     console.log("HTTP Error", response);
     if (!environment.production) {
       // Do something with the error

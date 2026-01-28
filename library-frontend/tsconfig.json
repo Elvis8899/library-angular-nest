@@ -24,7 +24,6 @@
     "baseUrl": "./",
     "target": "ES2022",
     "module": "ES2022",
-    "lib": ["ES2022", "dom"],
     "paths": {
       "@app/*": ["src/app/*"],
       "@auth": ["src/app/auth"],

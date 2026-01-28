@@ -6,14 +6,13 @@ import { ROLE } from "@app/auth";
 import { UserService } from "@app/auth/services/user.service";
 import { UserEntity } from "@core/entities";
 import { HotToastService } from "@ngxpert/hot-toast";
-import { NgIf } from "@angular/common";
 import { noop } from "rxjs";
 
 @Component({
   selector: "app-list",
   templateUrl: "./addUser.component.html",
   styleUrl: "./addUser.component.scss",
-  imports: [ReactiveFormsModule, NgIf],
+  imports: [ReactiveFormsModule],
 })
 export class AddUsersComponent implements OnInit {
   ngOnInit = noop;
@@ -22,7 +21,6 @@ export class AddUsersComponent implements OnInit {
 
   private readonly _fb = inject(FormBuilder);
 
-  // eslint-disable-next-line @typescript-eslint/member-ordering
   addUserForm = this._fb.group({
     name: ["", [Validators.required, Validators.minLength(4)]],
     email: [

@@ -1,5 +1,9 @@
 import { inject, Injectable } from "@angular/core";
-import { LangChangeEvent, TranslateService } from "@ngx-translate/core";
+import {
+  LangChangeEvent,
+  StrictTranslation,
+  TranslateService,
+} from "@ngx-translate/core";
 import { BehaviorSubject, Observable, Subscription } from "rxjs";
 
 import { ptBR } from "../../translations/pt-BR";
@@ -31,7 +35,10 @@ export class I18nService {
     );
 
     // Embed languages to avoid extra HTTP requests
-    this._translateService.setTranslation("pt-BR", ptBR);
+    this._translateService.setTranslation(
+      "pt-BR",
+      ptBR as Record<string, StrictTranslation>
+    );
     this._translateService.setTranslation("en-US", enUS);
   }
 

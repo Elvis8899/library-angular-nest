@@ -3,27 +3,28 @@
     <h2 translate>Login</h2>
     <form [formGroup]="loginForm">
       <div class="input-field">
-        <input required type="text" formControlName="email" />
-        <label translate>Email</label>
-        <div
-          *ngIf="
-            loginForm.get('email')?.invalid && loginForm.get('email')?.touched
-          "
-        >
-          Email is required
-        </div>
+        <input required type="text" formControlName="email" id="emailInput" />
+        <label for="emailInput" translate>Email</label>
+        @if (
+          loginForm.get("email")?.invalid && loginForm.get("email")?.touched
+        ) {
+          <div>Email is required</div>
+        }
       </div>
       <div class="input-field">
-        <input required type="password" formControlName="password" />
-        <label translate>Password</label>
-        <div
-          *ngIf="
-            loginForm.get('password')?.invalid &&
-            loginForm.get('password')?.touched
-          "
-        >
-          Password is required
-        </div>
+        <input
+          required
+          type="password"
+          formControlName="password"
+          id="passwordInput"
+        />
+        <label for="passwordInput" translate>Password</label>
+        @if (
+          loginForm.get("password")?.invalid &&
+          loginForm.get("password")?.touched
+        ) {
+          <div>Password is required</div>
+        }
       </div>
       <button (click)="login()" type="submit" [disabled]="!loginForm.valid">
         {{ "Login" | translate }}

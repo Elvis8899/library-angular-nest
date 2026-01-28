@@ -11,14 +11,13 @@
           formControlName="name"
           required
         />
-        <div
-          class="text-danger"
-          *ngIf="
-            addUserForm.get('name')?.invalid && addUserForm.get('name')?.touched
-          "
-        >
-          <small>Nome inválido</small>
-        </div>
+        @if (
+          addUserForm.get("name")?.invalid && addUserForm.get("name")?.touched
+        ) {
+          <div class="text-danger">
+            <small>Nome inválido</small>
+          </div>
+        }
       </div>
       <div class="form-group">
         <label for="email">Email:</label>
@@ -29,27 +28,24 @@
           formControlName="email"
           required
         />
-        <div
-          class="text-danger"
-          *ngIf="
-            addUserForm.get('email')?.invalid &&
-            addUserForm.get('email')?.touched
-          "
-        >
-          <small>Email inválido</small>
-        </div>
+        @if (
+          addUserForm.get("email")?.invalid && addUserForm.get("email")?.touched
+        ) {
+          <div class="text-danger">
+            <small>Email inválido</small>
+          </div>
+        }
       </div>
       <div class="form-group">
         <label for="cpf">CPF:</label>
         <input type="text" id="cpf" name="cpf" formControlName="cpf" required />
-        <div
-          class="text-danger"
-          *ngIf="
-            addUserForm.get('cpf')?.invalid && addUserForm.get('cpf')?.touched
-          "
-        >
-          <small>CPF inválido</small>
-        </div>
+        @if (
+          addUserForm.get("cpf")?.invalid && addUserForm.get("cpf")?.touched
+        ) {
+          <div class="text-danger">
+            <small>CPF inválido</small>
+          </div>
+        }
       </div>
       <div class="form-group">
         <label for="password">Password:</label>
@@ -60,15 +56,14 @@
           formControlName="password"
           required
         />
-        <div
-          class="text-danger"
-          *ngIf="
-            addUserForm.get('password')?.invalid &&
-            addUserForm.get('password')?.touched
-          "
-        >
-          <small>Senha inválida</small>
-        </div>
+        @if (
+          addUserForm.get("password")?.invalid &&
+          addUserForm.get("password")?.touched
+        ) {
+          <div class="text-danger">
+            <small>Senha inválida</small>
+          </div>
+        }
       </div>
       <button type="submit" [disabled]="!addUserForm.valid">Create User</button>
     </form>

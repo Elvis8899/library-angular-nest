@@ -126,12 +126,16 @@ export class AppUpdateService {
     <a
       style="color: #E9380BFF"
       (click)="toastRef.close({ dismissedByAction: true })"
+      (keyup.enter)="toastRef.close({ dismissedByAction: true })"
+      tabindex="0"
       >Please Click to Update</a
     >
     or
     <a
       style="color: #E9380BFF"
       (click)="toastRef.close({ dismissedByAction: false })"
+      (keyup.enter)="toastRef.close({ dismissedByAction: false })"
+      tabindex="1"
       >Close</a
     >
   `,

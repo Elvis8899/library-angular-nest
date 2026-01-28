@@ -4,7 +4,6 @@ import {
   CanActivateChildFn,
   CanActivateFn,
   Router,
-  RouterStateSnapshot,
 } from "@angular/router";
 import { PERMISSIONS, PermissionService, ROLE } from "@auth";
 
@@ -25,8 +24,7 @@ import { PERMISSIONS, PermissionService, ROLE } from "@auth";
  * of that function, which is typically a redirect to an unauthorized page or action.
  */
 export const PermissionGuard: CanActivateFn & CanActivateChildFn = (
-  route: ActivatedRouteSnapshot,
-  state: RouterStateSnapshot
+  route: ActivatedRouteSnapshot
 ) => {
   const permissionService = inject(PermissionService);
   const router = inject(Router);
@@ -62,7 +60,8 @@ function checkPermissions(
   permissionService: PermissionService
 ): boolean {
   // Just an additional layer to check for special permissions, if you dont have any ignore it
-  const specialPermissionHandlers = {};
+  const specialPermissionHandlers: Partial<Record<PERMISSIONS, () => boolean>> =
+    {};
 
   for (const permission of permissions) {
     const specialPermissionCheck = specialPermissionHandlers[permission];

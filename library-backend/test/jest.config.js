@@ -21,5 +21,6 @@ const config = {
     "^@user/(.*)$": "<rootDir>/src/modules/user/$1",
     "^@configs/(.*)$": "<rootDir>/src/configs/$1",
   },
+  transformIgnorePatterns: ["node_modules/(?!(uuid)/)"],
 };
 module.exports = config;

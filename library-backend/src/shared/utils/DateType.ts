@@ -7,6 +7,6 @@ export const DateType = z
     z.date(),
     z.null().transform(() => new Date()),
   ])
-  .pipe(z.coerce.date())
-  .brand("Date");
+  .pipe(z.coerce.date());
+//.brand("Date");
 export type DateType = z.infer<typeof DateType>;

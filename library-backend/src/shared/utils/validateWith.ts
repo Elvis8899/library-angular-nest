@@ -18,13 +18,8 @@ export function validateWith<Validator extends ZodTypeAny>(
 ): (input: z.input<Validator>) => E.Either<Error, z.output<Validator>> {
   return FPF.flow(
     (input: z.input<Validator>) => validator.safeParse(input),
-    ID.map(
-      ({
-        success,
-        data,
-        error,
-      }: z.SafeParseReturnType<z.input<Validator>, z.output<Validator>>) =>
-        success ? E.right(data) : E.left(error),
+    ID.map(({ success, data, error }) =>
+      success ? E.right(data) : E.left(error),
     ),
     E.mapLeft(
       (error) =>

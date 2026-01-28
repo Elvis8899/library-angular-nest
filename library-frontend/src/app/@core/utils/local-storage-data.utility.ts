@@ -84,7 +84,7 @@ const getDataFromLocalStorage = <T>(key: string): T | null => {
   return JSON.parse(data);
 };
 
-const removeDataFromLocalStorage = (key: any) => {
+const removeDataFromLocalStorage = (key: string) => {
   // if (prodEnv) {
   //   key = btoa(prefix + key.toString()); // Encode key as base64
   //   key = xorWithSecretKey(key, secretKey); // XOR the key with the secret key

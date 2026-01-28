@@ -1,9 +1,9 @@
 import { Global, Module } from "@nestjs/common";
 import { LoggerModule as PinoLoggerModule } from "nestjs-pino";
 import { stdTimeFunctions } from "pino";
-import * as uuid from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import { logConfig } from "@src/shared/logger/logger.config";
-import { GenReqId } from "pino-http";
+import { GenReqId, Options } from "pino-http";
 
 declare module "http" {
   interface IncomingMessage {
@@ -11,7 +11,7 @@ declare module "http" {
   }
 }
 
-export const getGenReqId: GenReqId = (req) => req.requestId || uuid.v4();
+export const getGenReqId: GenReqId = (req) => req.requestId || uuidv4();
 
 @Global()
 @Module({
@@ -23,10 +23,9 @@ export const getGenReqId: GenReqId = (req) => req.requestId || uuid.v4();
         transport: logConfig.transport,
         genReqId: getGenReqId,
         formatters: { bindings: () => ({}) },
-
         // redact
         timestamp: stdTimeFunctions.isoTime,
-      },
+      } as Options,
     }),
   ],
 })

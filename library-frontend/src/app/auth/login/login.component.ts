@@ -7,7 +7,6 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { TranslateDirective, TranslatePipe } from "@ngx-translate/core";
-import { NgIf } from "@angular/common";
 import { LanguageSelectorComponent } from "../../i18n/language-selector.component";
 
 @UntilDestroy()
@@ -18,7 +17,6 @@ import { LanguageSelectorComponent } from "../../i18n/language-selector.componen
   imports: [
     TranslateDirective,
     ReactiveFormsModule,
-    NgIf,
     LanguageSelectorComponent,
     TranslatePipe,
   ],
@@ -32,7 +30,6 @@ export class LoginComponent {
   private readonly _credentialsService = inject(CredentialsService);
   private readonly _fb = inject(FormBuilder);
 
-  // eslint-disable-next-line @typescript-eslint/member-ordering
   loginForm = this._fb.group({
     email: [
       "",

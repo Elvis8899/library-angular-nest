@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { UUID } from "@src/shared/uuid/entities/uuid";
-import * as uuid from "uuid";
+import { v4 as uuidv4 } from "uuid";
 
 @Injectable()
 export class RealUUIDGeneratorService {
-  generateUUID = () => UUID.parse(uuid.v4());
+  generateUUID = () => UUID.parse(uuidv4());
 }

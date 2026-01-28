@@ -1,16 +1,18 @@
-export interface AllTranslations {
-  APP_NAME: string;
-  LANGUAGE: string;
-  Books: string;
-  Users: string;
-  "Hello World": string;
-  Home: string;
-  Login: string;
-  Username: string;
-  Password: string;
-  "Angular Boiler Plate V18": string;
-  Dashboard: string;
-  Logout: string;
-  "Users List": string;
-  "Create User": string;
-}
+import { StrictTranslation } from "@ngx-translate/core";
+type keys =
+  | "APP_NAME"
+  | "LANGUAGE"
+  | "Books"
+  | "Users"
+  | "Hello World"
+  | "Home"
+  | "Login"
+  | "Username"
+  | "Password"
+  | "Angular Boiler Plate V18"
+  | "Dashboard"
+  | "Logout"
+  | "Users List"
+  | "Create User";
+
+export type AllTranslations = Record<keys, StrictTranslation>;
