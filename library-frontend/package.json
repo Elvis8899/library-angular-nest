@@ -58,6 +58,7 @@
     "class-transformer": "^0.5.1",
     "eslint": "9.39.2",
     "eslint-config-prettier": "10.1.8",
+    "prettier-plugin-organize-imports": "^4.3.0",
     "eslint-plugin-prettier": "^5.5.5",
     "globals": "^15.9.0",
     "husky": "^9.1.6",

@@ -1,23 +1,23 @@
-import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { executeTask } from "@shared/utils/executeTask";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
-import { PinoLogger } from "nestjs-pino";
-import { BookInfoRepository } from "@src/modules/book/database/bookInfo.repository.port";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { FakeBookInfoRepository } from "@src/modules/book/database/fakeBookInfo.repository";
-import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
-import {
-  AvailableBookItemNotFoundException,
-  BookInfoNotFoundException,
-} from "@src/modules/book/domain/bookInfo.errors";
 import {
   RemoveBookItem,
   RemoveBookItemHandler,
-} from "@src/modules/book/commands/removeBookItem/removeBookItem.command";
-import { BookItemStatusEnum } from "@src/modules/book/domain/value-object/bookItem.entity";
+} from "@book/commands/removeBookItem/removeBookItem.command";
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
+import {
+  AvailableBookItemNotFoundException,
+  BookInfoNotFoundException,
+} from "@book/domain/bookInfo.errors";
+import { BookItemStatusEnum } from "@book/domain/value-object/bookItem.entity";
+import { Test } from "@nestjs/testing";
+import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { executeTask } from "@shared/utils/executeTask";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 let bookInfoRepository: BookInfoRepository;

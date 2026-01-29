@@ -6,10 +6,10 @@ import {
 } from "@ngx-translate/core";
 import { BehaviorSubject, Observable, Subscription } from "rxjs";
 
-import { ptBR } from "../../translations/pt-BR";
-import { enUS } from "../../translations/en-US";
 import { Logger } from "@app/@core/services";
 import { environment } from "@env/environment";
+import { enUS } from "../../translations/en-US";
+import { ptBR } from "../../translations/pt-BR";
 
 const log = new Logger("I18nService");
 const languageKey = "language";

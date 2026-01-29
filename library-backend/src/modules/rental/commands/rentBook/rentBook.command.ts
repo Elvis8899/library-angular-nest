@@ -1,22 +1,22 @@
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { BookItemStatusEnum } from "@book/domain/value-object/bookItem.entity";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { Apply, FPF, RE, RTE } from "@shared/functional/monads";
-import { performRTE } from "@shared/utils/perform";
-import { executeTask } from "@shared/utils/executeTask";
-import { fromInputRE } from "@src/shared/utils/fromInput";
-import { noop } from "@shared/utils/noop";
+import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
+import { BookRental } from "@rental/domain/bookRental.entity";
+import { bookRentalNotAvailableException } from "@rental/domain/bookRental.errors";
+import { BOOK_RENTAL_RENTED } from "@rental/domain/events/bookRented.event";
+import { CreateBookRentalDto } from "@rental/dtos/bookRental.dto";
 import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { Apply, FPF, RE, RTE } from "@shared/functional/monads";
+import { executeTask } from "@shared/utils/executeTask";
+import { fromInputRE } from "@shared/utils/fromInput";
+import { noop } from "@shared/utils/noop";
+import { performRTE } from "@shared/utils/perform";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { UUID } from "@shared/uuid/entities/uuid";
+import { UserRepository } from "@user/database/user.repository.port";
+import { userNotFoundException } from "@user/domain/user.errors";
 import { PinoLogger } from "nestjs-pino";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UUID } from "@src/shared/uuid/entities/uuid";
-import { CreateBookRentalDto } from "../../dtos/bookRental.dto";
-import { BookRentalRepository } from "../../database/bookRental.repository.port";
-import { BookRental } from "../../domain/bookRental.entity";
-import { UserRepository } from "@src/modules/user/database/user.repository.port";
-import { userNotFoundException } from "@src/modules/user/domain/user.errors";
-import { BOOK_RENTAL_RENTED } from "../../domain/events/bookRented.event";
-import { BookInfoRepository } from "@src/modules/book/database/bookInfo.repository.port";
-import { bookRentalNotAvailableException } from "../../domain/bookRental.errors";
-import { BookItemStatusEnum } from "@src/modules/book/domain/value-object/bookItem.entity";
 
 export class RentBookCommand implements ICommand {
   constructor(public readonly props: CreateBookRentalDto) {}

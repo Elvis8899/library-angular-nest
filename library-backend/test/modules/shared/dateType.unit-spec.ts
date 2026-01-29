@@ -1,4 +1,4 @@
-import { DateType } from "@src/shared/utils/DateType";
+import { DateType } from "@shared/utils/DateType";
 
 describe("[Unit] Date Type", () => {
   it("Should parse string dates", () => {

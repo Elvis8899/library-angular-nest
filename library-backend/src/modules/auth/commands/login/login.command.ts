@@ -1,20 +1,20 @@
-import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { B, FPF, RE, RTE, TE } from "@shared/functional/monads";
-import { performRTE } from "@shared/utils/perform";
-import { executeTask } from "@shared/utils/executeTask";
-import { fromInputRE } from "@src/shared/utils/fromInput";
-import { PinoLogger } from "nestjs-pino";
-import { UserRepository } from "@src/modules/user/database/user.repository.port";
-import { LoginDto } from "../../dtos/login.dto";
-import { LoginInput } from "../../domain/login.entity";
-import { wrongAuthException } from "../../domain/auth.errors";
-import { AuthResponseDto } from "../../dtos/authResponse.dto";
-import { JwtService } from "@nestjs/jwt";
-import { User } from "@src/modules/user/domain/user.entity";
+import { wrongAuthException } from "@auth/domain/auth.errors";
+import { LoginInput } from "@auth/domain/login.entity";
+import { AuthResponseDto } from "@auth/dtos/authResponse.dto";
+import { LoginDto } from "@auth/dtos/login.dto";
 import {
   comparePassword,
   getSignTokenParams,
-} from "../../util/signTokenParams";
+} from "@auth/util/signTokenParams";
+import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
+import { JwtService } from "@nestjs/jwt";
+import { B, FPF, RE, RTE, TE } from "@shared/functional/monads";
+import { executeTask } from "@shared/utils/executeTask";
+import { fromInputRE } from "@shared/utils/fromInput";
+import { performRTE } from "@shared/utils/perform";
+import { UserRepository } from "@user/database/user.repository.port";
+import { User } from "@user/domain/user.entity";
+import { PinoLogger } from "nestjs-pino";
 
 export class LoginCommand implements ICommand {
   constructor(public readonly props: LoginDto) {}

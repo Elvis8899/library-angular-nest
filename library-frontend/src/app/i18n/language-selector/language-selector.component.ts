@@ -1,3 +1,4 @@
+import { NgClass } from "@angular/common";
 import {
   Component,
   ElementRef,
@@ -6,7 +7,6 @@ import {
   Input,
 } from "@angular/core";
 import { I18nService } from "../i18n.service";
-import { NgClass } from "@angular/common";
 
 @Component({
   selector: "app-language-selector",

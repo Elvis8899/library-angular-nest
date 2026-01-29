@@ -1,17 +1,17 @@
+import { RealBookInfoRepository } from "@book/database/realBookInfo.repository";
+import { BookItem } from "@book/domain/value-object/bookItem.entity";
+import { InternalServerErrorException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import { RealBookRentalRepository } from "@rental/database/realBookRental.repository";
+import { BookRental } from "@rental/domain/bookRental.entity";
+import { O } from "@shared/functional/monads";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/executeTask";
-import { InternalServerErrorException } from "@nestjs/common";
-import { O } from "@shared/functional/monads";
-import { BookRentalBuilder } from "@test/data-builders/bookRentalBuilder";
-import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { RealBookRentalRepository } from "@src/modules/rental/database/realBookRental.repository";
-import { BookRental } from "@src/modules/rental/domain/bookRental.entity";
-import { RealUserRepository } from "@src/modules/user/database/realUser.repository";
-import { RealBookInfoRepository } from "@src/modules/book/database/realBookInfo.repository";
 import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
+import { BookRentalBuilder } from "@test/data-builders/bookRentalBuilder";
 import { UserBuilder } from "@test/data-builders/userBuilder";
-import { BookItem } from "@src/modules/book/domain/value-object/bookItem.entity";
+import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { RealUserRepository } from "@user/database/realUser.repository";
 
 let prismaService: PrismaService;
 let bookRentalRepository: RealBookRentalRepository;
@@ -95,7 +95,7 @@ describe("[Integration] BookRental repository", () => {
       await saveBookRental(bookRental);
 
       // Should be able to retrieve it
-      const [resultById, resultPaginated, resultAll] = await Promise.all([
+      const [resultById, resultPaginatedQuery, resultAll] = await Promise.all([
         executeTask(bookRentalRepository.findById(bookRental.id)),
         executeTask(
           bookRentalRepository.findAllPaginated({
@@ -123,8 +123,8 @@ describe("[Integration] BookRental repository", () => {
           user: { name: userName },
         }),
       );
-      expect(resultPaginated.count).toBe(1);
-      expect(resultPaginated.data.length).toBe(1);
+      expect(resultPaginatedQuery.count).toBe(1);
+      expect(resultPaginatedQuery.data.length).toBe(1);
       expect(resultAll.length).toBe(1);
     },
   );

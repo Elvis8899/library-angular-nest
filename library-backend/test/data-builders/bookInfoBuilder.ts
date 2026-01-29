@@ -1,8 +1,11 @@
-import { BookInfo } from "@src/modules/book/domain/bookInfo.entity";
-import { BookItemStatusEnum } from "@src/modules/book/domain/value-object/bookItem.entity";
-import { CreateBookInfoDto } from "@src/modules/book/dtos/bookInfo.dto";
-import { FPF } from "@src/shared/functional/monads";
-import { UUID } from "@src/shared/uuid/entities/uuid";
+import { BookInfo } from "@book/domain/bookInfo.entity";
+import {
+  BookItem,
+  BookItemStatusEnum,
+} from "@book/domain/value-object/bookItem.entity";
+import { CreateBookInfoDto } from "@book/dtos/bookInfo.dto";
+import { FPF } from "@shared/functional/monads";
+import { UUID } from "@shared/uuid/entities/uuid";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { z } from "zod";
 
@@ -68,13 +71,24 @@ export class BookInfoBuilder {
     });
   }
   buildCreateDTO(): CreateBookInfoDto {
-    const user = {
+    const bookInfo = {
       ...this.defaultProperties,
       ...this.overrides,
     };
 
     return FPF.unsafeCoerce({
-      ...user,
+      ...bookInfo,
+    });
+  }
+
+  buildItem(): BookItem {
+    const bookInfo = BookInfo.parse({
+      ...this.defaultProperties,
+      ...this.overrides,
+    });
+
+    return FPF.unsafeCoerce({
+      ...bookInfo.bookItems[0],
     });
   }
 }

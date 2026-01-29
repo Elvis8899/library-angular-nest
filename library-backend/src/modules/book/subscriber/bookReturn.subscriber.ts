@@ -1,12 +1,12 @@
+import { ChangeBookItemStatus } from "@book/commands/changeBookItemStatus/changeBookItemStatus.command";
+import { BookItemStatusEnum } from "@book/domain/value-object/bookItem.entity";
 import { Injectable } from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
 import { OnEvent } from "@nestjs/event-emitter";
-import { ChangeBookItemStatus } from "../commands/changeBookItemStatus/changeBookItemStatus.command";
-import { BookItemStatusEnum } from "../domain/value-object/bookItem.entity";
 import {
   BOOK_RENTAL_RETURNED,
   BookRentalReturnedEvent,
-} from "@src/modules/rental/domain/events/bookReturned.event";
+} from "@rental/domain/events/bookReturned.event";
 
 @Injectable()
 export class BookReturnSubscriber {

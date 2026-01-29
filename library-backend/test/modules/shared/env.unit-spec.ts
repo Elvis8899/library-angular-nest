@@ -1,4 +1,4 @@
-import { getBaseEnvPath } from "@src/shared/utils/dotenv";
+import { getBaseEnvPath } from "@shared/utils/dotenv";
 
 describe("[Unit] Environment", () => {
   it("Should return base env path for test", () => {

@@ -1,6 +1,6 @@
-import { Expose } from "class-transformer";
 import { InitializableEntity } from "@app/@core/entities/utils/intializable.entity";
 import { ROLE } from "@app/auth";
+import { Expose } from "class-transformer";
 
 export class Credentials extends InitializableEntity {
   user: {

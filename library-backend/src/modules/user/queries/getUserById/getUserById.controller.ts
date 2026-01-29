@@ -1,13 +1,13 @@
 import { Controller, Get, HttpStatus, Param } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
-  ApiOperation,
-  ApiTags,
-  ApiResponse,
   ApiNotFoundResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
 } from "@nestjs/swagger";
-import { UserDto } from "../../dtos/user.dto";
-import { GetUserByIdQuery } from "./getUserById.query";
+import { UserDto } from "@user/dtos/user.dto";
+import { GetUserByIdQuery } from "@user/queries/getUserById/getUserById.query";
 
 @Controller("v1/")
 @ApiTags("Usuários")

@@ -1,11 +1,11 @@
+import { authConfig } from "@auth/auth.config";
+import { LoginCommandHandler } from "@auth/commands/login/login.command";
+import { LoginController } from "@auth/commands/login/login.controller";
 import { Module } from "@nestjs/common";
-import { JwtModule } from "@nestjs/jwt";
-import { authConfig } from "./auth.config";
-import { UserRepository } from "../user/database/user.repository.port";
-import { RealUserRepository } from "../user/database/realUser.repository";
-import { LoginCommandHandler } from "./commands/login/login.command";
-import { LoginController } from "./commands/login/login.controller";
 import { CqrsModule } from "@nestjs/cqrs";
+import { JwtModule } from "@nestjs/jwt";
+import { RealUserRepository } from "@user/database/realUser.repository";
+import { UserRepository } from "@user/database/user.repository.port";
 
 const controllers = [LoginController];
 const commandHandlers = [LoginCommandHandler];

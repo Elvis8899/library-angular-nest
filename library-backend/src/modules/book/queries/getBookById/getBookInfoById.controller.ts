@@ -1,13 +1,13 @@
+import { BookInfoDto } from "@book/dtos/bookInfo.dto";
+import { GetBookInfoByIdQuery } from "@book/queries/getBookById/getBookInfoById.query";
 import { Controller, Get, HttpStatus, Param } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
-  ApiOperation,
-  ApiTags,
-  ApiResponse,
   ApiNotFoundResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
 } from "@nestjs/swagger";
-import { BookInfoDto } from "../../dtos/bookInfo.dto";
-import { GetBookInfoByIdQuery } from "./getBookInfoById.query";
 
 @Controller("v1/")
 @ApiTags("Livros")

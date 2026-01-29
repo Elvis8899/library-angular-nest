@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from "@angular/core";
-import { FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
+import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { Logger } from "@app/@core/services";
 import { validateCPF } from "@app/@core/utils";

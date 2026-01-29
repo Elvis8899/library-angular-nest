@@ -1,9 +1,9 @@
 import { ApplicationRef, Component, inject, Injectable } from "@angular/core";
 import { SwUpdate } from "@angular/service-worker";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
+import { HotToastRef, HotToastService } from "@ngxpert/hot-toast";
 import { concat, interval } from "rxjs";
 import { first, startWith } from "rxjs/operators";
-import { HotToastRef, HotToastService } from "@ngxpert/hot-toast";
 import { Logger } from "./logger.service";
 
 const log = new Logger("AppUpdateService");

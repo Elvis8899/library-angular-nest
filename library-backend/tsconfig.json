@@ -24,16 +24,14 @@
     //
     "strict": true,
     "paths": {
-      "@src": ["src"],
       "@src/*": ["src/*"],
-      "@test": ["test"],
       "@test/*": ["test/*"],
-      "@shared": ["src/shared"],
-      "@shared/*": ["src/shared/*"],
-      "@user": ["src/modules/user"],
+      "@configs/*": ["src/shared/configs/*"],
+      "@shared/*": ["src/modules/shared/*"],
+      "@auth/*": ["src/modules/auth/*"],
       "@user/*": ["src/modules/user/*"],
-      "@configs": ["src/configs"],
-      "@configs/*": ["src/configs/*"]
+      "@rental/*": ["src/modules/rental/*"],
+      "@book/*": ["src/modules/book/*"]
     }
   },
   "exclude": ["node_modules", "dist"]

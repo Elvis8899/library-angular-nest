@@ -1,26 +1,26 @@
+import { AddBookItemHandler } from "@book/commands/addBookItem/addBookItem.command";
+import { AddBookItemController } from "@book/commands/addBookItem/addBookItem.controller";
+import { ChangeBookItemStatusHandler } from "@book/commands/changeBookItemStatus/changeBookItemStatus.command";
+import { CreateBookInfoHandler } from "@book/commands/createBookInfo/createBookInfo.command";
+import { CreateBookInfoController } from "@book/commands/createBookInfo/createBookInfo.controller";
+import { DeleteBookInfoHandler } from "@book/commands/deleteBookInfo/deleteBookInfo.command";
+import { DeleteBookInfoController } from "@book/commands/deleteBookInfo/deleteBookInfo.controller";
+import { RemoveBookItemHandler } from "@book/commands/removeBookItem/removeBookItem.command";
+import { RemoveBookItemController } from "@book/commands/removeBookItem/removeBookItem.controller";
+import { UpdateBookInfoHandler } from "@book/commands/updateBookInfo/updateBookInfo.command";
+import { UpdateBookInfoController } from "@book/commands/updateBookInfo/updateBookInfo.controller";
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { RealBookInfoRepository } from "@book/database/realBookInfo.repository";
+import { GetBookInfoByIdController } from "@book/queries/getBookById/getBookInfoById.controller";
+import { GetBookInfoByIdQueryHandler } from "@book/queries/getBookById/getBookInfoById.query";
+import { PaginatedBookInfoController } from "@book/queries/paginatedBookInfos/paginatedBookInfos.controller";
+import { PaginatedBookInfosQueryHandler } from "@book/queries/paginatedBookInfos/paginatedBookInfos.query";
+import { BookRentSubscriber } from "@book/subscriber/bookRent.subscriber";
+import { BookReturnSubscriber } from "@book/subscriber/bookReturn.subscriber";
+import { CreateBookInfoSubscriber } from "@book/subscriber/createBookInfo.subscriber";
 import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { BookInfoRepository } from "./database/bookInfo.repository.port";
-import { CreateBookInfoHandler } from "./commands/createBookInfo/createBookInfo.command";
-import { RealBookInfoRepository } from "./database/realBookInfo.repository";
-import { CreateBookInfoController } from "./commands/createBookInfo/createBookInfo.controller";
-import { UpdateBookInfoController } from "./commands/updateBookInfo/updateBookInfo.controller";
-import { DeleteBookInfoController } from "./commands/deleteBookInfo/deleteBookInfo.controller";
-import { UpdateBookInfoHandler } from "./commands/updateBookInfo/updateBookInfo.command";
-import { DeleteBookInfoHandler } from "./commands/deleteBookInfo/deleteBookInfo.command";
-import { PaginatedBookInfosQueryHandler } from "./queries/paginatedBookInfos/paginatedBookInfos.query";
-import { PaginatedBookInfoController } from "./queries/paginatedBookInfos/paginatedBookInfos.controller";
-import { GetBookInfoByIdController } from "./queries/getBookById/getBookInfoById.controller";
-import { GetBookInfoByIdQueryHandler } from "./queries/getBookById/getBookInfoById.query";
-import { CreateBookInfoSubscriber } from "./subscriber/createBookInfo.subscriber";
-import { AddBookItemHandler } from "./commands/addBookItem/addBookItem.command";
-import { AddBookItemController } from "./commands/addBookItem/addBookItem.controller";
-import { RemoveBookItemController } from "./commands/removeBookItem/removeBookItem.controller";
-import { RemoveBookItemHandler } from "./commands/removeBookItem/removeBookItem.command";
-import { BookRentSubscriber } from "./subscriber/bookRent.subscriber";
-import { BookReturnSubscriber } from "./subscriber/bookReturn.subscriber";
-import { ChangeBookItemStatusHandler } from "./commands/changeBookItemStatus/changeBookItemStatus.command";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 
 const controllers = [
   CreateBookInfoController,

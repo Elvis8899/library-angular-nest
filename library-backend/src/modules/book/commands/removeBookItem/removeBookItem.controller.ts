@@ -1,3 +1,4 @@
+import { RemoveBookItem } from "@book/commands/removeBookItem/removeBookItem.command";
 import {
   Controller,
   Delete,
@@ -7,14 +8,13 @@ import {
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
   ApiUnprocessableEntityResponse,
-  ApiCreatedResponse,
-  ApiNotFoundResponse,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/noop";
-import { RemoveBookItem } from "./removeBookItem.command";
 
 @Controller("v1/")
 @ApiTags("Livros")
@@ -25,7 +25,7 @@ export class RemoveBookItemController {
   ) {}
 
   @Delete("bookInfos/item/:id")
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: "Remove um exemplar de um Livro",
     description: `Dado um Livro válido, ele terá um exemplar removido.`,

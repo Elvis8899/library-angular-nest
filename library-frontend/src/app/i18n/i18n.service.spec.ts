@@ -1,7 +1,7 @@
-import { vi, type Mock } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { TranslateService, LangChangeEvent } from "@ngx-translate/core";
+import { LangChangeEvent, TranslateService } from "@ngx-translate/core";
 import { noop, Subject } from "rxjs";
+import { vi, type Mock } from "vitest";
 
 import { I18nService } from "./i18n.service";
 

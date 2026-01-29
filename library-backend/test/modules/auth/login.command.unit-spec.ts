@@ -1,20 +1,20 @@
-import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { executeTask } from "@shared/utils/executeTask";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
-import { PinoLogger } from "nestjs-pino";
-import { UserRepository } from "@src/modules/user/database/user.repository.port";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { FakeUserRepository } from "@src/modules/user/database/fakeUser.repository";
-import { UserBuilder } from "@test/data-builders/userBuilder";
 import {
   LoginCommand,
   LoginCommandHandler,
-} from "@src/modules/auth/commands/login/login.command";
-import { hashPassword } from "@src/modules/auth/util/signTokenParams";
+} from "@auth/commands/login/login.command";
+import { WrongAuthException } from "@auth/domain/auth.errors";
+import { hashPassword } from "@auth/util/signTokenParams";
 import { JwtService } from "@nestjs/jwt";
-import { WrongAuthException } from "@src/modules/auth/domain/auth.errors";
+import { Test } from "@nestjs/testing";
+import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { executeTask } from "@shared/utils/executeTask";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { UserBuilder } from "@test/data-builders/userBuilder";
+import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { UserRepository } from "@user/database/user.repository.port";
+import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 let userRepository: UserRepository;

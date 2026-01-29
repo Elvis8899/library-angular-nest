@@ -1,18 +1,18 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import * as request from "supertest";
-import { AppModule } from "@src/app.module";
+import { AuthGuard } from "@auth/guards/auth.guard";
 import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-import { FakeLoggerService } from "@src/shared/logger/adapters/fake/FakeLogger.service";
+import { Test, TestingModule } from "@nestjs/testing";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { executeTask } from "@shared/utils/executeTask";
+import { AppModule } from "@src/app.module";
+import { MockAuthGuardBuilder } from "@test/data-builders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/data-builders/userBuilder";
+import { UserRepository } from "@user/database/user.repository.port";
 import { PinoLogger } from "nestjs-pino";
-import { executeTask } from "@src/shared/utils/executeTask";
-import { UserRepository } from "@src/modules/user/database/user.repository.port";
-import { AuthGuard } from "@src/modules/auth/guards/auth.guard";
-import { mockAuthGuard } from "@test/data-builders/mockAuthGuard";
+import * as request from "supertest";
 
 let app: NestFastifyApplication;
 let testingModule: TestingModule;
@@ -26,7 +26,7 @@ beforeAll(async () => {
     .overrideProvider(PinoLogger)
     .useClass(FakeLoggerService)
     .overrideGuard(AuthGuard)
-    .useValue(mockAuthGuard())
+    .useValue(new MockAuthGuardBuilder())
     .compile();
 
   app = testingModule.createNestApplication<NestFastifyApplication>(

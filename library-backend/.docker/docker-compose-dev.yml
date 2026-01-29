@@ -49,7 +49,6 @@ services:
     networks:
       - "library_dev_network"
 
-
   pgadmin:
     container_name: pgadmin-container-dev
     image: dpage/pgadmin4

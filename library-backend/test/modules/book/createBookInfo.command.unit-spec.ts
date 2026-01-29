@@ -1,17 +1,17 @@
-import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { executeTask } from "@shared/utils/executeTask";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
-import { PinoLogger } from "nestjs-pino";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { BookInfoRepository } from "@src/modules/book/database/bookInfo.repository.port";
 import {
   CreateBookInfo,
   CreateBookInfoHandler,
-} from "@src/modules/book/commands/createBookInfo/createBookInfo.command";
-import { FakeBookInfoRepository } from "@src/modules/book/database/fakeBookInfo.repository";
+} from "@book/commands/createBookInfo/createBookInfo.command";
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
+import { Test } from "@nestjs/testing";
+import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { executeTask } from "@shared/utils/executeTask";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
+import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 let bookInfoRepository: BookInfoRepository;

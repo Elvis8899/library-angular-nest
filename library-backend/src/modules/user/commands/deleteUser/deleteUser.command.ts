@@ -1,16 +1,16 @@
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { FPF, RTE } from "@shared/functional/monads";
-import { performRTE } from "@shared/utils/perform";
-import { executeTask } from "@shared/utils/executeTask";
-import { noop } from "@shared/utils/noop";
 import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { FPF, RTE } from "@shared/functional/monads";
+import { executeTask } from "@shared/utils/executeTask";
+import { fromInputRE } from "@shared/utils/fromInput";
+import { noop } from "@shared/utils/noop";
+import { performRTE } from "@shared/utils/perform";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { UUID } from "@shared/uuid/entities/uuid";
+import { UserRepository } from "@user/database/user.repository.port";
+import { USER_DELETED } from "@user/domain/events/userDeleted.event";
+import { userNotFoundException } from "@user/domain/user.errors";
 import { PinoLogger } from "nestjs-pino";
-import { UserRepository } from "../../database/user.repository.port";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UUID } from "@src/shared/uuid/entities/uuid";
-import { fromInputRE } from "@src/shared/utils/fromInput";
-import { userNotFoundException } from "../../domain/user.errors";
-import { USER_DELETED } from "../../domain/events/userDeleted.event";
 
 export class DeleteUser implements ICommand {
   constructor(public readonly props: string) {}

@@ -1,15 +1,15 @@
+import { RequestJWTPayload } from "@auth/domain/login.entity";
+import helmet from "@fastify/helmet";
+import fastifyRequestContext from "@fastify/request-context";
 import { NestFactory } from "@nestjs/core";
 import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-import { AppModule } from "@src/app.module";
-import { Logger } from "nestjs-pino";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import fastifyRequestContext from "@fastify/request-context";
-import helmet from "@fastify/helmet";
+import { AppModule } from "@src/app.module";
 import { contentParser } from "fastify-file-interceptor";
-import { RequestJWTPayload } from "./modules/auth/domain/login.entity";
+import { Logger } from "nestjs-pino";
 // import * as multipart from "@fastify/multipart";
 
 async function bootstrap() {

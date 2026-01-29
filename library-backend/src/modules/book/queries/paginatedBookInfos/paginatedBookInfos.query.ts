@@ -1,16 +1,16 @@
-import { PinoLogger } from "nestjs-pino";
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { BookInfo } from "@book/domain/bookInfo.entity";
 import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { Paginated } from "@shared/ddd";
 import {
   PaginatedQueryPagination,
   PaginatedQueryValidator,
 } from "@shared/ddd/query.base";
-import { executeTask } from "@shared/utils/executeTask";
-import { performRTE } from "@shared/utils/perform";
 import { FPF, RTE } from "@shared/functional/monads";
-import { fromInputRE } from "@src/shared/utils/fromInput";
-import { BookInfo } from "../../domain/bookInfo.entity";
-import { BookInfoRepository } from "../../database/bookInfo.repository.port";
+import { executeTask } from "@shared/utils/executeTask";
+import { fromInputRE } from "@shared/utils/fromInput";
+import { performRTE } from "@shared/utils/perform";
+import { PinoLogger } from "nestjs-pino";
 
 export class PaginatedBookInfosQuery implements IQuery {
   constructor(public readonly params: PaginatedQueryPagination) {}

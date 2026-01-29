@@ -1,13 +1,13 @@
-import { PinoLogger } from "nestjs-pino";
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { BookInfo } from "@book/domain/bookInfo.entity";
+import { bookInfoNotFoundException } from "@book/domain/bookInfo.errors";
 import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { executeTask } from "@shared/utils/executeTask";
-import { performRTE } from "@shared/utils/perform";
 import { FPF, RTE } from "@shared/functional/monads";
-import { BookInfo } from "../../domain/bookInfo.entity";
-import { BookInfoRepository } from "../../database/bookInfo.repository.port";
-import { fromInputRE } from "@src/shared/utils/fromInput";
-import { UUID } from "@src/shared/uuid/entities/uuid";
-import { bookInfoNotFoundException } from "../../domain/bookInfo.errors";
+import { executeTask } from "@shared/utils/executeTask";
+import { fromInputRE } from "@shared/utils/fromInput";
+import { performRTE } from "@shared/utils/perform";
+import { UUID } from "@shared/uuid/entities/uuid";
+import { PinoLogger } from "nestjs-pino";
 
 export class GetBookInfoByIdQuery implements IQuery {
   constructor(public readonly id: string) {}

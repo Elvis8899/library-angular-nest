@@ -1,21 +1,21 @@
-import { PinoLogger } from "nestjs-pino";
 import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
+import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
+import {
+  BookRentalDetails,
+  RentalStatusEnum,
+} from "@rental/domain/bookRental.entity";
 import { Paginated } from "@shared/ddd";
 import {
   PaginatedQueryPagination,
   PaginatedQueryValidator,
   PaginatedReturnValidator,
 } from "@shared/ddd/query.base";
-import { executeTask } from "@shared/utils/executeTask";
-import { performRTE } from "@shared/utils/perform";
 import { Apply, FPF, RE, RTE } from "@shared/functional/monads";
-import { fromInputRE } from "@src/shared/utils/fromInput";
-import {
-  BookRentalDetails,
-  RentalStatusEnum,
-} from "../../domain/bookRental.entity";
-import { BookRentalRepository } from "../../database/bookRental.repository.port";
-import { UUID } from "@src/shared/uuid/entities/uuid";
+import { executeTask } from "@shared/utils/executeTask";
+import { fromInputRE } from "@shared/utils/fromInput";
+import { performRTE } from "@shared/utils/perform";
+import { UUID } from "@shared/uuid/entities/uuid";
+import { PinoLogger } from "nestjs-pino";
 import { z } from "zod";
 
 export class PaginatedBookRentalsQuery implements IQuery {

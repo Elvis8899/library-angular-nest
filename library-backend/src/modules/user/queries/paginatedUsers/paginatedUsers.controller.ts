@@ -1,19 +1,19 @@
+import { Roles } from "@auth/decorators/roles.decorator";
+import { AuthGuard } from "@auth/guards/auth.guard";
+import { RolesGuard } from "@auth/guards/roles.guard";
 import { Controller, Get, HttpStatus, Query, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
-  ApiOperation,
-  ApiTags,
-  ApiResponse,
   ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
 } from "@nestjs/swagger";
-import { PaginatedUserResponseDto } from "../../dtos/user.dto";
-import { PaginatedQueryRequestDto } from "@src/shared/api/paginated-query.request.dto";
-import { PaginatedUsersQuery } from "./paginatedUsers.query";
-import { RolesGuard } from "@src/modules/auth/guards/roles.guard";
-import { Roles } from "@src/modules/auth/decorators/roles.decorator";
-import { User, UserRoleEnum } from "../../domain/user.entity";
-import { AuthGuard } from "@src/modules/auth/guards/auth.guard";
-import { Paginated } from "@src/shared/ddd";
+import { PaginatedQueryRequestDto } from "@shared/api/paginated-query.request.dto";
+import { Paginated } from "@shared/ddd";
+import { PaginatedUsersQuery } from "@src/modules/user/queries/paginatedUsers/paginatedUsers.query";
+import { User, UserRoleEnum } from "@user/domain/user.entity";
+import { PaginatedUserResponseDto } from "@user/dtos/user.dto";
 
 @Controller("v1/")
 @ApiTags("Usuários")

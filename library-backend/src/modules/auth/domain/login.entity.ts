@@ -1,4 +1,4 @@
-import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
+import { UserRoleEnum } from "@user/domain/user.entity";
 import { z } from "zod";
 
 export const LoginInput = z.object({
@@ -19,5 +19,5 @@ export type RequestJWTPayload = {
 };
 
 export type AuthenticatedRequest = {
-  user?: RequestJWTPayload;
+  user: RequestJWTPayload;
 };

@@ -1,15 +1,15 @@
+import { CreateBookInfo } from "@book/commands/createBookInfo/createBookInfo.command";
+import { CreateBookInfoDto } from "@book/dtos/bookInfo.dto";
 import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiConflictResponse,
+  ApiCreatedResponse,
   ApiOperation,
   ApiTags,
   ApiUnprocessableEntityResponse,
-  ApiCreatedResponse,
-  ApiConflictResponse,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/noop";
-import { CreateBookInfoDto } from "../../dtos/bookInfo.dto";
-import { CreateBookInfo } from "./createBookInfo.command";
 
 @Controller("v1/")
 @ApiTags("Livros")

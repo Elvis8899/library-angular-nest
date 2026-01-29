@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { TE, FPF, O, E } from "@shared/functional/monads";
 import { FakeRepositoryBase } from "@shared/db/fakeRepository.base";
+import { E, FPF, O, TE } from "@shared/functional/monads";
 import { validateFromUnknown } from "@shared/utils/validateWith";
-import { User, UserRoleEnum } from "../domain/user.entity";
-import { UserRepository } from "./user.repository.port";
-import { formatToCPF } from "../domain/value-object/document";
+import { UserRepository } from "@user/database/user.repository.port";
+import { User, UserRoleEnum } from "@user/domain/user.entity";
+import { formatToCPF } from "@user/domain/value-object/document";
 
 @Injectable()
 export class FakeUserRepository

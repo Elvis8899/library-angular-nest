@@ -14,22 +14,22 @@ import {
   withRouterConfig,
 } from "@angular/router";
 
-import { routes } from "./app.routes";
-import { TranslateModule } from "@ngx-translate/core";
-import { environment } from "@env/environment";
-import { ShellModule } from "./shell/shell.module";
 import {
   HTTP_INTERCEPTORS,
   provideHttpClient,
   withInterceptorsFromDi,
 } from "@angular/common/http";
+import { provideServiceWorker } from "@angular/service-worker";
+import { RouteReusableStrategy } from "@core/helpers";
 import {
   ApiPrefixInterceptor,
   ErrorHandlerInterceptor,
 } from "@core/interceptors";
-import { RouteReusableStrategy } from "@core/helpers";
-import { provideServiceWorker } from "@angular/service-worker";
+import { environment } from "@env/environment";
+import { TranslateModule } from "@ngx-translate/core";
 import { provideHotToastConfig } from "@ngxpert/hot-toast";
+import { routes } from "./app.routes";
+import { ShellModule } from "./shell/shell.module";
 
 if (environment.production) {
   enableProdMode();

@@ -1,14 +1,14 @@
 import { Injectable } from "@nestjs/common";
-import { FakeRepositoryBase } from "@shared/db/fakeRepository.base";
-import { validateFromUnknown } from "@shared/utils/validateWith";
-import { TE } from "@src/shared/functional/monads";
 import {
   BookRentalFindAllQuery,
   BookRentalRepository,
-} from "./bookRental.repository.port";
-import { BookRental } from "../domain/bookRental.entity";
-import { PaginatedQueryParams } from "@src/shared/ddd/query.base";
-import { Paginated } from "@src/shared/ddd";
+} from "@rental/database/bookRental.repository.port";
+import { BookRental } from "@rental/domain/bookRental.entity";
+import { FakeRepositoryBase } from "@shared/db/fakeRepository.base";
+import { Paginated } from "@shared/ddd";
+import { PaginatedQueryParams } from "@shared/ddd/query.base";
+import { TE } from "@shared/functional/monads";
+import { validateFromUnknown } from "@shared/utils/validateWith";
 
 @Injectable()
 export class FakeBookRentalRepository
@@ -21,10 +21,8 @@ export class FakeBookRentalRepository
     params: PaginatedQueryParams<BookRentalFindAllQuery>,
   ): TE.TaskEither<Error, Paginated<BookRental>> => {
     const filter = (item: BookRental) =>
-      (params.query?.status
-        ? item.rentalStatus == params.query.status
-        : true) &&
-      (params.query?.userId ? item.userId == params.query.userId : true);
+      (params.query.status ? item.rentalStatus == params.query.status : true) &&
+      (params.query.userId ? item.userId == params.query.userId : true);
     return this.paginatedFindMany(filter)(this.baseValidator)(params);
   };
 }

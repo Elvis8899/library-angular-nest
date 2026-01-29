@@ -1,17 +1,17 @@
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
-import { Prisma } from "@prisma/client";
 import { Injectable } from "@nestjs/common";
-import { A, E, FPF, O, TE } from "@shared/functional/monads";
-import { Paginated } from "@shared/ddd";
-import { noop } from "@shared/utils/noop";
-import { validateFromUnknown } from "@shared/utils/validateWith";
-import { PaginatedQueryParams } from "@shared/ddd/query.base";
-import { unknownException } from "@src/shared/utils/unknownException";
+import { Prisma } from "@prisma/client";
 import {
   BookRentalFindAllQuery,
   BookRentalRepository,
-} from "./bookRental.repository.port";
-import { BookRental } from "../domain/bookRental.entity";
+} from "@rental/database/bookRental.repository.port";
+import { BookRental } from "@rental/domain/bookRental.entity";
+import { Paginated } from "@shared/ddd";
+import { PaginatedQueryParams } from "@shared/ddd/query.base";
+import { A, E, FPF, O, TE } from "@shared/functional/monads";
+import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { noop } from "@shared/utils/noop";
+import { unknownException } from "@shared/utils/unknownException";
+import { validateFromUnknown } from "@shared/utils/validateWith";
 
 @Injectable()
 export class RealBookRentalRepository implements BookRentalRepository {
@@ -117,11 +117,10 @@ export class RealBookRentalRepository implements BookRentalRepository {
   findAllPaginated = (
     params: PaginatedQueryParams<BookRentalFindAllQuery>,
   ): TE.TaskEither<Error, Paginated<BookRental>> => {
-    const where: Prisma.BookRentalDetailsWhereInput = {};
-    if (params.query) {
-      where.rentalStatus = params.query.status;
-      where.userId = params.query.userId;
-    }
+    const where: Prisma.BookRentalDetailsWhereInput = {
+      rentalStatus: params.query.status,
+      userId: params.query.userId,
+    };
     return this.paginatedFindMany(this.baseValidator)(where)(params);
   };
 

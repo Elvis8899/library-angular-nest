@@ -2,9 +2,9 @@ import {
   BookRental,
   BookRentalDetails,
   RentalStatusEnum,
-} from "@src/modules/rental/domain/bookRental.entity";
-import { CreateBookRentalDto } from "@src/modules/rental/dtos/bookRental.dto";
-import { FPF } from "@src/shared/functional/monads";
+} from "@rental/domain/bookRental.entity";
+import { CreateBookRentalDto } from "@rental/dtos/bookRental.dto";
+import { FPF } from "@shared/functional/monads";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { z } from "zod";
 
@@ -47,6 +47,11 @@ export class BookRentalBuilder {
 
   withId(id: string) {
     this.overrides.id = id;
+    return this;
+  }
+
+  withBookItemId(bookItemId: string) {
+    this.overrides.bookItemId = bookItemId;
     return this;
   }
 

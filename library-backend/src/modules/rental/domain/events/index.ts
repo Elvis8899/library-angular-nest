@@ -1,6 +1,6 @@
-import { FPF } from "@src/shared/functional/monads";
-import { BookRentalReturnedEvent } from "./bookReturned.event";
-import { BookRentalRentedEvent } from "./bookRented.event";
+import { FPF } from "@shared/functional/monads";
+import { BookRentalRentedEvent } from "@src/modules/rental/domain/events/bookRented.event";
+import { BookRentalReturnedEvent } from "@src/modules/rental/domain/events/bookReturned.event";
 
 export const AllRentalEvents = FPF.tuple(
   BookRentalReturnedEvent,

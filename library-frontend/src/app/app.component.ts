@@ -1,4 +1,5 @@
 import { Component, inject, OnDestroy, OnInit } from "@angular/core";
+import { Title } from "@angular/platform-browser";
 import {
   ActivatedRoute,
   NavigationEnd,
@@ -7,12 +8,11 @@ import {
   RouterState,
 } from "@angular/router";
 import { I18nService } from "@app/i18n";
-import { Title } from "@angular/platform-browser";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { environment } from "@env/environment";
-import { filter, merge } from "rxjs";
-import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { AppUpdateService, Logger } from "@core/services";
+import { environment } from "@env/environment";
+import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { filter, merge } from "rxjs";
 
 @UntilDestroy()
 @Component({

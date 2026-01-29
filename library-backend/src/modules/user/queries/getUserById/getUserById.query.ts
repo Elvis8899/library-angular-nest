@@ -1,13 +1,13 @@
-import { PinoLogger } from "nestjs-pino";
 import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { executeTask } from "@shared/utils/executeTask";
-import { performRTE } from "@shared/utils/perform";
 import { FPF, RTE } from "@shared/functional/monads";
-import { User } from "../../domain/user.entity";
-import { UserRepository } from "../../database/user.repository.port";
-import { fromInputRE } from "@src/shared/utils/fromInput";
-import { UUID } from "@src/shared/uuid/entities/uuid";
-import { userNotFoundException } from "../../domain/user.errors";
+import { executeTask } from "@shared/utils/executeTask";
+import { fromInputRE } from "@shared/utils/fromInput";
+import { performRTE } from "@shared/utils/perform";
+import { UUID } from "@shared/uuid/entities/uuid";
+import { UserRepository } from "@user/database/user.repository.port";
+import { User } from "@user/domain/user.entity";
+import { userNotFoundException } from "@user/domain/user.errors";
+import { PinoLogger } from "nestjs-pino";
 
 export class GetUserByIdQuery implements IQuery {
   constructor(public readonly id: string) {}

@@ -1,7 +1,7 @@
 import { inject, Injectable } from "@angular/core";
 import { CredentialsService, PERMISSIONS, ROLE } from "@app/auth";
-import { Credentials } from "@core/entities";
 import { appPermissionsSetting } from "@core/constants";
+import { Credentials } from "@core/entities";
 
 @Injectable({
   providedIn: "root",

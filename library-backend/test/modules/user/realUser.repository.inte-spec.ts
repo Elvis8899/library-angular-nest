@@ -1,12 +1,12 @@
+import { InternalServerErrorException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import { O } from "@shared/functional/monads";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/executeTask";
-import { InternalServerErrorException } from "@nestjs/common";
-import { O } from "@shared/functional/monads";
-import { RealUserRepository } from "@src/modules/user/database/realUser.repository";
-import { User, UserRoleEnum } from "@src/modules/user/domain/user.entity";
 import { UserBuilder } from "@test/data-builders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { RealUserRepository } from "@user/database/realUser.repository";
+import { User, UserRoleEnum } from "@user/domain/user.entity";
 
 let prismaService: PrismaService;
 let userRepository: RealUserRepository;

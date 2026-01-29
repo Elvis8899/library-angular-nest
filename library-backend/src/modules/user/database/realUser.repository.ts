@@ -1,15 +1,15 @@
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
-import { Prisma } from "@prisma/client";
 import { Injectable } from "@nestjs/common";
-import { A, E, FPF, O, TE } from "@shared/functional/monads";
+import { Prisma } from "@prisma/client";
 import { Paginated } from "@shared/ddd";
-import { noop } from "@shared/utils/noop";
-import { validateFromUnknown } from "@shared/utils/validateWith";
 import { PaginatedQueryParams } from "@shared/ddd/query.base";
-import { unknownException } from "@src/shared/utils/unknownException";
-import { UserRepository } from "./user.repository.port";
-import { User, UserRoleEnum } from "../domain/user.entity";
-import { formatToCPF } from "../domain/value-object/document";
+import { A, E, FPF, O, TE } from "@shared/functional/monads";
+import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { noop } from "@shared/utils/noop";
+import { unknownException } from "@shared/utils/unknownException";
+import { validateFromUnknown } from "@shared/utils/validateWith";
+import { UserRepository } from "@src/modules/user/database/user.repository.port";
+import { User, UserRoleEnum } from "@src/modules/user/domain/user.entity";
+import { formatToCPF } from "@src/modules/user/domain/value-object/document";
 
 @Injectable()
 export class RealUserRepository implements UserRepository {

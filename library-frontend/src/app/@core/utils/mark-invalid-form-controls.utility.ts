@@ -11,13 +11,13 @@
  * to the first invalid control using
  */
 
+import { ElementRef } from "@angular/core";
 import {
   AbstractControl,
   FormArray,
   FormControl,
   FormGroup,
 } from "@angular/forms";
-import { ElementRef } from "@angular/core";
 
 export function markInvalidFormControls<T extends AbstractControl>(
   control: T,

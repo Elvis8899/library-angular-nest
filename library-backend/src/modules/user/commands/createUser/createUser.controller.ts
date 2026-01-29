@@ -1,3 +1,6 @@
+import { Roles } from "@auth/decorators/roles.decorator";
+import { AuthGuard } from "@auth/guards/auth.guard";
+import { RolesGuard } from "@auth/guards/roles.guard";
 import {
   Body,
   Controller,
@@ -8,20 +11,17 @@ import {
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiBearerAuth,
+  ApiConflictResponse,
+  ApiCreatedResponse,
   ApiOperation,
   ApiTags,
   ApiUnprocessableEntityResponse,
-  ApiCreatedResponse,
-  ApiConflictResponse,
-  ApiBearerAuth,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/noop";
-import { CreateUserDto } from "../../dtos/user.dto";
-import { CreateUser } from "./createUser.command";
-import { RolesGuard } from "@src/modules/auth/guards/roles.guard";
-import { Roles } from "@src/modules/auth/decorators/roles.decorator";
-import { UserRoleEnum } from "../../domain/user.entity";
-import { AuthGuard } from "@src/modules/auth/guards/auth.guard";
+import { CreateUser } from "@user/commands/createUser/createUser.command";
+import { UserRoleEnum } from "@user/domain/user.entity";
+import { CreateUserDto } from "@user/dtos/user.dto";
 
 @Controller("v1/")
 @ApiBearerAuth()

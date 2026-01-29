@@ -1,15 +1,15 @@
 import { Test } from "@nestjs/testing";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
 import { executeTask } from "@shared/utils/executeTask";
-import { FakeUserRepository } from "@src/modules/user/database/fakeUser.repository";
-import { UserRepository } from "@src/modules/user/database/user.repository.port";
-import { UserNotFoundException } from "@src/modules/user/domain/user.errors";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { UserBuilder } from "@test/data-builders/userBuilder";
+import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { UserRepository } from "@user/database/user.repository.port";
+import { UserNotFoundException } from "@user/domain/user.errors";
 import {
   GetUserByIdQuery,
   GetUserByIdQueryHandler,
-} from "@src/modules/user/queries/getUserById/getUserById.query";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UserBuilder } from "@test/data-builders/userBuilder";
+} from "@user/queries/getUserById/getUserById.query";
 import { PinoLogger } from "nestjs-pino";
 
 //Adapters

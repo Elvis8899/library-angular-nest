@@ -1,16 +1,16 @@
 // @ts-check
 import eslint from "@eslint/js";
-import eslintPluginPrettierRecommended  from 'eslint-plugin-prettier/recommended'
-import prettierlint from "eslint-config-prettier";
-import tseslint from "typescript-eslint";
 import angular from "angular-eslint";
+import prettierlint from "eslint-config-prettier";
+import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 import { defineConfig } from "eslint/config";
+import tseslint from "typescript-eslint";
 
 export default defineConfig(
-   {
+  {
     // Everything in this config object targets our HTML files (both external template files,
     // AND inline templates thanks to the processor set in the TypeScript config above)
-    files: ['**/*.html'],
+    files: ["**/*.html"],
     extends: [
       // Apply the recommended Angular template rules
       ...angular.configs.templateRecommended,
@@ -21,7 +21,7 @@ export default defineConfig(
   },
   {
     // Everything in this config object targets our TypeScript files (Components, Directives, Pipes etc)
-    files: ['**/*.ts'],
+    files: ["**/*.ts"],
     extends: [
       // Apply the recommended core rules
       eslint.configs.recommended,
@@ -41,25 +41,36 @@ export default defineConfig(
     processor: angular.processInlineTemplates,
     // Override specific rules for TypeScript files (these will take priority over the extended configs above)
     rules: {
-      'no-console': ['error'],
-      '@angular-eslint/directive-selector': [
-        'error',
+      "no-console": ["error"],
+      "no-restricted-imports": [
+        "error",
         {
-          type: 'attribute',
-          prefix: 'app',
-          style: 'camelCase',
+          patterns: [
+            {
+              group: ["./", "../"],
+              message: "Relative imports are not allowed.",
+            },
+          ],
         },
       ],
-      '@angular-eslint/component-selector': [
-        'error',
+      "@angular-eslint/directive-selector": [
+        "error",
         {
-          type: 'element',
-          prefix: 'app',
-          style: 'kebab-case',
+          type: "attribute",
+          prefix: "app",
+          style: "camelCase",
+        },
+      ],
+      "@angular-eslint/component-selector": [
+        "error",
+        {
+          type: "element",
+          prefix: "app",
+          style: "kebab-case",
         },
       ],
     },
-  },
+  }
   // {
   //   files: ["**/*.ts"],
   //   languageOptions: {

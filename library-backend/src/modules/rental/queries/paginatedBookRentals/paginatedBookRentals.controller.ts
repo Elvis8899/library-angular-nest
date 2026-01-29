@@ -1,3 +1,5 @@
+import { AuthenticatedRequest } from "@auth/domain/login.entity";
+import { AuthGuard } from "@auth/guards/auth.guard";
 import {
   Controller,
   Get,
@@ -8,22 +10,20 @@ import {
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
-  ApiOperation,
-  ApiTags,
-  ApiResponse,
   ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
 } from "@nestjs/swagger";
-import { PaginatedBookRentalResponseDto } from "../../dtos/bookRental.dto";
-import { PaginatedQueryRequestDto } from "@src/shared/api/paginated-query.request.dto";
-import { PaginatedBookRentalsQuery } from "./paginatedBookRentals.query";
 import {
   BookRentalDetails,
   RentalStatusEnum,
-} from "../../domain/bookRental.entity";
-import { AuthenticatedRequest } from "@src/modules/auth/domain/login.entity";
-import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
-import { AuthGuard } from "@src/modules/auth/guards/auth.guard";
-import { Paginated } from "@src/shared/ddd";
+} from "@rental/domain/bookRental.entity";
+import { PaginatedBookRentalResponseDto } from "@rental/dtos/bookRental.dto";
+import { PaginatedBookRentalsQuery } from "@rental/queries/paginatedBookRentals/paginatedBookRentals.query";
+import { PaginatedQueryRequestDto } from "@shared/api/paginated-query.request.dto";
+import { Paginated } from "@shared/ddd";
+import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Controller("v1/bookRentals")
 @ApiBearerAuth()
@@ -46,7 +46,7 @@ export class PaginatedBookRentalsController {
     @Request() req: AuthenticatedRequest,
   ): Promise<PaginatedBookRentalResponseDto> {
     const { user } = req;
-    const userId = user?.role === UserRoleEnum.Admin ? undefined : user?.sub;
+    const userId = user.role === UserRoleEnum.Admin ? undefined : user.sub;
     const status = RentalStatusEnum.Rented;
     return this.queryBus
       .execute<

@@ -1,16 +1,16 @@
-import { PinoLogger } from "nestjs-pino";
 import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { Paginated } from "@shared/ddd";
 import {
   PaginatedQueryPagination,
   PaginatedQueryValidator,
 } from "@shared/ddd/query.base";
-import { executeTask } from "@shared/utils/executeTask";
-import { performRTE } from "@shared/utils/perform";
 import { FPF, RTE } from "@shared/functional/monads";
-import { fromInputRE } from "@src/shared/utils/fromInput";
-import { User } from "../../domain/user.entity";
-import { UserRepository } from "../../database/user.repository.port";
+import { executeTask } from "@shared/utils/executeTask";
+import { fromInputRE } from "@shared/utils/fromInput";
+import { performRTE } from "@shared/utils/perform";
+import { UserRepository } from "@user/database/user.repository.port";
+import { User } from "@user/domain/user.entity";
+import { PinoLogger } from "nestjs-pino";
 
 export class PaginatedUsersQuery implements IQuery {
   constructor(public readonly params: PaginatedQueryPagination) {}

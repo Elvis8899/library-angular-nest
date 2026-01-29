@@ -1,10 +1,10 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
+import { Logger } from "@app/@core/services";
 import { UserService } from "@app/auth/services/user.service";
 import { UserEntity } from "@core/entities";
-import { HotToastService } from "@ngxpert/hot-toast";
 import { TranslateDirective } from "@ngx-translate/core";
-import { Logger } from "@app/@core/services";
+import { HotToastService } from "@ngxpert/hot-toast";
 
 const log = new Logger("ListUsersComponent");
 

@@ -1,10 +1,10 @@
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { BookInfo } from "@book/domain/bookInfo.entity";
+import { BookItem } from "@book/domain/value-object/bookItem.entity";
 import { Injectable } from "@nestjs/common";
 import { FakeRepositoryBase } from "@shared/db/fakeRepository.base";
+import { A, E, FPF, O, TE } from "@shared/functional/monads";
 import { validateFromUnknown } from "@shared/utils/validateWith";
-import { BookInfo } from "../domain/bookInfo.entity";
-import { BookInfoRepository } from "./bookInfo.repository.port";
-import { BookItem } from "../domain/value-object/bookItem.entity";
-import { A, E, FPF, O, TE } from "@src/shared/functional/monads";
 
 @Injectable()
 export class FakeBookInfoRepository
@@ -69,8 +69,8 @@ export class FakeBookInfoRepository
     (bookItem) =>
       FPF.pipe(
         this.dbItems,
-        A.findFirst(
-          (item) => item.bookItems.findIndex((i) => bookItem === i.id) >= 0,
+        A.findFirst((book) =>
+          book.bookItems.some((item) => item.id === bookItem.id),
         ),
         O.chain((book) =>
           FPF.pipe(

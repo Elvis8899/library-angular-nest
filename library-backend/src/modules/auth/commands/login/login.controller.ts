@@ -1,14 +1,14 @@
-import { Body, Controller, HttpCode, Post } from "@nestjs/common";
+import { LoginCommand } from "@auth/commands/login/login.command";
+import { AuthResponseDto } from "@auth/dtos/authResponse.dto";
+import { LoginDto } from "@auth/dtos/login.dto";
+import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
-  ApiOkResponse,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
-import { LoginCommand } from "./login.command";
-import { LoginDto } from "../../dtos/login.dto";
-import { AuthResponseDto } from "../../dtos/authResponse.dto";
 
 @Controller("v1/")
 @ApiTags("Login")
@@ -19,7 +19,7 @@ export class LoginController {
   ) {}
 
   @Post("login")
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Login a user" })
   @ApiOkResponse({
     description:

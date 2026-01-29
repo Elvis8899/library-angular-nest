@@ -1,8 +1,8 @@
-import { Reflector } from "@nestjs/core";
+import { RequestJWTPayload } from "@auth/domain/login.entity";
+import { RolesGuard } from "@auth/guards/roles.guard";
 import { ExecutionContext } from "@nestjs/common";
-import { RolesGuard } from "@src/modules/auth/guards/roles.guard";
-import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
-import { RequestJWTPayload } from "@src/modules/auth/domain/login.entity";
+import { Reflector } from "@nestjs/core";
+import { UserRoleEnum } from "@user/domain/user.entity";
 import { unsafeCoerce } from "fp-ts/lib/function";
 
 describe("RolesGuard", () => {

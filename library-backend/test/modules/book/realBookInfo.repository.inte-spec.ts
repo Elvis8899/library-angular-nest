@@ -1,16 +1,16 @@
-import { Test } from "@nestjs/testing";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
-import { executeTask } from "@shared/utils/executeTask";
-import { InternalServerErrorException } from "@nestjs/common";
-import { O } from "@shared/functional/monads";
-import { RealBookInfoRepository } from "@src/modules/book/database/realBookInfo.repository";
-import { BookInfo } from "@src/modules/book/domain/bookInfo.entity";
-import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
-import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { RealBookInfoRepository } from "@book/database/realBookInfo.repository";
+import { BookInfo } from "@book/domain/bookInfo.entity";
 import {
   BookItem,
   BookItemStatusEnum,
-} from "@src/modules/book/domain/value-object/bookItem.entity";
+} from "@book/domain/value-object/bookItem.entity";
+import { InternalServerErrorException } from "@nestjs/common";
+import { Test } from "@nestjs/testing";
+import { O } from "@shared/functional/monads";
+import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { executeTask } from "@shared/utils/executeTask";
+import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
+import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 
 let prismaService: PrismaService;
 let bookInfoRepository: RealBookInfoRepository;

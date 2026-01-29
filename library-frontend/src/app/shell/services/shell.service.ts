@@ -1,10 +1,10 @@
 import { Route, Router, Routes } from "@angular/router";
 
+import { inject, Injectable } from "@angular/core";
 import { AuthenticationGuard, PERMISSIONS, PermissionService } from "@app/auth";
 import { ShellComponent } from "@app/shell/shell.component";
-import { BehaviorSubject } from "rxjs";
-import { inject, Injectable } from "@angular/core";
 import { NavMenuItem } from "@core/interfaces";
+import { BehaviorSubject } from "rxjs";
 
 /**
  * Provides helper methods to create routes.

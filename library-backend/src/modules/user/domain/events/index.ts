@@ -1,7 +1,7 @@
-import { FPF } from "@src/shared/functional/monads";
-import { UserCreatedEvent } from "./userCreated.event";
-import { UserDeletedEvent } from "./userDeleted.event";
-import { UserUpdatedEvent } from "./userUpdated.event";
+import { FPF } from "@shared/functional/monads";
+import { UserCreatedEvent } from "@user/domain/events/userCreated.event";
+import { UserDeletedEvent } from "@user/domain/events/userDeleted.event";
+import { UserUpdatedEvent } from "@user/domain/events/userUpdated.event";
 
 export const AllUserEvents = FPF.tuple(
   UserCreatedEvent,
