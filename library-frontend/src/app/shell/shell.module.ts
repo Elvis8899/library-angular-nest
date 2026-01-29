@@ -1,15 +1,14 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { RouterModule } from "@angular/router";
-import { TranslateModule } from "@ngx-translate/core";
-
 import { FormsModule } from "@angular/forms";
+import { RouterModule } from "@angular/router";
 import { LanguageSelectorComponent } from "@app/i18n";
+import { PagesRoutingModule } from "@app/pages/pages-routing.module";
 import { HeaderComponent } from "@app/shell/components/header/header.component";
 import { SidebarComponent } from "@app/shell/components/sidebar/sidebar.component";
-import { PagesModule } from "@pages/pages.module";
+import { ShellComponent } from "@app/shell/shell.component";
+import { TranslateModule } from "@ngx-translate/core";
 import { HumanizePipe } from "@shared/pipes";
-import { ShellComponent } from "./shell.component";
 
 @NgModule({
   imports: [
@@ -18,7 +17,7 @@ import { ShellComponent } from "./shell.component";
     RouterModule,
     HumanizePipe,
     FormsModule,
-    PagesModule,
+    PagesRoutingModule,
     LanguageSelectorComponent,
     ShellComponent,
     HeaderComponent,

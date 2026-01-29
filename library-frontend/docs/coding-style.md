@@ -2,10 +2,7 @@
 
 ## Coding style
 
-For coding style and linter we use **[Javascript Standard Style](https://standardjs.com/)**
-
-Despite what is indicated in Standard.js webpage, we don't use as standard a package, but trying to follow the rules for best practices. We are planning to use
-[@angular-eslint/schematic](https://github.com/angular-eslint/angular-eslint)
+For coding style and linter we use **[@angular-eslint/schematic](https://github.com/angular-eslint/angular-eslint)**
 
 ## Why
 
@@ -17,16 +14,14 @@ A [lot of companies](https://standardjs.com/index.html#who-uses-javascript-stand
 ## Rules (brief)
 
 - Use 2 spaces for indentation.
-- Use single quotes for strings except to avoid escaping.
+- Use double quotes for strings except to avoid escaping.
 - Use camelcase when naming variables and functions.
 - Add a space after keywords.
-- Trailing commas not allowed.
 - Add a space before a function declaration's parentheses.
 - Always use === instead of ==.
 - Keep else statements on the same line as their curly braces.
 - Multiple blank lines not allowed.
 - For var declarations, write each declaration in its own statement.
-- **No semicolons.** (Currently we are using semicolons, but we are planning to remove them)
 
 Check full _standard.js_ rules at [standard.js rules page](https://standardjs.com/rules.html)
 

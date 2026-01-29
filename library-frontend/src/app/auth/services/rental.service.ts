@@ -3,8 +3,8 @@ import { inject, Injectable } from "@angular/core";
 import {
   BookRentalEntity,
   BookRentEntity,
-} from "@app/@core/entities/bookRental.entity";
-import { PaginatedResponse } from "@app/@core/entities/utils/paginatedResponse.entity";
+} from "@app/core/entities/bookRental.entity";
+import { PaginatedResponse } from "@app/core/entities/utils/paginatedResponse.entity";
 import { Observable } from "rxjs";
 
 @Injectable({

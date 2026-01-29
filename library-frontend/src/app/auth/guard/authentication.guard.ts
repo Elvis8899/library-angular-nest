@@ -5,8 +5,8 @@ import {
   RouterStateSnapshot,
 } from "@angular/router";
 
-import { Logger } from "@app/@core/services";
 import { CredentialsService } from "@app/auth";
+import { Logger } from "@app/core/services";
 import { UntilDestroy } from "@ngneat/until-destroy";
 
 const log = new Logger("AuthenticationGuard");

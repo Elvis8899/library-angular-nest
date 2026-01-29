@@ -3,7 +3,7 @@ import { LangChangeEvent, TranslateService } from "@ngx-translate/core";
 import { noop, Subject } from "rxjs";
 import { vi, type Mock } from "vitest";
 
-import { I18nService } from "./i18n.service";
+import { I18nService } from "@app/i18n/i18n.service";
 
 const defaultLanguage = "en-US";
 const supportedLanguages = ["eo", "en-US", "fr-FR"];

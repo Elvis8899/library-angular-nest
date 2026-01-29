@@ -1,4 +1,9 @@
 import {
+  HTTP_INTERCEPTORS,
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from "@angular/common/http";
+import {
   ApplicationConfig,
   enableProdMode,
   importProvidersFrom,
@@ -13,13 +18,10 @@ import {
   withPreloading,
   withRouterConfig,
 } from "@angular/router";
-
-import {
-  HTTP_INTERCEPTORS,
-  provideHttpClient,
-  withInterceptorsFromDi,
-} from "@angular/common/http";
 import { provideServiceWorker } from "@angular/service-worker";
+import { routes } from "@app/app.routes";
+import { Logger } from "@app/core/services";
+import { ShellModule } from "@app/shell/shell.module";
 import { RouteReusableStrategy } from "@core/helpers";
 import {
   ApiPrefixInterceptor,
@@ -28,11 +30,12 @@ import {
 import { environment } from "@env/environment";
 import { TranslateModule } from "@ngx-translate/core";
 import { provideHotToastConfig } from "@ngxpert/hot-toast";
-import { routes } from "./app.routes";
-import { ShellModule } from "./shell/shell.module";
 
 if (environment.production) {
   enableProdMode();
+
+  // Setup logger
+  Logger.enableProductionMode();
 }
 
 export const appConfig: ApplicationConfig = {

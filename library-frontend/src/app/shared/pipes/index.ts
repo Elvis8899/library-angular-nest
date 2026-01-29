@@ -1,1 +1,1 @@
-export * from "./humanize.pipe";
+export * from "@shared/pipes/humanize.pipe";

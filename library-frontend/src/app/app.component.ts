@@ -8,7 +8,7 @@ import {
   RouterState,
 } from "@angular/router";
 import { I18nService } from "@app/i18n";
-import { AppUpdateService, Logger } from "@core/services";
+import { AppUpdateService } from "@core/services";
 import { environment } from "@env/environment";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
@@ -31,11 +31,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly _updateService = inject(AppUpdateService);
 
   ngOnInit() {
-    // Setup logger
-    if (environment.production) {
-      Logger.enableProductionMode();
-    }
-
     // Initialize i18nService with default language and supported languages
     this._i18nService.init(
       environment.defaultLanguage,
