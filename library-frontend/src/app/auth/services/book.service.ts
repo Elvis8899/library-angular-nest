@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
-import { BookEntity, BookItemEntity } from "@app/@core/entities";
-import { PaginatedResponse } from "@app/@core/entities/utils/paginatedResponse.entity";
+import { BookEntity, BookItemEntity } from "@app/core/entities/book.entity";
+import { PaginatedResponse } from "@app/core/entities/utils/paginatedResponse.entity";
 import { Observable } from "rxjs";
 
 @Injectable({

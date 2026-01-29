@@ -6,7 +6,7 @@ import {
   inject,
   Input,
 } from "@angular/core";
-import { I18nService } from "../i18n.service";
+import { I18nService } from "@app/i18n/i18n.service";
 
 @Component({
   selector: "app-language-selector",

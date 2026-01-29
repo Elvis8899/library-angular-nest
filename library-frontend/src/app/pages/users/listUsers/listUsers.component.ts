@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
-import { Logger } from "@app/@core/services";
 import { UserService } from "@app/auth/services/user.service";
+import { Logger } from "@app/core/services";
 import { UserEntity } from "@core/entities";
 import { TranslateDirective } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";

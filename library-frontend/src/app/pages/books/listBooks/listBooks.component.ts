@@ -24,11 +24,11 @@ import { HotToastService } from "@ngxpert/hot-toast";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatSelectModule } from "@angular/material/select";
-import { BookRentEntity } from "@app/@core/entities/bookRental.entity";
-import { Logger } from "@app/@core/services";
 import { CredentialsService, ROLE } from "@app/auth";
 import { RentalService } from "@app/auth/services/rental.service";
 import { UserService } from "@app/auth/services/user.service";
+import { BookRentEntity } from "@app/core/entities/bookRental.entity";
+import { Logger } from "@app/core/services";
 import { TranslateModule } from "@ngx-translate/core";
 
 const log = new Logger("ListBooksComponent");

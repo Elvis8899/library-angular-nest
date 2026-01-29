@@ -1,8 +1,7 @@
 import { inject, Injectable } from "@angular/core";
-import { Observable, of } from "rxjs";
-
+import { UserService } from "@auth";
 import { Credentials } from "@core/entities";
-import { UserService } from "./user.service";
+import { Observable, of } from "rxjs";
 
 export interface LoginContext {
   email: string;

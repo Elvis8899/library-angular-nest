@@ -1,15 +1,9 @@
 import { inject, Injectable } from "@angular/core";
-import {
-  LangChangeEvent,
-  StrictTranslation,
-  TranslateService,
-} from "@ngx-translate/core";
-import { BehaviorSubject, Observable, Subscription } from "rxjs";
-
-import { Logger } from "@app/@core/services";
+import { Logger } from "@app/core/services";
+import { enUS, ptBR } from "@app/i18n/translations";
 import { environment } from "@env/environment";
-import { enUS } from "../../translations/en-US";
-import { ptBR } from "../../translations/pt-BR";
+import { LangChangeEvent, TranslateService } from "@ngx-translate/core";
+import { BehaviorSubject, Observable, Subscription } from "rxjs";
 
 const log = new Logger("I18nService");
 const languageKey = "language";
@@ -35,10 +29,7 @@ export class I18nService {
     );
 
     // Embed languages to avoid extra HTTP requests
-    this._translateService.setTranslation(
-      "pt-BR",
-      ptBR as Record<string, StrictTranslation>
-    );
+    this._translateService.setTranslation("pt-BR", ptBR);
     this._translateService.setTranslation("en-US", enUS);
   }
 

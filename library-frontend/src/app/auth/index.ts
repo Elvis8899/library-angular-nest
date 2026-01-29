@@ -1,11 +1,12 @@
-export * from "../pages/auth/login/login.component";
-export * from "./guard/authentication.guard";
+export * from "@app/auth/guard/authentication.guard";
+export * from "@pages/auth/login/login.component";
 
 // Services
-export * from "./services/authentication.service";
-export * from "./services/credentials.service";
-export * from "./services/permissions.service";
+export * from "@app/auth/services/authentication.service";
+export * from "@app/auth/services/credentials.service";
+export * from "@app/auth/services/permissions.service";
+export * from "@app/auth/services/user.service";
 
 // Enums
-export * from "./enums/permissions.enum";
-export * from "./enums/roles.enum";
+export * from "@app/auth/enums/permissions.enum";
+export * from "@app/auth/enums/roles.enum";
