@@ -1,14 +1,14 @@
 import { Test } from "@nestjs/testing";
 import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
 import { FakeBookRentalRepository } from "@rental/database/fakeBookRental.repository";
+import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
 import {
   PaginatedBookRentalsQuery,
   PaginatedBookRentalsQueryHandler,
 } from "@rental/queries/paginatedBookRentals/paginatedBookRentals.query";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { executeTask } from "@shared/utils/executeTask";
+import { executeTask } from "@shared/utils/application/executeTask";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { RentalStatusEnum } from "@src/modules/rental/domain/bookRental.entity";
 import { BookRentalBuilder } from "@test/data-builders/bookRentalBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { PinoLogger } from "nestjs-pino";

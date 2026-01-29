@@ -7,7 +7,7 @@ import {
 import { Test, TestingModule } from "@nestjs/testing";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
-import { executeTask } from "@shared/utils/executeTask";
+import { executeTask } from "@shared/utils/application/executeTask";
 import { AppModule } from "@src/app.module";
 import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
 import { MockAuthGuardBuilder } from "@test/data-builders/mockAuthGuardBuilder";

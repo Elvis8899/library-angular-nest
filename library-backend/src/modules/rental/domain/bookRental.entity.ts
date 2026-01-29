@@ -1,5 +1,5 @@
-import { BaseDateEntity } from "@shared/db/dateEntity.base";
-import { DateType } from "@shared/utils/DateType";
+import { BaseDateEntity } from "@shared/utils/domain/dateEntity.base";
+import { DateType } from "@shared/utils/domain/DateType";
 import { UUID } from "@shared/uuid/entities/uuid";
 import { z } from "zod";
 

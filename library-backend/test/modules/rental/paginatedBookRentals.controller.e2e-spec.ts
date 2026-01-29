@@ -1,21 +1,21 @@
 import { AuthGuard } from "@auth/guards/auth.guard";
+import { BookItem } from "@book/domain/value-object/bookItem.entity";
 import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import { Test, TestingModule } from "@nestjs/testing";
+import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
-import { executeTask } from "@shared/utils/executeTask";
+import { executeTask } from "@shared/utils/application/executeTask";
 import { AppModule } from "@src/app.module";
-import { BookItem } from "@src/modules/book/domain/value-object/bookItem.entity";
-import { BookRentalRepository } from "@src/modules/rental/database/bookRental.repository.port";
-import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
 import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/data-builders/bookRentalBuilder";
 import { MockAuthGuardBuilder } from "@test/data-builders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/data-builders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { UserRoleEnum } from "@user/domain/user.entity";
 import { PinoLogger } from "nestjs-pino";
 import * as request from "supertest";
 

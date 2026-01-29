@@ -1,7 +1,10 @@
 import { BookRental, RentalStatusEnum } from "@rental/domain/bookRental.entity";
-import { Paginated, RepositoryDefaultPort } from "@shared/ddd";
-import { PaginatedQueryParams } from "@shared/ddd/query.base";
-import { O, TE } from "@shared/functional/monads";
+import { O, TE } from "@shared/utils/application/monads";
+import {
+  Paginated,
+  RepositoryDefaultPort,
+} from "@shared/utils/database/repository.port";
+import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
 export type BookRentalFindAllQuery = {
   userId?: string;

@@ -1,4 +1,4 @@
-import { FPF, R } from "@shared/functional/monads";
+import { FPF, R } from "@shared/utils/application/monads";
 import { PinoLogger } from "nestjs-pino";
 
 /**

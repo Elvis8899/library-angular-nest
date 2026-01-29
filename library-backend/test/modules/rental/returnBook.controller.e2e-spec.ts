@@ -7,13 +7,13 @@ import { AppModule } from "@src/app.module";
 import * as request from "supertest";
 
 import { AuthGuard } from "@auth/guards/auth.guard";
+import { BookItemStatusEnum } from "@book/domain/value-object/bookItem.entity";
 import { HttpStatus } from "@nestjs/common";
+import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
+import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
-import { BookItemStatusEnum } from "@src/modules/book/domain/value-object/bookItem.entity";
-import { BookRentalRepository } from "@src/modules/rental/database/bookRental.repository.port";
-import { RentalStatusEnum } from "@src/modules/rental/domain/bookRental.entity";
-import { executeTask } from "@src/modules/shared/utils/executeTask";
+import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/data-builders/bookRentalBuilder";
 import { MockAuthGuardBuilder } from "@test/data-builders/mockAuthGuardBuilder";

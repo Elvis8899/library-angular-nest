@@ -7,10 +7,10 @@ import { AppModule } from "@src/app.module";
 import * as request from "supertest";
 
 import { AuthGuard } from "@auth/guards/auth.guard";
+import { hashPassword } from "@auth/util/signTokenParams";
 import { HttpStatus } from "@nestjs/common";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
-import { hashPassword } from "@src/modules/auth/util/signTokenParams";
 import { MockAuthGuardBuilder } from "@test/data-builders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/data-builders/userBuilder";
 import { PinoLogger } from "nestjs-pino";

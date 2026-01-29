@@ -13,7 +13,7 @@ import { BookRentalNotAvailableException } from "@rental/domain/bookRental.error
 import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
 import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { executeTask } from "@shared/utils/executeTask";
+import { executeTask } from "@shared/utils/application/executeTask";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/data-builders/bookRentalBuilder";

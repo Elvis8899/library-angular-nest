@@ -6,9 +6,9 @@ import {
 } from "@book/domain/value-object/bookItem.entity";
 import { InternalServerErrorException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { O } from "@shared/functional/monads";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
-import { executeTask } from "@shared/utils/executeTask";
+import { executeTask } from "@shared/utils/application/executeTask";
+import { O } from "@shared/utils/application/monads";
 import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 

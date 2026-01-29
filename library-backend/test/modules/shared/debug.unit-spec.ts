@@ -1,7 +1,7 @@
 import { Test } from "@nestjs/testing";
-import { FPF } from "@shared/functional/monads";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { DebugClass } from "@shared/utils/debug";
+import { DebugClass } from "@shared/utils/application/debug";
+import { FPF } from "@shared/utils/application/monads";
 import { PinoLogger } from "nestjs-pino";
 
 let debug: DebugClass;

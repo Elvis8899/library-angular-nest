@@ -1,4 +1,4 @@
-import "@shared/utils/dotenv";
+import "@shared/utils/config/dotenv";
 import { get } from "env-var";
 import { LoggerOptions, stdTimeFunctions } from "pino";
 import { GenReqId, Options } from "pino-http";

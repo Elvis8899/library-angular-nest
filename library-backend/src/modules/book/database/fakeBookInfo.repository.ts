@@ -2,9 +2,9 @@ import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
 import { BookInfo } from "@book/domain/bookInfo.entity";
 import { BookItem } from "@book/domain/value-object/bookItem.entity";
 import { Injectable } from "@nestjs/common";
-import { FakeRepositoryBase } from "@shared/db/fakeRepository.base";
-import { A, E, FPF, O, TE } from "@shared/functional/monads";
-import { validateFromUnknown } from "@shared/utils/validateWith";
+import { A, E, FPF, O, TE } from "@shared/utils/application/monads";
+import { validateFromUnknown } from "@shared/utils/application/validateWith";
+import { FakeRepositoryBase } from "@shared/utils/database/fakeRepository.base";
 
 @Injectable()
 export class FakeBookInfoRepository

@@ -6,8 +6,8 @@ import { PaginatedBookInfosQuery } from "@book/queries/paginatedBookInfos/pagina
 import { Controller, Get, HttpStatus, Query } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { PaginatedQueryRequestDto } from "@shared/api/paginated-query.request.dto";
-import { PaginatedResponseDto } from "@shared/api/paginated.response.base";
+import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginated-query.request.dto";
+import { PaginatedResponseDto } from "@shared/utils/dtos/paginated.response.base";
 
 @Controller("v1/")
 @ApiTags("Livros")

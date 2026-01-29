@@ -4,16 +4,16 @@ import {
   BookRentalDetails,
   RentalStatusEnum,
 } from "@rental/domain/bookRental.entity";
-import { Paginated } from "@shared/ddd";
+import { executeTask } from "@shared/utils/application/executeTask";
+import { fromInputRE } from "@shared/utils/application/fromInput";
+import { Apply, FPF, RE, RTE } from "@shared/utils/application/monads";
+import { performRTE } from "@shared/utils/application/perform";
+import { Paginated } from "@shared/utils/database/repository.port";
 import {
   PaginatedQueryPagination,
   PaginatedQueryValidator,
   PaginatedReturnValidator,
-} from "@shared/ddd/query.base";
-import { Apply, FPF, RE, RTE } from "@shared/functional/monads";
-import { executeTask } from "@shared/utils/executeTask";
-import { fromInputRE } from "@shared/utils/fromInput";
-import { performRTE } from "@shared/utils/perform";
+} from "@shared/utils/domain/query.base";
 import { UUID } from "@shared/uuid/entities/uuid";
 import { PinoLogger } from "nestjs-pino";
 import { z } from "zod";

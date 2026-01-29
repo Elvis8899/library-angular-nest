@@ -1,5 +1,8 @@
-import { FPF, RTE, TE } from "@shared/functional/monads";
-import { loggerOnLeftR, loggerOnRightR } from "@shared/utils/handleLog";
+import {
+  loggerOnLeftR,
+  loggerOnRightR,
+} from "@shared/utils/application/handleLog";
+import { FPF, RTE, TE } from "@shared/utils/application/monads";
 import { PinoLogger } from "nestjs-pino";
 
 export const performRTE = <InputLike, OutputLike, ErrorLike extends Error>(

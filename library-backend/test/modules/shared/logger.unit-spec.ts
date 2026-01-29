@@ -1,10 +1,7 @@
 import { Test } from "@nestjs/testing";
-import { FPF } from "@shared/functional/monads";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import {
-  getGenReqId,
-  getLoggerOptions,
-} from "@src/modules/shared/logger/logger.config";
+import { getGenReqId, getLoggerOptions } from "@shared/logger/logger.config";
+import { FPF } from "@shared/utils/application/monads";
 import { PinoLogger } from "nestjs-pino";
 
 // let logger: PinoLogger;

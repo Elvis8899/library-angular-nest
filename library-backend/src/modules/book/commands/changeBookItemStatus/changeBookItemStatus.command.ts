@@ -4,11 +4,11 @@ import { BOOK_ITEM_STATUS_CHANGE } from "@book/domain/events/bookItemStatusChang
 import { BookItemStatusEnum } from "@book/domain/value-object/bookItem.entity";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { Apply, FPF, RE, RTE } from "@shared/functional/monads";
-import { executeTask } from "@shared/utils/executeTask";
-import { fromInputRE } from "@shared/utils/fromInput";
-import { noop } from "@shared/utils/noop";
-import { performRTE } from "@shared/utils/perform";
+import { executeTask } from "@shared/utils/application/executeTask";
+import { fromInputRE } from "@shared/utils/application/fromInput";
+import { Apply, FPF, RE, RTE } from "@shared/utils/application/monads";
+import { noop } from "@shared/utils/application/noop";
+import { performRTE } from "@shared/utils/application/perform";
 import { UUID } from "@shared/uuid/entities/uuid";
 import { PinoLogger } from "nestjs-pino";
 import { z } from "zod";

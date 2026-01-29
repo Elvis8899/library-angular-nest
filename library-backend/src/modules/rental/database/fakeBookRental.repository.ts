@@ -4,11 +4,11 @@ import {
   BookRentalRepository,
 } from "@rental/database/bookRental.repository.port";
 import { BookRental } from "@rental/domain/bookRental.entity";
-import { FakeRepositoryBase } from "@shared/db/fakeRepository.base";
-import { Paginated } from "@shared/ddd";
-import { PaginatedQueryParams } from "@shared/ddd/query.base";
-import { TE } from "@shared/functional/monads";
-import { validateFromUnknown } from "@shared/utils/validateWith";
+import { TE } from "@shared/utils/application/monads";
+import { validateFromUnknown } from "@shared/utils/application/validateWith";
+import { FakeRepositoryBase } from "@shared/utils/database/fakeRepository.base";
+import { Paginated } from "@shared/utils/database/repository.port";
+import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
 @Injectable()
 export class FakeBookRentalRepository

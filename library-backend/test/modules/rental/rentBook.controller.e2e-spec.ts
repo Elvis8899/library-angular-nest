@@ -7,21 +7,21 @@ import { AppModule } from "@src/app.module";
 import * as request from "supertest";
 
 import { AuthGuard } from "@auth/guards/auth.guard";
-import { HttpStatus } from "@nestjs/common";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
-import { BookInfoRepository } from "@src/modules/book/database/bookInfo.repository.port";
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
 import {
   BookItem,
   BookItemStatusEnum,
-} from "@src/modules/book/domain/value-object/bookItem.entity";
-import { executeTask } from "@src/modules/shared/utils/executeTask";
-import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
+} from "@book/domain/value-object/bookItem.entity";
+import { HttpStatus } from "@nestjs/common";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/data-builders/bookRentalBuilder";
 import { MockAuthGuardBuilder } from "@test/data-builders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/data-builders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { UserRoleEnum } from "@user/domain/user.entity";
 import { unsafeCoerce } from "fp-ts/lib/function";
 import { PinoLogger } from "nestjs-pino";
 

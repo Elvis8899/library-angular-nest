@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { DomainEvent } from "@shared/domain-event-publisher/domain/domainEvent";
-import { E, FPF, TE } from "@shared/functional/monads";
-import { unknownException } from "@shared/utils/unknownException";
-import { validateWith } from "@shared/utils/validateWith";
+import { E, FPF, TE } from "@shared/utils/application/monads";
+import { validateWith } from "@shared/utils/application/validateWith";
+import { unknownException } from "@shared/utils/domain/shared.erros";
 
 @Injectable()
 export class DomainEventPublisher {

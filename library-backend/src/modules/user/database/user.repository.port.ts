@@ -1,6 +1,9 @@
-import { Paginated, RepositoryDefaultPort } from "@shared/ddd";
-import { PaginatedQueryParams } from "@shared/ddd/query.base";
-import { O, TE } from "@shared/functional/monads";
+import { O, TE } from "@shared/utils/application/monads";
+import {
+  Paginated,
+  RepositoryDefaultPort,
+} from "@shared/utils/database/repository.port";
+import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 import { User } from "@user/domain/user.entity";
 
 export abstract class UserRepository implements RepositoryDefaultPort<User> {

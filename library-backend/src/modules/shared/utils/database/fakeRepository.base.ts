@@ -1,6 +1,4 @@
 // import { InternalServerErrorException } from "@nestjs/common";
-import { Paginated, RepositoryDefaultPort } from "@shared/ddd";
-import { PaginatedQueryParams } from "@shared/ddd/query.base";
 import {
   A,
   Apply,
@@ -10,7 +8,12 @@ import {
   Predicate,
   Refinement,
   TE,
-} from "@shared/functional/monads";
+} from "@shared/utils/application/monads";
+import {
+  Paginated,
+  RepositoryDefaultPort,
+} from "@shared/utils/database/repository.port";
+import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
 export abstract class FakeRepositoryBase<
   Entity extends { id: string },

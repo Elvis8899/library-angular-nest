@@ -1,8 +1,8 @@
 import { InternalServerErrorException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { O } from "@shared/functional/monads";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
-import { executeTask } from "@shared/utils/executeTask";
+import { executeTask } from "@shared/utils/application/executeTask";
+import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/data-builders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { RealUserRepository } from "@user/database/realUser.repository";

@@ -22,7 +22,7 @@ import {
 } from "@nestjs/swagger";
 import { RentBookCommand } from "@rental/commands/rentBook/rentBook.command";
 import { BookRentalDto } from "@rental/dtos/bookRental.dto";
-import { noop } from "@shared/utils/noop";
+import { noop } from "@shared/utils/application/noop";
 import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Controller("v1/bookRentals")
