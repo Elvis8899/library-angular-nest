@@ -1,13 +1,13 @@
 import { Controller, HttpCode, HttpStatus, Param, Put } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
-  ApiOperation,
-  ApiTags,
   ApiCreatedResponse,
   ApiNotFoundResponse,
+  ApiOperation,
+  ApiTags,
 } from "@nestjs/swagger";
+import { ReturnBookCommand } from "@rental/commands/returnBook/returnBook.command";
 import { noop } from "@shared/utils/noop";
-import { ReturnBookCommand } from "./returnBook.command";
 
 @Controller("v1/bookRentals")
 @ApiTags("Empréstimos")
@@ -22,7 +22,9 @@ export class ReturnBookController {
   @ApiCreatedResponse({ description: "Empréstimo finalizado com sucesso." })
   @ApiNotFoundResponse({ description: "Empréstimo não encontrado." })
   @ApiOperation({ summary: "Retornar Livro" })
-  async updateBookInfo(@Param("id") id: string): Promise<void> {
-    return this.commandBus.execute(new ReturnBookCommand(id)).then(noop);
+  async updateBookInfo(@Param("id") bookRentalId: string): Promise<void> {
+    return this.commandBus
+      .execute(new ReturnBookCommand(bookRentalId))
+      .then(noop);
   }
 }

@@ -1,9 +1,9 @@
 import { CommonModule } from "@angular/common";
 import { Component, OnInit } from "@angular/core";
-import { UntilDestroy } from "@ngneat/until-destroy";
-import { SidebarComponent } from "./components/sidebar/sidebar.component";
-import { HeaderComponent } from "./components/header/header.component";
 import { RouterModule } from "@angular/router";
+import { UntilDestroy } from "@ngneat/until-destroy";
+import { HeaderComponent } from "./components/header/header.component";
+import { SidebarComponent } from "./components/sidebar/sidebar.component";
 @UntilDestroy()
 @Component({
   selector: "app-shell",

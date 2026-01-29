@@ -1,3 +1,7 @@
+import { Roles } from "@auth/decorators/roles.decorator";
+import { AuthenticatedRequest } from "@auth/domain/login.entity";
+import { AuthGuard } from "@auth/guards/auth.guard";
+import { RolesGuard } from "@auth/guards/roles.guard";
 import {
   Body,
   Controller,
@@ -9,21 +13,17 @@ import {
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiBearerAuth,
+  ApiConflictResponse,
+  ApiCreatedResponse,
   ApiOperation,
   ApiTags,
   ApiUnprocessableEntityResponse,
-  ApiCreatedResponse,
-  ApiConflictResponse,
-  ApiBearerAuth,
 } from "@nestjs/swagger";
+import { RentBookCommand } from "@rental/commands/rentBook/rentBook.command";
+import { BookRentalDto } from "@rental/dtos/bookRental.dto";
 import { noop } from "@shared/utils/noop";
-import { BookRentalDto } from "../../dtos/bookRental.dto";
-import { RentBookCommand } from "./rentBook.command";
-import { AuthGuard } from "@src/modules/auth/guards/auth.guard";
-import { RolesGuard } from "@src/modules/auth/guards/roles.guard";
-import { Roles } from "@src/modules/auth/decorators/roles.decorator";
-import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
-import { AuthenticatedRequest } from "@src/modules/auth/domain/login.entity";
+import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Controller("v1/bookRentals")
 @ApiTags("Empréstimos")
@@ -50,7 +50,7 @@ export class RentBookController {
     @Body() bookRentalInput: BookRentalDto,
     @Request() req: AuthenticatedRequest,
   ): Promise<void> {
-    if (req.user && req.user.role !== UserRoleEnum.Admin) {
+    if (req.user.role !== UserRoleEnum.Admin) {
       bookRentalInput.userId = req.user.sub;
     }
     return this.commandBus

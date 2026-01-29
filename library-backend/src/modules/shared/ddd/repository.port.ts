@@ -1,5 +1,5 @@
-import { O, TE } from "@shared/functional/monads";
 import { PaginatedQueryParams } from "@shared/ddd/query.base";
+import { O, TE } from "@shared/functional/monads";
 
 /*  Most of repositories will probably need generic
     save/find/delete operations, so it's easier

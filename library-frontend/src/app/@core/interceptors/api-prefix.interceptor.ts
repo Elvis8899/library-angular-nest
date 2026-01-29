@@ -1,4 +1,3 @@
-import { inject, Injectable } from "@angular/core";
 import {
   HttpErrorResponse,
   HttpEvent,
@@ -6,10 +5,11 @@ import {
   HttpInterceptor,
   HttpRequest,
 } from "@angular/common/http";
-import { Observable, Subject, takeUntil, throwError } from "rxjs";
-import { TranslateService } from "@ngx-translate/core";
-import { catchError, finalize } from "rxjs/operators";
+import { inject, Injectable } from "@angular/core";
 import { CredentialsService } from "@auth";
+import { TranslateService } from "@ngx-translate/core";
+import { Observable, Subject, takeUntil, throwError } from "rxjs";
+import { catchError, finalize } from "rxjs/operators";
 
 @Injectable({
   providedIn: "root",

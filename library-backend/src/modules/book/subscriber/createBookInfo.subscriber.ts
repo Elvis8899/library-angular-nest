@@ -1,11 +1,11 @@
-import { Injectable } from "@nestjs/common";
-import { CommandBus } from "@nestjs/cqrs";
-import { OnEvent } from "@nestjs/event-emitter";
+import { AddBookItem } from "@book/commands/addBookItem/addBookItem.command";
 import {
   BOOK_INFO_CREATED,
   BookInfoCreatedEvent,
-} from "../domain/events/bookInfoCreated.event";
-import { AddBookItem } from "../commands/addBookItem/addBookItem.command";
+} from "@book/domain/events/bookInfoCreated.event";
+import { Injectable } from "@nestjs/common";
+import { CommandBus } from "@nestjs/cqrs";
+import { OnEvent } from "@nestjs/event-emitter";
 
 @Injectable()
 export class CreateBookInfoSubscriber {

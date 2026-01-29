@@ -1,9 +1,9 @@
-import { User, UserRoleEnum } from "@src/modules/user/domain/user.entity";
-import { formatToCPF } from "@src/modules/user/domain/value-object/document";
-import { CreateUserDto } from "@src/modules/user/dtos/user.dto";
-import { FPF } from "@src/shared/functional/monads";
-import { UUID } from "@src/shared/uuid/entities/uuid";
+import { FPF } from "@shared/functional/monads";
+import { UUID } from "@shared/uuid/entities/uuid";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { User, UserRoleEnum } from "@user/domain/user.entity";
+import { formatToCPF } from "@user/domain/value-object/document";
+import { CreateUserDto } from "@user/dtos/user.dto";
 import { z } from "zod";
 
 export class UserBuilder {

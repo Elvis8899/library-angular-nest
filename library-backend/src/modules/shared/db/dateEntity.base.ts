@@ -1,5 +1,5 @@
+import { DateType } from "@shared/utils/DateType";
 import { z } from "zod";
-import { DateType } from "../utils/DateType";
 
 export const BaseDateEntity = z.object({
   createdAt: DateType.default(() => new Date()),

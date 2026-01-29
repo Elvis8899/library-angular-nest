@@ -1,5 +1,5 @@
-import { Expose } from "class-transformer";
 import { InitializableEntity } from "@app/@core/entities/utils/intializable.entity";
+import { Expose } from "class-transformer";
 
 export class BaseEntity extends InitializableEntity {
   id = "";

@@ -1,3 +1,4 @@
+import { RequestJWTPayload } from "@auth/domain/login.entity";
 import {
   CanActivate,
   ExecutionContext,
@@ -6,7 +7,6 @@ import {
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
-import { RequestJWTPayload } from "../domain/login.entity";
 
 @Injectable()
 export class AuthGuard implements CanActivate {

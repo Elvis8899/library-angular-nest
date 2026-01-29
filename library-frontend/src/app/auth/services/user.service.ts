@@ -1,8 +1,8 @@
-import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable } from "rxjs";
+import { Injectable, inject } from "@angular/core";
 import { Credentials, UserEntity } from "@app/@core/entities";
 import { PaginatedResponse } from "@app/@core/entities/utils/paginatedResponse.entity";
+import { Observable } from "rxjs";
 
 @Injectable({
   providedIn: "root",

@@ -1,3 +1,6 @@
+import { Roles } from "@auth/decorators/roles.decorator";
+import { AuthGuard } from "@auth/guards/auth.guard";
+import { RolesGuard } from "@auth/guards/roles.guard";
 import {
   Controller,
   Delete,
@@ -8,19 +11,16 @@ import {
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiBearerAuth,
+  ApiDefaultResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
   ApiUnprocessableEntityResponse,
-  ApiNotFoundResponse,
-  ApiDefaultResponse,
-  ApiBearerAuth,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/noop";
-import { DeleteUser } from "./deleteUser.command";
-import { RolesGuard } from "@src/modules/auth/guards/roles.guard";
-import { UserRoleEnum } from "../../domain/user.entity";
-import { Roles } from "@src/modules/auth/decorators/roles.decorator";
-import { AuthGuard } from "@src/modules/auth/guards/auth.guard";
+import { DeleteUser } from "@user/commands/deleteUser/deleteUser.command";
+import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Controller("v1/")
 @ApiBearerAuth()

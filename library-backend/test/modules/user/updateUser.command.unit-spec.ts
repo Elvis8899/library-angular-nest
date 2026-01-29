@@ -1,24 +1,24 @@
 import { UnprocessableEntityException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { executeTask } from "@shared/utils/executeTask";
-import { UserBuilder } from "@test/data-builders/userBuilder";
 import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
 import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
-import { PinoLogger } from "nestjs-pino";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { executeTask } from "@shared/utils/executeTask";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { UserBuilder } from "@test/data-builders/userBuilder";
 import {
   UpdateUser,
   UpdateUserHandler,
-} from "@src/modules/user/commands/updateUser/updateUser.command";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UserRepository } from "@src/modules/user/database/user.repository.port";
-import { FakeUserRepository } from "@src/modules/user/database/fakeUser.repository";
-import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
+} from "@user/commands/updateUser/updateUser.command";
+import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { UserRepository } from "@user/database/user.repository.port";
+import { UserRoleEnum } from "@user/domain/user.entity";
 import {
   UserCPFAlreadyExistsException,
   UserEmailAlreadyExistsException,
   UserNotFoundException,
-} from "@src/modules/user/domain/user.errors";
+} from "@user/domain/user.errors";
+import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 let userRepository: UserRepository;

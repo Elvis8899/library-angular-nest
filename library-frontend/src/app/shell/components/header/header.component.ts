@@ -1,8 +1,8 @@
 import { Component } from "@angular/core";
-import { UntilDestroy } from "@ngneat/until-destroy";
-import { TranslateDirective } from "@ngx-translate/core";
 import { RouterLink } from "@angular/router";
 import { LanguageSelectorComponent } from "@app/i18n";
+import { UntilDestroy } from "@ngneat/until-destroy";
+import { TranslateDirective } from "@ngx-translate/core";
 
 @UntilDestroy()
 @Component({

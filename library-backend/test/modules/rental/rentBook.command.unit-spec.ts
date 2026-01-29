@@ -1,27 +1,27 @@
 // import { UnprocessableEntityException } from "@nestjs/common";
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
+import { BookItemStatusEnum } from "@book/domain/value-object/bookItem.entity";
 import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { executeTask } from "@shared/utils/executeTask";
-import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
-import { PinoLogger } from "nestjs-pino";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { BookInfoRepository } from "@src/modules/book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@src/modules/book/database/fakeBookInfo.repository";
 import {
   RentBookCommand,
   RentBookCommandHandler,
-} from "@src/modules/rental/commands/rentBook/rentBook.command";
-import { UserRepository } from "@src/modules/user/database/user.repository.port";
-import { FakeUserRepository } from "@src/modules/user/database/fakeUser.repository";
-import { BookRentalRepository } from "@src/modules/rental/database/bookRental.repository.port";
-import { FakeBookRentalRepository } from "@src/modules/rental/database/fakeBookRental.repository";
-import { UserBuilder } from "@test/data-builders/userBuilder";
+} from "@rental/commands/rentBook/rentBook.command";
+import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
+import { FakeBookRentalRepository } from "@rental/database/fakeBookRental.repository";
+import { BookRentalNotAvailableException } from "@rental/domain/bookRental.errors";
+import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { executeTask } from "@shared/utils/executeTask";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/data-builders/bookRentalBuilder";
+import { UserBuilder } from "@test/data-builders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { BookItemStatusEnum } from "@src/modules/book/domain/value-object/bookItem.entity";
-import { BookRentalNotAvailableException } from "@src/modules/rental/domain/bookRental.errors";
+import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { UserRepository } from "@user/database/user.repository.port";
+import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 

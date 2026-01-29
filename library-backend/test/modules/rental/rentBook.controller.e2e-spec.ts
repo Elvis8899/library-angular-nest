@@ -1,0 +1,132 @@
+import { NestFastifyApplication } from "@nestjs/platform-fastify";
+import { Test, TestingModule } from "@nestjs/testing";
+import { AppModule } from "@src/app.module";
+import { createTestApp } from "@test/util/createTestApp";
+import request from "supertest";
+
+import { AuthGuard } from "@auth/guards/auth.guard";
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import {
+  BookItem,
+  BookItemStatusEnum,
+} from "@book/domain/valueObject/bookItem.entity";
+import { HttpStatus } from "@nestjs/common";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
+import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { executeTask } from "@shared/utils/application/executeTask";
+import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
+import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
+import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
+import { UserBuilder } from "@test/dataBuilders/userBuilder";
+import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { UserRoleEnum } from "@user/domain/user.entity";
+import { unsafeCoerce } from "fp-ts/lib/function";
+import { PinoLogger } from "nestjs-pino";
+
+let app: NestFastifyApplication;
+let testingModule: TestingModule;
+let prismaService: PrismaService;
+let bookInfoRepository: BookInfoRepository;
+
+const bookRentalBuilder = new BookRentalBuilder(0);
+const authGuardMock = new MockAuthGuardBuilder();
+
+beforeAll(async () => {
+  testingModule = await Test.createTestingModule({
+    imports: [AppModule],
+  })
+    .overrideProvider(PinoLogger)
+    .useClass(FakeLoggerService)
+    .overrideGuard(AuthGuard)
+    .useValue(authGuardMock.build())
+    .compile();
+
+  app = await createTestApp(testingModule);
+  prismaService = testingModule.get<PrismaService>(PrismaService);
+  bookInfoRepository =
+    testingModule.get<BookInfoRepository>(BookInfoRepository);
+  await prismaService.bookInfo.deleteMany();
+  await prismaService.user.deleteMany();
+
+  const {
+    bookItems: [bookItemRaw],
+    ...bookInfo
+  } = new BookInfoBuilder().build();
+  const { bookId: _, ...bookItem } = bookItemRaw as BookItem;
+  await prismaService.bookInfo.create({
+    data: { ...bookInfo, bookItems: { create: { ...bookItem } } },
+  });
+  await prismaService.user.create({
+    data: new UserBuilder().build(),
+  });
+  await app.init();
+  await app.getHttpAdapter().getInstance().ready();
+});
+
+beforeEach(async () => {
+  await prismaService.bookRentalDetails.deleteMany();
+  authGuardMock.reset();
+});
+
+afterAll(async () => {
+  await app.close();
+  await prismaService.$disconnect();
+});
+
+describe("[e2e] POST /v1/bookRentals/rent", () => {
+  const v1Route = "/v1/bookRentals/rent";
+
+  it("Should respond 201 for a valid bookInfo", async () => {
+    const bookRental = bookRentalBuilder.buildCreateDTO();
+    const response = await request(app.getHttpServer())
+      .post(v1Route)
+      .send(bookRental);
+    expect(response.status).toBe(HttpStatus.CREATED);
+  });
+
+  it("Should respond 404 if user is client and id doesnt match", async () => {
+    authGuardMock
+      .withSub(createTestId(TableNameEnum.User, 2))
+      .withRole(UserRoleEnum.Client);
+    const bookRental = bookRentalBuilder.buildCreateDTO();
+    const response = await request(app.getHttpServer())
+      .post(v1Route)
+      .send(bookRental);
+    expect(response.status).toBe(HttpStatus.NOT_FOUND);
+  });
+
+  it("Should respond 422 for invalid name", async () => {
+    // Given a potentially valid book rental
+    const bookRental = bookRentalBuilder
+      .withBookItemId(createTestId(TableNameEnum.BookItem, 1))
+      .buildCreateDTO();
+    // and book is not available
+    await executeTask(
+      bookInfoRepository.save(
+        new BookInfoBuilder(1)
+          .withBookItems([
+            {
+              id: createTestId(TableNameEnum.BookItem, 1),
+              status: BookItemStatusEnum.Rented,
+              bookId: createTestId(TableNameEnum.BookInfo, 1),
+            },
+          ])
+          .build(),
+      ),
+    );
+    const response = await request(app.getHttpServer())
+      .post(v1Route)
+      .send(bookRental);
+    expect(response.status).toBe(HttpStatus.CONFLICT);
+  });
+
+  it("Should respond 422 for invalid name type", async () => {
+    const bookInfo = new BookInfoBuilder(2)
+      .withName(unsafeCoerce(1))
+      .buildCreateDTO();
+    const response = await request(app.getHttpServer())
+      .post(v1Route)
+      .send(bookInfo);
+    expect(response.status).toBe(422);
+  });
+});

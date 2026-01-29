@@ -1,8 +1,8 @@
-import { PinoLogger } from "nestjs-pino";
 import { FPF, RE } from "@shared/functional/monads";
-import { z } from "zod";
 import { loggerOnLeftR, loggerOnRightR } from "@shared/utils/handleLog";
 import { validateWith } from "@shared/utils/validateWith";
+import { PinoLogger } from "nestjs-pino";
+import { z } from "zod";
 
 export const fromInputRE = <Validator extends z.ZodType>(
   validator: Validator,

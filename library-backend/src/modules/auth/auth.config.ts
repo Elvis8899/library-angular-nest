@@ -1,5 +1,5 @@
-import { get } from "env-var";
 import "@shared/utils/dotenv";
+import { get } from "env-var";
 
 export const authConfig = {
   secret: get("JWT_SECRET_KEY").default("default-secret").asString(),

@@ -1,7 +1,7 @@
-import { BaseDateEntity } from "@src/shared/db/dateEntity.base";
-import { UUID } from "@src/shared/uuid/entities/uuid";
+import { BookItem } from "@book/domain/value-object/bookItem.entity";
+import { BaseDateEntity } from "@shared/db/dateEntity.base";
+import { UUID } from "@shared/uuid/entities/uuid";
 import { z } from "zod";
-import { BookItem } from "./value-object/bookItem.entity";
 
 export const BookInfo = z
   .object({

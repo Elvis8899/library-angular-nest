@@ -1,36 +1,35 @@
 import {
-  OnInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   inject,
-  ChangeDetectorRef,
   model,
-  // signal,
+  OnInit,
 } from "@angular/core";
-import { Router } from "@angular/router";
-import { BookService } from "@app/auth/services/book.service";
-import { BookEntity, BookItemStatusEnum, UserEntity } from "@core/entities";
-import { HotToastService } from "@ngxpert/hot-toast";
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import {
-  MatDialog,
   MAT_DIALOG_DATA,
+  MatDialog,
   MatDialogActions,
   MatDialogClose,
   MatDialogRef,
   MatDialogTitle,
 } from "@angular/material/dialog";
+import { Router } from "@angular/router";
+import { BookService } from "@app/auth/services/book.service";
+import { BookEntity, BookItemStatusEnum, UserEntity } from "@core/entities";
+import { HotToastService } from "@ngxpert/hot-toast";
 
-import { MatSelectModule } from "@angular/material/select";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { UserService } from "@app/auth/services/user.service";
-import { RentalService } from "@app/auth/services/rental.service";
+import { MatSelectModule } from "@angular/material/select";
 import { BookRentEntity } from "@app/@core/entities/bookRental.entity";
-import { CredentialsService, ROLE } from "@app/auth";
-import { TranslateModule } from "@ngx-translate/core";
 import { Logger } from "@app/@core/services";
+import { CredentialsService, ROLE } from "@app/auth";
+import { RentalService } from "@app/auth/services/rental.service";
+import { UserService } from "@app/auth/services/user.service";
+import { TranslateModule } from "@ngx-translate/core";
 
 const log = new Logger("ListBooksComponent");
 

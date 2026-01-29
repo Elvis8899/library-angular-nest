@@ -1,6 +1,6 @@
-import { PinoLogger } from "nestjs-pino";
-import { TE, FPF, RTE } from "@shared/functional/monads";
+import { FPF, RTE, TE } from "@shared/functional/monads";
 import { loggerOnLeftR, loggerOnRightR } from "@shared/utils/handleLog";
+import { PinoLogger } from "nestjs-pino";
 
 export const performRTE = <InputLike, OutputLike, ErrorLike extends Error>(
   action: (data: InputLike) => TE.TaskEither<ErrorLike, OutputLike>,

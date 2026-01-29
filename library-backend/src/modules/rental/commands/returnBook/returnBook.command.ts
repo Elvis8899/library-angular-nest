@@ -1,21 +1,21 @@
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { FPF, RE, RTE } from "@shared/functional/monads";
-import { performRTE } from "@shared/utils/perform";
-import { executeTask } from "@shared/utils/executeTask";
-import { fromInputRE } from "@src/shared/utils/fromInput";
-import { noop } from "@shared/utils/noop";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { PinoLogger } from "nestjs-pino";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UUID } from "@src/shared/uuid/entities/uuid";
-import { BookRentalRepository } from "../../database/bookRental.repository.port";
-import { RentalStatusEnum } from "../../domain/bookRental.entity";
+import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
+import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
 import {
   bookRentalFinishedException,
   bookRentalNotFoundException,
-} from "../../domain/bookRental.errors";
-import { DateType } from "@src/shared/utils/DateType";
-import { BOOK_RENTAL_RETURNED } from "../../domain/events/bookReturned.event";
+} from "@rental/domain/bookRental.errors";
+import { BOOK_RENTAL_RETURNED } from "@rental/domain/events/bookReturned.event";
+import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { FPF, RE, RTE } from "@shared/functional/monads";
+import { DateType } from "@shared/utils/DateType";
+import { executeTask } from "@shared/utils/executeTask";
+import { fromInputRE } from "@shared/utils/fromInput";
+import { noop } from "@shared/utils/noop";
+import { performRTE } from "@shared/utils/perform";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { UUID } from "@shared/uuid/entities/uuid";
+import { PinoLogger } from "nestjs-pino";
 
 export class ReturnBookCommand implements ICommand {
   constructor(public readonly bookRentalId: string) {}

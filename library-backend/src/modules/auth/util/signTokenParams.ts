@@ -1,5 +1,5 @@
+import { authConfig } from "@auth/auth.config";
 import { JwtSignOptions } from "@nestjs/jwt";
-import { authConfig } from "../auth.config";
 import * as bcrypt from "bcrypt";
 
 export const getSignTokenParams = (

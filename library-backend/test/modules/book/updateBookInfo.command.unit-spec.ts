@@ -1,19 +1,19 @@
-import { UnprocessableEntityException } from "@nestjs/common";
-import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { executeTask } from "@shared/utils/executeTask";
-import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
-import { PinoLogger } from "nestjs-pino";
 import {
   UpdateBookInfo,
   UpdateBookInfoHandler,
-} from "@src/modules/book/commands/updateBookInfo/updateBookInfo.command";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { BookInfoRepository } from "@src/modules/book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@src/modules/book/database/fakeBookInfo.repository";
-import { BookInfoNotFoundException } from "@src/modules/book/domain/bookInfo.errors";
+} from "@book/commands/updateBookInfo/updateBookInfo.command";
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
+import { BookInfoNotFoundException } from "@book/domain/bookInfo.errors";
+import { UnprocessableEntityException } from "@nestjs/common";
+import { Test } from "@nestjs/testing";
+import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { executeTask } from "@shared/utils/executeTask";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
+import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 let bookInfoRepository: BookInfoRepository;

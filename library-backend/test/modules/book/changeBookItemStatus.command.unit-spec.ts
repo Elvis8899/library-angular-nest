@@ -1,21 +1,21 @@
-import { UnprocessableEntityException } from "@nestjs/common";
-import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { executeTask } from "@shared/utils/executeTask";
-import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
-import { PinoLogger } from "nestjs-pino";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { BookInfoRepository } from "@src/modules/book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@src/modules/book/database/fakeBookInfo.repository";
-import { BookInfoNotFoundException } from "@src/modules/book/domain/bookInfo.errors";
 import {
   ChangeBookItemStatus,
   ChangeBookItemStatusHandler,
-} from "@src/modules/book/commands/changeBookItemStatus/changeBookItemStatus.command";
-import { BookItemStatusEnum } from "@src/modules/book/domain/value-object/bookItem.entity";
+} from "@book/commands/changeBookItemStatus/changeBookItemStatus.command";
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
+import { BookInfoNotFoundException } from "@book/domain/bookInfo.errors";
+import { BookItemStatusEnum } from "@book/domain/value-object/bookItem.entity";
+import { UnprocessableEntityException } from "@nestjs/common";
+import { Test } from "@nestjs/testing";
+import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { executeTask } from "@shared/utils/executeTask";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
 import { unsafeCoerce } from "fp-ts/lib/function";
+import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 let bookInfoRepository: BookInfoRepository;
@@ -69,6 +69,9 @@ describe("[Unit] Update BookInfo", () => {
 
     const bookInfos = await executeTask(bookInfoRepository.findAll());
     expect(bookInfos.length).toEqual(1);
+    expect(bookInfos[0]?.bookItems[0]?.status).toEqual(
+      BookItemStatusEnum.Rented,
+    );
   });
 
   it("Should update bookInfo without optional keys", async () => {

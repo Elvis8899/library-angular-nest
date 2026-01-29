@@ -1,3 +1,4 @@
+import { NgClass } from "@angular/common";
 import { Component, inject, OnInit } from "@angular/core";
 import {
   NavigationEnd,
@@ -5,14 +6,13 @@ import {
   RouterLink,
   RouterLinkActive,
 } from "@angular/router";
-import { environment } from "@env/environment";
-import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
-import { filter } from "rxjs/operators";
 import { NavMode, ShellService } from "@app/shell/services/shell.service";
 import { webSidebarMenuItems } from "@core/constants";
 import { NavMenuItem } from "@core/interfaces";
-import { NgClass } from "@angular/common";
+import { environment } from "@env/environment";
+import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { TranslatePipe } from "@ngx-translate/core";
+import { filter } from "rxjs/operators";
 
 @UntilDestroy({ checkProperties: true })
 @Component({

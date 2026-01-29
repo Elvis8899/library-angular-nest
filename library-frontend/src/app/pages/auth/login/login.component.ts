@@ -1,13 +1,13 @@
 import { Component, inject } from "@angular/core";
 
+import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
+import { ActivatedRoute, Router } from "@angular/router";
+import { AuthenticationService, CredentialsService } from "@app/auth";
+import { LanguageSelectorComponent } from "@app/i18n";
 import { environment } from "@env/environment";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
-import { AuthenticationService, CredentialsService } from "@app/auth";
-import { ActivatedRoute, Router } from "@angular/router";
-import { FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
-import { HotToastService } from "@ngxpert/hot-toast";
 import { TranslateDirective, TranslatePipe } from "@ngx-translate/core";
-import { LanguageSelectorComponent } from "@app/i18n";
+import { HotToastService } from "@ngxpert/hot-toast";
 
 @UntilDestroy()
 @Component({

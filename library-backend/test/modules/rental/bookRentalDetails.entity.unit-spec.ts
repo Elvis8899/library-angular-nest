@@ -1,5 +1,5 @@
+import { BookRentalDetails } from "@rental/domain/bookRental.entity";
 import { BookRentalBuilder } from "@test/data-builders/bookRentalBuilder";
-import { BookRentalDetails } from "@src/modules/rental/domain/bookRental.entity";
 
 describe("[Unit] Update BookInfo", () => {
   const bookRentalBuilder = new BookRentalBuilder();

@@ -1,5 +1,5 @@
-import { BaseDateEntity } from "@src/shared/db/dateEntity.base";
-import { UUID } from "@src/shared/uuid/entities/uuid";
+import { BaseDateEntity } from "@shared/db/dateEntity.base";
+import { UUID } from "@shared/uuid/entities/uuid";
 import { z } from "zod";
 
 export enum BookItemStatusEnum {

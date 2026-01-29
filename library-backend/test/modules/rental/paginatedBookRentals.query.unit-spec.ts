@@ -1,14 +1,16 @@
 import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { executeTask } from "@shared/utils/executeTask";
-import { BookRentalRepository } from "@src/modules/rental/database/bookRental.repository.port";
-import { FakeBookRentalRepository } from "@src/modules/rental/database/fakeBookRental.repository";
+import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
+import { FakeBookRentalRepository } from "@rental/database/fakeBookRental.repository";
 import {
   PaginatedBookRentalsQuery,
   PaginatedBookRentalsQueryHandler,
-} from "@src/modules/rental/queries/paginatedBookRentals/paginatedBookRentals.query";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+} from "@rental/queries/paginatedBookRentals/paginatedBookRentals.query";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { executeTask } from "@shared/utils/executeTask";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { RentalStatusEnum } from "@src/modules/rental/domain/bookRental.entity";
 import { BookRentalBuilder } from "@test/data-builders/bookRentalBuilder";
+import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { PinoLogger } from "nestjs-pino";
 
 //Adapters
@@ -35,7 +37,7 @@ describe("[Unit] List Users", () => {
       );
   });
 
-  it("Should list bookItems if query is valid", async () => {
+  it("Should list bookItems if query is valid -no status-no user", async () => {
     //Given a valid query
     const limit = 10;
     const page = 0;
@@ -46,6 +48,38 @@ describe("[Unit] List Users", () => {
       },
       undefined,
       undefined,
+    );
+
+    const builder = new BookRentalBuilder();
+    //With bookItems in database
+    const bookRental = builder.build();
+    await executeTask(bookRentalRepository.save(bookRental));
+    builder
+      .withCreatedAt(bookRental.createdAt)
+      .withUpdatedAt(bookRental.updatedAt)
+      .withOverdueDate(bookRental.overdueDate);
+
+    //When we list bookItems
+    const result = await paginatedBookRentalsQueryHandler.execute(query);
+    //Then it should show a list of bookItems
+    expect(result.data.length).toBe(1);
+    expect(result.data[0]).toEqual(builder.buildRentalDetails());
+    expect(result.count).toBe(1);
+    expect(result.page).toBe(page);
+    expect(result.limit).toBe(limit);
+  });
+
+  it("Should list bookItems if query is valid - status and user", async () => {
+    //Given a valid query
+    const limit = 10;
+    const page = 0;
+    const query = new PaginatedBookRentalsQuery(
+      {
+        limit,
+        page,
+      },
+      RentalStatusEnum.Rented,
+      createTestId(TableNameEnum.User, 0),
     );
 
     const builder = new BookRentalBuilder();

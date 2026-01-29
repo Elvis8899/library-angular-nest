@@ -1,5 +1,5 @@
+import { FPF, R } from "@shared/functional/monads";
 import { PinoLogger } from "nestjs-pino";
-import { FPF, R } from "../functional/monads";
 
 /**
  * Given a logger, and failure message, logs error. Use with bimap or mapLeft

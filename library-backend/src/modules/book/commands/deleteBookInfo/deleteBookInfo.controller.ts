@@ -1,3 +1,4 @@
+import { DeleteBookInfo } from "@book/commands/deleteBookInfo/deleteBookInfo.command";
 import {
   Controller,
   Delete,
@@ -7,14 +8,13 @@ import {
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiDefaultResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
   ApiUnprocessableEntityResponse,
-  ApiNotFoundResponse,
-  ApiDefaultResponse,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/noop";
-import { DeleteBookInfo } from "./deleteBookInfo.command";
 
 @Controller("v1/")
 @ApiTags("Livros")

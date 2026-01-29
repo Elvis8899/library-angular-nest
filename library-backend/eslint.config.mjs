@@ -1,10 +1,10 @@
 // @ts-check
-import eslint from "@eslint/js";
-import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
-import prettierlint from "eslint-config-prettier";
-import tseslint from "typescript-eslint";
-import { defineConfig } from "eslint/config";
 import comments from "@eslint-community/eslint-plugin-eslint-comments/configs";
+import eslint from "@eslint/js";
+import prettierlint from "eslint-config-prettier";
+import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
+import { defineConfig } from "eslint/config";
+import tseslint from "typescript-eslint";
 
 export default defineConfig(
   {
@@ -23,6 +23,17 @@ export default defineConfig(
       eslintPluginPrettierRecommended,
     ],
     rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["./", "../"],
+              message: "Relative imports are not allowed.",
+            },
+          ],
+        },
+      ],
       "no-console": "error",
       "@typescript-eslint/no-unsafe-member-access": [
         "error",

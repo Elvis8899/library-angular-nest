@@ -1,13 +1,13 @@
-import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { executeTask } from "@shared/utils/executeTask";
-import { FakeBookInfoRepository } from "@src/modules/book/database/fakeBookInfo.repository";
-import { BookInfoRepository } from "@src/modules/book/database/bookInfo.repository.port";
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
 import {
   PaginatedBookInfosQuery,
   PaginatedBookInfosQueryHandler,
-} from "@src/modules/book/queries/paginatedBookInfos/paginatedBookInfos.query";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+} from "@book/queries/paginatedBookInfos/paginatedBookInfos.query";
+import { Test } from "@nestjs/testing";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { executeTask } from "@shared/utils/executeTask";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
 import { PinoLogger } from "nestjs-pino";
 

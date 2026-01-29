@@ -1,18 +1,18 @@
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { RealBookInfoRepository } from "@book/database/realBookInfo.repository";
 import { Module, ModuleMetadata, Provider } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { BookRentalRepository } from "./database/bookRental.repository.port";
-import { RealBookRentalRepository } from "./database/realBookRental.repository";
-import { PaginatedBookRentalsQueryHandler } from "./queries/paginatedBookRentals/paginatedBookRentals.query";
-import { PaginatedBookRentalsController } from "./queries/paginatedBookRentals/paginatedBookRentals.controller";
-import { RentBookCommandHandler } from "./commands/rentBook/rentBook.command";
-import { ReturnBookCommandHandler } from "./commands/returnBook/returnBook.command";
-import { UserRepository } from "../user/database/user.repository.port";
-import { RealUserRepository } from "../user/database/realUser.repository";
-import { ReturnBookController } from "./commands/returnBook/returnBook.controller";
-import { RentBookController } from "./commands/rentBook/rentBook.controller";
-import { RealBookInfoRepository } from "../book/database/realBookInfo.repository";
-import { BookInfoRepository } from "../book/database/bookInfo.repository.port";
+import { RentBookCommandHandler } from "@rental/commands/rentBook/rentBook.command";
+import { RentBookController } from "@rental/commands/rentBook/rentBook.controller";
+import { ReturnBookCommandHandler } from "@rental/commands/returnBook/returnBook.command";
+import { ReturnBookController } from "@rental/commands/returnBook/returnBook.controller";
+import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
+import { RealBookRentalRepository } from "@rental/database/realBookRental.repository";
+import { PaginatedBookRentalsController } from "@rental/queries/paginatedBookRentals/paginatedBookRentals.controller";
+import { PaginatedBookRentalsQueryHandler } from "@rental/queries/paginatedBookRentals/paginatedBookRentals.query";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { RealUserRepository } from "@user/database/realUser.repository";
+import { UserRepository } from "@user/database/user.repository.port";
 const controllers: ModuleMetadata["controllers"] = [
   PaginatedBookRentalsController,
   RentBookController,

@@ -1,10 +1,10 @@
+import { RequestJWTPayload } from "@auth/domain/login.entity";
+import { AuthGuard } from "@auth/guards/auth.guard";
 import { ExecutionContext, UnauthorizedException } from "@nestjs/common";
-import { UserRoleEnum } from "@src/modules/user/domain/user.entity";
-import { RequestJWTPayload } from "@src/modules/auth/domain/login.entity";
-import { unsafeCoerce } from "fp-ts/lib/function";
-import { AuthGuard } from "@src/modules/auth/guards/auth.guard";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
+import { UserRoleEnum } from "@user/domain/user.entity";
+import { unsafeCoerce } from "fp-ts/lib/function";
 
 describe("AuthGuard", () => {
   let guard: AuthGuard;

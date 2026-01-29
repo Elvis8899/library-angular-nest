@@ -1,14 +1,14 @@
 import { DynamicModule, ForwardReference, Module, Type } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { AppController } from "@src/app.controller";
-import { LoggerModule } from "@src/shared/logger/logger.module";
-import { PrismaModule } from "@src/shared/prisma/prisma.module";
 import { CqrsModule } from "@nestjs/cqrs";
 import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
-import { UserModule } from "./modules/user/user.module";
-import { BookInfoModule } from "./modules/book/bookInfo.module";
-import { LoginModule } from "./modules/auth/login.module";
-import { BookRentalModule } from "./modules/rental/bookRental.module";
+import { LoggerModule } from "@shared/logger/logger.module";
+import { PrismaModule } from "@shared/prisma/prisma.module";
+import { AppController } from "@src/app.controller";
+import { LoginModule } from "@src/modules/auth/login.module";
+import { BookInfoModule } from "@src/modules/book/bookInfo.module";
+import { BookRentalModule } from "@src/modules/rental/bookRental.module";
+import { UserModule } from "@src/modules/user/user.module";
 
 type NestModuleImport =
   | Type

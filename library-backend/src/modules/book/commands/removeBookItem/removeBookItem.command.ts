@@ -1,20 +1,20 @@
-import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { FPF, O, RTE } from "@shared/functional/monads";
-import { performRTE } from "@shared/utils/perform";
-import { executeTask } from "@shared/utils/executeTask";
-import { fromInputRE } from "@src/shared/utils/fromInput";
-import { noop } from "@shared/utils/noop";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { PinoLogger } from "nestjs-pino";
-import { BookInfoRepository } from "../../database/bookInfo.repository.port";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UUID } from "@src/shared/uuid/entities/uuid";
-import { BookItemStatusEnum } from "../../domain/value-object/bookItem.entity";
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
 import {
   availableBookItemNotFoundException,
   bookInfoNotFoundException,
-} from "../../domain/bookInfo.errors";
-import { BOOK_ITEM_REMOVED } from "../../domain/events/bookItemRemoved.event";
+} from "@book/domain/bookInfo.errors";
+import { BOOK_ITEM_REMOVED } from "@book/domain/events/bookItemRemoved.event";
+import { BookItemStatusEnum } from "@book/domain/value-object/bookItem.entity";
+import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
+import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { FPF, O, RTE } from "@shared/functional/monads";
+import { executeTask } from "@shared/utils/executeTask";
+import { fromInputRE } from "@shared/utils/fromInput";
+import { noop } from "@shared/utils/noop";
+import { performRTE } from "@shared/utils/perform";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { UUID } from "@shared/uuid/entities/uuid";
+import { PinoLogger } from "nestjs-pino";
 
 export class RemoveBookItem implements ICommand {
   constructor(public readonly props: string) {}

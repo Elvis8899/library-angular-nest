@@ -1,14 +1,14 @@
 import { Test } from "@nestjs/testing";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
 import { executeTask } from "@shared/utils/executeTask";
-import { FakeUserRepository } from "@src/modules/user/database/fakeUser.repository";
-import { UserRepository } from "@src/modules/user/database/user.repository.port";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { UserBuilder } from "@test/data-builders/userBuilder";
+import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { UserRepository } from "@user/database/user.repository.port";
 import {
   PaginatedUsersQuery,
   PaginatedUsersQueryHandler,
-} from "@src/modules/user/queries/paginatedUsers/paginatedUsers.query";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UserBuilder } from "@test/data-builders/userBuilder";
+} from "@user/queries/paginatedUsers/paginatedUsers.query";
 import { PinoLogger } from "nestjs-pino";
 
 //Adapters

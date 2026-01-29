@@ -1,16 +1,16 @@
+import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { bookInfoNotFoundException } from "@book/domain/bookInfo.errors";
+import { BOOK_INFO_DELETED } from "@book/domain/events/bookInfoDeleted.event";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { FPF, RTE } from "@shared/functional/monads";
-import { performRTE } from "@shared/utils/perform";
-import { executeTask } from "@shared/utils/executeTask";
-import { noop } from "@shared/utils/noop";
 import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { FPF, RTE } from "@shared/functional/monads";
+import { executeTask } from "@shared/utils/executeTask";
+import { fromInputRE } from "@shared/utils/fromInput";
+import { noop } from "@shared/utils/noop";
+import { performRTE } from "@shared/utils/perform";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { UUID } from "@shared/uuid/entities/uuid";
 import { PinoLogger } from "nestjs-pino";
-import { BookInfoRepository } from "../../database/bookInfo.repository.port";
-import { RealUUIDGeneratorService } from "@src/shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UUID } from "@src/shared/uuid/entities/uuid";
-import { fromInputRE } from "@src/shared/utils/fromInput";
-import { bookInfoNotFoundException } from "../../domain/bookInfo.errors";
-import { BOOK_INFO_DELETED } from "../../domain/events/bookInfoDeleted.event";
 
 export class DeleteBookInfo implements ICommand {
   constructor(public readonly props: string) {}

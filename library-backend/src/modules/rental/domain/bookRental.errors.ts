@@ -1,4 +1,4 @@
-import { NotFoundException, ConflictException } from "@nestjs/common";
+import { ConflictException, NotFoundException } from "@nestjs/common";
 
 export class BookRentalNotFoundException extends NotFoundException {
   constructor() {

@@ -1,13 +1,13 @@
-import { Controller, Get, HttpStatus, Query } from "@nestjs/common";
-import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import { ApiOperation, ApiTags, ApiResponse } from "@nestjs/swagger";
 import {
   BookInfoDto,
   PaginatedBookInfoResponseDto,
-} from "../../dtos/bookInfo.dto";
-import { PaginatedQueryRequestDto } from "@src/shared/api/paginated-query.request.dto";
-import { PaginatedBookInfosQuery } from "./paginatedBookInfos.query";
-import { PaginatedResponseDto } from "@src/shared/api/paginated.response.base";
+} from "@book/dtos/bookInfo.dto";
+import { PaginatedBookInfosQuery } from "@book/queries/paginatedBookInfos/paginatedBookInfos.query";
+import { Controller, Get, HttpStatus, Query } from "@nestjs/common";
+import { CommandBus, QueryBus } from "@nestjs/cqrs";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { PaginatedQueryRequestDto } from "@shared/api/paginated-query.request.dto";
+import { PaginatedResponseDto } from "@shared/api/paginated.response.base";
 
 @Controller("v1/")
 @ApiTags("Livros")
