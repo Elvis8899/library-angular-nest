@@ -7,7 +7,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { ReturnBookCommand } from "@rental/commands/returnBook/returnBook.command";
-import { noop } from "@shared/utils/noop";
+import { noop } from "@shared/utils/application/noop";
 
 @Controller("v1/bookRentals")
 @ApiTags("Empréstimos")

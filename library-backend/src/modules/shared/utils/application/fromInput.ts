@@ -1,6 +1,9 @@
-import { FPF, RE } from "@shared/functional/monads";
-import { loggerOnLeftR, loggerOnRightR } from "@shared/utils/handleLog";
-import { validateWith } from "@shared/utils/validateWith";
+import {
+  loggerOnLeftR,
+  loggerOnRightR,
+} from "@shared/utils/application/handleLog";
+import { FPF, RE } from "@shared/utils/application/monads";
+import { validateWith } from "@shared/utils/application/validateWith";
 import { PinoLogger } from "nestjs-pino";
 import { z } from "zod";
 

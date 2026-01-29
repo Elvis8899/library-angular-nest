@@ -6,7 +6,7 @@ import {
 } from "@book/queries/paginatedBookInfos/paginatedBookInfos.query";
 import { Test } from "@nestjs/testing";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
-import { executeTask } from "@shared/utils/executeTask";
+import { executeTask } from "@shared/utils/application/executeTask";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
 import { PinoLogger } from "nestjs-pino";

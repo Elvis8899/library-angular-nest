@@ -18,7 +18,7 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/noop";
+import { noop } from "@shared/utils/application/noop";
 import { DeleteUser } from "@user/commands/deleteUser/deleteUser.command";
 import { UserRoleEnum } from "@user/domain/user.entity";
 

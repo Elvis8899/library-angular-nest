@@ -1,8 +1,8 @@
 import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { RentalStatus } from "@prisma/client";
-import { PaginatedQueryRequestDto } from "@shared/api/paginated-query.request.dto";
-import { PaginatedResponseDto } from "@shared/api/paginated.response.base";
-import { BaseEntityDto } from "@shared/utils/baseEntity.dto";
+import { BaseEntityDto } from "@shared/utils/dtos/baseEntity.dto";
+import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginated-query.request.dto";
+import { PaginatedResponseDto } from "@shared/utils/dtos/paginated.response.base";
 
 export class BookRentalDto extends BaseEntityDto {
   @ApiProperty({

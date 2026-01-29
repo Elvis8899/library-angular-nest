@@ -1,5 +1,5 @@
-import { PaginatedQueryParams } from "@shared/ddd/query.base";
-import { O, TE } from "@shared/functional/monads";
+import { O, TE } from "@shared/utils/application/monads";
+import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
 /*  Most of repositories will probably need generic
     save/find/delete operations, so it's easier

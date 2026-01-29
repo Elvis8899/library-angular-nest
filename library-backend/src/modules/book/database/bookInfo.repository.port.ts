@@ -1,8 +1,11 @@
 import { BookInfo } from "@book/domain/bookInfo.entity";
 import { BookItem } from "@book/domain/value-object/bookItem.entity";
-import { Paginated, RepositoryDefaultPort } from "@shared/ddd";
-import { PaginatedQueryParams } from "@shared/ddd/query.base";
-import { O, TE } from "@shared/functional/monads";
+import { O, TE } from "@shared/utils/application/monads";
+import {
+  Paginated,
+  RepositoryDefaultPort,
+} from "@shared/utils/database/repository.port";
+import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
 export abstract class BookInfoRepository implements RepositoryDefaultPort<BookInfo> {
   findById!: (id: string) => TE.TaskEither<Error, O.Option<BookInfo>>;

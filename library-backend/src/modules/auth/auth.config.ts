@@ -1,4 +1,4 @@
-import "@shared/utils/dotenv";
+import "@shared/utils/config/dotenv";
 import { get } from "env-var";
 
 export const authConfig = {

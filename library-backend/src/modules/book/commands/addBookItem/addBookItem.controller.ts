@@ -9,7 +9,7 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/noop";
+import { noop } from "@shared/utils/application/noop";
 
 @Controller("v1/")
 @ApiTags("Livros")

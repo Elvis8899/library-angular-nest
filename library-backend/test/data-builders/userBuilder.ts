@@ -1,4 +1,4 @@
-import { FPF } from "@shared/functional/monads";
+import { FPF } from "@shared/utils/application/monads";
 import { UUID } from "@shared/uuid/entities/uuid";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { User, UserRoleEnum } from "@user/domain/user.entity";

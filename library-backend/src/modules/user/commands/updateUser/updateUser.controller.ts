@@ -19,7 +19,7 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/noop";
+import { noop } from "@shared/utils/application/noop";
 import { UpdateUser } from "@user/commands/updateUser/updateUser.command";
 import { UserRoleEnum } from "@user/domain/user.entity";
 import { CreateUserDto } from "@user/dtos/user.dto";

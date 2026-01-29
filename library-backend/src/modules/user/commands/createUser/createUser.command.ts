@@ -1,11 +1,11 @@
 import { hashPassword } from "@auth/util/signTokenParams";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { FPF, O, RE, RTE } from "@shared/functional/monads";
-import { executeTask } from "@shared/utils/executeTask";
-import { fromInputRE } from "@shared/utils/fromInput";
-import { noop } from "@shared/utils/noop";
-import { performRTE } from "@shared/utils/perform";
+import { executeTask } from "@shared/utils/application/executeTask";
+import { fromInputRE } from "@shared/utils/application/fromInput";
+import { FPF, O, RE, RTE } from "@shared/utils/application/monads";
+import { noop } from "@shared/utils/application/noop";
+import { performRTE } from "@shared/utils/application/perform";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/entities/uuid";
 import { UserRepository } from "@user/database/user.repository.port";

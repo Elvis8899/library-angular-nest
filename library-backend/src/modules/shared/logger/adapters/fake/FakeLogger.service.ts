@@ -1,5 +1,5 @@
 import { ConsoleLogger } from "@nestjs/common";
-import { noop } from "@shared/utils/noop";
+import { noop } from "@shared/utils/application/noop";
 
 export class FakeLoggerService extends ConsoleLogger {
   readonly contextName: string;

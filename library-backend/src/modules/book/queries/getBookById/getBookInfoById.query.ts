@@ -2,10 +2,10 @@ import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
 import { BookInfo } from "@book/domain/bookInfo.entity";
 import { bookInfoNotFoundException } from "@book/domain/bookInfo.errors";
 import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { FPF, RTE } from "@shared/functional/monads";
-import { executeTask } from "@shared/utils/executeTask";
-import { fromInputRE } from "@shared/utils/fromInput";
-import { performRTE } from "@shared/utils/perform";
+import { executeTask } from "@shared/utils/application/executeTask";
+import { fromInputRE } from "@shared/utils/application/fromInput";
+import { FPF, RTE } from "@shared/utils/application/monads";
+import { performRTE } from "@shared/utils/application/perform";
 import { UUID } from "@shared/uuid/entities/uuid";
 import { PinoLogger } from "nestjs-pino";
 

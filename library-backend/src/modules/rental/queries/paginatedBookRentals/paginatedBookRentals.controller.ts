@@ -21,8 +21,8 @@ import {
 } from "@rental/domain/bookRental.entity";
 import { PaginatedBookRentalResponseDto } from "@rental/dtos/bookRental.dto";
 import { PaginatedBookRentalsQuery } from "@rental/queries/paginatedBookRentals/paginatedBookRentals.query";
-import { PaginatedQueryRequestDto } from "@shared/api/paginated-query.request.dto";
-import { Paginated } from "@shared/ddd";
+import { Paginated } from "@shared/utils/database/repository.port";
+import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginated-query.request.dto";
 import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Controller("v1/bookRentals")

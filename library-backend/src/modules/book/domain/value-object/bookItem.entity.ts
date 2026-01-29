@@ -1,4 +1,4 @@
-import { BaseDateEntity } from "@shared/db/dateEntity.base";
+import { BaseDateEntity } from "@shared/utils/domain/dateEntity.base";
 import { UUID } from "@shared/uuid/entities/uuid";
 import { z } from "zod";
 

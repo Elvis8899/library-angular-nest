@@ -7,11 +7,11 @@ import { bookRentalNotAvailableException } from "@rental/domain/bookRental.error
 import { BOOK_RENTAL_RENTED } from "@rental/domain/events/bookRented.event";
 import { CreateBookRentalDto } from "@rental/dtos/bookRental.dto";
 import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { Apply, FPF, RE, RTE } from "@shared/functional/monads";
-import { executeTask } from "@shared/utils/executeTask";
-import { fromInputRE } from "@shared/utils/fromInput";
-import { noop } from "@shared/utils/noop";
-import { performRTE } from "@shared/utils/perform";
+import { executeTask } from "@shared/utils/application/executeTask";
+import { fromInputRE } from "@shared/utils/application/fromInput";
+import { Apply, FPF, RE, RTE } from "@shared/utils/application/monads";
+import { noop } from "@shared/utils/application/noop";
+import { performRTE } from "@shared/utils/application/perform";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/entities/uuid";
 import { UserRepository } from "@user/database/user.repository.port";

@@ -1,4 +1,4 @@
-import { E, TE } from "@shared/functional/monads";
+import { E, TE } from "@shared/utils/application/monads";
 
 /**
  * Given a taskEither, execute the task, await the result and return a promise.
