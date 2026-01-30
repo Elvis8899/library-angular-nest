@@ -12,7 +12,7 @@ import { LanguagesEnum } from "@app/shared/i18n/translations/allTranslations";
 import { environment } from "@env/environment";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { LangChangeEvent, TranslateService } from "@ngx-translate/core";
-import { BehaviorSubject, filter, merge, Observable, Subscription } from "rxjs";
+import { BehaviorSubject, filter, merge, Subscription } from "rxjs";
 
 const log = new Logger("I18nService");
 const languageKey = "language";
@@ -26,7 +26,7 @@ export class I18nService {
   defaultLanguage!: string;
   supportedLanguages!: string[];
 
-  private _langChangeSubscription!: Subscription;
+  langChangeSubscription!: Subscription;
   private readonly _languageSubject: BehaviorSubject<string>;
   private readonly _translateService = inject(TranslateService);
   private readonly _router = inject(Router);
@@ -40,6 +40,12 @@ export class I18nService {
         this._translateService.getBrowserCultureLang() ||
         ""
     );
+    // Warning: this subscription will always be alive for the app's lifetime
+    this.langChangeSubscription = this._translateService.onLangChange.subscribe(
+      (event: LangChangeEvent) => {
+        localStorage.setItem(languageKey, event.lang);
+      }
+    );
     // Embed languages to avoid extra HTTP requests
     this._translateService.setTranslation(LanguagesEnum.PT_BR, ptBR);
     this._translateService.setTranslation(LanguagesEnum.EN_US, enUS);
@@ -51,28 +57,7 @@ export class I18nService {
 
     merge(this._translateService.onLangChange, onNavigationEnd)
       .pipe(untilDestroyed(this))
-      .subscribe(() => {
-        const titles = this.getTitle(
-          this._router.routerState,
-          this._router.routerState.root
-        );
-        if (!this._translateService?.instant) {
-          return;
-        }
-        if (titles.length === 0) {
-          this._titleService.setTitle(this._translateService.instant("Home"));
-        } else {
-          const translatedTitles = titles.map((titlePart) =>
-            this._translateService.instant(titlePart)
-          );
-          const allTitlesSame = translatedTitles.every(
-            (title, _, arr) => title === arr[0]
-          );
-          this._titleService.setTitle(
-            allTitlesSame ? translatedTitles[0] : translatedTitles.join(" | ")
-          );
-        }
-      });
+      .subscribe(() => this.setTitle());
   }
 
   getTitle(state: RouterState, parent: ActivatedRoute): string[] {
@@ -85,14 +70,6 @@ export class I18nService {
       data.push(...this.getTitle(state, parent?.firstChild));
     }
     return data;
-  }
-
-  /**
-   * Returns the current language as an observable.
-   * @return Observable of the current language.
-   */
-  get languageObservable(): Observable<string> {
-    return this._languageSubject.asObservable();
   }
 
   /**
@@ -154,22 +131,37 @@ export class I18nService {
     this.supportedLanguages = supportedLanguages;
     log.debug(`Initializing with default language: ${defaultLanguage}`);
     this.language = "";
+  }
 
-    // Warning: this subscription will always be alive for the app's lifetime
-    this._langChangeSubscription =
-      this._translateService.onLangChange.subscribe(
-        (event: LangChangeEvent) => {
-          localStorage.setItem(languageKey, event.lang);
-        }
+  setTitle() {
+    const titles = this.getTitle(
+      this._router.routerState,
+      this._router.routerState.root
+    );
+    if (!this._translateService?.instant) {
+      return;
+    }
+    if (titles.length === 0) {
+      this._titleService.setTitle(this._translateService.instant("Home"));
+    } else {
+      const translatedTitles = titles.map((titlePart) =>
+        this._translateService.instant(titlePart)
       );
+      const allTitlesSame = translatedTitles.every(
+        (title, _, arr) => title === arr[0]
+      );
+      this._titleService.setTitle(
+        allTitlesSame ? translatedTitles[0] : translatedTitles.join(" | ")
+      );
+    }
   }
 
   /**
    * Cleans up language change subscription.
    */
   destroy() {
-    if (this._langChangeSubscription) {
-      this._langChangeSubscription.unsubscribe();
+    if (this.langChangeSubscription) {
+      this.langChangeSubscription.unsubscribe();
     }
   }
 }

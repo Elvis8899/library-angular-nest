@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { ROLE } from "@app/models/roles.enum";
+import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
 import { ListUsersComponent } from "@app/pages/users/listUsers/listUsers.component";
 import { Logger } from "@app/services/logger.service";

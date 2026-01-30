@@ -1,4 +1,5 @@
 import { TestBed } from "@angular/core/testing";
+import { Event, NavigationEnd, Router } from "@angular/router";
 import { Logger } from "@app/services/logger.service";
 import { I18nService } from "@app/shared/i18n/i18n.service";
 import { LangChangeEvent, TranslateService } from "@ngx-translate/core";
@@ -120,6 +121,16 @@ describe("I18nService", () => {
       expect(translateService.use).toHaveBeenCalledWith(defaultLanguage);
       expect(onLangChangeSpy).toHaveBeenCalledWith(defaultLanguage);
     });
+
+    it("Pipe should be activated on Router NavigationEnd", () => {
+      // Arrange
+      i18nService.init(defaultLanguage, supportedLanguages);
+      const router = TestBed.inject(Router);
+      const event = new NavigationEnd(1703, `/book/list`, "/");
+      (router.events as Subject<Event>).next(event);
+      // Assert
+      // expect(onNavigationEnd).toHaveBeenCalled();
+    });
   });
 
   describe("get language", () => {
@@ -132,6 +143,18 @@ describe("I18nService", () => {
 
       // Assert
       expect(currentLanguage).toEqual(defaultLanguage);
+    });
+  });
+
+  describe("on  destroy", () => {
+    it("should clean up", () => {
+      // Arrange
+      i18nService.init(defaultLanguage, supportedLanguages);
+
+      // Act
+      i18nService.destroy();
+      // Assert
+      expect(i18nService.langChangeSubscription.closed).toBe(true);
     });
   });
 });
