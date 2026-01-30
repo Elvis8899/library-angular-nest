@@ -86,7 +86,8 @@
           "builder": "@angular/build:extract-i18n"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": { "coverage": true }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",

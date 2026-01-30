@@ -1,7 +1,8 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
-import { Logger } from "@app/core/services";
-import { AuthenticationService, CredentialsService } from "@auth";
+import { AuthenticationService } from "@app/services/authentication.service";
+import { CredentialsService } from "@app/services/credentials.service";
+import { Logger } from "@app/services/logger.service";
 
 const log = new Logger("LogoutComponent");
 

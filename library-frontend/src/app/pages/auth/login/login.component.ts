@@ -2,8 +2,9 @@ import { Component, inject } from "@angular/core";
 
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
-import { AuthenticationService, CredentialsService } from "@app/auth";
-import { LanguageSelectorComponent } from "@app/i18n";
+import { AuthenticationService } from "@app/services/authentication.service";
+import { CredentialsService } from "@app/services/credentials.service";
+import { LanguageSelectorComponent } from "@app/shared/i18n/language-selector/language-selector.component";
 import { environment } from "@env/environment";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { TranslateDirective, TranslatePipe } from "@ngx-translate/core";

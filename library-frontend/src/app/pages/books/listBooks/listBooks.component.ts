@@ -16,20 +16,21 @@ import {
   MatDialogRef,
   MatDialogTitle,
 } from "@angular/material/dialog";
-import { Router } from "@angular/router";
-import { BookService } from "@app/auth/services/book.service";
-import { BookEntity, BookItemStatusEnum, UserEntity } from "@core/entities";
-import { HotToastService } from "@ngxpert/hot-toast";
-
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatSelectModule } from "@angular/material/select";
-import { CredentialsService, ROLE } from "@app/auth";
-import { RentalService } from "@app/auth/services/rental.service";
-import { UserService } from "@app/auth/services/user.service";
-import { BookRentEntity } from "@app/core/entities/bookRental.entity";
-import { Logger } from "@app/core/services";
+import { Router } from "@angular/router";
+import { BookEntity, BookItemStatusEnum } from "@app/models/book.entity";
+import { BookRentEntity } from "@app/models/bookRental.entity";
+import { ROLE } from "@app/models/credentials.entity";
+import { UserEntity } from "@app/models/user.entity";
+import { BookService } from "@app/services/book.service";
+import { CredentialsService } from "@app/services/credentials.service";
+import { Logger } from "@app/services/logger.service";
+import { RentalService } from "@app/services/rental.service";
+import { UserService } from "@app/services/user.service";
 import { TranslateModule } from "@ngx-translate/core";
+import { HotToastService } from "@ngxpert/hot-toast";
 
 const log = new Logger("ListBooksComponent");
 

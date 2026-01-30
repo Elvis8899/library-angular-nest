@@ -1,11 +1,11 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
-import { ROLE } from "@app/auth";
-import { UserService } from "@app/auth/services/user.service";
-import { Logger } from "@app/core/services";
-import { validateCPF } from "@app/core/utils";
-import { UserEntity } from "@core/entities";
+import { ROLE } from "@app/models/credentials.entity";
+import { UserEntity } from "@app/models/user.entity";
+import { Logger } from "@app/services/logger.service";
+import { UserService } from "@app/services/user.service";
+import { validateCPF } from "@app/shared/utils/form-validators.utility";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { noop } from "rxjs";
 
