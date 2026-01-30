@@ -1,85 +1,11 @@
-import { Component, inject, OnDestroy, OnInit } from "@angular/core";
-import { Title } from "@angular/platform-browser";
-import {
-  ActivatedRoute,
-  NavigationEnd,
-  Router,
-  RouterOutlet,
-  RouterState,
-} from "@angular/router";
-import { I18nService } from "@app/i18n";
-import { AppUpdateService } from "@core/services";
-import { environment } from "@env/environment";
-import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { filter, merge } from "rxjs";
+import { Component } from "@angular/core";
+import { RouterOutlet } from "@angular/router";
+import { TranslateModule } from "@ngx-translate/core";
 
-@UntilDestroy()
 @Component({
   selector: "app-root",
   imports: [RouterOutlet, TranslateModule],
   template: "<router-outlet></router-outlet>",
   styleUrl: "./app.component.scss",
 })
-export class AppComponent implements OnInit, OnDestroy {
-  title = "library-frontend";
-
-  private readonly _router = inject(Router);
-  private readonly _titleService = inject(Title);
-  private readonly _translateService = inject(TranslateService);
-  private readonly _i18nService = inject(I18nService);
-  private readonly _updateService = inject(AppUpdateService);
-
-  ngOnInit() {
-    // Initialize i18nService with default language and supported languages
-    this._i18nService.init(
-      environment.defaultLanguage,
-      environment.supportedLanguages
-    );
-
-    const onNavigationEnd = this._router.events.pipe(
-      filter((event) => event instanceof NavigationEnd)
-    );
-
-    merge(this._translateService.onLangChange, onNavigationEnd)
-      .pipe(untilDestroyed(this))
-      .subscribe(() => {
-        const titles = this.getTitle(
-          this._router.routerState,
-          this._router.routerState.root
-        );
-        if (titles.length === 0) {
-          this._titleService.setTitle(this._translateService.instant("Home"));
-        } else {
-          const translatedTitles = titles.map((titlePart) =>
-            this._translateService.instant(titlePart)
-          );
-          const allTitlesSame = translatedTitles.every(
-            (title, _, arr) => title === arr[0]
-          );
-          this._titleService.setTitle(
-            allTitlesSame ? translatedTitles[0] : translatedTitles.join(" | ")
-          );
-        }
-      });
-
-    // update service
-    this._updateService.subscribeForUpdates();
-  }
-
-  getTitle(state: RouterState, parent: ActivatedRoute): string[] {
-    const data: string[] = [];
-    if (parent && parent.snapshot.data && parent.snapshot.data["title"]) {
-      data.push(parent.snapshot.data["title"]);
-    }
-
-    if (state && parent?.firstChild) {
-      data.push(...this.getTitle(state, parent?.firstChild));
-    }
-    return data;
-  }
-
-  ngOnDestroy() {
-    this._i18nService.destroy();
-  }
-}
+export class AppComponent {}

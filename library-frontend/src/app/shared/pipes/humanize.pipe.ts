@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from "@angular/core";
-import { humanize } from "@core/utils";
+import { humanize } from "@app/shared/utils/humanize-slug.utility";
 
 @Pipe({
   name: "humanize",

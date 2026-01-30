@@ -1,9 +1,9 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
-import { BookService } from "@app/auth/services/book.service";
-import { Logger } from "@app/core/services";
-import { BookEntity } from "@core/entities";
+import { BookEntity } from "@app/models/book.entity";
+import { BookService } from "@app/services/book.service";
+import { Logger } from "@app/services/logger.service";
 import { HotToastService } from "@ngxpert/hot-toast";
 
 const log = new Logger("AddBookComponent");

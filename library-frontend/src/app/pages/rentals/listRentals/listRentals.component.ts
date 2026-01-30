@@ -1,9 +1,9 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
-import { RentalService } from "@app/auth/services/rental.service";
-import { BookRentalEntity } from "@app/core/entities/bookRental.entity";
-import { Logger } from "@app/core/services";
-import { DateTimeUtility } from "@app/core/utils";
+import { BookRentalEntity } from "@app/models/bookRental.entity";
+import { Logger } from "@app/services/logger.service";
+import { RentalService } from "@app/services/rental.service";
+import { DateTimeUtility } from "@app/shared/utils/date-time.utility";
 import { HotToastService } from "@ngxpert/hot-toast";
 
 const log = new Logger("ListRentalsComponent");

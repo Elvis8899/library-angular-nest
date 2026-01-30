@@ -7,6 +7,8 @@ import {
   ApplicationConfig,
   enableProdMode,
   importProvidersFrom,
+  inject,
+  provideAppInitializer,
   provideZoneChangeDetection,
 } from "@angular/core";
 import {
@@ -20,23 +22,15 @@ import {
 } from "@angular/router";
 import { provideServiceWorker } from "@angular/service-worker";
 import { routes } from "@app/app.routes";
-import { Logger } from "@app/core/services";
-import { ShellModule } from "@app/shell/shell.module";
-import { RouteReusableStrategy } from "@core/helpers";
-import {
-  ApiPrefixInterceptor,
-  ErrorHandlerInterceptor,
-} from "@core/interceptors";
+import { Logger } from "@app/services/logger.service";
+import { AppUpdateService } from "@app/services/update.service";
+import { RouteReusableStrategy } from "@app/shared/helpers/route-reusable-strategy";
+import { I18nService } from "@app/shared/i18n/i18n.service";
+import { ApiPrefixInterceptor } from "@app/shared/interceptors/api-prefix.interceptor";
+import { ErrorHandlerInterceptor } from "@app/shared/interceptors/error-handler.interceptor";
 import { environment } from "@env/environment";
 import { TranslateModule } from "@ngx-translate/core";
 import { provideHotToastConfig } from "@ngxpert/hot-toast";
-
-if (environment.production) {
-  enableProdMode();
-
-  // Setup logger
-  Logger.enableProductionMode();
-}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -44,8 +38,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
 
     // import providers from other modules (e.g. TranslateModule, ShellModule), which follow the older pattern to import modules
-    importProvidersFrom(TranslateModule.forRoot(), ShellModule),
-
+    importProvidersFrom(TranslateModule.forRoot()),
     // provideServiceWorker is required for Angular's service workers
     provideServiceWorker("ngsw-worker.js", {
       enabled: environment.production,
@@ -78,6 +71,15 @@ export const appConfig: ApplicationConfig = {
 
     // provideHttpClient is required for Angular's HttpClient with additional configuration, which includes interceptors from DI (dependency injection) , means to use class based interceptors
     provideHttpClient(withInterceptorsFromDi()),
+    provideAppInitializer(() => {
+      inject(I18nService);
+      inject(AppUpdateService);
+      if (environment.production) {
+        enableProdMode();
+        // Setup logger
+        Logger.enableProductionMode();
+      }
+    }),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: ApiPrefixInterceptor,

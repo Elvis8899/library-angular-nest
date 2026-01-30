@@ -1,6 +1,5 @@
 import { NgModule } from "@angular/core";
 import { RouterModule, Routes } from "@angular/router";
-import { AddBooksComponent } from "@app/pages/books/addBook/addBook.component";
 import { ListBooksComponent } from "@app/pages/books/listBooks/listBooks.component";
 
 const routes: Routes = [
@@ -16,7 +15,8 @@ const routes: Routes = [
   },
   {
     path: "add",
-    component: AddBooksComponent,
+    loadComponent: () =>
+      import("./addBook/addBook.component").then((m) => m.AddBooksComponent),
     data: { title: "Add Book" },
   },
 ];
