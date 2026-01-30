@@ -7,9 +7,8 @@ import {
   RouterLinkActive,
 } from "@angular/router";
 import { webSidebarMenuItems } from "@app/layouts/components/sidebar/nav-menu-items";
-import { PERMISSIONS } from "@app/models/credentials.entity";
 import { NavMenuItem } from "@app/models/navMenuItem.interface";
-import { PermissionService } from "@app/services/permissions.service";
+import { CredentialsService } from "@app/services/credentials.service";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { TranslatePipe } from "@ngx-translate/core";
 import { BehaviorSubject } from "rxjs";
@@ -38,7 +37,7 @@ export class SidebarComponent implements OnInit {
   navMode$ = this.navModeSubject.asObservable();
 
   private readonly _router = inject(Router);
-  private readonly _permissionService = inject(PermissionService);
+  private readonly _permissionService = inject(CredentialsService);
 
   constructor() {
     this.sidebarItems = webSidebarMenuItems;
@@ -105,17 +104,12 @@ export class SidebarComponent implements OnInit {
   }
 
   isItemAllowed(item: NavMenuItem): boolean {
-    if (item.roles?.length) {
-      return item.roles.includes(this._permissionService.userRole);
-    }
+    const roleCheck = this._permissionService.hasRole(item.roles);
+    const permissionCheck = this._permissionService.hasPermission(
+      item.permissions
+    );
 
-    if (item.permissions?.length) {
-      return item.permissions.every((permission: PERMISSIONS) =>
-        this._permissionService.hasPermission(permission)
-      );
-    }
-
-    return true;
+    return roleCheck && permissionCheck;
   }
 
   activeNavTab(items: NavMenuItem[], extendedItem: number): void {

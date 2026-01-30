@@ -1,7 +1,7 @@
-import { TestBed } from "@angular/core/testing";
-import { Event, NavigationEnd, Router } from "@angular/router";
+import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { Logger } from "@app/services/logger.service";
 import { I18nService } from "@app/shared/i18n/i18n.service";
+import { createServiceFactory, SpectatorService } from "@ngneat/spectator";
 import { LangChangeEvent, TranslateService } from "@ngx-translate/core";
 import { noop, Subject } from "rxjs";
 import { vi, type Mock } from "vitest";
@@ -14,6 +14,8 @@ const supportedLanguages = ["eo", "en-US", "fr-FR"];
 class MockTranslateService {
   currentLang = "";
   onLangChange = new Subject();
+
+  instant: (key: string) => string = vi.fn((key) => key);
 
   setTranslation = noop;
   use(language: string) {
@@ -30,23 +32,19 @@ class MockTranslateService {
 }
 
 describe("I18nService", () => {
-  let i18nService: I18nService;
   let translateService: TranslateService;
   let onLangChangeSpy: Mock;
 
+  let spectator: SpectatorService<I18nService>;
+  const createService = createServiceFactory({
+    service: I18nService,
+    providers: [{ provide: TranslateService, useClass: MockTranslateService }],
+  });
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [
-        I18nService,
-        { provide: TranslateService, useClass: MockTranslateService },
-      ],
-    });
-
-    i18nService = TestBed.inject(I18nService);
-    translateService = TestBed.inject(TranslateService);
-
+    spectator = createService();
     // Create spies
     onLangChangeSpy = vi.fn();
+    translateService = spectator.inject(TranslateService);
     translateService.onLangChange.subscribe((event: LangChangeEvent) => {
       onLangChangeSpy(event.lang);
     });
@@ -61,7 +59,7 @@ describe("I18nService", () => {
   describe("init", () => {
     it("should init with default language", () => {
       // Act
-      i18nService.init(defaultLanguage, supportedLanguages);
+      spectator.service.init(defaultLanguage, supportedLanguages);
 
       // Assert
       expect(translateService.use).toHaveBeenCalledWith(defaultLanguage);
@@ -74,7 +72,7 @@ describe("I18nService", () => {
       localStorage.setItem("language", savedLanguage);
 
       // Act
-      i18nService.init(defaultLanguage, supportedLanguages);
+      spectator.service.init(defaultLanguage, supportedLanguages);
 
       // Assert
       expect(translateService.use).toHaveBeenCalledWith(savedLanguage);
@@ -86,10 +84,10 @@ describe("I18nService", () => {
     it("should change current language", () => {
       // Arrange
       const newLanguage = "eo";
-      i18nService.init(defaultLanguage, supportedLanguages);
+      spectator.service.init(defaultLanguage, supportedLanguages);
 
       // Act
-      i18nService.language = newLanguage;
+      spectator.service.setLanguage(newLanguage);
 
       // Assert
       expect(translateService.use).toHaveBeenCalledWith(newLanguage);
@@ -99,10 +97,10 @@ describe("I18nService", () => {
     it("should change current language without a region match", () => {
       // Arrange
       const newLanguage = "fr-CA";
-      i18nService.init(defaultLanguage, supportedLanguages);
+      spectator.service.init(defaultLanguage, supportedLanguages);
 
       // Act
-      i18nService.language = newLanguage;
+      spectator.service.setLanguage(newLanguage);
 
       // Assert
       expect(translateService.use).toHaveBeenCalledWith("fr-FR");
@@ -112,49 +110,145 @@ describe("I18nService", () => {
     it("should change current language to default if unsupported", () => {
       // Arrange
       const newLanguage = "es";
-      i18nService.init(defaultLanguage, supportedLanguages);
+      spectator.service.init(defaultLanguage, supportedLanguages);
 
       // Act
-      i18nService.language = newLanguage;
+      spectator.service.setLanguage(newLanguage);
 
       // Assert
       expect(translateService.use).toHaveBeenCalledWith(defaultLanguage);
       expect(onLangChangeSpy).toHaveBeenCalledWith(defaultLanguage);
     });
 
+    it("should change current language", () => {
+      // Arrange
+      spectator.service.init("", supportedLanguages);
+      localStorage.clear();
+
+      // Act
+      spectator.service.setLanguage("");
+
+      // Assert
+      expect(translateService.use).toHaveBeenCalledWith("");
+      expect(onLangChangeSpy).toHaveBeenCalledWith("");
+    });
+  });
+
+  describe("set title", () => {
     it("Pipe should be activated on Router NavigationEnd", () => {
       // Arrange
-      i18nService.init(defaultLanguage, supportedLanguages);
-      const router = TestBed.inject(Router);
+      spectator.service.init(defaultLanguage, supportedLanguages);
+      const spy = vi.spyOn(spectator.service, "setTitle");
+      const router = spectator.inject(Router);
       const event = new NavigationEnd(1703, `/book/list`, "/");
-      (router.events as Subject<Event>).next(event);
+      (router.events as unknown as Subject<Event>).next(
+        event as unknown as Event
+      );
       // Assert
-      // expect(onNavigationEnd).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalled();
     });
   });
 
   describe("get language", () => {
     it("should return current language", () => {
       // Arrange
-      i18nService.init(defaultLanguage, supportedLanguages);
+      spectator.service.init(defaultLanguage, supportedLanguages);
 
       // Act
-      const currentLanguage = i18nService.language;
+      const currentLanguage = spectator.service.language;
 
       // Assert
       expect(currentLanguage).toEqual(defaultLanguage);
     });
   });
 
+  describe("get titles", () => {
+    it("should return 2 titles when route has children", () => {
+      // Arrange
+      const routeMock = {
+        snapshot: { data: { title: "title" } },
+        firstChild: {
+          snapshot: { data: { title: "title1" } },
+          firstChild: { snapshot: { data: { title: "title2" } } },
+        },
+      } as object as ActivatedRoute;
+
+      // Act
+      const res = spectator.service["getTitleRecursive"](routeMock);
+
+      // Assert
+      expect(res).toEqual(["title", "title1", "title2"]);
+    });
+  });
+
+  describe("setTitle", () => {
+    it("should set title", () => {
+      // Arrange
+      spectator.service.init(defaultLanguage, supportedLanguages);
+      const spy = vi.spyOn(spectator.service, "getTitle");
+      spy.mockReturnValueOnce(["title", "title1", "title2"]);
+      // Act
+      spectator.service.setTitle();
+      // Assert
+      // expect(onLangChangeSpy).toHaveBeenCalledWith("title");
+    });
+
+    it("should set title", () => {
+      // Arrange
+      spectator.service.init(defaultLanguage, supportedLanguages);
+      const spy = vi.spyOn(spectator.service, "getTitle");
+      spy.mockReturnValueOnce([]);
+      // Act
+      spectator.service.setTitle();
+      // Assert
+      // expect(onLangChangeSpy).toHaveBeenCalledWith("title");
+    });
+
+    it("should set title without fn", () => {
+      // Arrange
+      spectator.service.init(defaultLanguage, supportedLanguages);
+      const spy = vi.spyOn(spectator.service, "getTitle");
+      const newTitle = "Test1";
+      spy.mockReturnValueOnce([newTitle]);
+      // Act
+      const title = spectator.service.getNextTitle();
+      // Assert
+      expect(title).toBe(newTitle);
+    });
+    // it("should set title", () => {
+    //   // Arrange
+    //   spectator.service.init(defaultLanguage, supportedLanguages);
+    //   const spy = vi.spyOn(spectator.service, "getTitle");
+    //   spy.mockResolvedValueOnce([]);
+    //   const translateService = spectator.inject(TranslateService);
+    //   const translateSpy = vi.spyOn(translateService, "instant");
+    //   (translateService as unknown as Mock).mockReturnValue(null);
+    //   // Act
+    //   spectator.service.setTitle();
+    //   // Assert
+    //   // expect(onLangChangeSpy).toHaveBeenCalledWith("title");
+    // });
+  });
+
   describe("on  destroy", () => {
     it("should clean up", () => {
       // Arrange
-      i18nService.init(defaultLanguage, supportedLanguages);
+      spectator.service.init(defaultLanguage, supportedLanguages);
 
       // Act
-      i18nService.destroy();
+      spectator.service.destroy();
       // Assert
-      expect(i18nService.langChangeSubscription.closed).toBe(true);
+      expect(spectator.service.langChangeSubscription.closed).toBe(true);
+    });
+
+    it("should clean up and not throw error if called twice", () => {
+      // Arrange
+      spectator.service.init(defaultLanguage, supportedLanguages);
+      // Act
+      spectator.service.destroy();
+      spectator.service.destroy();
+      // Assert
+      expect(spectator.service.langChangeSubscription.closed).toBe(true);
     });
   });
 });

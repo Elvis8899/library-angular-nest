@@ -10,23 +10,17 @@ export enum BookRentalStatusEnum {
   Finished = "finished",
 }
 
-export class BookRentalEntity extends BaseEntity {
-  userName = "";
-  bookName = "";
-  rentalStatus: BookRentalStatusEnum = BookRentalStatusEnum.Rented;
-  overdueDate: Date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  deliveryDate: Date | null = null;
+export interface BookRentalEntity extends BaseEntity {
+  userName: string;
+  bookName: string;
+  rentalStatus: BookRentalStatusEnum;
+  overdueDate: Date;
+  deliveryDate: Date | null;
   fines: {
     overdue: boolean;
     fixed: number;
     days: number;
     perDayValue: number;
     total: number;
-  } = {
-    overdue: false,
-    fixed: 0,
-    days: 0,
-    perDayValue: 0,
-    total: 0,
   };
 }

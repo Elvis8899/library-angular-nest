@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
-import { Credentials } from "@app/models/credentials.entity";
+import { appPermissionsSetting } from "@app/app.permissions";
+import { Credentials, PERMISSIONS, ROLE } from "@app/models/credentials.entity";
 
 const credentialsKey = "credentials";
 
@@ -13,12 +14,27 @@ const credentialsKey = "credentials";
 export class CredentialsService {
   private _credentials: Credentials | null = null;
   constructor() {
-    const savedCredentials =
-      sessionStorage.getItem(credentialsKey) ||
-      localStorage.getItem(credentialsKey);
-    if (savedCredentials) {
-      this._credentials = JSON.parse(savedCredentials);
+    this.refresh();
+  }
+
+  refresh() {
+    this._credentials =
+      this.getSavedCredentials(false) || this.getSavedCredentials();
+  }
+
+  getSavedCredentials(remember = true): Credentials | null {
+    const storage = remember ? localStorage : sessionStorage;
+    const savedCredentials = storage.getItem(credentialsKey);
+    if (!savedCredentials) {
+      return null;
     }
+    return JSON.parse(savedCredentials);
+  }
+
+  clearCredentials() {
+    this._credentials = null;
+    sessionStorage.removeItem(credentialsKey);
+    localStorage.removeItem(credentialsKey);
   }
 
   /**
@@ -52,14 +68,55 @@ export class CredentialsService {
    * @param remember True to remember credentials across sessions.
    */
   setCredentials(credentials?: Credentials, remember = true) {
-    this._credentials = credentials || null;
-
-    if (credentials) {
-      const storage = remember ? localStorage : sessionStorage;
-      storage.setItem(credentialsKey, JSON.stringify(credentials));
-    } else {
-      sessionStorage.removeItem(credentialsKey);
-      localStorage.removeItem(credentialsKey);
+    if (!credentials) {
+      this.clearCredentials();
+      return;
     }
+    this._credentials = credentials;
+    const storage = remember ? localStorage : sessionStorage;
+    storage.setItem(credentialsKey, JSON.stringify(credentials));
+  }
+
+  /**
+   * The function `hasRole` checks if a user has any of the required roles based on their credentials.
+   * @param {ROLE[]} requiredRoles - The `requiredRoles` parameter in the `hasRole` method is an array of
+   * `ROLE` values that represent the roles that a user must have in order to pass the authorization
+   * check. The method checks if the user's credentials contain any of the roles specified in the
+   * `requiredRoles` array.
+   * @returns The `hasRole` method is returning a boolean value. It checks if the user's credentials
+   * contain any of the required roles specified in the `requiredRoles` array. If at least one of the
+   * required roles matches with the user's roles, it returns `true`. Otherwise, it returns `false`.
+   */
+  hasRole(requiredRoles?: ROLE[]): boolean {
+    if (!requiredRoles?.length) {
+      return true;
+    }
+    const credentials = this.credentials;
+    if (!credentials || !credentials.user.role) {
+      return false;
+    }
+    // Check if any of the user's roles match the required roles
+    return requiredRoles.some((role) => credentials.user.role.includes(role));
+  }
+
+  /**
+   * The function `hasPermission` checks if a user has the required permission based on their roles and
+   * application settings.
+   * @param {PERMISSIONS} permission - The `permission` parameter represents the permission that needs to
+   * be checked. This permission is typically a value from an enum or a set of predefined permissions in
+   * your application.
+   * @returns The `hasPermission` method returns a boolean value, either `true` or `false`, based on
+   * whether the user has the specified permission or not.
+   */
+  hasPermission(permission?: PERMISSIONS[]): boolean {
+    if (!permission?.length) {
+      return true;
+    }
+    const role = this.credentials?.user?.role;
+    if (!role || !appPermissionsSetting[role]) {
+      return false;
+    }
+    const rolePermissions = appPermissionsSetting[role];
+    return permission.every((p) => rolePermissions[p] === true);
   }
 }

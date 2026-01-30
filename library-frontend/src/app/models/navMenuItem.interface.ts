@@ -1,4 +1,4 @@
-import { PERMISSIONS } from "@app/models/credentials.entity";
+import { PERMISSIONS, ROLE } from "@app/models/credentials.entity";
 
 export interface NavMenuItem {
   title: string;
@@ -9,6 +9,6 @@ export interface NavMenuItem {
   subItems?: NavMenuItem[];
   disabled?: boolean;
   divider?: boolean;
-  roles?: string[];
+  roles?: ROLE[];
   permissions?: PERMISSIONS[];
 }

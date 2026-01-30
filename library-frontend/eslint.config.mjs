@@ -41,6 +41,7 @@ export default defineConfig(
     processor: angular.processInlineTemplates,
     // Override specific rules for TypeScript files (these will take priority over the extended configs above)
     rules: {
+      // // Eslint errors
       "no-console": ["error"],
       "no-restricted-imports": [
         "error",
@@ -67,6 +68,23 @@ export default defineConfig(
           type: "element",
           prefix: "app",
           style: "kebab-case",
+        },
+      ],
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "LabeledStatement",
+          message:
+            "Labels are a form of GOTO; using them makes code confusing and hard to maintain and understand.",
+        },
+        {
+          selector: "WithStatement",
+          message:
+            "`with` is disallowed in strict mode because it makes code impossible to predict and optimize.",
+        },
+        {
+          selector: "MethodDefinition[kind='set']",
+          message: "Property setters are not allowed",
         },
       ],
     },

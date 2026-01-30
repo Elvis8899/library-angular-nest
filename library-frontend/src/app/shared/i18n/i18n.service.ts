@@ -1,14 +1,12 @@
 import { inject, Injectable } from "@angular/core";
 import { Title } from "@angular/platform-browser";
-import {
-  ActivatedRoute,
-  NavigationEnd,
-  Router,
-  RouterState,
-} from "@angular/router";
+import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { Logger } from "@app/services/logger.service";
 import { enUS, ptBR } from "@app/shared/i18n/translations";
-import { LanguagesEnum } from "@app/shared/i18n/translations/allTranslations";
+import {
+  AllTranslations,
+  LanguagesEnum,
+} from "@app/shared/i18n/translations/allTranslations";
 import { environment } from "@env/environment";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { LangChangeEvent, TranslateService } from "@ngx-translate/core";
@@ -35,10 +33,7 @@ export class I18nService {
   constructor() {
     // Initialize the BehaviorSubject with an initial value
     this._languageSubject = new BehaviorSubject<string>(
-      localStorage.getItem(languageKey) ||
-        environment.defaultLanguage ||
-        this._translateService.getBrowserCultureLang() ||
-        ""
+      localStorage.getItem(languageKey) || environment.defaultLanguage
     );
     // Warning: this subscription will always be alive for the app's lifetime
     this.langChangeSubscription = this._translateService.onLangChange.subscribe(
@@ -47,8 +42,13 @@ export class I18nService {
       }
     );
     // Embed languages to avoid extra HTTP requests
-    this._translateService.setTranslation(LanguagesEnum.PT_BR, ptBR);
-    this._translateService.setTranslation(LanguagesEnum.EN_US, enUS);
+    const translations: [LanguagesEnum, AllTranslations][] = [
+      [LanguagesEnum.PT_BR, ptBR],
+      [LanguagesEnum.EN_US, enUS],
+    ];
+    translations.forEach(([lang, translations]) => {
+      this._translateService.setTranslation(lang, translations);
+    });
     this.init(environment.defaultLanguage, environment.supportedLanguages);
 
     const onNavigationEnd = this._router.events.pipe(
@@ -60,16 +60,18 @@ export class I18nService {
       .subscribe(() => this.setTitle());
   }
 
-  getTitle(state: RouterState, parent: ActivatedRoute): string[] {
-    const data: string[] = [];
-    if (parent && parent.snapshot.data && parent.snapshot.data["title"]) {
-      data.push(parent.snapshot.data["title"]);
+  private getTitleRecursive(route: ActivatedRoute): string[] {
+    const routeTitle: string = route.snapshot.data?.["title"];
+    const titleFragments: string[] = routeTitle ? [routeTitle] : [];
+    const routeChild = route?.firstChild;
+    if (routeChild) {
+      titleFragments.push(...this.getTitleRecursive(routeChild));
     }
+    return titleFragments;
+  }
 
-    if (state && parent?.firstChild) {
-      data.push(...this.getTitle(state, parent?.firstChild));
-    }
-    return data;
+  getTitle(route: ActivatedRoute): string[] {
+    return this.getTitleRecursive(route);
   }
 
   /**
@@ -86,13 +88,11 @@ export class I18nService {
    * If no parameter is specified, the language is loaded from local storage (if present).
    * @param language The IETF language code to set.
    */
-  set language(language: string) {
+  setLanguage(language: string) {
     let newLanguage =
       language ||
       localStorage.getItem(languageKey) ||
-      environment.defaultLanguage ||
-      this._translateService.getBrowserCultureLang() ||
-      "";
+      environment.defaultLanguage;
     let isSupportedLanguage = this.supportedLanguages.includes(newLanguage);
 
     if (language !== this._languageSubject.value) {
@@ -114,10 +114,8 @@ export class I18nService {
       newLanguage = this.defaultLanguage;
     }
 
-    language = newLanguage;
-
-    log.debug(`Language set to ${language}`);
-    this._translateService.use(language);
+    log.debug(`Language set to ${newLanguage}`);
+    this._translateService.use(newLanguage);
   }
 
   /**
@@ -130,38 +128,37 @@ export class I18nService {
     this.defaultLanguage = defaultLanguage;
     this.supportedLanguages = supportedLanguages;
     log.debug(`Initializing with default language: ${defaultLanguage}`);
-    this.language = "";
+    this.setLanguage("");
   }
 
   setTitle() {
-    const titles = this.getTitle(
-      this._router.routerState,
-      this._router.routerState.root
-    );
-    if (!this._translateService?.instant) {
-      return;
-    }
-    if (titles.length === 0) {
-      this._titleService.setTitle(this._translateService.instant("Home"));
-    } else {
-      const translatedTitles = titles.map((titlePart) =>
-        this._translateService.instant(titlePart)
-      );
+    const instantFn = (v: string) => this._translateService.instant(v);
+    this._titleService.setTitle(this.getNextTitle(instantFn));
+  }
+
+  getNextTitle(translator: (v: string) => string = (v) => v): string {
+    const titles = this.getTitle(this._router.routerState.root);
+
+    let title = translator("Home");
+
+    if (titles.length) {
+      const translatedTitles = titles.map(translator);
       const allTitlesSame = translatedTitles.every(
         (title, _, arr) => title === arr[0]
       );
-      this._titleService.setTitle(
-        allTitlesSame ? translatedTitles[0] : translatedTitles.join(" | ")
-      );
+      title = allTitlesSame
+        ? translatedTitles[0]
+        : translatedTitles.join(" | ");
     }
+    return title;
   }
-
   /**
    * Cleans up language change subscription.
    */
   destroy() {
-    if (this.langChangeSubscription) {
-      this.langChangeSubscription.unsubscribe();
+    if (!this.langChangeSubscription || this.langChangeSubscription?.closed) {
+      return;
     }
+    this.langChangeSubscription.unsubscribe();
   }
 }
