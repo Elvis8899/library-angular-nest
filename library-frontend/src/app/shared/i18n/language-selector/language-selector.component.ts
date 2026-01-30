@@ -1,11 +1,5 @@
 import { NgClass } from "@angular/common";
-import {
-  Component,
-  ElementRef,
-  HostListener,
-  inject,
-  Input,
-} from "@angular/core";
+import { Component, ElementRef, inject, Input } from "@angular/core";
 import { I18nService } from "@app/shared/i18n/i18n.service";
 
 @Component({
@@ -13,6 +7,9 @@ import { I18nService } from "@app/shared/i18n/i18n.service";
   templateUrl: "./language-selector.component.html",
   styleUrls: ["./language-selector.component.scss"],
   imports: [NgClass],
+  host: {
+    "(window:click)": "onClickOutside($event)",
+  },
 })
 export class LanguageSelectorComponent {
   @Input() inNavbar = true;
@@ -37,9 +34,10 @@ export class LanguageSelectorComponent {
    * Listener to handle click events outside of the dropdown component.
    * Helps in closing the dropdown if clicked outside.
    */
-  @HostListener("document:click", ["$event"])
   onClickOutside(event: Event) {
-    if (!this._eRef?.nativeElement?.contains(event.target)) {
+    const element = this._eRef?.nativeElement as HTMLElement | undefined;
+    const inside = element?.contains(event.target as Node);
+    if (!inside) {
       this.isDropdownOpen = false;
     }
   }

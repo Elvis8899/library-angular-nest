@@ -1,9 +1,12 @@
+import { ElementRef } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { By } from "@angular/platform-browser";
 import { Logger } from "@app/services/logger.service";
 import { I18nService } from "@app/shared/i18n/i18n.service";
 import { LanguageSelectorComponent } from "@app/shared/i18n/language-selector/language-selector.component";
 import { LanguagesEnum } from "@app/shared/i18n/translations/allTranslations";
 import { TranslateModule } from "@ngx-translate/core";
+import { vi } from "vitest";
 
 Logger.level = 0;
 
@@ -19,7 +22,6 @@ describe("LanguageSelectorComponent", () => {
     fixture = TestBed.createComponent(LanguageSelectorComponent);
     component = fixture.componentInstance;
     compiled = fixture.nativeElement as HTMLElement;
-    fixture.detectChanges();
   });
 
   it("should create", () => {
@@ -74,9 +76,14 @@ describe("LanguageSelectorComponent", () => {
   it("should set language with keyup", () => {
     component.toggleDropdown();
     fixture.detectChanges();
-    compiled
-      .querySelectorAll("li")[1]
-      .dispatchEvent(new KeyboardEvent("keyup", { key: "Enter" }));
+    // compiled
+    //   .querySelectorAll("li")[1]
+    //   .dispatchEvent(new KeyboardEvent("keyup", { key: "Enter" }));
+    fixture.debugElement
+      .queryAll(By.css("li"))[1]
+      .triggerEventHandler("keyup", {
+        key: "Enter",
+      });
     fixture.detectChanges();
     expect(component.currentLanguage).toBe("US");
   });
@@ -84,5 +91,48 @@ describe("LanguageSelectorComponent", () => {
   it("Should process empty language", () => {
     component.setLanguage("");
     expect(component.getLanguageCode("")).toBe("");
+  });
+
+  it("main div keyup", () => {
+    fixture.debugElement
+      .query(By.css("div"))
+      .triggerEventHandler(
+        "keyup",
+        new KeyboardEvent("keyup", { key: "Enter" })
+      );
+
+    fixture.detectChanges();
+    expect(component.isDropdownOpen).toBe(false);
+  });
+  it("second div keyup with enter - should open", () => {
+    compiled
+      .querySelectorAll("div")[1]
+      .dispatchEvent(new KeyboardEvent("keyup", { key: "Enter" }));
+
+    fixture.detectChanges();
+    expect(component.isDropdownOpen).toBe(true);
+  });
+  it("second div click - should open", () => {
+    compiled.querySelectorAll("div")[1].click();
+    fixture.detectChanges();
+    expect(component.isDropdownOpen).toBe(true);
+  });
+
+  it("should show empty dropdown", () => {
+    const i18nService = fixture.debugElement.injector.get(I18nService);
+    i18nService.supportedLanguages = [];
+    component.toggleDropdown();
+    fixture.detectChanges();
+    expect(compiled.querySelectorAll("li").length).toBe(1);
+    expect(compiled.querySelectorAll("li")[0].textContent).toBe(
+      "There are no items."
+    );
+  });
+
+  it("Test onClickOutside with no nativeElement", () => {
+    const elementRef = fixture.debugElement.injector.get(ElementRef);
+    vi.spyOn(elementRef, "nativeElement", "get").mockReturnValue(null);
+    component.onClickOutside(new Event("click"));
+    expect(component.isDropdownOpen).toBe(false);
   });
 });
