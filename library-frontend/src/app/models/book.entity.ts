@@ -5,14 +5,14 @@ export enum BookItemStatusEnum {
   Available = "available",
 }
 
-export class BookItemEntity extends BaseEntity {
-  status = BookItemStatusEnum.Available;
-  bookId = "";
+export interface BookItemEntity extends BaseEntity {
+  status: BookItemStatusEnum;
+  bookId: string;
 }
 
-export class BookEntity extends BaseEntity {
-  name = "";
-  image = "";
-  price = "";
-  bookItems: BookItemEntity[] = [];
+export interface BookEntity extends BaseEntity {
+  name: string;
+  image: string;
+  price: string;
+  bookItems: BookItemEntity[];
 }

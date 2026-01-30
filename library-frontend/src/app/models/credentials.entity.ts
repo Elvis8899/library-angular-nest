@@ -1,5 +1,3 @@
-import { Expose } from "class-transformer";
-
 export enum ROLE {
   ADMIN = "admin",
   CLIENT = "client",
@@ -35,26 +33,14 @@ export enum PERMISSIONS {
   ACCESS_BOOK = "access.book",
 }
 
-export class Credentials {
+export interface Credentials {
   user: {
     id: string;
     name: string;
     email: string;
     role: ROLE;
-  } = {
-    id: "",
-    name: "",
-    email: "",
-    role: ROLE.GUEST,
   };
 
-  @Expose({ name: "access_token" })
-  accessToken = "";
-
-  @Expose({ name: "refresh_token" })
-  refreshToken = "";
-
-  get fullName() {
-    return this.user?.name || "";
-  }
+  accessToken: string;
+  refreshToken: string;
 }

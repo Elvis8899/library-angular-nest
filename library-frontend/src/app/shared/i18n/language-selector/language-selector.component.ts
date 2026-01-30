@@ -47,7 +47,7 @@ export class LanguageSelectorComponent {
   }
 
   setLanguage(language: string) {
-    this._i18nService.language = language;
+    this._i18nService.setLanguage(language);
     this.isDropdownOpen = false;
   }
 

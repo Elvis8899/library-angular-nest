@@ -79,7 +79,7 @@ export class Logger {
    * Works the same as console.log().
    */
   debug(...objects: unknown[]) {
-    this._log(console.log, LogLevel.Debug, objects);
+    this._log(console.debug, LogLevel.Debug, objects);
   }
 
   /**
