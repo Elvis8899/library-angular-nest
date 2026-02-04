@@ -1,6 +1,10 @@
 import { Injectable } from "@angular/core";
-import { appPermissionsSetting } from "@app/app.permissions";
-import { Credentials, PERMISSIONS, ROLE } from "@app/models/credentials.entity";
+import {
+  Credentials,
+  PERMISSIONS,
+  ROLE,
+  appPermissionsSetting,
+} from "@app/models/credentials.entity";
 
 const credentialsKey = "credentials";
 

@@ -29,7 +29,7 @@ enum NavMode {
 export class SidebarComponent implements OnInit {
   // version: string = environment.version;
   // year: number = new Date().getFullYear();
-  sidebarItems: NavMenuItem[] = [];
+  sidebarItems: NavMenuItem[] = webSidebarMenuItems;
   sidebarExtendedItem = -1;
   navExpanded = true;
 
@@ -38,10 +38,6 @@ export class SidebarComponent implements OnInit {
 
   private readonly _router = inject(Router);
   private readonly _permissionService = inject(CredentialsService);
-
-  constructor() {
-    this.sidebarItems = webSidebarMenuItems;
-  }
 
   ngOnInit(): void {
     this.activeNavTab(this.sidebarItems, this.sidebarExtendedItem);

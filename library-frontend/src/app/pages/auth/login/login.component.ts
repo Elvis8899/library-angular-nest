@@ -3,7 +3,6 @@ import { Component, inject } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AuthenticationService } from "@app/services/authentication.service";
-import { CredentialsService } from "@app/services/credentials.service";
 import { LanguageSelectorComponent } from "@app/shared/i18n/language-selector/language-selector.component";
 import { environment } from "@env/environment";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
@@ -28,7 +27,6 @@ export class LoginComponent {
   private readonly _router = inject(Router);
   private readonly _route = inject(ActivatedRoute);
   private readonly _authService = inject(AuthenticationService);
-  private readonly _credentialsService = inject(CredentialsService);
   private readonly _fb = inject(FormBuilder);
 
   loginForm = this._fb.group({
@@ -54,7 +52,6 @@ export class LoginComponent {
         next: (credentials) => {
           // Navigate to the home page or any other page after successful login.
           if (credentials) {
-            this._credentialsService.setCredentials(credentials);
             const route =
               credentials.user?.role === "admin" ? "/users/list" : "/books";
             this._router.navigate(
