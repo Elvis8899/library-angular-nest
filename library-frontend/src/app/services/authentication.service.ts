@@ -1,5 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { Credentials } from "@app/models/credentials.entity";
+import { CredentialsService } from "@app/services/credentials.service";
 import { UserService } from "@app/services/user.service";
 import { Observable, of } from "rxjs";
 
@@ -19,6 +20,7 @@ export interface LoginContext {
 })
 export class AuthenticationService {
   private readonly _userService = inject(UserService);
+  private readonly _credentialsService = inject(CredentialsService);
 
   /**
    * Authenticates the user.
@@ -26,7 +28,11 @@ export class AuthenticationService {
    * @return The user credentials.
    */
   login(context: LoginContext): Observable<Credentials> {
-    return this._userService.login(context);
+    const login = this._userService.login(context);
+    login.subscribe({
+      next: this._credentialsService.setCredentials.bind(this),
+    });
+    return login;
   }
 
   /**
@@ -34,6 +40,7 @@ export class AuthenticationService {
    * @return True if the user was logged out successfully.
    */
   logout(): Observable<boolean> {
+    this._credentialsService.clearCredentials();
     return of(true);
   }
 }

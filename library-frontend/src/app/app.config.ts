@@ -21,7 +21,7 @@ import {
   withRouterConfig,
 } from "@angular/router";
 import { provideServiceWorker } from "@angular/service-worker";
-import { routes } from "@app/app.routes";
+import { routes } from "@app/pages/pages.routes";
 import { Logger } from "@app/services/logger.service";
 import { AppUpdateService } from "@app/services/update.service";
 import { RouteReusableStrategy } from "@app/shared/helpers/route-reusable-strategy";

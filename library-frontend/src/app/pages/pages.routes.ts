@@ -16,16 +16,14 @@ export const routes: Routes = [
   {
     path: "logout",
     loadComponent: () =>
-      import("./pages/auth/logout/logout.component").then(
-        (m) => m.LogoutComponent
-      ),
+      import("./auth/logout/logout.component").then((m) => m.LogoutComponent),
     data: { title: "Logout" },
   },
 
   {
     path: "",
     loadComponent() {
-      return import("./layouts/layout.component").then(
+      return import("../layouts/layout.component").then(
         (m) => m.LayoutComponent
       );
     },
@@ -33,21 +31,21 @@ export const routes: Routes = [
       {
         path: "users",
         loadChildren: () =>
-          import("./pages/users/users-routing.module").then(
+          import("./users/users-routing.module").then(
             (m) => m.UsersRoutingModule
           ),
       },
       {
         path: "books",
         loadChildren: () =>
-          import("./pages/books/books-routing.module").then(
+          import("./books/books-routing.module").then(
             (m) => m.BooksRoutingModule
           ),
       },
       {
         path: "rentals",
         loadChildren: () =>
-          import("./pages/rentals/rentals-routing.module").then(
+          import("./rentals/rentals-routing.module").then(
             (m) => m.RentalsRoutingModule
           ),
       },
