@@ -15,7 +15,13 @@
         </tr>
       </thead>
       <tbody>
-        @if (!isLoading) {
+        @if (loading$ | async) {
+          <tr>
+            <td colspan="5" class="loading" style="text-align: center">
+              Loading...
+            </td>
+          </tr>
+        } @else {
           @for (user of users; track user.id) {
             <tr (click)="userClicked()">
               <td>{{ user.name }}</td>
@@ -23,12 +29,6 @@
               <td>{{ user.cpf }}</td>
             </tr>
           }
-        } @else {
-          <tr>
-            <td colspan="5" class="loading" style="text-align: center">
-              Loading...
-            </td>
-          </tr>
         }
       </tbody>
     </table>

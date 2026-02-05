@@ -1,4 +1,6 @@
+import { AsyncPipe } from "@angular/common";
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -8,6 +10,9 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
+import { MatButtonToggleModule } from "@angular/material/button-toggle";
+import { MatNativeDateModule } from "@angular/material/core";
+import { MatDatepickerModule } from "@angular/material/datepicker";
 import {
   MAT_DIALOG_DATA,
   MatDialog,
@@ -17,13 +22,25 @@ import {
   MatDialogTitle,
 } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
+import { MatPaginatorModule } from "@angular/material/paginator";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSelectModule } from "@angular/material/select";
+import { MatTableModule } from "@angular/material/table";
 import { Router } from "@angular/router";
-import { BookEntity, BookItemStatusEnum } from "@app/models/book.entity";
+import {
+  BookEntity,
+  BookItemStatusEnum,
+  BookQuery,
+} from "@app/models/book.entity";
 import { BookRentEntity } from "@app/models/bookRental.entity";
 import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
+import {
+  PaginatedDataSource,
+  PaginatedSort,
+} from "@app/models/utils/paginatedDataSource.entity";
 import { BookService } from "@app/services/book.service";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
@@ -50,14 +67,34 @@ export interface DialogData {
     FormsModule,
     MatButtonModule,
     TranslateModule,
+    AsyncPipe,
+    MatTableModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+    MatPaginatorModule,
+    MatSelectModule,
+    MatButtonToggleModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ListBooksComponent implements OnInit {
+export class ListBooksComponent implements OnInit, AfterViewInit {
   books: BookEntity[] = [];
   users: UserEntity[] = [];
   isLoading = true;
+  displayedColumns = ["image", "name", "price", "availability", "actions"];
+  initialSort: PaginatedSort<BookEntity> = {
+    property: "createdAt",
+    order: "asc",
+  };
 
+  data = new PaginatedDataSource<BookEntity, BookQuery>(
+    (request) => this._bookService.getPaginatedBooks(request),
+    this.initialSort,
+    { name: "" },
+    10
+  );
   // readonly user = signal("");
   readonly dialog = inject(MatDialog);
 
@@ -102,18 +139,12 @@ export class ListBooksComponent implements OnInit {
     this.refresh();
   }
 
+  ngAfterViewInit() {
+    this.data.fetch(0);
+  }
+
   refresh() {
-    this._bookService.getPaginatedBooks().subscribe({
-      next: (res) => {
-        this.books = res.data;
-        this.isLoading = false;
-        this._cd.detectChanges();
-      },
-      error: (error) => {
-        //    this.isLoading = false;
-        log.error(error);
-      },
-    });
+    this.data.refresh();
     this._userService.getPaginatedUsers().subscribe({
       next: (res) => {
         this.users = res.data;
@@ -134,7 +165,6 @@ export class ListBooksComponent implements OnInit {
   }
 
   isBookAvailable(book: BookEntity) {
-    log.info(book);
     return book.bookItems.some(
       (item) => item.status === BookItemStatusEnum.Available
     );

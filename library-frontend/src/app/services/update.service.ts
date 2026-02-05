@@ -65,8 +65,9 @@ export class AppUpdateService {
             log.error("Failed to check for updates:", err);
           }
         });
-    } else
+    } else {
       log.info("%c No service worker allow", "color: red; font-weight: bold;");
+    }
 
     this.subscribeForUpdates();
   }

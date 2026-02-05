@@ -4,19 +4,21 @@ import { RouterModule } from "@angular/router";
 import { HeaderComponent } from "@app/layouts/components/header/header.component";
 import { SidebarComponent } from "@app/layouts/components/sidebar/sidebar.component";
 import { UntilDestroy } from "@ngneat/until-destroy";
+import { Subject } from "rxjs";
 @UntilDestroy()
 @Component({
   templateUrl: "./layout.component.html",
   imports: [CommonModule, SidebarComponent, HeaderComponent, RouterModule],
 })
 export class LayoutComponent implements OnInit {
-  isSidebarActive = false;
+  isSidebarActive = new Subject<boolean>();
+  isSidebarActive$ = this.isSidebarActive.asObservable();
 
   ngOnInit() {
-    this.isSidebarActive = false;
+    this.isSidebarActive.next(false);
   }
 
   sidebarToggle(toggleState: boolean) {
-    this.isSidebarActive = toggleState;
+    this.isSidebarActive.next(toggleState);
   }
 }

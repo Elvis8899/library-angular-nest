@@ -21,7 +21,7 @@ export const GetCredentials = () => {
     LocalStorageKeys.CREDENTIALS
   ) as Credentials;
   if (!credentials) {
-    window.location.href = "/logout";
+    // window.location.href = "/logout";
   }
   return credentials;
 };

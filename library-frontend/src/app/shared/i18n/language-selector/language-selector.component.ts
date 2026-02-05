@@ -1,12 +1,13 @@
-import { NgClass } from "@angular/common";
+import { AsyncPipe, NgClass } from "@angular/common";
 import { Component, ElementRef, inject, Input } from "@angular/core";
 import { I18nService } from "@app/shared/i18n/i18n.service";
+import { BehaviorSubject, Observable } from "rxjs";
 
 @Component({
   selector: "app-language-selector",
   templateUrl: "./language-selector.component.html",
   styleUrls: ["./language-selector.component.scss"],
-  imports: [NgClass],
+  imports: [NgClass, AsyncPipe],
   host: {
     "(window:click)": "onClickOutside($event)",
   },
@@ -14,7 +15,10 @@ import { I18nService } from "@app/shared/i18n/i18n.service";
 export class LanguageSelectorComponent {
   @Input() inNavbar = true;
   @Input() openAbove = false;
-  isDropdownOpen = false;
+
+  isDropdownOpen = new BehaviorSubject<boolean>(false);
+  isDropdownOpen$ = this.isDropdownOpen.asObservable();
+
   protected readonly open = open;
 
   private readonly _i18nService = inject(I18nService);
@@ -26,8 +30,8 @@ export class LanguageSelectorComponent {
     return part;
   }
 
-  get languages(): string[] {
-    return this._i18nService.supportedLanguages;
+  get languages$(): Observable<string[]> {
+    return this._i18nService.supportedLanguages.asObservable();
   }
 
   /**
@@ -38,17 +42,17 @@ export class LanguageSelectorComponent {
     const element = this._eRef?.nativeElement as HTMLElement | undefined;
     const inside = element?.contains(event.target as Node);
     if (!inside) {
-      this.isDropdownOpen = false;
+      this.isDropdownOpen.next(false);
     }
   }
 
   toggleDropdown() {
-    this.isDropdownOpen = !this.isDropdownOpen;
+    this.isDropdownOpen.next(!this.isDropdownOpen.getValue());
   }
 
   setLanguage(language: string) {
     this._i18nService.setLanguage(language);
-    this.isDropdownOpen = false;
+    this.isDropdownOpen.next(false);
   }
 
   getLanguageCode(language: string): string {

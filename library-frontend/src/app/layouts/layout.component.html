@@ -1,4 +1,7 @@
-<div [ngClass]="{ overlay: isSidebarActive }" class="shell layout-wrapper">
+<div
+  [ngClass]="{ overlay: isSidebarActive$ | async }"
+  class="shell layout-wrapper"
+>
   <aside class="side-nav">
     <app-sidebar></app-sidebar>
   </aside>

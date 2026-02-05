@@ -27,8 +27,6 @@ export class LogoutComponent implements OnInit {
   }
 
   logout() {
-    this._router.navigate(["/login"]).then(() => {
-      window.location.reload();
-    });
+    this._router.navigate(["/login"]);
   }
 }

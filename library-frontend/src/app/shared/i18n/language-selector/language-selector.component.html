@@ -16,14 +16,14 @@
   >
     Lang: {{ currentLanguage }}
   </div>
-  @if (isDropdownOpen) {
+  @if (isDropdownOpen$ | async) {
     <div
       [ngClass]="{ above: openAbove }"
       class="selectable-list-popover"
       id="selectable-list-popover"
     >
       <ul class="selectable-list-popover__list">
-        @for (language of languages; track language) {
+        @for (language of languages$ | async; track language) {
           <li
             (click)="setLanguage(language)"
             (keyup)="setLanguage(language)"

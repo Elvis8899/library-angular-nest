@@ -6,6 +6,7 @@ import {
   HttpRequest,
 } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
+import { Router } from "@angular/router";
 import { CredentialsService } from "@app/services/credentials.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Observable, Subject, takeUntil, throwError } from "rxjs";
@@ -18,6 +19,7 @@ export class ApiPrefixInterceptor implements HttpInterceptor {
   private readonly _ongoingRequests = new Map<string, Subject<unknown>>();
   private readonly _credentialsService = inject(CredentialsService);
   private readonly _translateService = inject(TranslateService);
+  private readonly _router = inject(Router);
 
   intercept<T>(
     request: HttpRequest<T>,
@@ -66,7 +68,7 @@ export class ApiPrefixInterceptor implements HttpInterceptor {
         catchError((error: HttpErrorResponse) => {
           if (error.status === 401 || error.status === 403) {
             this._credentialsService.setCredentials();
-            window.location.href = "/login";
+            this._router.navigate(["/login"]);
           }
           return throwError(() => error);
         }),

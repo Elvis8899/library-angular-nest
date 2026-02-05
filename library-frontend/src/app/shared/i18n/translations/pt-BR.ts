@@ -17,4 +17,5 @@ export const ptBR: AllTranslations = {
   "Create User": "Criar Usuário",
   "Books List": "Lista de Livros",
   "Add Book": "Adicionar Livro",
+  Name: "Nome",
 };

@@ -17,4 +17,5 @@ export const enUS: AllTranslations = {
   "Create User": "Create User",
   "Books List": "Books List",
   "Add Book": "Add Book",
+  Name: "Name",
 };

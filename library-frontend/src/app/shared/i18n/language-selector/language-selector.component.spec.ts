@@ -1,138 +1,137 @@
-import { ElementRef } from "@angular/core";
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { By } from "@angular/platform-browser";
+import { RouterModule } from "@angular/router";
 import { Logger } from "@app/services/logger.service";
 import { I18nService } from "@app/shared/i18n/i18n.service";
 import { LanguageSelectorComponent } from "@app/shared/i18n/language-selector/language-selector.component";
 import { LanguagesEnum } from "@app/shared/i18n/translations/allTranslations";
+import { Spectator } from "@ngneat/spectator";
+import { createComponentFactory } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
-import { vi } from "vitest";
 
 Logger.level = 0;
 
 describe("LanguageSelectorComponent", () => {
-  let component: LanguageSelectorComponent;
-  let fixture: ComponentFixture<LanguageSelectorComponent>;
-  let compiled: HTMLElement;
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot(), LanguageSelectorComponent],
-      providers: [I18nService],
-    }).compileComponents();
-    fixture = TestBed.createComponent(LanguageSelectorComponent);
-    component = fixture.componentInstance;
-    compiled = fixture.nativeElement as HTMLElement;
+  let spectator: Spectator<LanguageSelectorComponent>;
+  const createComponent = createComponentFactory({
+    component: LanguageSelectorComponent,
+    imports: [RouterModule.forRoot([]), TranslateModule.forRoot()],
+    providers: [I18nService],
   });
 
+  beforeEach(() => (spectator = createComponent()));
+
   it("should create", () => {
-    expect(fixture).toBeTruthy();
-    expect(component).toBeTruthy();
-    expect(compiled).toBeTruthy();
+    expect(spectator.query("div")).toBeTruthy();
   });
 
   it("dropdown should be closed", () => {
-    expect(component.isDropdownOpen).toBe(false);
+    expect(spectator.component.isDropdownOpen.getValue()).toBe(false);
   });
 
   it("should open dropdown", () => {
-    component.toggleDropdown();
-    fixture.detectChanges();
-    expect(component.isDropdownOpen).toBe(true);
-    const dropdown = compiled.querySelector(".open");
+    spectator.component.toggleDropdown();
+    spectator.detectChanges();
+    expect(spectator.component.isDropdownOpen.getValue()).toBe(true);
+    const dropdown = spectator.query(".open");
     expect(dropdown).toBeTruthy();
     expect(dropdown?.textContent).toContain(LanguagesEnum.PT_BR);
     expect(dropdown?.textContent).toContain(LanguagesEnum.EN_US);
-
-    //console.log(fixture., compiled);
-    //expect(compiled.querySelector(".open")).toBe();
   });
 
   it("should close dropdown", () => {
-    component.toggleDropdown();
-    fixture.detectChanges();
-    expect(component.isDropdownOpen).toBe(true);
-    component.toggleDropdown();
-    fixture.detectChanges();
-    expect(component.isDropdownOpen).toBe(false);
+    spectator.component.toggleDropdown();
+    spectator.detectChanges();
+    expect(spectator.component.isDropdownOpen.getValue()).toBe(true);
+    spectator.component.toggleDropdown();
+    spectator.detectChanges();
+    expect(spectator.component.isDropdownOpen.getValue()).toBe(false);
   });
 
   it("should close dropdown on clicking outside", () => {
-    component.toggleDropdown();
-    fixture.detectChanges();
-    expect(component.isDropdownOpen).toBe(true);
-    compiled.parentElement?.click();
-    fixture.detectChanges();
-    expect(component.isDropdownOpen).toBe(false);
+    spectator.component.toggleDropdown();
+    spectator.detectChanges();
+    expect(spectator.component.isDropdownOpen.getValue()).toBe(true);
+    spectator.element?.parentElement?.click();
+    spectator.detectChanges();
+    expect(spectator.component.isDropdownOpen.getValue()).toBe(false);
+  });
+
+  it("should not close with click inside", () => {
+    // Arrange
+    spectator.component.toggleDropdown();
+    spectator.detectChanges();
+    // Act
+    spectator.click("div");
+    spectator.detectChanges();
+    // Assert
+    expect(spectator.component.isDropdownOpen.getValue()).toBe(true);
   });
 
   it("should set language with click", () => {
-    component.toggleDropdown();
-    fixture.detectChanges();
-    compiled.querySelectorAll("li")[1].click();
-    fixture.detectChanges();
-    expect(component.currentLanguage).toBe("US");
+    spectator.component.toggleDropdown();
+    spectator.detectChanges();
+    spectator.queryAll("li")[1].dispatchEvent(new Event("click"));
+    spectator.detectChanges();
+    expect(spectator.component.currentLanguage).toBe("US");
   });
 
   it("should set language with keyup", () => {
-    component.toggleDropdown();
-    fixture.detectChanges();
-    // compiled
-    //   .querySelectorAll("li")[1]
-    //   .dispatchEvent(new KeyboardEvent("keyup", { key: "Enter" }));
-    fixture.debugElement
-      .queryAll(By.css("li"))[1]
-      .triggerEventHandler("keyup", {
-        key: "Enter",
-      });
-    fixture.detectChanges();
-    expect(component.currentLanguage).toBe("US");
+    spectator.component.toggleDropdown();
+    spectator.detectChanges();
+    spectator
+      .queryLast("li")
+      ?.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter" }));
+    spectator.detectChanges();
+    expect(spectator.component.currentLanguage).toBe("US");
   });
 
   it("Should process empty language", () => {
-    component.setLanguage("");
-    expect(component.getLanguageCode("")).toBe("");
+    spectator.component.setLanguage("");
+    expect(spectator.component.getLanguageCode("")).toBe("");
   });
 
   it("main div keyup", () => {
-    fixture.debugElement
-      .query(By.css("div"))
-      .triggerEventHandler(
-        "keyup",
-        new KeyboardEvent("keyup", { key: "Enter" })
-      );
+    spectator
+      .query("div")
+      ?.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter" }));
 
-    fixture.detectChanges();
-    expect(component.isDropdownOpen).toBe(false);
+    spectator.detectChanges();
+    expect(spectator.component.isDropdownOpen.getValue()).toBe(false);
   });
+
   it("second div keyup with enter - should open", () => {
-    compiled
-      .querySelectorAll("div")[1]
-      .dispatchEvent(new KeyboardEvent("keyup", { key: "Enter" }));
+    spectator
+      .query(".dropdown-toggle")
+      ?.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter" }));
 
-    fixture.detectChanges();
-    expect(component.isDropdownOpen).toBe(true);
+    spectator.detectChanges();
+    expect(spectator.component.isDropdownOpen.getValue()).toBe(true);
   });
+
   it("second div click - should open", () => {
-    compiled.querySelectorAll("div")[1].click();
-    fixture.detectChanges();
-    expect(component.isDropdownOpen).toBe(true);
+    spectator.click(".dropdown-toggle");
+    spectator.detectChanges();
+    expect(spectator.component.isDropdownOpen.getValue()).toBe(true);
   });
 
   it("should show empty dropdown", () => {
-    const i18nService = fixture.debugElement.injector.get(I18nService);
-    i18nService.supportedLanguages = [];
-    component.toggleDropdown();
-    fixture.detectChanges();
-    expect(compiled.querySelectorAll("li").length).toBe(1);
-    expect(compiled.querySelectorAll("li")[0].textContent).toBe(
-      "There are no items."
-    );
+    // Arrange
+    const i18nService = spectator.inject(I18nService);
+    i18nService.supportedLanguages.next([]);
+    // Act
+    spectator.component.toggleDropdown();
+    spectator.detectChanges();
+    // Assert
+    expect(spectator.queryAll("li").length).toBe(1);
+    expect(spectator.queryAll("li")[0].textContent).toBe("There are no items.");
   });
 
   it("Test onClickOutside with no nativeElement", () => {
-    const elementRef = fixture.debugElement.injector.get(ElementRef);
+    // Arrange
+    const elementRef = spectator.debugElement;
     vi.spyOn(elementRef, "nativeElement", "get").mockReturnValue(null);
-    component.onClickOutside(new Event("click"));
-    expect(component.isDropdownOpen).toBe(false);
+    // Act
+    spectator.component.onClickOutside(new Event("click"));
+    // Assert
+    expect(spectator.component.isDropdownOpen.getValue()).toBe(false);
   });
 });

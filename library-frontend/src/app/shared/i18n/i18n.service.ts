@@ -22,7 +22,7 @@ const languageKey = "language";
 export class I18nService {
   title = "library-frontend";
   defaultLanguage!: string;
-  supportedLanguages!: string[];
+  supportedLanguages = new BehaviorSubject<string[]>([]);
 
   langChangeSubscription!: Subscription;
   private readonly _languageSubject: BehaviorSubject<string>;
@@ -93,7 +93,9 @@ export class I18nService {
       language ||
       localStorage.getItem(languageKey) ||
       environment.defaultLanguage;
-    let isSupportedLanguage = this.supportedLanguages.includes(newLanguage);
+    let isSupportedLanguage = this.supportedLanguages
+      .getValue()
+      .includes(newLanguage);
 
     if (language !== this._languageSubject.value) {
       this._languageSubject.next(newLanguage);
@@ -103,9 +105,11 @@ export class I18nService {
     if (newLanguage && !isSupportedLanguage) {
       newLanguage = newLanguage.split("-")[0];
       newLanguage =
-        this.supportedLanguages.find((supportedLanguage) =>
-          supportedLanguage.startsWith(newLanguage)
-        ) || "";
+        this.supportedLanguages
+          .getValue()
+          .find((supportedLanguage) =>
+            supportedLanguage.startsWith(newLanguage)
+          ) || "";
       isSupportedLanguage = Boolean(newLanguage);
     }
 
@@ -126,7 +130,7 @@ export class I18nService {
    */
   init(defaultLanguage: string, supportedLanguages: string[]) {
     this.defaultLanguage = defaultLanguage;
-    this.supportedLanguages = supportedLanguages;
+    this.supportedLanguages.next(supportedLanguages);
     log.debug(`Initializing with default language: ${defaultLanguage}`);
     this.setLanguage("");
   }
