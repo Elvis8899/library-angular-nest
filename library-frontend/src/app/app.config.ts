@@ -9,7 +9,7 @@ import {
   importProvidersFrom,
   inject,
   provideAppInitializer,
-  provideZoneChangeDetection,
+  provideZonelessChangeDetection,
 } from "@angular/core";
 import {
   PreloadAllModules,
@@ -34,9 +34,7 @@ import { provideHotToastConfig } from "@ngxpert/hot-toast";
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // provideZoneChangeDetection is required for Angular's zone.js
-    provideZoneChangeDetection({ eventCoalescing: true }),
-
+    provideZonelessChangeDetection(),
     // import providers from other modules (e.g. TranslateModule, ShellModule), which follow the older pattern to import modules
     importProvidersFrom(TranslateModule.forRoot()),
     // provideServiceWorker is required for Angular's service workers

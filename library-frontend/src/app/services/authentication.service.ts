@@ -2,7 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import { Credentials } from "@app/models/credentials.entity";
 import { CredentialsService } from "@app/services/credentials.service";
 import { UserService } from "@app/services/user.service";
-import { Observable, of } from "rxjs";
+import { map, Observable, of } from "rxjs";
 
 export interface LoginContext {
   email: string;
@@ -28,11 +28,12 @@ export class AuthenticationService {
    * @return The user credentials.
    */
   login(context: LoginContext): Observable<Credentials> {
-    const login = this._userService.login(context);
-    login.subscribe({
-      next: this._credentialsService.setCredentials.bind(this),
-    });
-    return login;
+    return this._userService.login(context).pipe(
+      map((credentials) => {
+        this._credentialsService.setCredentials(credentials);
+        return credentials;
+      })
+    );
   }
 
   /**

@@ -1,28 +1,24 @@
 /// <reference types="@angular/localize" />
-import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { RouterModule } from "@angular/router";
 import { AppComponent } from "@app/app.component";
+import { Logger } from "@app/services/logger.service";
+import { Spectator } from "@ngneat/spectator";
+import { createComponentFactory } from "@ngneat/spectator/vitest";
+import { TranslateModule } from "@ngx-translate/core";
+
+Logger.level = 0;
 
 describe("AppComponent", () => {
-  let component: AppComponent;
-  let fixture: ComponentFixture<AppComponent>;
-  let compiled: HTMLElement;
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [AppComponent],
-      providers: [
-        //{ provide: TranslateService, useClass: ServiceMock },
-      ],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(AppComponent);
-    component = fixture.componentInstance;
-    compiled = fixture.nativeElement as HTMLElement;
-    fixture.detectChanges();
+  let spectator: Spectator<AppComponent>;
+  const createComponent = createComponentFactory({
+    component: AppComponent,
+    imports: [RouterModule.forRoot([]), TranslateModule.forRoot()],
   });
 
-  it("should create the app", () => {
-    expect(fixture).toBeTruthy();
-    expect(component).toBeTruthy();
-    expect(compiled).toBeTruthy();
+  beforeEach(() => (spectator = createComponent()));
+
+  it("Should create app", () => {
+    // Assert
+    expect(spectator.query("router-outlet")).toBeTruthy();
   });
 });

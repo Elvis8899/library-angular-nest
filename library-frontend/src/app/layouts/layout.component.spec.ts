@@ -7,7 +7,7 @@ import { TranslateModule } from "@ngx-translate/core";
 
 Logger.level = 0;
 
-describe("LanguageSelectorComponent", () => {
+describe("LayoutComponent", () => {
   let spectator: Spectator<LayoutComponent>;
   const createComponent = createComponentFactory({
     component: LayoutComponent,

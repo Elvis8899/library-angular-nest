@@ -15,7 +15,11 @@
         </tr>
       </thead>
       <tbody>
-        @if (!isLoading) {
+        @if (loading$ | async) {
+          <tr>
+            <td colspan="5" style="text-align: center">Loading...</td>
+          </tr>
+        } @else {
           @for (rental of rentals; track rental.id) {
             <tr (click)="bookClicked()">
               <td>{{ rental.bookName }}</td>
@@ -30,10 +34,6 @@
               </td>
             </tr>
           }
-        } @else {
-          <tr>
-            <td colspan="5" style="text-align: center">Loading...</td>
-          </tr>
         }
       </tbody>
     </table>

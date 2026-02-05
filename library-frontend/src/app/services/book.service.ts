@@ -1,6 +1,7 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
-import { BookEntity, BookItemEntity } from "@app/models/book.entity";
+import { BookEntity, BookItemEntity, BookQuery } from "@app/models/book.entity";
+import { PageRequest } from "@app/models/utils/paginatedDataSource.entity";
 import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
 import { Observable } from "rxjs";
 
@@ -10,8 +11,16 @@ import { Observable } from "rxjs";
 export class BookService {
   private readonly _http = inject(HttpClient);
 
-  getPaginatedBooks(): Observable<PaginatedResponse<BookEntity>> {
-    return this._http.get<PaginatedResponse<BookEntity>>("/v1/bookInfos");
+  getPaginatedBooks(
+    req?: PageRequest<BookEntity, BookQuery>
+  ): Observable<PaginatedResponse<BookEntity>> {
+    let params = new HttpParams();
+    if (req?.page) params = params.append("page", req?.page);
+    if (req?.limit) params = params.append("limit", req.limit.toString());
+    if (req?.sort) params = params.append("sort", JSON.stringify(req.sort));
+    return this._http.get<PaginatedResponse<BookEntity>>("/v1/bookInfos", {
+      params: params,
+    });
   }
 
   addBook(book: Partial<BookEntity>): Observable<BookEntity> {

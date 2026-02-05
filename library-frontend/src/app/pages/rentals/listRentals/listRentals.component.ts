@@ -1,3 +1,4 @@
+import { AsyncPipe } from "@angular/common";
 import { Component, inject, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { BookRentalEntity } from "@app/models/bookRental.entity";
@@ -5,6 +6,7 @@ import { Logger } from "@app/services/logger.service";
 import { RentalService } from "@app/services/rental.service";
 import { DateTimeUtility } from "@app/shared/utils/date-time.utility";
 import { HotToastService } from "@ngxpert/hot-toast";
+import { Subject } from "rxjs";
 
 const log = new Logger("ListRentalsComponent");
 
@@ -12,11 +14,14 @@ const log = new Logger("ListRentalsComponent");
   selector: "app-list",
   templateUrl: "./listRentals.component.html",
   styleUrl: "./listRentals.component.scss",
+  imports: [AsyncPipe],
 })
 export class ListRentalsComponent implements OnInit {
   getDateOnly = DateTimeUtility.getDateOnly;
   rentals: BookRentalEntity[] = [];
-  isLoading = true;
+
+  isLoading = new Subject<boolean>();
+  loading$ = this.isLoading.asObservable();
 
   private readonly _rentalService = inject(RentalService);
   private readonly _router = inject(Router);
@@ -28,15 +33,15 @@ export class ListRentalsComponent implements OnInit {
   }
 
   refresh() {
-    this.isLoading = true;
+    this.isLoading.next(true);
     this._rentalService.getPaginatedBookRentals().subscribe({
       next: (res) => {
         this.rentals = res.data;
-        this.isLoading = false;
+        this.isLoading.next(false);
       },
       error: (error) => {
         log.error(error);
-        this.isLoading = false;
+        this.isLoading.next(false);
       },
     });
   }

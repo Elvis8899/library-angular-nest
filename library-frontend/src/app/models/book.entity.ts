@@ -16,3 +16,8 @@ export interface BookEntity extends BaseEntity {
   price: string;
   bookItems: BookItemEntity[];
 }
+
+export interface BookQuery {
+  name?: string;
+  createdAt?: string;
+}

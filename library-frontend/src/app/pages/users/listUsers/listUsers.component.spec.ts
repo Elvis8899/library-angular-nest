@@ -1,19 +1,18 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { RouterModule } from "@angular/router";
 import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
 import { ListUsersComponent } from "@app/pages/users/listUsers/listUsers.component";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.service";
+import { Spectator } from "@ngneat/spectator";
+import { createComponentFactory } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
 import { of, throwError } from "rxjs";
-import { vi } from "vitest";
 
 Logger.level = 0;
 
 describe("ListUsersComponent", () => {
-  let component: ListUsersComponent;
-  let fixture: ComponentFixture<ListUsersComponent>;
-  let compiled: HTMLElement;
+  let spectator!: Spectator<ListUsersComponent>;
   const users: UserEntity[] = [
     {
       id: "1",
@@ -26,65 +25,70 @@ describe("ListUsersComponent", () => {
       updatedAt: new Date().toDateString(),
     },
   ];
-  const returnError = throwError(() => new Error("error"));
   const userServiceMock = {
     getPaginatedUsers: vi.fn().mockReturnValue(of({ data: users })),
   };
+  const createComponent = createComponentFactory({
+    component: ListUsersComponent,
+    imports: [
+      RouterModule.forRoot([{ path: "users/add", component: class {} }]),
+      TranslateModule.forRoot(),
+    ],
+    providers: [{ provide: UserService, useValue: userServiceMock }],
+  });
+
+  const returnError = throwError(() => new Error("error"));
+
   beforeEach(() => {
     userServiceMock.getPaginatedUsers.mockClear();
-    TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot(), ListUsersComponent],
-      providers: [{ provide: UserService, useValue: userServiceMock }],
-    }).compileComponents();
-    fixture = TestBed.createComponent(ListUsersComponent);
-    component = fixture.componentInstance;
-    compiled = fixture.nativeElement as HTMLElement;
-    fixture.detectChanges();
+    spectator = createComponent();
   });
 
-  it("should create", () => {
-    expect(fixture).toBeTruthy();
-    expect(component).toBeTruthy();
-    expect(compiled).toBeTruthy();
+  it("Should create app", () => {
+    // Assert
+    expect(spectator.query("section")).toBeTruthy();
   });
-
   it("should call getPaginatedUsers on init", () => {
-    fixture.detectChanges();
+    // Assert
     expect(userServiceMock.getPaginatedUsers).toHaveBeenCalledTimes(1);
   });
 
   it("should call getPaginatedUsers on refresh", () => {
     expect(userServiceMock.getPaginatedUsers).toHaveBeenCalledTimes(1);
     userServiceMock.getPaginatedUsers.mockReturnValueOnce(returnError);
-    component.refresh();
-    fixture.detectChanges();
+    spectator.component.refresh();
+    //
     expect(userServiceMock.getPaginatedUsers).toHaveBeenCalledTimes(2);
   });
 
   it("should call getPaginatedUsers on refresh", () => {
     expect(userServiceMock.getPaginatedUsers).toHaveBeenCalledTimes(1);
     userServiceMock.getPaginatedUsers.mockReturnValueOnce(of({ data: [] }));
-    component.refresh();
-    fixture.detectChanges();
+
+    spectator.component.refresh();
+    //
     expect(userServiceMock.getPaginatedUsers).toHaveBeenCalledTimes(2);
   });
 
   it("should call getPaginatedUsers on refresh", () => {
-    component.isLoading = true;
-    fixture.detectChanges();
-    const loading = compiled.querySelector(".loading");
+    spectator.component.isLoading.next(true);
+    spectator.detectChanges();
+
+    spectator.component.refresh();
+
+    const loading = spectator.query(".loading");
     expect(loading).toBeTruthy();
   });
 
   it('user click should call "userClicked"', () => {
-    const userClickedSpy = vi.spyOn(component, "userClicked");
-    compiled.querySelector("td")?.click();
+    const userClickedSpy = vi.spyOn(spectator.component, "userClicked");
+    spectator.click("td");
     expect(userClickedSpy).toHaveBeenCalled();
   });
 
   it('button click should call "goToAddUser"', () => {
-    const userClickedSpy = vi.spyOn(component, "goToAddUser");
-    compiled.querySelector("button")?.click();
+    const userClickedSpy = vi.spyOn(spectator.component, "goToAddUser");
+    spectator.click("button");
     expect(userClickedSpy).toHaveBeenCalled();
   });
 });
