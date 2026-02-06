@@ -25,7 +25,7 @@
               <td>{{ rental.bookName }}</td>
               <td>{{ rental.userName }}</td>
               <td>
-                {{ getDateOnly(rental.createdAt) }} /
+                {{ getDateOnly(rental.createdAt) }} -
                 {{ getDateOnly(rental.overdueDate) }}
               </td>
               <td>{{ bookFinesText(rental) }}</td>

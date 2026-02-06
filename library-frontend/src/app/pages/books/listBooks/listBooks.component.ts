@@ -1,31 +1,13 @@
-import { AsyncPipe } from "@angular/common";
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  inject,
-  model,
-  OnInit,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
 import { MatNativeDateModule } from "@angular/material/core";
 import { MatDatepickerModule } from "@angular/material/datepicker";
-import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogActions,
-  MatDialogClose,
-  MatDialogRef,
-  MatDialogTitle,
-} from "@angular/material/dialog";
+import { MatDialog } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
-import { MatPaginatorModule } from "@angular/material/paginator";
-import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSelectModule } from "@angular/material/select";
 import { MatTableModule } from "@angular/material/table";
 import { Router } from "@angular/router";
@@ -37,63 +19,55 @@ import {
 import { BookRentEntity } from "@app/models/bookRental.entity";
 import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
-import {
-  PaginatedDataSource,
-  PaginatedSort,
-} from "@app/models/utils/paginatedDataSource.entity";
-import { BookService } from "@app/services/book.service";
+import { PaginatedDataSource } from "@app/models/utils/paginatedDataSource.entity";
+import { ChooseUserDialogComponent } from "@app/pages/books/listBooks/chooseUserDialog/chooseUser.dialog.component";
+import { BookService } from "@app/services/book.http.service";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
-import { RentalService } from "@app/services/rental.service";
-import { UserService } from "@app/services/user.service";
+import { RentalService } from "@app/services/rental.http.service";
+import { UserService } from "@app/services/user.http.service";
+import { CustomizedTableComponent } from "@app/shared/components/customized-table/customized-table.component";
 import { TranslateModule } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 
 const log = new Logger("ListBooksComponent");
-
-export interface DialogData {
-  users: UserEntity[];
-  book: BookEntity;
-  user: UserEntity;
-}
 
 @Component({
   selector: "app-list",
   templateUrl: "./listBooks.component.html",
   styleUrl: "./listBooks.component.scss",
   imports: [
-    MatFormFieldModule,
-    MatInputModule,
     FormsModule,
     MatButtonModule,
     TranslateModule,
-    AsyncPipe,
     MatTableModule,
-    MatProgressSpinnerModule,
     MatIconModule,
-    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatSelectModule,
     MatButtonToggleModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    CustomizedTableComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ListBooksComponent implements OnInit, AfterViewInit {
+export class ListBooksComponent {
   books: BookEntity[] = [];
   users: UserEntity[] = [];
   isLoading = true;
-  displayedColumns = ["image", "name", "price", "availability", "actions"];
-  initialSort: PaginatedSort<BookEntity> = {
-    property: "createdAt",
-    order: "asc",
-  };
 
   data = new PaginatedDataSource<BookEntity, BookQuery>(
     (request) => this._bookService.getPaginatedBooks(request),
-    this.initialSort,
-    { name: "" },
-    10
+    {
+      log: log,
+      query: { name: "" },
+      sort: {
+        property: "createdAt",
+        order: "asc",
+      },
+      displayedColumns: ["image", "name", "price", "availability", "actions"],
+    }
   );
   // readonly user = signal("");
   readonly dialog = inject(MatDialog);
@@ -103,7 +77,6 @@ export class ListBooksComponent implements OnInit, AfterViewInit {
   private readonly _rentalService = inject(RentalService);
   private readonly _router = inject(Router);
   private readonly _credentialsService = inject(CredentialsService);
-  private readonly _cd = inject(ChangeDetectorRef);
   private readonly _toast = inject(HotToastService);
 
   openRentBookDialog(book: BookEntity) {
@@ -116,44 +89,37 @@ export class ListBooksComponent implements OnInit, AfterViewInit {
         userId: this._credentialsService.userId(),
       });
     }
-    const dialogRef = this.dialog.open(DialogOverviewExampleDialogComponent, {
-      data: {
-        users: this.users.filter((u) => u.role !== ROLE.ADMIN),
-        book: book,
-      },
-    });
-    dialogRef.afterClosed().subscribe((result: string) => {
-      if (result !== undefined) {
-        const bookItemId = book.bookItems.find(
-          (item) => item.status === BookItemStatusEnum.Available
-        )?.id;
-        this.rentBook({
-          bookItemId: bookItemId || "",
-          userId: result,
-        });
-      }
-    });
-  }
-
-  ngOnInit() {
-    this.refresh();
-  }
-
-  ngAfterViewInit() {
-    this.data.fetch(0);
-  }
-
-  refresh() {
-    this.data.refresh();
     this._userService.getPaginatedUsers().subscribe({
       next: (res) => {
         this.users = res.data;
         this.isLoading = false;
+
+        const dialogRef = this.dialog.open(ChooseUserDialogComponent, {
+          data: {
+            users: this.users.filter((u) => u.role !== ROLE.ADMIN),
+            book: book,
+          },
+        });
+        dialogRef.afterClosed().subscribe((result: string) => {
+          if (result !== undefined) {
+            const bookItemId = book.bookItems.find(
+              (item) => item.status === BookItemStatusEnum.Available
+            )?.id;
+            this.rentBook({
+              bookItemId: bookItemId || "",
+              userId: result,
+            });
+          }
+        });
       },
       error: (error) => {
         log.error(error);
       },
     });
+  }
+
+  refresh() {
+    this.data.refresh();
   }
 
   bookAvailabilityRatio(book: BookEntity) {
@@ -224,33 +190,5 @@ export class ListBooksComponent implements OnInit, AfterViewInit {
   }
   isAdmin() {
     return this._credentialsService.isAdmin();
-  }
-}
-
-@Component({
-  selector: "app-dialog-overview-example-dialog",
-  templateUrl: "dialog-overview-example-dialog.html",
-  imports: [
-    MatFormFieldModule,
-    MatInputModule,
-    FormsModule,
-    MatButtonModule,
-    MatSelectModule,
-    MatDialogTitle,
-    MatDialogActions,
-    MatDialogClose,
-  ],
-})
-export class DialogOverviewExampleDialogComponent {
-  selectedValue!: UserEntity;
-  selectedCar = "";
-
-  readonly dialogRef = inject(
-    MatDialogRef<DialogOverviewExampleDialogComponent>
-  );
-  readonly data = inject<DialogData>(MAT_DIALOG_DATA);
-  readonly user = model("");
-  onNoClick(): void {
-    this.dialogRef.close();
   }
 }

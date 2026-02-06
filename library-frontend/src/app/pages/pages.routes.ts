@@ -31,23 +31,17 @@ export const routes: Routes = [
       {
         path: "users",
         loadChildren: () =>
-          import("./users/users-routing.module").then(
-            (m) => m.UsersRoutingModule
-          ),
+          import("./users/users.routes").then((m) => m.routes),
       },
       {
         path: "books",
         loadChildren: () =>
-          import("./books/books-routing.module").then(
-            (m) => m.BooksRoutingModule
-          ),
+          import("./books/books.routes").then((m) => m.routes),
       },
       {
         path: "rentals",
         loadChildren: () =>
-          import("./rentals/rentals-routing.module").then(
-            (m) => m.RentalsRoutingModule
-          ),
+          import("./rentals/rentals.routes").then((m) => m.routes),
       },
       // Fallback when no prior route is matched
       { path: "**", redirectTo: "", pathMatch: "full" },

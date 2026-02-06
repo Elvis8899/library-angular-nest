@@ -45,7 +45,7 @@ export function MoveItemInArray<T>(
 /**
  * The function `BeautifyArrayOfNumbers` takes an input, parses it into an array of numbers, and
  * returns the beautified array.
- * @param {string | number[] | string[]} input - The `BeautifyArrayOfNumbers` function takes an `input` parameter, which can be
+ * @param {string | (number | string)[]} input - The `BeautifyArrayOfNumbers` function takes an `input` parameter, which can be
  * either a string or an array. If the `input` is a string, the function attempts to parse it into an
  * array of numbers. If the `input` is already an array, it directly operates
  * @returns The `BeautifyArrayOfNumbers` function returns an array of numbers after processing the
@@ -53,15 +53,14 @@ export function MoveItemInArray<T>(
  * @example BeautifyArrayOfNumbers('1, 2, 3, 4, 5') => [1, 2, 3, 4, 5], BeautifyArrayOfNumbers([1, '2', 3, '4', 5]) => [1, 2, 3, 4, 5]
  */
 export function BeautifyArrayOfNumbers(
-  input: string | number[] | string[]
+  input: string | (number | string)[]
 ): number[] {
-  let array: string[] | number[];
+  let array: (string | number)[];
 
   if (typeof input === "string") {
     try {
-      const parsed = JSON.parse(input);
-      // Ensure the parsed result is an array
-      array = Array.isArray(parsed) ? parsed : [parsed];
+      const parsedString = input.includes("[") ? input : `[${input}]`;
+      array = JSON.parse(parsedString);
     } catch (error) {
       log.error("Error parsing input string:", error);
       return [];

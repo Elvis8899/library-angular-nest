@@ -1,0 +1,22 @@
+<div class="table-wrapper">
+  @if (data.loading$ | async) {
+    <mat-spinner diameter="32" />
+  }
+  <table mat-table [dataSource]="data" class="mat-elevation-z1 table">
+    <ng-content></ng-content>
+
+    <tr mat-header-row *matHeaderRowDef="data.displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: data.displayedColumns"></tr>
+  </table>
+
+  @if (data.page$ | async; as page) {
+    <mat-paginator
+      [length]="page.count"
+      [pageSize]="page.limit"
+      [pageIndex]="page.page"
+      [pageSizeOptions]="data.pageSizeOptions"
+      (page)="data.fetch($event.pageIndex)"
+    >
+    </mat-paginator>
+  }
+</div>
