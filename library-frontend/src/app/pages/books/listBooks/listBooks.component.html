@@ -1,10 +1,11 @@
 <section class="main-container">
-  <h2 translate style="display: flex; justify-content: space-between">
-    Books List
+  <div class="flex-title">
+    <h2 translate>Books List</h2>
     <button class="" (click)="goToAddBook()" type="submit" translate>
       {{ "Create Book" }}
     </button>
-  </h2>
+  </div>
+  <!-- style="display: flex; justify-content: space-between" -->
 
   <div>
     <div class="toolbar">
@@ -49,11 +50,9 @@
           ><mat-icon>arrow_downward</mat-icon></mat-button-toggle
         >
       </mat-button-toggle-group>
-      @if (data.loading$ | async) {
-        <mat-spinner diameter="32" />
-      }
     </div>
-    <table mat-table [dataSource]="data" class="mat-elevation-z1">
+
+    <app-customized-table [data]="data">
       <ng-container matColumnDef="image">
         <th mat-header-cell *matHeaderCellDef>Imagem</th>
         <td mat-cell *matCellDef="let book">
@@ -96,18 +95,6 @@
           </div>
         </td>
       </ng-container>
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-    </table>
-    @if (data.page$ | async; as page) {
-      <mat-paginator
-        [length]="page.count"
-        [pageSize]="page.limit"
-        [pageIndex]="page.page"
-        [pageSizeOptions]="[5, 10, 25, 100]"
-        (page)="data.fetch($event.pageIndex)"
-      >
-      </mat-paginator>
-    }
+    </app-customized-table>
   </div>
 </section>

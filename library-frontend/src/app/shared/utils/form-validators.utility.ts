@@ -1,7 +1,6 @@
 import {
   AbstractControl,
   FormArray,
-  FormControl,
   FormGroup,
   ValidationErrors,
   ValidatorFn,
@@ -25,40 +24,6 @@ export function arrayNotEmptyValidator(): ValidatorFn {
     const isArray = Array.isArray(control.value);
     const isEmpty = isArray && control.value.length === 0;
     return isEmpty ? { arrayNotEmpty: { value: control.value } } : null;
-  };
-}
-
-export function isValidDate(dateString: string): boolean {
-  return /^\d{4}[-/]\d{2}[-/]\d{2}$/.test(dateString);
-}
-
-export function validateCustomDate(
-  control: FormControl
-): ValidationErrors | null {
-  if (!/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(control.value)) {
-    return { invalidDateFormat: true };
-  }
-  return null;
-}
-
-// mustMatch validator function
-export function mustMatch(controlName: string, matchingControlName: string) {
-  return (formGroup: FormGroup): ValidationErrors | null => {
-    const control = formGroup.controls[controlName];
-    const matchingControl = formGroup.controls[matchingControlName];
-
-    if (matchingControl.errors && !matchingControl.errors["mustMatch"]) {
-      return null;
-    }
-
-    // set error on matchingControl if validation fails
-    if (control.value !== matchingControl.value) {
-      matchingControl.setErrors({ mustMatch: true });
-      return { mustMatch: true };
-    } else {
-      matchingControl.setErrors(null);
-      return null;
-    }
   };
 }
 

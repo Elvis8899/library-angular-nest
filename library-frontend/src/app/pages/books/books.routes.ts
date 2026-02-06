@@ -1,8 +1,7 @@
-import { NgModule } from "@angular/core";
-import { RouterModule, Routes } from "@angular/router";
+import { Routes } from "@angular/router";
 import { ListBooksComponent } from "@app/pages/books/listBooks/listBooks.component";
 
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: "",
     redirectTo: "list",
@@ -20,9 +19,3 @@ const routes: Routes = [
     data: { title: "Add Book" },
   },
 ];
-
-@NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule],
-})
-export class BooksRoutingModule {}

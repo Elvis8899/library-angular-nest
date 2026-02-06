@@ -1,13 +1,22 @@
 import { DataSource } from "@angular/cdk/collections";
+import { Logger } from "@app/services/logger.service";
 import {
   BehaviorSubject,
   combineLatest,
   defer,
   noop,
   Observable,
+  of,
   Subject,
 } from "rxjs";
-import { finalize, map, share, startWith, switchMap } from "rxjs/operators";
+import {
+  catchError,
+  finalize,
+  map,
+  share,
+  startWith,
+  switchMap,
+} from "rxjs/operators";
 
 export interface PaginatedSort<T> {
   property: keyof T;
@@ -66,29 +75,47 @@ export class PaginatedDataSource<T, Q> implements SimpleDataSource<T> {
   public loading$ = this.loading.asObservable();
   public query$ = this.query.asObservable();
   public page$: Observable<Page<T>>;
+  public displayedColumns: string[] = [];
+  public pageSizeOptions: number[] = [5, 10, 25, 100];
+  public pageSize = 10;
 
   constructor(
     private endpoint: PaginatedEndpoint<T, Q>,
-    initialSort: PaginatedSort<T>,
-    initialQuery: Q,
-    public pageSize = 20
+    config: {
+      displayedColumns: string[];
+      sort: PaginatedSort<T>;
+      log: Logger;
+      query?: Q;
+      pageSize?: number;
+    }
   ) {
-    this.query.next(initialQuery);
-    this.sort = new BehaviorSubject<PaginatedSort<T>>(initialSort);
+    this.displayedColumns = config.displayedColumns;
+    this.sort = new BehaviorSubject<PaginatedSort<T>>(config.sort);
+
+    if (config.pageSize) this.pageSize = config.pageSize;
+    if (config.query) this.query.next(config.query);
+
     const param$ = combineLatest([this.query, this.sort]);
     this.page$ = param$.pipe(
       switchMap(([query, sort]) =>
         this.pageNumber.pipe(
           startWith(0),
           switchMap((page) =>
-            this.endpoint({ page, sort, limit: this.pageSize, query }).pipe(
-              indicate(this.loading)
-            )
+            this.endpoint({ page, sort, limit: this.pageSize, query })
+              //.pipe(catchError(() => of({ data: [], count: 0, limit: 0, page: 0 } as Page<T>))
+              .pipe(indicate(this.loading))
           )
         )
       ),
+      (v) => v,
+      catchError((error) => {
+        config.log.error(error);
+        return of({ data: [], count: 0, limit: 0, page: 0 });
+      }),
       share()
     );
+
+    this.page$.subscribe({ error: (error) => config.log.error(error) });
   }
 
   refresh(): void {

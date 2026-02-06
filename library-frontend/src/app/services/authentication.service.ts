@@ -1,7 +1,7 @@
 import { inject, Injectable } from "@angular/core";
 import { Credentials } from "@app/models/credentials.entity";
 import { CredentialsService } from "@app/services/credentials.service";
-import { UserService } from "@app/services/user.service";
+import { UserService } from "@app/services/user.http.service";
 import { map, Observable, of } from "rxjs";
 
 export interface LoginContext {

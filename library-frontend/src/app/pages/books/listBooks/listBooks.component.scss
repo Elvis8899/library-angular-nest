@@ -1,28 +1,6 @@
-.book-table-container {
-  margin: 20px;
-}
-
-.book-table {
-  width: 100%;
-  border-collapse: collapse;
-
-  th,
-  td {
-    padding: 10px;
-    border: 1px solid #ccc;
-    text-align: left;
-  }
-
-  th {
-    background-color: #f4f4f4;
-  }
-
-  img {
-    //border-radius: 50%;
-    //width: 100px;
-    //height: 100px;
-    max-height: 200px;
-  }
+.flex-title {
+  display: flex;
+  justify-content: space-between;
 }
 
 button {
@@ -47,24 +25,10 @@ button {
   }
 }
 
-table {
-  width: 100%;
-  margin-bottom: 8px;
-}
-
-[matPrefix] {
-  vertical-align: bottom;
-  margin-right: 4px;
-}
-
 .name-form,
 .created-at-form,
 .property-form {
   margin-right: 8px;
-}
-
-mat-spinner {
-  margin-left: 8px;
 }
 
 .toolbar {

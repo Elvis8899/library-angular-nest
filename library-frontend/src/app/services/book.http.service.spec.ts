@@ -1,5 +1,5 @@
 import { BookEntity } from "@app/models/book.entity";
-import { BookService } from "@app/services/book.service";
+import { BookService } from "@app/services/book.http.service";
 import {
   createHttpFactory,
   HttpMethod,

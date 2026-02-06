@@ -3,7 +3,7 @@ import { Component, inject, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { BookRentalEntity } from "@app/models/bookRental.entity";
 import { Logger } from "@app/services/logger.service";
-import { RentalService } from "@app/services/rental.service";
+import { RentalService } from "@app/services/rental.http.service";
 import { DateTimeUtility } from "@app/shared/utils/date-time.utility";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { Subject } from "rxjs";

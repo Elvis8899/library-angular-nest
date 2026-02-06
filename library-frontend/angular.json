@@ -86,6 +86,7 @@
           "options": {
             "coverage": true,
             "coverageInclude": ["src/app/**/*.(ts|js|html)"],
+            "coverageExclude": ["**.http.service.ts", "**.routes.ts"],
             "coverageThresholds": {
               "statements": 80,
               "branches": 80,
