@@ -149,7 +149,7 @@ export class SidebarComponent implements OnInit {
       const element = document.getElementById(`menu-item-${index}`);
       const navElement = document.querySelector("nav");
 
-      if (element && navElement) {
+      if (element && navElement?.scrollTo) {
         const elementRect = element.getBoundingClientRect();
         const navRect = navElement.getBoundingClientRect();
 
@@ -157,7 +157,10 @@ export class SidebarComponent implements OnInit {
         const desiredScrollPosition =
           navElement.scrollTop + relativeTop - navRect.height / 2;
 
-        navElement.scrollTo({ top: desiredScrollPosition, behavior: "smooth" });
+        navElement.scrollTo({
+          top: desiredScrollPosition,
+          behavior: "smooth",
+        });
       }
     }, 0);
 

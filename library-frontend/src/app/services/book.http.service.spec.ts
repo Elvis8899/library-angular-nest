@@ -4,7 +4,7 @@ import {
   createHttpFactory,
   HttpMethod,
   SpectatorHttp,
-} from "@ngneat/spectator";
+} from "@ngneat/spectator/vitest";
 
 const book: BookEntity = {
   id: "id",

@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
@@ -52,23 +57,12 @@ const log = new Logger("ListBooksComponent");
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ListBooksComponent {
-  books: BookEntity[] = [];
+export class ListBooksComponent implements OnInit {
   users: UserEntity[] = [];
   isLoading = true;
 
-  data = new PaginatedDataSource<BookEntity, BookQuery>(
-    (request) => this._bookService.getPaginatedBooks(request),
-    {
-      log: log,
-      query: { name: "" },
-      sort: {
-        property: "createdAt",
-        order: "asc",
-      },
-      displayedColumns: ["image", "name", "price", "availability", "actions"],
-    }
-  );
+  data!: PaginatedDataSource<BookEntity, BookQuery>;
+
   // readonly user = signal("");
   readonly dialog = inject(MatDialog);
 
@@ -78,6 +72,21 @@ export class ListBooksComponent {
   private readonly _router = inject(Router);
   private readonly _credentialsService = inject(CredentialsService);
   private readonly _toast = inject(HotToastService);
+
+  ngOnInit(): void {
+    this.data = new PaginatedDataSource<BookEntity, BookQuery>(
+      (request) => this._bookService.getPaginatedBooks(request),
+      {
+        log: log,
+        query: { name: "" },
+        sort: {
+          property: "createdAt",
+          order: "asc",
+        },
+        displayedColumns: ["image", "name", "price", "availability", "actions"],
+      }
+    );
+  }
 
   openRentBookDialog(book: BookEntity) {
     if (!this.isAdmin()) {
@@ -190,5 +199,9 @@ export class ListBooksComponent {
   }
   isAdmin() {
     return this._credentialsService.isAdmin();
+  }
+
+  onDestroy() {
+    this.data.disconnect();
   }
 }

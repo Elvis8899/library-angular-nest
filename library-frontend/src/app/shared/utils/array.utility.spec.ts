@@ -1,9 +1,4 @@
-import {
-  BeautifyArrayOfNumbers,
-  EnumToKeyValueArray,
-  EnumToStringArray,
-  MoveItemInArray,
-} from "@app/shared/utils/arrays.utility";
+import { ArrayUtility } from "@app/shared/utils/arrays.utility";
 import { TranslateService } from "@ngx-translate/core";
 
 describe("MoveItemInArray", () => {
@@ -11,7 +6,7 @@ describe("MoveItemInArray", () => {
     const array = [1, 2, 3, 4, 5];
     const fromIndex = 2;
     const toIndex = 0;
-    const result = MoveItemInArray(array, fromIndex, toIndex);
+    const result = ArrayUtility.MoveItemInArray(array, fromIndex, toIndex);
     expect(result).toEqual([3, 1, 2, 4, 5]);
   });
 
@@ -19,7 +14,7 @@ describe("MoveItemInArray", () => {
     const array = [1, 2, 3, 4, 5];
     const fromIndex = 0;
     const toIndex = 2;
-    const result = MoveItemInArray(array, fromIndex, toIndex);
+    const result = ArrayUtility.MoveItemInArray(array, fromIndex, toIndex);
     expect(result).toEqual([2, 3, 1, 4, 5]);
   });
 
@@ -27,7 +22,7 @@ describe("MoveItemInArray", () => {
     const array = [1, 2, 3, 4, 5];
     const fromIndex = 2;
     const toIndex = 2;
-    const result = MoveItemInArray(array, fromIndex, toIndex);
+    const result = ArrayUtility.MoveItemInArray(array, fromIndex, toIndex);
     expect(result).toEqual([1, 2, 3, 4, 5]);
   });
 });
@@ -35,35 +30,35 @@ describe("MoveItemInArray", () => {
 describe("BeautifyArrayOfNumbers", () => {
   it("should beautify an array of numbers", () => {
     const array = [1, "2", 3, "4", 5];
-    const result = BeautifyArrayOfNumbers(array);
+    const result = ArrayUtility.BeautifyArrayOfNumbers(array);
     expect(result).toEqual([1, 2, 3, 4, 5]);
   });
 
   it("When input is string, should convert to numbers", () => {
     const array = "1, 2, 3, 4, 5";
-    const result = BeautifyArrayOfNumbers(array);
+    const result = ArrayUtility.BeautifyArrayOfNumbers(array);
     expect(result).toEqual([1, 2, 3, 4, 5]);
   });
 
   it("When input is string array, should convert to numbers", () => {
     const array = "[1, 2, 3, 4, 5]";
-    const result = BeautifyArrayOfNumbers(array);
+    const result = ArrayUtility.BeautifyArrayOfNumbers(array);
     expect(result).toEqual([1, 2, 3, 4, 5]);
   });
 
   it("When input has error, should return empty array", () => {
     const array = "1,,,2";
-    const result = BeautifyArrayOfNumbers(array);
+    const result = ArrayUtility.BeautifyArrayOfNumbers(array);
     expect(result).toEqual([]);
   });
 
   it("When input is number, should return empty array", () => {
-    const result = BeautifyArrayOfNumbers(1 as unknown as string);
+    const result = ArrayUtility.BeautifyArrayOfNumbers(1 as unknown as string);
     expect(result).toEqual([]);
   });
 
   it("When input is array with error, should return empty array", () => {
-    const result = BeautifyArrayOfNumbers(["1,2"]);
+    const result = ArrayUtility.BeautifyArrayOfNumbers(["1,2"]);
     expect(result).toEqual([NaN]);
   });
 });
@@ -71,13 +66,13 @@ describe("BeautifyArrayOfNumbers", () => {
 describe("EnumToStringArray", () => {
   it("should convert an enum to an array of strings", () => {
     const enumObj = { A: 1, B: 2, C: 3 };
-    const result = EnumToStringArray(enumObj);
+    const result = ArrayUtility.EnumToStringArray(enumObj);
     expect(result).toEqual(["1", "2", "3"]);
   });
 
   it("should convert an enum to an array of strings", () => {
     const enumObj = { A: 1, B: 2, C: 3 };
-    const result = EnumToStringArray(enumObj, true);
+    const result = ArrayUtility.EnumToStringArray(enumObj, true);
     expect(result).toEqual(["A", "B", "C"]);
   });
 });
@@ -85,7 +80,7 @@ describe("EnumToStringArray", () => {
 describe("EnumToKeyValueArray", () => {
   it("should convert an enum to an array of key-value pairs", () => {
     const enumObj = { A: 1, B: 2, C: 3 };
-    const result = EnumToKeyValueArray(enumObj);
+    const result = ArrayUtility.EnumToKeyValueArray(enumObj);
     expect(result).toEqual([
       { key: "A", value: "1" },
       { key: "B", value: "2" },
@@ -97,7 +92,7 @@ describe("EnumToKeyValueArray", () => {
   };
   it("should convert an enum to an array of key-value pairs - with translation", () => {
     const enumObj = { A: 1, B: 2, C: 3 };
-    const result = EnumToKeyValueArray(
+    const result = ArrayUtility.EnumToKeyValueArray(
       enumObj,
       mockTranslateService as TranslateService
     );

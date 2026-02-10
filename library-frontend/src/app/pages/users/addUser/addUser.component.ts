@@ -5,7 +5,7 @@ import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
-import { validateCPF } from "@app/shared/utils/form-validators.utility";
+import { FormValidatorUtility } from "@app/shared/utils/form-validators.utility";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { noop } from "rxjs";
 
@@ -29,7 +29,14 @@ export class AddUsersComponent implements OnInit {
       "",
       [Validators.email, Validators.required, Validators.minLength(4)],
     ],
-    cpf: ["", [validateCPF(), Validators.required, Validators.minLength(4)]],
+    cpf: [
+      "",
+      [
+        FormValidatorUtility.validateCPF(),
+        Validators.required,
+        Validators.minLength(4),
+      ],
+    ],
     password: ["", [Validators.required, Validators.minLength(4)]],
   });
 

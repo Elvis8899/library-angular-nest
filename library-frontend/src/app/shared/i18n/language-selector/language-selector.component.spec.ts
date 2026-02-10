@@ -3,8 +3,7 @@ import { Logger } from "@app/services/logger.service";
 import { I18nService } from "@app/shared/i18n/i18n.service";
 import { LanguageSelectorComponent } from "@app/shared/i18n/language-selector/language-selector.component";
 import { LanguagesEnum } from "@app/shared/i18n/translations/allTranslations";
-import { Spectator } from "@ngneat/spectator";
-import { createComponentFactory } from "@ngneat/spectator/vitest";
+import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
 
 Logger.level = 0;

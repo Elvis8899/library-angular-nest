@@ -1,15 +1,17 @@
 import { Routes } from "@angular/router";
+import { ROLE } from "@app/models/credentials.entity";
 import { LoginComponent } from "@app/pages/auth/login/login.component";
 import {
-  AlreadyLoggedCheckGuard,
-  AuthenticationGuard,
+  alreadyLoggedCheckGuard,
+  authenticationGuard,
 } from "@app/shared/guard/authentication.guard";
+import { permissionGuard } from "@app/shared/guard/permission.guard";
 
 export const routes: Routes = [
   { path: "", redirectTo: "/login", pathMatch: "full" },
   {
     path: "login",
-    canActivate: [AlreadyLoggedCheckGuard],
+    canActivate: [alreadyLoggedCheckGuard],
     component: LoginComponent,
     data: { title: "Login" },
   },
@@ -32,6 +34,7 @@ export const routes: Routes = [
         path: "users",
         loadChildren: () =>
           import("./users/users.routes").then((m) => m.routes),
+        data: { roles: [ROLE.ADMIN] },
       },
       {
         path: "books",
@@ -44,9 +47,9 @@ export const routes: Routes = [
           import("./rentals/rentals.routes").then((m) => m.routes),
       },
       // Fallback when no prior route is matched
-      { path: "**", redirectTo: "", pathMatch: "full" },
+      { path: "**", redirectTo: "books", pathMatch: "full" },
     ],
-    canActivate: [AuthenticationGuard],
-    data: { reuse: true },
+    canActivate: [authenticationGuard, permissionGuard],
+    data: { reuse: true, roles: [ROLE.ADMIN, ROLE.CLIENT] },
   },
 ];

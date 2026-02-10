@@ -1,59 +1,49 @@
-import { inject, Injectable } from "@angular/core";
+import { inject } from "@angular/core";
 import {
   ActivatedRouteSnapshot,
+  CanActivateFn,
   Router,
   RouterStateSnapshot,
 } from "@angular/router";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
-import { UntilDestroy } from "@ngneat/until-destroy";
+
+//https://medium.com/ngconf/functional-route-guards-in-angular-8829f0e4ca5c
 
 const log = new Logger("AuthenticationGuard");
 
-/* The `AlreadyLoggedCheckGuard` class is a guard in TypeScript that checks if a user is already
+/* The `alreadyLoggedCheckGuard` is a functional guard that checks if a user is already
 authenticated and redirects them to the initial page if they are. */
-@UntilDestroy()
-@Injectable({
-  providedIn: "root",
-})
-export class AlreadyLoggedCheckGuard {
-  private readonly _credentialsService = inject(CredentialsService);
-  private readonly _router = inject(Router);
+export const alreadyLoggedCheckGuard: CanActivateFn = () => {
+  const credentialsService = inject(CredentialsService);
+  const router = inject(Router);
 
-  async canActivate(): Promise<boolean> {
-    const isAuthenticated = this._credentialsService.isAuthenticated();
-    const isAdmin = this._credentialsService.isAdmin();
-    if (isAuthenticated) {
-      const page = isAdmin ? "/users/list" : "/books";
-      this._router.navigateByUrl(page);
-      return false;
-    } else {
-      return true;
-    }
-  }
-}
-
-/* The AuthenticationGuard class in TypeScript is used to check if a user is authenticated and redirect
-to the login page if not. */
-@Injectable({
-  providedIn: "root",
-})
-export class AuthenticationGuard {
-  private readonly _credentialsService = inject(CredentialsService);
-  private readonly _router = inject(Router);
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): boolean {
-    if (this._credentialsService.isAuthenticated()) {
-      return true;
-    }
-
-    log.debug("Not authenticated, redirecting and adding redirect url...");
-    this._router.navigate(["/login"], {
-      queryParams: { redirect: state.url },
-      replaceUrl: true,
-    });
+  const isAuthenticated = credentialsService.isAuthenticated();
+  if (isAuthenticated) {
+    const isAdmin = credentialsService.isAdmin();
+    const page = isAdmin ? "/users/list" : "/books";
+    router.navigateByUrl(page);
     return false;
   }
-}
+  return true;
+};
+
+/* The authenticationGuard is used to check if a user is authenticated and redirect
+to the login page if not. */
+export const authenticationGuard: CanActivateFn = (
+  route: ActivatedRouteSnapshot,
+  state: RouterStateSnapshot
+) => {
+  const credentialsService = inject(CredentialsService);
+  const router = inject(Router);
+  if (credentialsService.isAuthenticated()) {
+    return true;
+  }
+
+  log.debug("Not authenticated, redirecting and adding redirect url...");
+  router.navigate(["/login"], {
+    queryParams: { redirect: state.url },
+    replaceUrl: true,
+  });
+  return false;
+};
