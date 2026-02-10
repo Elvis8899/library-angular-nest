@@ -1,4 +1,4 @@
-import { SpectatorPipe, createPipeFactory } from "@ngneat/spectator";
+import { SpectatorPipe, createPipeFactory } from "@ngneat/spectator/vitest";
 
 import { HumanizePipe } from "@app/shared/pipes/humanize.pipe";
 

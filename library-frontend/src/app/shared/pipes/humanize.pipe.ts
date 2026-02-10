@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from "@angular/core";
-import { humanize } from "@app/shared/utils/humanize-slug.utility";
+import { HumanizeSlugUtility } from "@app/shared/utils/humanize-slug.utility";
 
 @Pipe({
   name: "humanize",
@@ -7,6 +7,6 @@ import { humanize } from "@app/shared/utils/humanize-slug.utility";
 })
 export class HumanizePipe implements PipeTransform {
   transform(value: string, caseSplit = false): string {
-    return humanize(value, caseSplit);
+    return HumanizeSlugUtility.humanize(value, caseSplit);
   }
 }

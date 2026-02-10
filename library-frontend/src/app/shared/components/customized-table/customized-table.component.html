@@ -2,9 +2,9 @@
   @if (data.loading$ | async) {
     <mat-spinner diameter="32" />
   }
-  <table mat-table [dataSource]="data" class="mat-elevation-z1 table">
-    <ng-content></ng-content>
 
+  <ng-content></ng-content>
+  <table mat-table [dataSource]="data" class="mat-elevation-z1 table">
     <tr mat-header-row *matHeaderRowDef="data.displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: data.displayedColumns"></tr>
   </table>

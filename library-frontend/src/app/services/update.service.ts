@@ -35,13 +35,11 @@ export class AppUpdateService {
       const appIsStable$ = this.appRef?.isStable?.pipe(
         first((isStable) => isStable === true)
       );
-      const everySixHours$ = interval(1000 * 60 * 60 * 6).pipe(startWith(0));
-      const everySixHoursOnceAppIsStable$ = concat(
-        appIsStable$,
-        everySixHours$
-      );
+      const hours = 6;
+      const everyNHours$ = interval(1000 * 60 * 60 * hours).pipe(startWith(0));
+      const everyNHoursOnceAppIsStable$ = concat(appIsStable$, everyNHours$);
 
-      everySixHoursOnceAppIsStable$
+      everyNHoursOnceAppIsStable$
         .pipe(untilDestroyed(this))
         .subscribe(async () => {
           try {

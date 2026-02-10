@@ -20,8 +20,8 @@ export class LogoutComponent implements OnInit {
   init() {
     this._authService.logout().subscribe({
       next: this.logout.bind(this),
-      error: () => {
-        log.error("Error logging out");
+      error: (error) => {
+        log.error("Error logging out" + error);
       },
     });
   }

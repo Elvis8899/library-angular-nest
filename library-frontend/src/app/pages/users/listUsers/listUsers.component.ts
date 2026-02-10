@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, OnInit } from "@angular/core";
 import { MatTableModule } from "@angular/material/table";
 import { Router } from "@angular/router";
 import { UserEntity } from "@app/models/user.entity";
@@ -17,23 +17,27 @@ const log = new Logger("ListUsersComponent");
   styleUrl: "./listUsers.component.scss",
   imports: [TranslateDirective, CustomizedTableComponent, MatTableModule],
 })
-export class ListUsersComponent {
-  data = new PaginatedDataSource<UserEntity, object>(
-    (request) => this._userService.getPaginatedUsers(request),
-    {
-      log: log,
-      query: { name: "" },
-      sort: {
-        property: "createdAt",
-        order: "desc",
-      },
-      displayedColumns: ["name", "email", "cpf"],
-    }
-  );
+export class ListUsersComponent implements OnInit {
+  data!: PaginatedDataSource<UserEntity, object>;
   private readonly _userService = inject(UserService);
   private readonly _router = inject(Router);
 
   private readonly _toast = inject(HotToastService);
+
+  ngOnInit() {
+    this.data = new PaginatedDataSource<UserEntity, object>(
+      (r) => this._userService.getPaginatedUsers(r),
+      {
+        log: log,
+        query: { name: "" },
+        sort: {
+          property: "createdAt",
+          order: "desc",
+        },
+        displayedColumns: ["name", "email", "cpf"],
+      }
+    );
+  }
 
   refresh() {
     this.data.refresh();

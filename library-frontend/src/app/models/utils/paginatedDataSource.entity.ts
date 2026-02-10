@@ -107,7 +107,6 @@ export class PaginatedDataSource<T, Q> implements SimpleDataSource<T> {
           )
         )
       ),
-      (v) => v,
       catchError((error) => {
         config.log.error(error);
         return of({ data: [], count: 0, limit: 0, page: 0 });

@@ -4,8 +4,7 @@ import { UserEntity } from "@app/models/user.entity";
 import { ListUsersComponent } from "@app/pages/users/listUsers/listUsers.component";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
-import { Spectator } from "@ngneat/spectator";
-import { createComponentFactory } from "@ngneat/spectator/vitest";
+import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
 import { of, throwError } from "rxjs";
 

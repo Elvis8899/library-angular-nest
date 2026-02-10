@@ -5,7 +5,8 @@ import {
   CanActivateFn,
   Router,
 } from "@angular/router";
-import { PERMISSIONS, PermissionService, ROLE } from "@auth";
+import { PERMISSIONS, ROLE } from "@app/models/credentials.entity";
+import { CredentialsService } from "@app/services/credentials.service";
 
 /**
  * The `PermissionGuard` function checks for required roles and permissions before
@@ -23,54 +24,30 @@ import { PERMISSIONS, PermissionService, ROLE } from "@auth";
  * roles or permissions, the function will call the `handleUnauthorized` function and return the result
  * of that function, which is typically a redirect to an unauthorized page or action.
  */
-export const PermissionGuard: CanActivateFn & CanActivateChildFn = (
+export const permissionGuard: CanActivateFn & CanActivateChildFn = (
   route: ActivatedRouteSnapshot
 ) => {
-  const permissionService = inject(PermissionService);
+  const credentialsService = inject(CredentialsService);
   const router = inject(Router);
 
   // Check if roles are specified in the route and validate them
-  const requiredRoles = route.data["roles"] as ROLE[] | undefined;
-  if (requiredRoles?.length && !permissionService.hasRole(requiredRoles)) {
+  const requiredRoles = route.data?.["roles"] as ROLE[] | undefined;
+  if (requiredRoles?.length && !credentialsService.hasRole(requiredRoles)) {
     return handleUnauthorized(router);
   }
 
   // Check permissions
-  const requiredPermissions = route.data["permissions"] as
+  const requiredPermissions = route.data?.["permissions"] as
     | PERMISSIONS[]
     | undefined;
-  if (requiredPermissions?.length) {
-    if (!checkPermissions(requiredPermissions, permissionService)) {
-      return handleUnauthorized(router);
-    }
+  if (!credentialsService.hasPermission(requiredPermissions)) {
+    return handleUnauthorized(router);
   }
-
   return true;
 };
 
 // Utility function to handle unauthorized access
 function handleUnauthorized(router: Router): boolean {
   router.navigate(["/unauthorized"]);
-  return false;
-}
-
-// Utility function to check permissions
-function checkPermissions(
-  permissions: PERMISSIONS[],
-  permissionService: PermissionService
-): boolean {
-  // Just an additional layer to check for special permissions, if you dont have any ignore it
-  const specialPermissionHandlers: Partial<Record<PERMISSIONS, () => boolean>> =
-    {};
-
-  for (const permission of permissions) {
-    const specialPermissionCheck = specialPermissionHandlers[permission];
-    if (specialPermissionCheck) {
-      if (specialPermissionCheck()) return true;
-    } else if (permissionService.hasPermission(permission)) {
-      return true;
-    }
-  }
-
   return false;
 }

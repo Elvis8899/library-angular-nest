@@ -1,8 +1,7 @@
 import { RouterModule } from "@angular/router";
 import { LogoutComponent } from "@app/pages/auth/logout/logout.component";
 import { Logger } from "@app/services/logger.service";
-import { Spectator } from "@ngneat/spectator";
-import { createComponentFactory } from "@ngneat/spectator/vitest";
+import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
 
 Logger.level = 0;
@@ -21,7 +20,7 @@ describe("LanguageSelectorComponent", () => {
 
   beforeEach(() => (spectator = createComponent()));
 
-  it("should not have overlay class by default", () => {
+  it("Should be created", () => {
     // Assert
     expect(spectator.query("p")).toContainText("Logged Out!");
   });

@@ -1,8 +1,4 @@
-import {
-  HTTP_INTERCEPTORS,
-  provideHttpClient,
-  withInterceptorsFromDi,
-} from "@angular/common/http";
+import { provideHttpClient, withInterceptors } from "@angular/common/http";
 import {
   ApplicationConfig,
   enableProdMode,
@@ -26,8 +22,8 @@ import { Logger } from "@app/services/logger.service";
 import { AppUpdateService } from "@app/services/update.service";
 import { RouteReusableStrategy } from "@app/shared/helpers/route-reusable-strategy";
 import { I18nService } from "@app/shared/i18n/i18n.service";
-import { ApiPrefixInterceptor } from "@app/shared/interceptors/api-prefix.interceptor";
-import { ErrorHandlerInterceptor } from "@app/shared/interceptors/error-handler.interceptor";
+import { authHttpInterceptor } from "@app/shared/interceptors/authHttp.interceptor";
+import { errorHandlerInterceptor } from "@app/shared/interceptors/error-handler.interceptor";
 import { environment } from "@env/environment";
 import { TranslateModule } from "@ngx-translate/core";
 import { provideHotToastConfig } from "@ngxpert/hot-toast";
@@ -66,9 +62,6 @@ export const appConfig: ApplicationConfig = {
       position: "top-right",
       theme: "snackbar",
     }),
-
-    // provideHttpClient is required for Angular's HttpClient with additional configuration, which includes interceptors from DI (dependency injection) , means to use class based interceptors
-    provideHttpClient(withInterceptorsFromDi()),
     provideAppInitializer(() => {
       inject(I18nService);
       inject(AppUpdateService);
@@ -78,16 +71,10 @@ export const appConfig: ApplicationConfig = {
         Logger.enableProductionMode();
       }
     }),
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: ApiPrefixInterceptor,
-      multi: true,
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: ErrorHandlerInterceptor,
-      multi: true,
-    },
+    // provideHttpClient is required for Angular's HttpClient with additional configuration, which includes interceptors from DI (dependency injection) , means to use class based interceptors
+    provideHttpClient(
+      withInterceptors([authHttpInterceptor, errorHandlerInterceptor])
+    ),
     {
       provide: RouteReuseStrategy,
       useClass: RouteReusableStrategy,
