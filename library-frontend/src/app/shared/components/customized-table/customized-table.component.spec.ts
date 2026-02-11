@@ -1,5 +1,6 @@
 import { MatTableModule } from "@angular/material/table";
 import {
+  Page,
   PageRequest,
   PaginatedDataSource,
 } from "@app/models/utils/paginatedDataSource.entity";
@@ -10,7 +11,7 @@ import { createHostFactory, SpectatorHost } from "@ngneat/spectator/vitest";
 import { Observable, of } from "rxjs";
 
 const log = new Logger("CustomizedTableComponent");
-Logger.level = 4;
+Logger.level = 0;
 
 interface T {
   id: number;
@@ -22,27 +23,27 @@ interface Q {
 
 class MockService {
   static testData: T[] = [
-    { id: 1, name: "Book 1" },
-    { id: 2, name: "Book 2" },
-    { id: 3, name: "Book 3" },
+    { id: 1, name: "Item 1" },
+    { id: 2, name: "Item 2" },
+    { id: 3, name: "Item 3" },
   ];
 
-  static getPaginated(
-    req?: PageRequest<T, Q>
-  ): Observable<PaginatedResponse<T>> {
-    const page = req?.page || 0;
-    const limit = req?.limit || 1;
-    const testData = MockService.testData.slice(
-      page * limit,
-      (page + 1) * limit
-    );
-    return of({
-      data: testData,
-      page,
-      limit,
-      count: MockService.testData.length,
-    });
-  }
+  static getPaginated = vi.fn(
+    (req?: PageRequest<T, Q>): Observable<PaginatedResponse<T>> => {
+      const page = req?.page || 0;
+      const limit = req?.limit || 1;
+      const testData = MockService.testData.slice(
+        page * limit,
+        (page + 1) * limit
+      );
+      return of({
+        data: testData,
+        page,
+        limit,
+        count: MockService.testData.length,
+      });
+    }
+  );
 }
 
 describe("CustomizedTableComponent", () => {
@@ -50,9 +51,11 @@ describe("CustomizedTableComponent", () => {
   const createHost = createHostFactory({
     component: CustomizedTableComponent,
     imports: [MatTableModule],
+    detectChanges: false,
   });
 
   beforeEach(() => {
+    MockService.getPaginated.mockClear();
     spectator = createHost(
       `<app-customized-table [data]="data" class="table">
           <ng-container matColumnDef="name">
@@ -78,14 +81,15 @@ describe("CustomizedTableComponent", () => {
         },
       }
     ) as SpectatorHost<CustomizedTableComponent<T, Q>>;
-    spectator.component.data.refresh();
+
     spectator.detectChanges();
   });
 
   it("Should create", () => {
+    expect(MockService.getPaginated).toHaveBeenCalledTimes(1);
     expect(spectator.query(".table-wrapper")).toBeTruthy();
     expect(spectator.queryAll("tr").length).toBe(2);
-    expect(spectator.queryLast("tr")).toContainText("Book 1");
+    expect(spectator.queryLast("tr")).toContainText("Item 1");
   });
 
   it("Should change page", () => {
@@ -93,12 +97,26 @@ describe("CustomizedTableComponent", () => {
     expect(spectator.queryAll("tr").length).toBe(2);
     spectator.click(".mat-mdc-paginator-navigation-next");
     expect(spectator.queryAll("tr").length).toBe(2);
-    expect(spectator.queryLast("tr")).toContainText("Book 2");
+    expect(spectator.queryLast("tr")).toContainText("Item 2");
   });
 
   it("Should show loading", () => {
     spectator.component.data["loading"].next(true);
     spectator.detectChanges();
     expect(spectator.query(".mat-mdc-progress-spinner")).toBeTruthy();
+  });
+
+  it("Change paginationSize should show all items", () => {
+    spectator.click(".mat-mdc-paginator-touch-target");
+    spectator.detectChanges();
+    spectator.queryLast(".mdc-list-item")?.dispatchEvent(new Event("click"));
+    spectator.detectChanges();
+    expect(spectator.queryAll("tr").length).toBe(4);
+  });
+
+  it("Should show loading", () => {
+    spectator.component.data["page$"].next(null as unknown as Page<T>);
+    spectator.detectChanges();
+    expect(spectator.query(".mat-mdc-paginator-navigation-next")).toBeFalsy();
   });
 });

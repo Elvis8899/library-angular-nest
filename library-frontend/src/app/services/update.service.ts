@@ -18,6 +18,7 @@ export class AppUpdateService {
   appRef = inject(ApplicationRef);
   private _isUpdateToastShown = false;
   private readonly _swUpdate = inject(SwUpdate);
+
   private readonly _toastService = inject(HotToastService);
   constructor() {
     log.info(
@@ -140,7 +141,6 @@ export class AppUpdateService {
       >Close</a
     >
   `,
-  standalone: true,
 })
 export class UpdateComponent {
   public toastRef = inject(HotToastRef);

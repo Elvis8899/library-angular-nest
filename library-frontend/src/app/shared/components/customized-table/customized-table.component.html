@@ -8,14 +8,13 @@
     <tr mat-header-row *matHeaderRowDef="data.displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: data.displayedColumns"></tr>
   </table>
-
   @if (data.page$ | async; as page) {
     <mat-paginator
       [length]="page.count"
       [pageSize]="page.limit"
       [pageIndex]="page.page"
       [pageSizeOptions]="data.pageSizeOptions"
-      (page)="data.fetch($event.pageIndex)"
+      (page)="handlePageEvent($event)"
     >
     </mat-paginator>
   }

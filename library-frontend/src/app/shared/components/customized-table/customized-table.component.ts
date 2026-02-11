@@ -16,7 +16,7 @@ import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
-import { MatPaginatorModule } from "@angular/material/paginator";
+import { MatPaginatorModule, PageEvent } from "@angular/material/paginator";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSelectModule } from "@angular/material/select";
 import {
@@ -61,5 +61,15 @@ export class CustomizedTableComponent<T, Q> implements AfterContentInit {
     this.columnDefs.forEach((columnDef) => {
       this.table?.addColumnDef(columnDef);
     });
+  }
+
+  handlePageEvent(event: PageEvent) {
+    if (this.data.pageSize$.getValue() !== event.pageSize) {
+      // Page Reset
+      this.data.pageSize$.next(event.pageSize);
+      return;
+    }
+
+    this.data.fetch(event.pageIndex);
   }
 }

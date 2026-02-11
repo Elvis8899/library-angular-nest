@@ -1,3 +1,7 @@
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from "@angular/common/http/testing";
 import { RouterModule } from "@angular/router";
 import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
@@ -12,6 +16,7 @@ Logger.level = 0;
 
 describe("ListUsersComponent", () => {
   let spectator!: Spectator<ListUsersComponent>;
+  let httpMock: HttpTestingController;
   const users: UserEntity[] = [
     {
       id: "1",
@@ -33,7 +38,10 @@ describe("ListUsersComponent", () => {
       RouterModule.forRoot([{ path: "users/add", component: class {} }]),
       TranslateModule.forRoot(),
     ],
-    providers: [{ provide: UserService, useValue: userServiceMock }],
+    providers: [
+      { provide: UserService, useValue: userServiceMock },
+      provideHttpClientTesting(),
+    ],
   });
 
   const returnError = throwError(() => new Error("test error"));
@@ -41,11 +49,18 @@ describe("ListUsersComponent", () => {
   beforeEach(() => {
     userServiceMock.getPaginatedUsers.mockClear();
     spectator = createComponent();
+    httpMock = spectator.inject(HttpTestingController);
+    spectator.detectChanges();
+  });
+
+  afterEach(() => {
+    httpMock.verify();
   });
 
   it("Should create app", () => {
     // Assert
     expect(spectator.query("section")).toBeTruthy();
+    expect(spectator.queryAll("tr").length).toBe(2);
   });
   it("should call getPaginatedUsers on init", () => {
     // Assert

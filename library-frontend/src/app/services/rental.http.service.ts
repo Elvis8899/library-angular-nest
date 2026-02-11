@@ -1,9 +1,10 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import {
   BookRentalEntity,
   BookRentEntity,
 } from "@app/models/bookRental.entity";
+import { PageRequest } from "@app/models/utils/paginatedDataSource.entity";
 import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
 import { Observable } from "rxjs";
 
@@ -13,9 +14,16 @@ import { Observable } from "rxjs";
 export class RentalService {
   private readonly _http = inject(HttpClient);
 
-  getPaginatedBookRentals(): Observable<PaginatedResponse<BookRentalEntity>> {
+  getPaginatedBookRentals(
+    req?: PageRequest<BookRentalEntity, object>
+  ): Observable<PaginatedResponse<BookRentalEntity>> {
+    let params = new HttpParams();
+    if (req?.page) params = params.append("page", req?.page);
+    if (req?.limit) params = params.append("limit", req.limit.toString());
+    if (req?.sort) params = params.append("sort", JSON.stringify(req.sort));
     return this._http.get<PaginatedResponse<BookRentalEntity>>(
-      "/v1/bookRentals"
+      "/v1/bookRentals",
+      { params }
     );
   }
 

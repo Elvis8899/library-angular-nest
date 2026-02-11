@@ -1,11 +1,9 @@
-import { Component, inject, model } from "@angular/core";
+import { Component, model } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import {
-  MAT_DIALOG_DATA,
   MatDialogActions,
   MatDialogClose,
-  MatDialogRef,
   MatDialogTitle,
 } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -13,11 +11,11 @@ import { MatInputModule } from "@angular/material/input";
 import { MatSelectModule } from "@angular/material/select";
 import { BookEntity } from "@app/models/book.entity";
 import { UserEntity } from "@app/models/user.entity";
+import { StronglyTypedDialog } from "@app/shared/components/dialog/typed-dialog";
 
 export interface ChooseUserDialogData {
   users: UserEntity[];
   book: BookEntity;
-  user: UserEntity;
 }
 
 @Component({
@@ -34,12 +32,12 @@ export interface ChooseUserDialogData {
     MatDialogClose,
   ],
 })
-export class ChooseUserDialogComponent {
+export class ChooseUserDialogComponent extends StronglyTypedDialog<
+  ChooseUserDialogData,
+  string
+> {
   selectedValue!: UserEntity;
   selectedCar = "";
-
-  readonly dialogRef = inject(MatDialogRef<ChooseUserDialogComponent>);
-  readonly data = inject<ChooseUserDialogData>(MAT_DIALOG_DATA);
   readonly user = model("");
   onNoClick(): void {
     this.dialogRef.close();

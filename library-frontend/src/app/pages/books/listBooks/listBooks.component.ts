@@ -9,7 +9,6 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
 import { MatNativeDateModule } from "@angular/material/core";
 import { MatDatepickerModule } from "@angular/material/datepicker";
-import { MatDialog } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
@@ -32,6 +31,7 @@ import { Logger } from "@app/services/logger.service";
 import { RentalService } from "@app/services/rental.http.service";
 import { UserService } from "@app/services/user.http.service";
 import { CustomizedTableComponent } from "@app/shared/components/customized-table/customized-table.component";
+import { TypedDialog } from "@app/shared/components/dialog/typed-dialog";
 import { TranslateModule } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 
@@ -64,7 +64,7 @@ export class ListBooksComponent implements OnInit {
   data!: PaginatedDataSource<BookEntity, BookQuery>;
 
   // readonly user = signal("");
-  readonly dialog = inject(MatDialog);
+  readonly dialog = inject(TypedDialog);
 
   private readonly _userService = inject(UserService);
   private readonly _bookService = inject(BookService);
@@ -109,7 +109,7 @@ export class ListBooksComponent implements OnInit {
             book: book,
           },
         });
-        dialogRef.afterClosed().subscribe((result: string) => {
+        dialogRef.afterClosed().subscribe((result: string | undefined) => {
           if (result !== undefined) {
             const bookItemId = book.bookItems.find(
               (item) => item.status === BookItemStatusEnum.Available

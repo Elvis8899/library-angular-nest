@@ -2,40 +2,36 @@
   <h2 translate>Rentals</h2>
 
   <div class="book-table-container">
-    <table class="book-table">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Cliente</th>
-          <th>Data de Emprestimo / Entrega</th>
-          <th>Multas</th>
-          <!-- <th>Preço</th>
-          <th>Disponibilidade</th>-->
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (loading$ | async) {
-          <tr>
-            <td colspan="5" style="text-align: center">Loading...</td>
-          </tr>
-        } @else {
-          @for (rental of rentals; track rental.id) {
-            <tr (click)="bookClicked()">
-              <td>{{ rental.bookName }}</td>
-              <td>{{ rental.userName }}</td>
-              <td>
-                {{ getDateOnly(rental.createdAt) }} -
-                {{ getDateOnly(rental.overdueDate) }}
-              </td>
-              <td>{{ bookFinesText(rental) }}</td>
-              <td>
-                <button (click)="returnBook(rental)">devolver</button>
-              </td>
-            </tr>
-          }
-        }
-      </tbody>
-    </table>
+    <app-customized-table [data]="data" class="rental-table">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef translate>Name</th>
+        <td mat-cell *matCellDef="let rental">{{ rental.bookName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef>Cliente</th>
+        <td mat-cell *matCellDef="let rental">{{ rental.userName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="overdueDate">
+        <th mat-header-cell *matHeaderCellDef>Data de Emprestimo / Entrega</th>
+        <td mat-cell *matCellDef="let rental">
+          {{ getDateOnly(rental.createdAt) }} -
+          {{ getDateOnly(rental.overdueDate) }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="charges">
+        <th mat-header-cell *matHeaderCellDef>Multas</th>
+        <td mat-cell *matCellDef="let rental">
+          {{ bookFinesText(rental) }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <td mat-cell *matCellDef="let rental">
+          <button (click)="returnBook(rental)">devolver</button>
+        </td>
+      </ng-container>
+    </app-customized-table>
   </div>
 </section>
