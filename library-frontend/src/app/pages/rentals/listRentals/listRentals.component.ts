@@ -1,12 +1,14 @@
-import { AsyncPipe } from "@angular/common";
 import { Component, inject, OnInit } from "@angular/core";
+import { MatTableModule } from "@angular/material/table";
 import { Router } from "@angular/router";
 import { BookRentalEntity } from "@app/models/bookRental.entity";
+import { PaginatedDataSource } from "@app/models/utils/paginatedDataSource.entity";
 import { Logger } from "@app/services/logger.service";
 import { RentalService } from "@app/services/rental.http.service";
+import { CustomizedTableComponent } from "@app/shared/components/customized-table/customized-table.component";
 import { DateTimeUtility } from "@app/shared/utils/date-time.utility";
+import { TranslateDirective } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
-import { Subject } from "rxjs";
 
 const log = new Logger("ListRentalsComponent");
 
@@ -14,14 +16,11 @@ const log = new Logger("ListRentalsComponent");
   selector: "app-list",
   templateUrl: "./listRentals.component.html",
   styleUrl: "./listRentals.component.scss",
-  imports: [AsyncPipe],
+  imports: [TranslateDirective, CustomizedTableComponent, MatTableModule],
 })
 export class ListRentalsComponent implements OnInit {
+  data!: PaginatedDataSource<BookRentalEntity, object>;
   getDateOnly = DateTimeUtility.getDateOnly;
-  rentals: BookRentalEntity[] = [];
-
-  isLoading = new Subject<boolean>();
-  loading$ = this.isLoading.asObservable();
 
   private readonly _rentalService = inject(RentalService);
   private readonly _router = inject(Router);
@@ -29,21 +28,28 @@ export class ListRentalsComponent implements OnInit {
   private readonly _toast = inject(HotToastService);
 
   ngOnInit() {
-    this.refresh();
+    this.data = new PaginatedDataSource<BookRentalEntity, object>(
+      (r) => this._rentalService.getPaginatedBookRentals(r),
+      {
+        log: log,
+        query: { name: "" },
+        sort: {
+          property: "createdAt",
+          order: "desc",
+        },
+        displayedColumns: [
+          "name",
+          "email",
+          "overdueDate",
+          "charges",
+          "actions",
+        ],
+      }
+    );
   }
 
   refresh() {
-    this.isLoading.next(true);
-    this._rentalService.getPaginatedBookRentals().subscribe({
-      next: (res) => {
-        this.rentals = res.data;
-        this.isLoading.next(false);
-      },
-      error: (error) => {
-        log.error(error);
-        this.isLoading.next(false);
-      },
-    });
+    this.data.refresh();
   }
 
   bookFinesText(rental: BookRentalEntity) {
