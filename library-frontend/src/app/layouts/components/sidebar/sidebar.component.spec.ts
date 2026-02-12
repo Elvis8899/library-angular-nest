@@ -2,6 +2,7 @@ import { NavigationEnd, Router, RouterModule } from "@angular/router";
 import { SidebarComponent } from "@app/layouts/components/sidebar/sidebar.component";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
+import { MockComponent } from "@app/shared/utils/test/mockComponent";
 import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
 import { TranslateService } from "@ngx-translate/core";
 import { of, Subject } from "rxjs";
@@ -30,7 +31,9 @@ describe("LanguageSelectorComponent", () => {
   let spectator: Spectator<SidebarComponent>;
   const createComponent = createComponentFactory({
     component: SidebarComponent,
-    imports: [RouterModule.forRoot([{ path: "users", component: vi.fn() }])],
+    imports: [
+      RouterModule.forRoot([{ path: "users", component: MockComponent }]),
+    ],
     mocks: [CredentialsService],
     providers: [{ provide: TranslateService, useValue: translateServiceMock }],
   });

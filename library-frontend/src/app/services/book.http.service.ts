@@ -23,8 +23,8 @@ export class BookService {
     });
   }
 
-  addBook(book: Partial<BookEntity>): Observable<BookEntity> {
-    return this._http.post<BookEntity>("/v1/bookInfos", book);
+  addBook(book: Partial<BookEntity>): Observable<void> {
+    return this._http.post<void>("/v1/bookInfos", book);
   }
 
   getBook(book: BookEntity): Observable<BookEntity> {

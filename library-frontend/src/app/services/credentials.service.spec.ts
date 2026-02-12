@@ -131,6 +131,14 @@ describe("AuthService", () => {
     expect(spectator.service.hasPermission()).toBe(true);
   });
 
+  it("getRole should return role if authenticated", () => {
+    spectator.service.setCredentials(credential);
+    expect(spectator.service.getRole()).toBe(ROLE.ADMIN);
+  });
+  it("getRole should return guest if not authenticated", () => {
+    expect(spectator.service.getRole()).toBe(ROLE.GUEST);
+  });
+
   it("session storage credentials should be preffered ove local storage", () => {
     const newCredential = { ...credential, accessToken: "new" };
     spectator.service.setCredentials(credential, false);

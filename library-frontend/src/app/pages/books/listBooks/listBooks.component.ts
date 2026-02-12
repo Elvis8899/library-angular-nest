@@ -21,7 +21,6 @@ import {
   BookQuery,
 } from "@app/models/book.entity";
 import { BookRentEntity } from "@app/models/bookRental.entity";
-import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
 import { PaginatedDataSource } from "@app/models/utils/paginatedDataSource.entity";
 import { ChooseUserDialogComponent } from "@app/pages/books/listBooks/chooseUserDialog/chooseUser.dialog.component";
@@ -29,7 +28,6 @@ import { BookService } from "@app/services/book.http.service";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
 import { RentalService } from "@app/services/rental.http.service";
-import { UserService } from "@app/services/user.http.service";
 import { CustomizedTableComponent } from "@app/shared/components/customized-table/customized-table.component";
 import { TypedDialog } from "@app/shared/components/dialog/typed-dialog";
 import { TranslateModule } from "@ngx-translate/core";
@@ -66,7 +64,6 @@ export class ListBooksComponent implements OnInit {
   // readonly user = signal("");
   readonly dialog = inject(TypedDialog);
 
-  private readonly _userService = inject(UserService);
   private readonly _bookService = inject(BookService);
   private readonly _rentalService = inject(RentalService);
   private readonly _router = inject(Router);
@@ -98,32 +95,21 @@ export class ListBooksComponent implements OnInit {
         userId: this._credentialsService.userId(),
       });
     }
-    this._userService.getPaginatedUsers().subscribe({
-      next: (res) => {
-        this.users = res.data;
-        this.isLoading = false;
-
-        const dialogRef = this.dialog.open(ChooseUserDialogComponent, {
-          data: {
-            users: this.users.filter((u) => u.role !== ROLE.ADMIN),
-            book: book,
-          },
-        });
-        dialogRef.afterClosed().subscribe((result: string | undefined) => {
-          if (result !== undefined) {
-            const bookItemId = book.bookItems.find(
-              (item) => item.status === BookItemStatusEnum.Available
-            )?.id;
-            this.rentBook({
-              bookItemId: bookItemId || "",
-              userId: result,
-            });
-          }
-        });
+    const dialogRef = this.dialog.open(ChooseUserDialogComponent, {
+      data: {
+        book: book,
       },
-      error: (error) => {
-        log.error(error);
-      },
+    });
+    dialogRef.afterClosed().subscribe((result: string | undefined) => {
+      if (result !== undefined) {
+        const bookItemId = book.bookItems.find(
+          (item) => item.status === BookItemStatusEnum.Available
+        )?.id;
+        this.rentBook({
+          bookItemId: bookItemId || "",
+          userId: result,
+        });
+      }
     });
   }
 
@@ -199,9 +185,5 @@ export class ListBooksComponent implements OnInit {
   }
   isAdmin() {
     return this._credentialsService.isAdmin();
-  }
-
-  onDestroy() {
-    this.data.disconnect();
   }
 }

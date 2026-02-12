@@ -61,6 +61,10 @@ export class CredentialsService {
     return this.credentials?.user.role?.includes("admin") || false;
   }
 
+  getRole(): ROLE {
+    return this.credentials?.user.role || ROLE.GUEST;
+  }
+
   userId(): string {
     return this.credentials?.user.id || "";
   }

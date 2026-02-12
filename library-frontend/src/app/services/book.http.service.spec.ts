@@ -10,7 +10,7 @@ const book: BookEntity = {
   id: "id",
   name: "name",
   image: "image",
-  price: "price",
+  price: 100,
   bookItems: [],
   createdAt: new Date().toString(),
   updatedAt: new Date().toString(),
