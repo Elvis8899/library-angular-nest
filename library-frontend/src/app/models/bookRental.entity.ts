@@ -14,8 +14,8 @@ export interface BookRentalEntity extends BaseEntity {
   userName: string;
   bookName: string;
   rentalStatus: BookRentalStatusEnum;
-  overdueDate: Date;
-  deliveryDate: Date | null;
+  overdueDate: Date | string;
+  deliveryDate: Date | string | null;
   fines: {
     overdue: boolean;
     fixed: number;

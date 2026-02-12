@@ -13,7 +13,7 @@ export interface BookItemEntity extends BaseEntity {
 export interface BookEntity extends BaseEntity {
   name: string;
   image: string;
-  price: string;
+  price: number;
   bookItems: BookItemEntity[];
 }
 

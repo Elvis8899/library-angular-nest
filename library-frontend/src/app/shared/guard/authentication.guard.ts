@@ -5,6 +5,7 @@ import {
   Router,
   RouterStateSnapshot,
 } from "@angular/router";
+import { defaultRolePage } from "@app/models/credentials.entity";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
 
@@ -20,8 +21,8 @@ export const alreadyLoggedCheckGuard: CanActivateFn = () => {
 
   const isAuthenticated = credentialsService.isAuthenticated();
   if (isAuthenticated) {
-    const isAdmin = credentialsService.isAdmin();
-    const page = isAdmin ? "/users/list" : "/books";
+    const role = credentialsService.getRole();
+    const page = defaultRolePage(role);
     router.navigateByUrl(page);
     return false;
   }

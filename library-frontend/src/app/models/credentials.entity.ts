@@ -4,6 +4,17 @@ export enum ROLE {
   GUEST = "guest",
 }
 
+export const defaultRolePage = (role: ROLE) => {
+  switch (role) {
+    case ROLE.ADMIN:
+      return "/users/list";
+    case ROLE.CLIENT:
+    case ROLE.GUEST:
+    default:
+      return "/books";
+  }
+};
+
 /**
  * Enum for permissions
  * @readonly

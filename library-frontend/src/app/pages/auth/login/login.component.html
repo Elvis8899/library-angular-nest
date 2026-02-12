@@ -3,8 +3,8 @@
     <h2 translate>Login</h2>
     <form [formGroup]="loginForm">
       <div class="input-field">
-        <input required type="text" formControlName="email" id="emailInput" />
-        <label for="emailInput" translate>Email</label>
+        <input required type="text" formControlName="email" name="email" />
+        <label for="email" translate>Email</label>
         @if (
           loginForm.get("email")?.invalid && loginForm.get("email")?.touched
         ) {
@@ -16,9 +16,9 @@
           required
           type="password"
           formControlName="password"
-          id="passwordInput"
+          name="password"
         />
-        <label for="passwordInput" translate>Password</label>
+        <label for="password" translate>Password</label>
         @if (
           loginForm.get("password")?.invalid &&
           loginForm.get("password")?.touched

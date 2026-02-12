@@ -1,4 +1,5 @@
-import { Component, model } from "@angular/core";
+import { AsyncPipe } from "@angular/common";
+import { Component, inject, model, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import {
@@ -10,11 +11,16 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatSelectModule } from "@angular/material/select";
 import { BookEntity } from "@app/models/book.entity";
+import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
+import { Logger } from "@app/services/logger.service";
+import { UserService } from "@app/services/user.http.service";
 import { StronglyTypedDialog } from "@app/shared/components/dialog/typed-dialog";
+import { BehaviorSubject } from "rxjs";
+
+const log = new Logger("ChooseUserDialogComponent");
 
 export interface ChooseUserDialogData {
-  users: UserEntity[];
   book: BookEntity;
 }
 
@@ -22,6 +28,7 @@ export interface ChooseUserDialogData {
   selector: "app-choose-user-dialog",
   templateUrl: "chooseUser.dialog.component.html",
   imports: [
+    AsyncPipe,
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
@@ -32,13 +39,30 @@ export interface ChooseUserDialogData {
     MatDialogClose,
   ],
 })
-export class ChooseUserDialogComponent extends StronglyTypedDialog<
-  ChooseUserDialogData,
-  string
-> {
+export class ChooseUserDialogComponent
+  extends StronglyTypedDialog<ChooseUserDialogData, string>
+  implements OnInit
+{
+  private readonly _userService = inject(UserService);
   selectedValue!: UserEntity;
+  users$: BehaviorSubject<UserEntity[]> = new BehaviorSubject<UserEntity[]>([]);
   selectedCar = "";
   readonly user = model("");
+
+  bookName$ = new BehaviorSubject<string>("");
+
+  ngOnInit() {
+    this.bookName$.next(this.data.book.name);
+    this._userService.getPaginatedUsers().subscribe({
+      next: (res) => {
+        const users = res.data.filter((u) => u.role !== ROLE.ADMIN);
+        this.users$.next(users);
+      },
+      error: (error) => {
+        log.error(error);
+      },
+    });
+  }
   onNoClick(): void {
     this.dialogRef.close();
   }

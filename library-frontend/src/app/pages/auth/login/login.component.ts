@@ -2,6 +2,7 @@ import { Component, inject } from "@angular/core";
 
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
+import { defaultRolePage } from "@app/models/credentials.entity";
 import { AuthenticationService } from "@app/services/authentication.service";
 import { LanguageSelectorComponent } from "@app/shared/i18n/language-selector/language-selector.component";
 import { environment } from "@env/environment";
@@ -26,8 +27,8 @@ export class LoginComponent {
 
   private readonly _router = inject(Router);
   private readonly _route = inject(ActivatedRoute);
-  private readonly _authService = inject(AuthenticationService);
   private readonly _fb = inject(FormBuilder);
+  private readonly _authService = inject(AuthenticationService);
 
   loginForm = this._fb.group({
     email: [
@@ -44,21 +45,18 @@ export class LoginComponent {
     // setting credentials and other logic will be handled in the AuthenticationService.
     this._authService
       .login({
-        email: this.loginForm.value.email || "",
-        password: this.loginForm.value.password || "",
+        email: this.loginForm.value.email as string,
+        password: this.loginForm.value.password as string,
       })
       .pipe(untilDestroyed(this))
       .subscribe({
         next: (credentials) => {
           // Navigate to the home page or any other page after successful login.
-          if (credentials) {
-            const route =
-              credentials.user?.role === "admin" ? "/users/list" : "/books";
-            this._router.navigate(
-              [this._route.snapshot.queryParams["redirect"] || route],
-              { replaceUrl: true }
-            );
-          }
+          const route = defaultRolePage(credentials.user?.role);
+          this._router.navigate(
+            [this._route.snapshot.queryParams["redirect"] || route],
+            { replaceUrl: true }
+          );
         },
         error: (error) => {
           this._toast.error(error?.error?.message || error?.message);

@@ -35,8 +35,8 @@ export class UserService {
     });
   }
 
-  addUser(user: Partial<UserEntity>): Observable<UserEntity> {
-    return this._http.post<UserEntity>("/v1/users", user);
+  addUser(user: Partial<UserEntity>): Observable<void> {
+    return this._http.post<void>("/v1/users", user);
   }
 
   getUser(user: UserEntity): Observable<UserEntity> {

@@ -82,15 +82,20 @@
         <td mat-cell *matCellDef="let book">
           <div style="display: flex; justify-content: space-evenly">
             <button
+              name="rentBook"
               [disabled]="!isBookAvailable(book)"
               (click)="openRentBookDialog(book)"
             >
               emprestar
             </button>
             @if (isAdmin()) {
-              <button (click)="addBookItem(book)">adicionar</button>
-              <button (click)="removeBookItem(book)">remover</button>
-              <button>deletar</button>
+              <button (click)="addBookItem(book)" name="addBook">
+                adicionar
+              </button>
+              <button (click)="removeBookItem(book)" name="removeBook">
+                remover
+              </button>
+              <button disabled name="deleteBook">deletar</button>
             }
           </div>
         </td>

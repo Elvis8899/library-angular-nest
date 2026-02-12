@@ -24,7 +24,6 @@ export class ListRentalsComponent implements OnInit {
 
   private readonly _rentalService = inject(RentalService);
   private readonly _router = inject(Router);
-
   private readonly _toast = inject(HotToastService);
 
   ngOnInit() {
@@ -55,14 +54,6 @@ export class ListRentalsComponent implements OnInit {
   bookFinesText(rental: BookRentalEntity) {
     if (!rental.fines.overdue) return "";
     return `R$ ${rental.fines.total.toFixed(2)} (${rental.fines.fixed} + ${rental.fines.perDayValue} por dia)`;
-  }
-
-  goToAddBook() {
-    this._router.navigate(["/books/add"]);
-  }
-
-  bookClicked() {
-    this._toast.show("Book clicked");
   }
 
   returnBook(rental: BookRentalEntity) {

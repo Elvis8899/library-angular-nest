@@ -59,12 +59,4 @@ export class AddUsersComponent implements OnInit {
         },
       });
   }
-
-  goToAddUser() {
-    this._router.navigate(["/users/add"]);
-  }
-
-  userClicked() {
-    this._toast.show("User clicked");
-  }
 }

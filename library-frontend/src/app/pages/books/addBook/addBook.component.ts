@@ -44,12 +44,4 @@ export class AddBooksComponent implements OnInit {
         },
       });
   }
-
-  goToAddBook() {
-    this._router.navigate(["/books/add"]);
-  }
-
-  bookClicked() {
-    this._toast.show("Book clicked");
-  }
 }
