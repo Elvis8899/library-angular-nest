@@ -86,28 +86,30 @@ export class ListBooksComponent implements OnInit {
   }
 
   openRentBookDialog(book: BookEntity) {
+    const bookItem = book.bookItems.find(
+      (item) => item.status === BookItemStatusEnum.Available
+    );
+    if (!bookItem) {
+      this._toast.error("Sem livros disponíveis para locação");
+      return;
+    }
+    const bookItemId = bookItem.id;
     if (!this.isAdmin()) {
       return this.rentBook({
-        bookItemId:
-          book.bookItems.find(
-            (item) => item.status === BookItemStatusEnum.Available
-          )?.id || "",
+        bookItemId: bookItemId,
         userId: this._credentialsService.userId(),
       });
     }
     const dialogRef = this.dialog.open(ChooseUserDialogComponent, {
       data: {
-        book: book,
+        book,
       },
     });
-    dialogRef.afterClosed().subscribe((result: string | undefined) => {
-      if (result !== undefined) {
-        const bookItemId = book.bookItems.find(
-          (item) => item.status === BookItemStatusEnum.Available
-        )?.id;
+    dialogRef.afterClosed().subscribe((userId: string | undefined) => {
+      if (userId !== undefined) {
         this.rentBook({
-          bookItemId: bookItemId || "",
-          userId: result,
+          bookItemId: bookItemId,
+          userId,
         });
       }
     });
@@ -132,11 +134,7 @@ export class ListBooksComponent implements OnInit {
   }
 
   goToAddBook() {
-    this._router.navigate(["/books/add"]);
-  }
-
-  bookClicked() {
-    this._toast.show("Book clicked");
+    this._router.navigateByUrl("/books/add");
   }
 
   rentBook(book: BookRentEntity) {
@@ -145,10 +143,7 @@ export class ListBooksComponent implements OnInit {
         this._toast.success("Book rented successfully");
         this.refresh();
       },
-      error: (error: Error) => {
-        this._toast.error(error?.message);
-        log.error(error);
-      },
+      error: this.defaultErrorHandler,
     });
   }
   addBookItem(book: BookEntity) {
@@ -156,32 +151,30 @@ export class ListBooksComponent implements OnInit {
     this._bookService.addBookItem({ bookId: book.id }).subscribe({
       next: () => {
         this.refresh();
-        this.isLoading = false;
       },
-      error: (error) => {
-        this._toast.error(error?.message);
-        log.error(error);
-      },
+      error: this.defaultErrorHandler,
+      complete: () => (this.isLoading = false),
     });
   }
   removeBookItem(book: BookEntity) {
-    const id =
-      book.bookItems.find(
-        (item) => item.status === BookItemStatusEnum.Available
-      )?.id || "";
-    if (id === "") {
+    const bookItem = book.bookItems.find(
+      (item) => item.status === BookItemStatusEnum.Available
+    );
+    if (!bookItem) {
       this._toast.error("Sem livros disponíveis para remoção");
       return;
     }
-    this._bookService.deleteBookItem(id).subscribe({
+    this._bookService.deleteBookItem(bookItem.id).subscribe({
       next: () => {
         this.refresh();
       },
-      error: (error) => {
-        this._toast.error(error?.message);
-        log.error(error);
-      },
+      error: this.defaultErrorHandler,
     });
+  }
+
+  defaultErrorHandler(error: Error) {
+    this._toast.error(error?.message);
+    log.error(error);
   }
   isAdmin() {
     return this._credentialsService.isAdmin();

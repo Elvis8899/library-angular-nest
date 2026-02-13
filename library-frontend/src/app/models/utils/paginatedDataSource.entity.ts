@@ -122,7 +122,6 @@ export class PaginatedDataSource<T, Q> implements SimpleDataSource<T> {
         this.page$.next(page);
         this.data$.next(page.data);
       },
-      error: (error) => config.log.error(error),
     });
   }
 

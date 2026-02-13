@@ -1,6 +1,11 @@
 import { AsyncPipe } from "@angular/common";
-import { Component, inject, model, OnInit } from "@angular/core";
-import { FormsModule } from "@angular/forms";
+import { Component, inject, OnInit } from "@angular/core";
+import {
+  FormControl,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import {
   MatDialogActions,
@@ -31,6 +36,7 @@ export interface ChooseUserDialogData {
     AsyncPipe,
     MatFormFieldModule,
     MatInputModule,
+    ReactiveFormsModule,
     FormsModule,
     MatButtonModule,
     MatSelectModule,
@@ -47,8 +53,7 @@ export class ChooseUserDialogComponent
   selectedValue!: UserEntity;
   users$: BehaviorSubject<UserEntity[]> = new BehaviorSubject<UserEntity[]>([]);
   selectedCar = "";
-  readonly user = model("");
-
+  selectUserFormControl = new FormControl("", Validators.required);
   bookName$ = new BehaviorSubject<string>("");
 
   ngOnInit() {
@@ -60,6 +65,7 @@ export class ChooseUserDialogComponent
       },
       error: (error) => {
         log.error(error);
+        this.onNoClick();
       },
     });
   }
