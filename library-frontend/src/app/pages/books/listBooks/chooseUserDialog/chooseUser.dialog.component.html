@@ -1,13 +1,20 @@
 <h2 mat-dialog-title>Escolher usuario para o livro {{ bookName$ | async }}</h2>
 <mat-form-field>
   <mat-label>Cliente</mat-label>
-  <mat-select [(ngModel)]="user" name="client">
+  <mat-select [formControl]="selectUserFormControl" name="client">
     @for (u of users$ | async; track u) {
       <mat-option [value]="u.id">{{ u.name }}</mat-option>
     }
   </mat-select>
 </mat-form-field>
 <mat-dialog-actions>
-  <button matButton (click)="onNoClick()">Cancel</button>
-  <button matButton [mat-dialog-close]="user()" cdkFocusInitial>Ok</button>
+  <button matButton (click)="onNoClick()" name="cancelDialog">Cancel</button>
+  <button
+    matButton
+    [mat-dialog-close]="selectUserFormControl.value"
+    name="confirmDialog"
+    cdkFocusInitial
+  >
+    Ok
+  </button>
 </mat-dialog-actions>

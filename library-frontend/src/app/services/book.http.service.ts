@@ -39,12 +39,12 @@ export class BookService {
     return this._http.delete<null>(`/v1/bookInfos/${book.id}`);
   }
 
-  addBookItem(bookItem: Partial<BookItemEntity>): Observable<null> {
-    return this._http.post<null>("/v1/bookInfos/item", bookItem);
+  addBookItem(bookItem: Partial<BookItemEntity>): Observable<void> {
+    return this._http.post<void>("/v1/bookInfos/item", bookItem);
   }
 
-  deleteBookItem(bookItemId: string): Observable<null> {
-    return this._http.delete<null>(`/v1/bookInfos/item/${bookItemId}`, {
+  deleteBookItem(bookItemId: string): Observable<void> {
+    return this._http.delete<void>(`/v1/bookInfos/item/${bookItemId}`, {
       body: {},
     });
   }

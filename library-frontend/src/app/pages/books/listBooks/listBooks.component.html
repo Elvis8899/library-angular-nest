@@ -1,9 +1,19 @@
 <section class="main-container">
   <div class="flex-title">
     <h2 translate>Books List</h2>
-    <button class="" (click)="goToAddBook()" type="submit" translate>
-      {{ "Create Book" }}
-    </button>
+    <div>
+      @if (isAdmin()) {
+        <button
+          class=""
+          (click)="goToAddBook()"
+          type="submit"
+          translate
+          name="createBook"
+        >
+          {{ "Create Book" }}
+        </button>
+      }
+    </div>
   </div>
   <!-- style="display: flex; justify-content: space-between" -->
 
