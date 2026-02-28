@@ -27,5 +27,6 @@ const config: Config = {
     "^@rental/(.*)$": "<rootDir>/src/modules/rental/$1",
   },
   transformIgnorePatterns: ["node_modules/(?!(uuid)/)"],
+  coverageReporters: ["json", "text-summary", "lcov", "clover", "json-summary"],
 };
 export default config;
