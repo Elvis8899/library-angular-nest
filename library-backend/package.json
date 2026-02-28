@@ -18,7 +18,7 @@
     "test:inte": "env-cmd -f .env.test jest --config ./test/jest-integration.config.ts --runInBand",
     "test:unit": "env-cmd -f .env.test jest --config ./test/jest-unit.config.ts",
     "test:docker:up": "docker compose -f .docker/docker-compose-dev.yml up postgres -d && sleep 5 && env-cmd -f .env.test yarn migrate:reset",
-    "test:migrate": "env-cmd -f .env.test yarn migrate:reset",
+    "test:migrate": "env-cmd -f .env.test yarn migrate:deploy",
     "migrate": "prisma migrate dev",
     "migrate:init": "prisma migrate dev --name init",
     "migrate:reset": "prisma migrate reset",
