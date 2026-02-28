@@ -54,9 +54,17 @@ jobs:
           # yarn test
           yarn test:cov
 
+      - name: 🔴 Delete remote badges branch
+        run: git push origin --delete badges
+
+      - name: ➕ Create badges branch
+        run: git checkout -b badges
+
       - name: ⚙️ Generating coverage badges
         uses: jpb06/coverage-badges-action@latest
         with:
+          branches: "*"
+          target-branch: badges
           coverage-summary-path: |
             ./**/coverage/coverage-summary.json
 
