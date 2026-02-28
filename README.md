@@ -1,0 +1,5 @@
+![Branches](https://github.com/Elvis8899/library-angular-nest/blob/badges/badges/library-backend/coverage-branches.svg)
+![Functions](https://github.com/Elvis8899/library-angular-nest/blob/badges/badges/library-backend/coverage-functions.svg)
+![Lines](https://github.com/Elvis8899/library-angular-nest/blob/badges/badges/library-backend/coverage-lines.svg)
+![Statements](https://github.com/Elvis8899/library-angular-nest/blob/badges/badges/library-backend/coverage-statements.svg)
+![Coverage total](https://github.com/Elvis8899/library-angular-nest/blob/badges/badges/library-backend/coverage-total.svg)
