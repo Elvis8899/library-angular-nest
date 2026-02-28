@@ -50,3 +50,12 @@ jobs:
           # yarn build --if-present
           # yarn test
           yarn test:cov
+
+      - name: ⚙️ Generating coverage badges
+        uses: jpb06/coverage-badges-action@latest
+        with:
+          coverage-summary-path: |
+            ./**/coverage/coverage-summary.json
+
+      - name: ⬆️ Push badges branch
+        run: git push origin badges

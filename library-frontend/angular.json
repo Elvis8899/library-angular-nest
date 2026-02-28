@@ -85,6 +85,12 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "coverage": true,
+            "coverageReporters": [
+              "json",
+              "text-summary",
+              "lcov",
+              "json-summary"
+            ],
             "coverageInclude": ["src/app/**/*.(ts|js|html)"],
             "coverageExclude": [
               "app.config.ts",
