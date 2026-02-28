@@ -46,6 +46,7 @@ jobs:
         working-directory: library-backend
         run: |
           yarn && CI=true
+          yarn test:migrate
           # yarn build --if-present
           # yarn test
           yarn test:cov
