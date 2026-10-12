@@ -8,7 +8,14 @@ export enum RentalStatusEnum {
   Finished = "finished",
 }
 
-const getMidnightDate = (date: Date) => new Date(date.setHours(23, 59, 59, 0));
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Returns a copy of date set to the last second of that day
+const endOfDay = (date: Date) => {
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 0);
+  return end;
+};
 
 export const BookRental = z
   .object({
@@ -23,10 +30,7 @@ export const BookRental = z
     user: z.object({ name: z.string() }).optional(),
     userId: z.string(),
     overdueDate: DateType.default(
-      () =>
-        new Date(
-          getMidnightDate(new Date()).getTime() + 7 * 24 * 60 * 60 * 1000,
-        ),
+      () => new Date(endOfDay(new Date()).getTime() + 7 * DAY_MS),
     ),
     deliveryDate: DateType.optional(),
   })
@@ -36,8 +40,7 @@ export type BookRental = z.infer<typeof BookRental>;
 
 export const getRentalFines = (rental: BookRental) => {
   const days = Math.ceil(
-    (new Date().setHours(0, 0, 0, 0) - rental.overdueDate.getTime()) /
-      (1000 * 60 * 60 * 24),
+    (new Date().setHours(0, 0, 0, 0) - rental.overdueDate.getTime()) / DAY_MS,
   );
   const overdue = days > 0;
   const fixed = overdue ? 20 : 0;

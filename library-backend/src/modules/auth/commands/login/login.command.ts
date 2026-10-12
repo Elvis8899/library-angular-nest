@@ -42,7 +42,7 @@ export class LoginCommandHandler implements ICommandHandler<
       RTE.chain((data) =>
         FPF.pipe(
           data.email,
-          performRTE(this.userRepository.findByEmail, "get user by id"),
+          performRTE(this.userRepository.findByEmail, "get user by email"),
           RTE.chainW(RTE.fromOption<Error>(wrongAuthException)),
         ),
       ),

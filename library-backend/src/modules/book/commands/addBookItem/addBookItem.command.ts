@@ -53,7 +53,7 @@ export class AddBookItemHandler implements ICommandHandler<AddBookItem, void> {
       RTE.tap(
         performRTE(
           this.bookInfoRepository.createBookItem,
-          "save bookInfo in storage system.",
+          "save bookItem in storage system.",
         ),
       ),
 
@@ -61,7 +61,7 @@ export class AddBookItemHandler implements ICommandHandler<AddBookItem, void> {
       RTE.chain((bookInfo) =>
         performRTE(
           this.domainEventPublisher.publishEvent,
-          "emit bookInfo created event.",
+          "emit bookItem created event.",
         )({
           eventKey: BOOK_ITEM_CREATED,
           payload: {

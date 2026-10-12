@@ -74,7 +74,7 @@ export class RemoveBookItemHandler implements ICommandHandler<
       RTE.chain((bookInfo) =>
         performRTE(
           this.domainEventPublisher.publishEvent,
-          "emit bookInfo deleted event.",
+          "emit bookItem removed event.",
         )({
           eventKey: BOOK_ITEM_REMOVED,
           payload: {
