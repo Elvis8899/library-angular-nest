@@ -159,7 +159,7 @@ describe("[Unit] Update User", () => {
     // Given a potentially valid name
     // When an user with the same name exists
     const secondUserBuilder = new UserBuilder(2)
-      .withCPF("12345678902")
+      .withCPF("11144477735")
       .withEmail("usertwo@example.com");
     const secondUser = secondUserBuilder.build();
     const repeatEmail = userBuilder.build().email;

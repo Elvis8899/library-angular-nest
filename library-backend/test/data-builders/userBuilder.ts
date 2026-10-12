@@ -2,7 +2,7 @@ import { FPF } from "@shared/utils/application/monads";
 import { UUID } from "@shared/uuid/entities/uuid";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { User, UserRoleEnum } from "@user/domain/user.entity";
-import { formatToCPF } from "@user/domain/value-object/document";
+import { formatDocument } from "@user/domain/value-object/document";
 import { CreateUserDto } from "@user/dtos/user.dto";
 import { z } from "zod";
 
@@ -12,7 +12,7 @@ export class UserBuilder {
   private name = "usuario 1";
   private email = "userone@example.com";
   private password = "123456";
-  private cpf = formatToCPF("12345678901");
+  private cpf = formatDocument("52998224725");
   private role: UserRoleEnum = UserRoleEnum.Client;
 
   private defaultProperties: z.input<typeof User>;
@@ -54,7 +54,7 @@ export class UserBuilder {
   }
 
   withCPF(cpf: string) {
-    this.overrides.cpf = formatToCPF(cpf);
+    this.overrides.cpf = formatDocument(cpf);
     return this;
   }
 

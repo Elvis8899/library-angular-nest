@@ -12,6 +12,7 @@ import { UserRepository } from "@user/database/user.repository.port";
 import { USER_CREATED } from "@user/domain/events/userCreated.event";
 import { User } from "@user/domain/user.entity";
 import { userCPFAlreadyExistsException } from "@user/domain/user.errors";
+import { CheckedDocumentType } from "@user/domain/value-object/document";
 import { CreateUserDto } from "@user/dtos/user.dto";
 import { PinoLogger } from "nestjs-pino";
 
@@ -39,6 +40,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
         fromInputRE(UUID, "uuid")(this.uuidGeneratorService.generateUUID()),
       ),
       RE.chain(fromInputRE(User, "User")),
+      RE.tap((user) => fromInputRE(CheckedDocumentType, "cpf")(user.cpf)),
 
       RTE.fromReaderEither,
 

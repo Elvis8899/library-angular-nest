@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { userSeed } from "./seed/user.seed";
 import { bookSeed } from "./seed/book.seed";
 import { hashPassword } from "@auth/util/signTokenParams";
-import { formatToCPF } from "@user/domain/value-object/document";
+import { formatDocument } from "@user/domain/value-object/document";
 
 const prisma = new PrismaClient();
 
@@ -11,7 +11,7 @@ async function main() {
   const userWithHashedPassword = await Promise.all(
     userSeed.map(async (user) => {
       user.password = await hashPassword(user.password);
-      user.cpf = formatToCPF(user.cpf || "");
+      user.cpf = formatDocument(user.cpf || "");
       return user;
     }),
   );

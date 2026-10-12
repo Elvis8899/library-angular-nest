@@ -13,7 +13,7 @@ export const userSeed: Prisma.UserCreateInput[] = [
   {
     name: "Usuario cliente",
     id: createTestId(TableNameEnum.User, 2),
-    cpf: "12345678901",
+    cpf: "52998224725",
     email: "client@client.com",
     password: "client",
     role: "client",

@@ -16,6 +16,7 @@ import {
   userEmailAlreadyExistsException,
   userNotFoundException,
 } from "@user/domain/user.errors";
+import { CheckedDocumentType } from "@user/domain/value-object/document";
 import { CreateUserDto } from "@user/dtos/user.dto";
 import { PinoLogger } from "nestjs-pino";
 
@@ -44,6 +45,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
       RE.of(command.props),
       RE.bind("id", () => fromInputRE(UUID, "uuid")(command.id)),
       RE.chain(fromInputRE(User, "user")),
+      RE.tap((user) => fromInputRE(CheckedDocumentType, "cpf")(user.cpf)),
       RTE.fromReaderEither,
 
       //Validate User exists
