@@ -1,3 +1,6 @@
+import { Roles } from "@auth/decorators/roles.decorator";
+import { AuthGuard } from "@auth/guards/auth.guard";
+import { RolesGuard } from "@auth/guards/roles.guard";
 import { RemoveBookItem } from "@book/commands/removeBookItem/removeBookItem.command";
 import {
   Controller,
@@ -5,9 +8,11 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  UseGuards,
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -15,9 +20,12 @@ import {
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/application/noop";
+import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Controller("v1/")
 @ApiTags("Livros")
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class RemoveBookItemController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -25,6 +33,8 @@ export class RemoveBookItemController {
   ) {}
 
   @Delete("bookInfos/item/:id")
+  @UseGuards(RolesGuard)
+  @Roles(UserRoleEnum.Admin)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: "Remove um exemplar de um Livro",

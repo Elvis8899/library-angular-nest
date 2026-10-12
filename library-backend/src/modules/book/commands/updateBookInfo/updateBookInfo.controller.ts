@@ -1,3 +1,6 @@
+import { Roles } from "@auth/decorators/roles.decorator";
+import { AuthGuard } from "@auth/guards/auth.guard";
+import { RolesGuard } from "@auth/guards/roles.guard";
 import { UpdateBookInfo } from "@book/commands/updateBookInfo/updateBookInfo.command";
 import { CreateBookInfoDto } from "@book/dtos/bookInfo.dto";
 import {
@@ -7,9 +10,11 @@ import {
   HttpStatus,
   Param,
   Put,
+  UseGuards,
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -17,9 +22,12 @@ import {
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/application/noop";
+import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Controller("v1/")
 @ApiTags("Livros")
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class UpdateBookInfoController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -27,6 +35,8 @@ export class UpdateBookInfoController {
   ) {}
 
   @Put("bookInfos/:id")
+  @UseGuards(RolesGuard)
+  @Roles(UserRoleEnum.Admin)
   @HttpCode(HttpStatus.OK)
   @ApiCreatedResponse({ description: "Livro atualizado com sucesso." })
   @ApiUnprocessableEntityResponse({ description: "Livro inválido." })

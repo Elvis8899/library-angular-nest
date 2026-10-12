@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { BaseEntityDto } from "@shared/utils/dtos/baseEntity.dto";
 import { PaginatedResponseDto } from "@shared/utils/dtos/paginated.response.base";
-import { UserRoleEnum } from "@user/domain/user.entity";
+import { User, UserRoleEnum } from "@user/domain/user.entity";
 
 export class UserDto extends BaseEntityDto {
   @ApiProperty({
@@ -39,7 +39,14 @@ export class CreateUserDto extends OmitType(UserDto, [
   "updatedAt",
 ]) {}
 
-export class PaginatedUserResponseDto extends PaginatedResponseDto<UserDto> {
-  @ApiProperty({ type: UserDto, isArray: true })
-  data!: UserDto[];
+export class UserResponseDto extends OmitType(UserDto, ["password"]) {}
+
+export const toUserResponse = ({
+  password: _password,
+  ...user
+}: User): UserResponseDto => user;
+
+export class PaginatedUserResponseDto extends PaginatedResponseDto<UserResponseDto> {
+  @ApiProperty({ type: UserResponseDto, isArray: true })
+  data!: UserResponseDto[];
 }

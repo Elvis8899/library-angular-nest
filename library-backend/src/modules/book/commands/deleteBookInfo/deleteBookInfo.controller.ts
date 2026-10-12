@@ -1,3 +1,6 @@
+import { Roles } from "@auth/decorators/roles.decorator";
+import { AuthGuard } from "@auth/guards/auth.guard";
+import { RolesGuard } from "@auth/guards/roles.guard";
 import { DeleteBookInfo } from "@book/commands/deleteBookInfo/deleteBookInfo.command";
 import {
   Controller,
@@ -5,9 +8,11 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  UseGuards,
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiBearerAuth,
   ApiDefaultResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -15,9 +20,12 @@ import {
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/application/noop";
+import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Controller("v1/")
 @ApiTags("Livros")
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class DeleteBookInfoController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -25,6 +33,8 @@ export class DeleteBookInfoController {
   ) {}
 
   @Delete("bookInfos/:id")
+  @UseGuards(RolesGuard)
+  @Roles(UserRoleEnum.Admin)
   @HttpCode(HttpStatus.OK)
   @ApiNotFoundResponse({ description: "Livro não encontrado." })
   @ApiUnprocessableEntityResponse({ description: "Id inválido." })
