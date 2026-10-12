@@ -50,12 +50,12 @@ jobs:
         run: |
           yarn && CI=true
           yarn test:migrate
-          # yarn build --if-present
-          # yarn test
+          yarn build
           yarn test:cov
 
       - name: 🔴 Delete remote badges branch
-        run: git push origin --delete badges
+        # The branch does not exist on the first run
+        run: git push origin --delete badges || true
 
       - name: ➕ Create badges branch
         run: git checkout -b badges
