@@ -1,4 +1,9 @@
-import { Component, inject, OnInit } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { ROLE } from "@app/models/credentials.entity";
@@ -14,6 +19,7 @@ const log = new Logger("AddUsersComponent");
   selector: "app-list",
   templateUrl: "./addUser.component.html",
   styleUrl: "./addUser.component.scss",
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [ReactiveFormsModule],
 })
 export class AddUsersComponent implements OnInit {

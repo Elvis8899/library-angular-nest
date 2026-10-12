@@ -1,5 +1,10 @@
 import { NgClass } from "@angular/common";
-import { Component, inject, OnInit } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from "@angular/core";
 import {
   NavigationEnd,
   Router,
@@ -24,6 +29,7 @@ enum NavMode {
   selector: "app-sidebar",
   templateUrl: "./sidebar.component.html",
   styleUrls: ["./sidebar.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [NgClass, RouterLink, RouterLinkActive, TranslatePipe],
 })
 export class SidebarComponent implements OnInit {

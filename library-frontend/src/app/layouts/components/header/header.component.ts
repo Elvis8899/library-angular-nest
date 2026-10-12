@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { LanguageSelectorComponent } from "@app/shared/i18n/language-selector/language-selector.component";
 import { UntilDestroy } from "@ngneat/until-destroy";
 import { TranslateDirective } from "@ngx-translate/core";
@@ -8,6 +8,7 @@ import { TranslateDirective } from "@ngx-translate/core";
   selector: "app-header",
   templateUrl: "./header.component.html",
   styleUrls: ["./header.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [TranslateDirective, LanguageSelectorComponent],
 })
 export class HeaderComponent {}

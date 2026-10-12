@@ -20,17 +20,16 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "baseUrl": "./",
     "target": "ES2022",
     "module": "ES2022",
     "types": ["vitest/globals"],
     "paths": {
-      "@app/*": ["src/app/*"],
-      "@auth": ["src/app/auth"],
-      "@core/*": ["src/app/core/*"],
-      "@pages/*": ["src/app/pages/*"],
-      "@shared/*": ["src/app/shared/*"],
-      "@env/*": ["src/environments/*"]
+      "@app/*": ["./src/app/*"],
+      "@auth": ["./src/app/auth"],
+      "@core/*": ["./src/app/core/*"],
+      "@pages/*": ["./src/app/pages/*"],
+      "@shared/*": ["./src/app/shared/*"],
+      "@env/*": ["./src/environments/*"]
     },
     "useDefineForClassFields": false
   },

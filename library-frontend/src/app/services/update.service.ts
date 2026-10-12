@@ -1,4 +1,10 @@
-import { ApplicationRef, Component, inject, Injectable } from "@angular/core";
+import {
+  ApplicationRef,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  Injectable,
+} from "@angular/core";
 import { SwUpdate, VersionEvent } from "@angular/service-worker";
 import { Logger } from "@app/services/logger.service";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
@@ -105,6 +111,7 @@ export class AppUpdateService {
 @UntilDestroy({ checkProperties: true })
 @Component({
   selector: "app-update-component",
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     New Version is Available.
     <a

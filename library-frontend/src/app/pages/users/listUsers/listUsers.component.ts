@@ -1,4 +1,9 @@
-import { Component, inject, OnInit } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from "@angular/core";
 import { MatTableModule } from "@angular/material/table";
 import { Router } from "@angular/router";
 import { UserEntity } from "@app/models/user.entity";
@@ -14,6 +19,7 @@ const log = new Logger("ListUsersComponent");
   selector: "app-list",
   templateUrl: "./listUsers.component.html",
   styleUrl: "./listUsers.component.scss",
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [TranslateDirective, CustomizedTableComponent, MatTableModule],
 })
 export class ListUsersComponent implements OnInit {

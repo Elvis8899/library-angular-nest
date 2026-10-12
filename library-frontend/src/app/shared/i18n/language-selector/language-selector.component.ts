@@ -1,5 +1,11 @@
 import { AsyncPipe, NgClass } from "@angular/common";
-import { Component, ElementRef, inject, Input } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  Input,
+} from "@angular/core";
 import { I18nService } from "@app/shared/i18n/i18n.service";
 import { BehaviorSubject, Observable } from "rxjs";
 
@@ -8,6 +14,7 @@ import { BehaviorSubject, Observable } from "rxjs";
   templateUrl: "./language-selector.component.html",
   styleUrls: ["./language-selector.component.scss"],
   imports: [NgClass, AsyncPipe],
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     "(window:click)": "onClickOutside($event)",
   },

@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -15,6 +15,7 @@ import { HotToastService } from "@ngxpert/hot-toast";
   selector: "app-login",
   templateUrl: "./login.component.html",
   styleUrls: ["./login.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     TranslateDirective,
     ReactiveFormsModule,

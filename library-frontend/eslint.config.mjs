@@ -70,6 +70,9 @@ export default defineConfig(
           style: "kebab-case",
         },
       ],
+      // The Angular 22 migration kept existing components on Eager change
+      // detection to preserve behavior; move them to OnPush deliberately
+      "@angular-eslint/prefer-on-push-component-change-detection": "off",
       "no-restricted-syntax": [
         "error",
         {

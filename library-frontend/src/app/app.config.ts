@@ -1,4 +1,8 @@
-import { provideHttpClient, withInterceptors } from "@angular/common/http";
+import {
+  provideHttpClient,
+  withInterceptors,
+  withXhr,
+} from "@angular/common/http";
 import {
   ApplicationConfig,
   enableProdMode,
@@ -73,6 +77,7 @@ export const appConfig: ApplicationConfig = {
     }),
     // provideHttpClient is required for Angular's HttpClient with additional configuration, which includes interceptors from DI (dependency injection) , means to use class based interceptors
     provideHttpClient(
+      withXhr(),
       withInterceptors([authHttpInterceptor, errorHandlerInterceptor])
     ),
     {

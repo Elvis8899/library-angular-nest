@@ -1,4 +1,4 @@
-import { env } from "src/environments/.env";
+import { env } from "@env/.env";
 
 export const environment = {
   production: false,
