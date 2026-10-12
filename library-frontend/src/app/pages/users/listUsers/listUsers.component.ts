@@ -10,7 +10,7 @@ import { UserEntity } from "@app/models/user.entity";
 import { PaginatedDataSource } from "@app/models/utils/paginatedDataSource.entity";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
-import { CustomizedTableComponent } from "@app/shared/components/customized-table/customized-table.component";
+import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { TranslateDirective } from "@ngx-translate/core";
 
 const log = new Logger("ListUsersComponent");

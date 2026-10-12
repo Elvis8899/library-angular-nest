@@ -1,12 +1,12 @@
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { BookItemStatusEnum } from "@book/domain/value-object/bookItem.entity";
+import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
 import { BookRental } from "@rental/domain/bookRental.entity";
 import { bookRentalNotAvailableException } from "@rental/domain/bookRental.errors";
 import { BOOK_RENTAL_RENTED } from "@rental/domain/events/bookRented.event";
 import { CreateBookRentalDto } from "@rental/dtos/bookRental.dto";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { Apply, FPF, RE, RTE } from "@shared/utils/application/monads";

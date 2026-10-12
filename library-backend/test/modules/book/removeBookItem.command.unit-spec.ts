@@ -8,14 +8,14 @@ import {
   AvailableBookItemNotFoundException,
   BookInfoNotFoundException,
 } from "@book/domain/bookInfo.errors";
-import { BookItemStatusEnum } from "@book/domain/value-object/bookItem.entity";
+import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
 import { Test } from "@nestjs/testing";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
+import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
+import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { PinoLogger } from "nestjs-pino";
 

@@ -3,7 +3,7 @@ import {
   DocumentType,
   formatDocument,
   isValidDocument,
-} from "@user/domain/value-object/document";
+} from "@user/domain/valueObject/document";
 
 describe("[Unit] Document", () => {
   it.each([

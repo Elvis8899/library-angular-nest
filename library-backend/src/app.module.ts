@@ -4,7 +4,7 @@ import { DynamicModule, ForwardReference, Module, Type } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { CqrsModule } from "@nestjs/cqrs";
 import { BookRentalModule } from "@rental/bookRental.module";
-import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
+import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
 import { LoggerModule } from "@shared/logger/logger.module";
 import { PrismaModule } from "@shared/prisma/prisma.module";
 import { AppController } from "@src/app.controller";

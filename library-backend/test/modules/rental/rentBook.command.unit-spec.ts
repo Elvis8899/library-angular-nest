@@ -1,7 +1,7 @@
 // import { UnprocessableEntityException } from "@nestjs/common";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
 import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
-import { BookItemStatusEnum } from "@book/domain/value-object/bookItem.entity";
+import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
 import { Test } from "@nestjs/testing";
 import {
   RentBookCommand,
@@ -10,14 +10,14 @@ import {
 import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
 import { FakeBookRentalRepository } from "@rental/database/fakeBookRental.repository";
 import { BookRentalNotAvailableException } from "@rental/domain/bookRental.errors";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
+import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
-import { BookRentalBuilder } from "@test/data-builders/bookRentalBuilder";
-import { UserBuilder } from "@test/data-builders/userBuilder";
+import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
+import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
+import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { FakeUserRepository } from "@user/database/fakeUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";

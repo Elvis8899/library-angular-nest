@@ -4,7 +4,7 @@ import { bookInfoNotFoundException } from "@book/domain/bookInfo.errors";
 import { BOOK_INFO_UPDATED } from "@book/domain/events/bookInfoUpdated.event";
 import { CreateBookInfoDto } from "@book/dtos/bookInfo.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RE, RTE } from "@shared/utils/application/monads";

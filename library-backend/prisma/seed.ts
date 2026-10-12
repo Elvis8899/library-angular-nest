@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { userSeed } from "./seed/user.seed";
 import { bookSeed } from "./seed/book.seed";
 import { hashPassword } from "@auth/util/signTokenParams";
-import { formatDocument } from "@user/domain/value-object/document";
+import { formatDocument } from "@user/domain/valueObject/document";
 
 const prisma = new PrismaClient();
 

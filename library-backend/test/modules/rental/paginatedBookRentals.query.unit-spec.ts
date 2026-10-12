@@ -6,10 +6,10 @@ import {
   PaginatedBookRentalsQuery,
   PaginatedBookRentalsQueryHandler,
 } from "@rental/queries/paginatedBookRentals/paginatedBookRentals.query";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { BookRentalBuilder } from "@test/data-builders/bookRentalBuilder";
+import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { PinoLogger } from "nestjs-pino";
 

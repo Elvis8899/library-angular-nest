@@ -5,10 +5,10 @@ import {
   PaginatedBookInfosQueryHandler,
 } from "@book/queries/paginatedBookInfos/paginatedBookInfos.query";
 import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
+import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { PinoLogger } from "nestjs-pino";
 
 //Adapters

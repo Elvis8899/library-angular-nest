@@ -25,7 +25,7 @@ import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
-import { StronglyTypedDialog } from "@app/shared/components/dialog/typed-dialog";
+import { StronglyTypedDialog } from "@app/shared/components/dialog/typedDialog";
 import { BehaviorSubject } from "rxjs";
 
 const log = new Logger("ChooseUserDialogComponent");

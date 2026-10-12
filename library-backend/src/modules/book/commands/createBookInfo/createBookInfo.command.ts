@@ -3,7 +3,7 @@ import { BookInfo } from "@book/domain/bookInfo.entity";
 import { BOOK_INFO_CREATED } from "@book/domain/events/bookInfoCreated.event";
 import { CreateBookInfoDto } from "@book/dtos/bookInfo.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RE, RTE } from "@shared/utils/application/monads";

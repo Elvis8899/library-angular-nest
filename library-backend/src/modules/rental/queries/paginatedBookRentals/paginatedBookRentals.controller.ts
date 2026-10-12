@@ -22,7 +22,7 @@ import {
 import { PaginatedBookRentalResponseDto } from "@rental/dtos/bookRental.dto";
 import { PaginatedBookRentalsQuery } from "@rental/queries/paginatedBookRentals/paginatedBookRentals.query";
 import { Paginated } from "@shared/utils/database/repository.port";
-import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginated-query.request.dto";
+import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginatedQuery.request.dto";
 import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Controller("v1/bookRentals")

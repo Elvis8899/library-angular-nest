@@ -3,13 +3,13 @@ import { BookRentalRepository } from "@rental/database/bookRental.repository.por
 import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
 import { bookRentalNotFoundException } from "@rental/domain/bookRental.errors";
 import { BOOK_RENTAL_RETURNED } from "@rental/domain/events/bookReturned.event";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RE, RTE } from "@shared/utils/application/monads";
 import { noop } from "@shared/utils/application/noop";
 import { performRTE } from "@shared/utils/application/perform";
-import { DateType } from "@shared/utils/domain/DateType";
+import { DateType } from "@shared/utils/domain/dateType";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/entities/uuid";
 import { PinoLogger } from "nestjs-pino";

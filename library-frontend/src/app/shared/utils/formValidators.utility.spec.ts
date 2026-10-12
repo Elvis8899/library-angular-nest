@@ -1,5 +1,5 @@
 import { FormControl, FormGroup } from "@angular/forms";
-import { FormValidatorUtility } from "@app/shared/utils/form-validators.utility";
+import { FormValidatorUtility } from "@app/shared/utils/formValidators.utility";
 
 describe("removeNonNumeric", () => {
   it("Should remove non numeric", () => {

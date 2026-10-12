@@ -28,8 +28,8 @@ import { BookService } from "@app/services/book.http.service";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
 import { RentalService } from "@app/services/rental.http.service";
-import { CustomizedTableComponent } from "@app/shared/components/customized-table/customized-table.component";
-import { TypedDialog } from "@app/shared/components/dialog/typed-dialog";
+import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
+import { TypedDialog } from "@app/shared/components/dialog/typedDialog";
 import { TranslateModule } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 

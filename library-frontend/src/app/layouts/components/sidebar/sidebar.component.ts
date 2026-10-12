@@ -11,7 +11,7 @@ import {
   RouterLink,
   RouterLinkActive,
 } from "@angular/router";
-import { webSidebarMenuItems } from "@app/layouts/components/sidebar/nav-menu-items";
+import { webSidebarMenuItems } from "@app/layouts/components/sidebar/navMenuItems";
 import { NavMenuItem } from "@app/models/navMenuItem.interface";
 import { CredentialsService } from "@app/services/credentials.service";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";

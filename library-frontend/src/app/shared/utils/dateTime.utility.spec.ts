@@ -1,4 +1,4 @@
-import { DateTimeUtility } from "@app/shared/utils/date-time.utility";
+import { DateTimeUtility } from "@app/shared/utils/dateTime.utility";
 
 describe("getDateOnly", () => {
   it("Should return the date in the format dd/MM/yyyy - Date", () => {

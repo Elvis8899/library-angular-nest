@@ -1,7 +1,7 @@
 import { RouterModule } from "@angular/router";
 import { Logger } from "@app/services/logger.service";
 import { I18nService } from "@app/shared/i18n/i18n.service";
-import { LanguageSelectorComponent } from "@app/shared/i18n/language-selector/language-selector.component";
+import { LanguageSelectorComponent } from "@app/shared/i18n/languageSelector/languageSelector.component";
 import { LanguagesEnum } from "@app/shared/i18n/translations/allTranslations";
 import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";

@@ -10,8 +10,8 @@ import { BookRentalEntity } from "@app/models/bookRental.entity";
 import { PaginatedDataSource } from "@app/models/utils/paginatedDataSource.entity";
 import { Logger } from "@app/services/logger.service";
 import { RentalService } from "@app/services/rental.http.service";
-import { CustomizedTableComponent } from "@app/shared/components/customized-table/customized-table.component";
-import { DateTimeUtility } from "@app/shared/utils/date-time.utility";
+import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
+import { DateTimeUtility } from "@app/shared/utils/dateTime.utility";
 import { TranslateDirective } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 

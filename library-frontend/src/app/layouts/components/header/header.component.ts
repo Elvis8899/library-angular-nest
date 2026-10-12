@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from "@angular/core";
-import { LanguageSelectorComponent } from "@app/shared/i18n/language-selector/language-selector.component";
+import { LanguageSelectorComponent } from "@app/shared/i18n/languageSelector/languageSelector.component";
 import { UntilDestroy } from "@ngneat/until-destroy";
 import { TranslateDirective } from "@ngx-translate/core";
 

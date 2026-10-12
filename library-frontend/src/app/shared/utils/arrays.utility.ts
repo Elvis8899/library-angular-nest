@@ -7,7 +7,7 @@
  * @param toIndex
  */
 import { Logger } from "@app/services/logger.service";
-import { HumanizeSlugUtility } from "@app/shared/utils/humanize-slug.utility";
+import { HumanizeSlugUtility } from "@app/shared/utils/humanizeSlug.utility";
 import { TranslateService } from "@ngx-translate/core";
 
 const log = new Logger("Array Utility");

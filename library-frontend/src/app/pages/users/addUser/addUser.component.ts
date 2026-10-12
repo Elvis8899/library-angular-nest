@@ -10,7 +10,7 @@ import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
-import { FormValidatorUtility } from "@app/shared/utils/form-validators.utility";
+import { FormValidatorUtility } from "@app/shared/utils/formValidators.utility";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { noop } from "rxjs";
 

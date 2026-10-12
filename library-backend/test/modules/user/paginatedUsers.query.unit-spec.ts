@@ -1,8 +1,8 @@
 import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UserBuilder } from "@test/data-builders/userBuilder";
+import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { FakeUserRepository } from "@user/database/fakeUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 import {

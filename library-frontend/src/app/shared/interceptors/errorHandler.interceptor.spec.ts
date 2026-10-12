@@ -12,7 +12,7 @@ import { Credentials, ROLE } from "@app/models/credentials.entity";
 import { AuthenticationService } from "@app/services/authentication.service";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
-import { errorHandlerInterceptor } from "@app/shared/interceptors/error-handler.interceptor";
+import { errorHandlerInterceptor } from "@app/shared/interceptors/errorHandler.interceptor";
 import {
   createInjectionContextFactory,
   SpectatorInjectionContext,

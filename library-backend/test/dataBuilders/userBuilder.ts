@@ -2,7 +2,7 @@ import { FPF } from "@shared/utils/application/monads";
 import { UUID } from "@shared/uuid/entities/uuid";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { User, UserRoleEnum } from "@user/domain/user.entity";
-import { formatDocument } from "@user/domain/value-object/document";
+import { formatDocument } from "@user/domain/valueObject/document";
 import { CreateUserDto } from "@user/dtos/user.dto";
 import { z } from "zod";
 

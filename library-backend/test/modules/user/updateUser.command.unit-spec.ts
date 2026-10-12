@@ -1,11 +1,11 @@
 import { UnprocessableEntityException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
+import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UserBuilder } from "@test/data-builders/userBuilder";
+import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import {
   UpdateUser,
   UpdateUserHandler,

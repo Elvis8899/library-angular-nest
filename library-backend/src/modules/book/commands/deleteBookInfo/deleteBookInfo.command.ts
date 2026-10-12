@@ -2,7 +2,7 @@ import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
 import { bookInfoNotFoundException } from "@book/domain/bookInfo.errors";
 import { BOOK_INFO_DELETED } from "@book/domain/events/bookInfoDeleted.event";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";

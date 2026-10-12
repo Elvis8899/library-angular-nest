@@ -11,8 +11,8 @@ import { BehaviorSubject, Observable } from "rxjs";
 
 @Component({
   selector: "app-language-selector",
-  templateUrl: "./language-selector.component.html",
-  styleUrls: ["./language-selector.component.scss"],
+  templateUrl: "./languageSelector.component.html",
+  styleUrls: ["./languageSelector.component.scss"],
   imports: [NgClass, AsyncPipe],
   changeDetection: ChangeDetectionStrategy.Eager,
   host: {

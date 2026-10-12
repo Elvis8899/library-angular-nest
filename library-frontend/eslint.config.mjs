@@ -2,6 +2,7 @@
 import eslint from "@eslint/js";
 import angular from "angular-eslint";
 import prettierlint from "eslint-config-prettier";
+import checkFile from "eslint-plugin-check-file";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
@@ -91,7 +92,7 @@ export default defineConfig(
         },
       ],
     },
-  }
+  },
   // {
   //   files: ["**/*.ts"],
   //   languageOptions: {
@@ -211,4 +212,22 @@ export default defineConfig(
   //     "@typescript-eslint/no-extraneous-class": "off",
   //   },
   // },
+  {
+    // Files and folders are named in camelCase; suffixes like .component or
+    // .spec are ignored. Translation files keep their locale codes (en-US).
+    files: ["src/**/*.ts", "src/**/*.html"],
+    ignores: ["src/app/shared/i18n/translations/*-*.ts"],
+    plugins: { "check-file": checkFile },
+    rules: {
+      "check-file/filename-naming-convention": [
+        "error",
+        { "**/*.{ts,html}": "CAMEL_CASE" },
+        { ignoreMiddleExtensions: true },
+      ],
+      "check-file/folder-naming-convention": [
+        "error",
+        { "src/**/": "CAMEL_CASE" },
+      ],
+    },
+  },
 );

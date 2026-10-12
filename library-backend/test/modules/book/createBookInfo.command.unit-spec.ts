@@ -5,12 +5,12 @@ import {
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
 import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
 import { Test } from "@nestjs/testing";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domain-event-publisher/domainEventPublisher.module";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/FakeLogger.service";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
+import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
+import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { BookInfoBuilder } from "@test/data-builders/bookInfoBuilder";
+import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { PinoLogger } from "nestjs-pino";
 
 //Adapters

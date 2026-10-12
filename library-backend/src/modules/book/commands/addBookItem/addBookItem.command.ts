@@ -1,10 +1,10 @@
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
 import { bookInfoNotFoundException } from "@book/domain/bookInfo.errors";
 import { BOOK_ITEM_CREATED } from "@book/domain/events/bookItemCreated.event";
-import { BookItem } from "@book/domain/value-object/bookItem.entity";
+import { BookItem } from "@book/domain/valueObject/bookItem.entity";
 import { CreateBookItemDto } from "@book/dtos/bookInfo.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RE, RTE } from "@shared/utils/application/monads";

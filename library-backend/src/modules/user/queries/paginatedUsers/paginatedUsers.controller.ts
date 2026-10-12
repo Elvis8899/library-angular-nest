@@ -10,7 +10,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { Paginated } from "@shared/utils/database/repository.port";
-import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginated-query.request.dto";
+import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginatedQuery.request.dto";
 import { User, UserRoleEnum } from "@user/domain/user.entity";
 import { PaginatedUserResponseDto, toUserResponse } from "@user/dtos/user.dto";
 import { PaginatedUsersQuery } from "@user/queries/paginatedUsers/paginatedUsers.query";

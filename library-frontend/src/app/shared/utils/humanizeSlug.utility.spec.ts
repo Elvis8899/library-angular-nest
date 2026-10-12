@@ -1,4 +1,4 @@
-import { HumanizeSlugUtility } from "@app/shared/utils/humanize-slug.utility";
+import { HumanizeSlugUtility } from "@app/shared/utils/humanizeSlug.utility";
 
 describe("humanize", () => {
   it("Should humanize a string", () => {

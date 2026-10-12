@@ -1,6 +1,6 @@
 import { InternalServerErrorException } from "@nestjs/common";
 import { BOOK_INFO_CREATED } from "@src/modules/book/domain/events/bookInfoCreated.event";
-import { DomainEventPublisher } from "@src/modules/shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@src/modules/shared/domainEventPublisher/adapters/domainEventPublisher";
 import { executeTask } from "@src/modules/shared/utils/application/executeTask";
 import { unsafeCoerce } from "fp-ts/lib/function";
 

@@ -1,6 +1,6 @@
 import { hashPassword } from "@auth/util/signTokenParams";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, O, RE, RTE } from "@shared/utils/application/monads";
@@ -12,7 +12,7 @@ import { UserRepository } from "@user/database/user.repository.port";
 import { USER_CREATED } from "@user/domain/events/userCreated.event";
 import { User } from "@user/domain/user.entity";
 import { userCPFAlreadyExistsException } from "@user/domain/user.errors";
-import { CheckedDocumentType } from "@user/domain/value-object/document";
+import { CheckedDocumentType } from "@user/domain/valueObject/document";
 import { CreateUserDto } from "@user/dtos/user.dto";
 import { PinoLogger } from "nestjs-pino";
 

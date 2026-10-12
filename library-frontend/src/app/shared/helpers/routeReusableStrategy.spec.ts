@@ -1,5 +1,5 @@
 import { ActivatedRouteSnapshot } from "@angular/router";
-import { RouteReusableStrategy } from "@app/shared/helpers/route-reusable-strategy";
+import { RouteReusableStrategy } from "@app/shared/helpers/routeReusableStrategy";
 import {
   createServiceFactory,
   SpectatorService,

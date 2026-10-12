@@ -29,8 +29,8 @@ import { TranslateModule } from "@ngx-translate/core";
 
 @Component({
   selector: "app-customized-table",
-  templateUrl: "./customized-table.component.html",
-  styleUrl: "./customized-table.component.scss",
+  templateUrl: "./customizedTable.component.html",
+  styleUrl: "./customizedTable.component.scss",
   imports: [
     MatFormFieldModule,
     MatInputModule,
