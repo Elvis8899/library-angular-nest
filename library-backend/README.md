@@ -1,23 +1,49 @@
 # Library Backend
 
-This is a library for generating a NestJS backend.
+REST API for the [Library](../README.md) project: NestJS 11 on Fastify, Prisma + PostgreSQL, Zod validation and fp-ts pipelines. API documentation is served by Swagger at `/swagger`.
 
-## Development server
+See the [root README](../README.md) for setup, demo accounts and the Docker dev stack.
 
-Run `npm run start:dev` for a dev server. Navigate to `http://localhost:3000/`. The app will automatically reload if you change any of the source files.
+## Scripts
 
-## Code scaffolding
+| Command | Description |
+|---|---|
+| `yarn start:dev` | Watch mode on port 3000 |
+| `yarn build` | Compile to `dist/` (entry point: `dist/src/main.js`) |
+| `yarn lint` | ESLint |
+| `yarn migrate` | Create and apply a migration (`prisma migrate dev`) |
+| `npx prisma db seed` | Seed demo users and books |
+| `make dockerDev` | Start the full dev stack with Docker Compose |
 
-Run `npx nest g` to generate a new module, service, controller, etc.
+## Configuration
 
-## Build
+The app reads `.env` (`.env.dev` in the Docker dev stack, `.env.test` for tests). See `.env.example` for all variables.
 
-Run `npm run build` to build the project. The build artifacts will be stored in the `dist/` directory.
+`JWT_SECRET_KEY` and `JWT_REFRESH_SECRET` are required and must be at least 32 characters long. The app refuses to start without them.
 
-## Running unit tests
+## Tests
 
-Run `npm run test:unit` to execute the unit tests via [Jest](https://jestjs.io/).
+Tests run against a real PostgreSQL database (`library-test`):
 
-## Further help
+```bash
+docker compose -f .docker/docker-compose-dev.yml up postgres -d
+yarn test:migrate
+```
 
-To get more help on the Nest CLI use `npx nest --help` or go check out the [Nest CLI README](https://github.com/nestjs/nest-cli/blob/master/README.md).
+| Command | Runs |
+|---|---|
+| `yarn test:unit` | `*.unit-spec.ts`: command and query handlers with in-memory repositories |
+| `yarn test:inte` | `*.inte-spec.ts`: Prisma repositories against PostgreSQL |
+| `yarn test:e2e` | `*.e2e-spec.ts`: HTTP endpoints with supertest |
+| `yarn test:cov` | All of the above. Fails below 100% coverage. This is what CI runs. |
+
+To run a single file or test, use the base Jest config. The suite configs enforce coverage thresholds, which fail on partial runs:
+
+```bash
+npx env-cmd -f .env.test jest --config ./test/jest.config.ts test/modules/user/document.unit-spec.ts
+npx env-cmd -f .env.test jest --config ./test/jest.config.ts -t "test name" <file>
+```
+
+## Code organisation
+
+Each feature in `src/modules/` (`user`, `book`, `rental`, `auth`) is split into `commands/` (writes), `queries/` (reads), `domain/` (Zod entities, errors, events), `database/` (repository port with Prisma and in-memory implementations) and `dtos/`. Imports use path aliases (`@user/`, `@book/`, `@shared/`, …); relative imports are rejected by lint. See [`CLAUDE.md`](../CLAUDE.md) for details.

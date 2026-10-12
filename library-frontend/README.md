@@ -1,23 +1,43 @@
 # Library Frontend
 
-This is a starter template for a frontend application using Angular. The project is generated using the official Angular CLI.
+Web app for the [Library](../README.md) project: Angular 22 with Angular Material, translated into Portuguese (pt-BR) and English (en-US).
 
-## Development server
+See the [root README](../README.md) for the full setup and demo accounts.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## Requirements
 
-## Code scaffolding
+Node 22.22.3+ or 24.15+, as required by Angular 22. Run `nvm use` to pick the version from `.nvmrc`.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Development
 
-## Build
+```bash
+yarn install
+yarn start          # http://localhost:4200
+```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+The dev server proxies `/v1` requests to the backend at `http://localhost:3000` (`proxy.conf.json`), so start the backend first.
 
-## Running unit tests
+## Scripts
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+| Command | Description |
+|---|---|
+| `yarn start` | Dev server with live reload |
+| `yarn build` | Production build in `dist/library-frontend/browser` |
+| `yarn build:serve` | Serve the production build on port 8080 |
+| `yarn lint` / `yarn lint:fix` | ESLint (Angular rules) |
+| `yarn prettier` | Format `src/` |
+| `yarn test` | Unit tests with Vitest and coverage (fails below 80%) |
 
-## Further help
+To run a single spec file:
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+```bash
+npx ng test --watch=false --coverage=false --include src/app/services/authentication.service.spec.ts
+```
+
+## Code organisation
+
+- `src/app/pages/`: lazy-loaded feature routes (`books`, `rentals`, `users`, `auth`). Routes can be limited to certain roles with `data: { roles: [...] }`.
+- `src/app/services/`: HTTP services, login/logout/token refresh, and credential storage.
+- `src/app/shared/`: guards, HTTP interceptors (auth headers, error handling, automatic token refresh), i18n, and shared components.
+
+Imports use path aliases (`@app/`, `@shared/`, `@pages/`, `@env/`); relative imports are rejected by lint. See [docs/coding-style.md](docs/coding-style.md) for conventions.

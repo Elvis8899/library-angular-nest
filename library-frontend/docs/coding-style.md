@@ -1,165 +1,112 @@
 # Coding Style
 
-## Coding style
+Conventions for `library-frontend`. Most of them are enforced by tooling. Run `yarn lint` and `yarn prettier` before committing.
 
-For coding style and linter we use **[@angular-eslint/schematic](https://github.com/angular-eslint/angular-eslint)**
+## Formatting
 
-## Why
+[Prettier](../.prettierrc) is the source of truth for formatting:
 
-Javascript standard style **[isn't a real web standard](https://standardjs.com/index.html#but-this-isnt-a-real-web-standard)**, but this rules helps to keep the code to a high
-_standard of quality_ and ensures that all contributors follow some basic coding style.
+- 2-space indentation, 80-character lines, semicolons, trailing commas where valid in ES5.
+- Double quotes.
+- Imports are sorted and unused ones removed by `prettier-plugin-organize-imports`.
+- HTML templates are formatted with the Angular parser.
 
-A [lot of companies](https://standardjs.com/index.html#who-uses-javascript-standard-style) around the world are using standard.js
+ESLint includes `eslint-plugin-prettier`, so formatting problems are reported as lint errors.
 
-## Rules (brief)
+SCSS rules are configured in [`.stylelintrc`](../.stylelintrc), but no script runs Stylelint yet. Run it manually with `npx stylelint "src/**/*.scss"`.
 
-- Use 2 spaces for indentation.
-- Use double quotes for strings except to avoid escaping.
-- Use camelcase when naming variables and functions.
-- Add a space after keywords.
-- Add a space before a function declaration's parentheses.
-- Always use === instead of ==.
-- Keep else statements on the same line as their curly braces.
-- Multiple blank lines not allowed.
-- For var declarations, write each declaration in its own statement.
+## Lint rules worth knowing
 
-Check full _standard.js_ rules at [standard.js rules page](https://standardjs.com/rules.html)
+The [ESLint config](../eslint.config.mjs) extends the recommended rules from ESLint, typescript-eslint (recommended and stylistic) and angular-eslint (TypeScript, templates and accessibility). On top of those:
 
-## Typescript
+| Rule | What it means |
+|---|---|
+| No relative imports | Use path aliases: `@app/`, `@shared/`, `@pages/`, `@env/`. Lazy `import()` calls in route files are the one exception. |
+| `no-console` | Use the `Logger` service: `const log = new Logger("MyComponent")` at the top of the file. |
+| No property setters | Use methods or signals instead of `set foo(...)`. |
+| Component selectors | Kebab-case elements with the `app` prefix (`app-list-books`); directives use the `app` prefix in camelCase. |
+| `check-file/*` naming rules | File and folder names must be camelCase; see [File naming](#file-naming). |
+| `prefer-on-push-component-change-detection` | Off for now; see [Change detection](#change-detection). |
 
-The project uses both ES and Typescript. Config for Typescript compiler is _allowJs = true_
+## Components
 
-### Code organization
+- **Standalone only.** List dependencies in the component's `imports` array; there are no NgModules.
+- **Dependency injection with `inject()`**, not constructor parameters. Private dependencies are `readonly` and prefixed with `_`:
 
-We use `pages` folder in `app` folder to manage all the views/screens.
-And `_shared` folder within `pages` folder containing views.pages that are shared across multiple users.
+  ```ts
+  private readonly _bookService = inject(BookService);
+  private readonly _toast = inject(HotToastService);
+  ```
 
-```console
+- **Templates use the built-in control flow** (`@if`, `@for`, `@switch`), not `*ngIf` or `*ngFor`.
+- **Template text goes through translations:** use the `translate` directive or pipe from ngx-translate. See [Translations](#translations).
+- **User feedback** uses `HotToastService` (`this._toast.success(...)`, `.error(...)`). Toast messages are currently hard-coded English strings; new ones should use `TranslateService.instant(...)` so they get translated too.
+- **Dialogs** extend `StronglyTypedDialog<Data, Result>` and are opened with `TypedDialog` (`shared/components/dialog/typedDialog.ts`), so their data and result are typed.
+- **Paginated tables** use `PaginatedDataSource` (`models/utils/paginatedDataSource.entity.ts`) together with `CustomizedTableComponent`.
+- **Forms** use reactive forms (`FormBuilder` with `Validators`). Custom validators live in `shared/utils/formValidators.utility.ts`.
 
-├───app
-│   ├───@core
-│   │   ├───constants
-│   │   │   └─── constants set in the whole
-│   │   ├───entities
-│   │   │   └─── Entity models used in the app
-│   │   ├───enums
-│   │   │   └─── enums files to be used in the app
-│   │   ├───guards
-│   │   │   └─── addition guards. Auth related guards are in auth module.
-│   │   ├───helpers
-│   │   │   └─── helpers files to support the app
-│   │   ├───interceptors
-│   │   │   └─── interceptors files to intercept the requests
-│   │   ├───interfaces
-│   │   │   └─── interfaces files to be used in the app
-│   │   ├───services
-│   │   │   └─── services files used to fetch data from the backend only. they only contain http requests.
-│   │   ├───usecases
-│   │   │   └─── usecases/compositions files used to get data from the services, mutate or manipulate and pass it to the views.
-│   │   └───utils
-│   │       └─── utils files containing utility functions
-│   ├───auth (complete independent auth module)
-│   │   ├───enums
-│   │   │   └─── enums files to be used in the auth module only.
-│   │   ├───guard
-│   │   │   ├─── auth guard
-│   │   │   └─── permission guard
-│   │   ├───login
-│   │   │   └─── login page as default page for the app.
-│   │   ├───logout
-│   │   │   └─── logout page. (can be called via route)
-│   │   └───services
-│   │       ├─── authentication service: to handle login, logout.
-│   │       ├─── credentials service: to handle authenticated state and credentials stored in localstorage.
-│   │       └─── permission serice: to handle permissions.
-│   ├───i18n
-│   │   ├───i18n service to handle language seletion
-│   │   └───language selector component
-│   ├───pages
-│   │   ├───pages.module
-│   │   │   └─── import all the pages in this module.
-│   │   └───pages-routing
-│   │       └─── Main route file for screen/views/pages. Lazy load other screen, componenet, module etc in this route file
-│   ├───shared
-│   │   ├───components
-│   │   │   └─── Shared Components to be able to use in whole app (for reusability)
-│   │   ├───directives
-│   │   │   └─── Shared Directives to be available in whole app (for reusability)
-│   │   └───pipes
-│   │       └─── Shared Pipes to be available in whole app (for reusability)
-│   └───shell
-│   │   ├───components
-│   │   │   └─── Shell Components to be able to use in whole app (for reusability) such as header, footer, sidebar etc.
-│   └───└───services
-│           └─── shell service: to handle shell related data including sidebar toggle state, handle child routes etc.
-│           └─── theme service: to handle theme related data including theme change, theme selection etc.
-│
-├───theme
-│   └─── containes all the theme related files including scss files
-└───environments
+### Change detection
+
+New components should use `ChangeDetectionStrategy.OnPush`. Older components are marked `ChangeDetectionStrategy.Eager`, which the Angular 22 migration added to keep their existing behaviour. Move them to OnPush one at a time, making sure state changes go through signals, observables in the template, or `markForCheck`. Once none are left, turn the lint rule back on.
+
+## Project structure
+
+```
+src/app/
+  pages/<feature>/        Lazy-loaded routes: <feature>.routes.ts plus one folder per screen
+  services/               HTTP services (*.http.service.ts) and app services (auth, credentials, logger)
+  models/                 Interfaces and enums for API data (*.entity.ts)
+  layouts/                Shell: layout, header, sidebar and navigation menu items
+  shared/
+    components/           Reusable components (customized table, typed dialog)
+    guard/                Route guards (authentication, permission)
+    interceptors/         HTTP interceptors (auth headers, error handling, token refresh)
+    i18n/                 Language service, language selector, translations
+    pipes/ utils/         Pipes and pure helper functions (*.utility.ts)
+src/theme/                Global SCSS: variables, mixins, layout, utilities, Material overrides
+src/environments/         Environment config
 ```
 
-### Structure Explained
+- **Pages:** each feature has a `<feature>.routes.ts` loaded from `pages/pages.routes.ts`. Secondary screens can be lazy-loaded with `loadComponent`. Restrict access by role with `data: { roles: [ROLE.ADMIN] }` together with `permissionGuard`. Sidebar entries and their roles are defined in `layouts/components/sidebar/navMenuItems.ts`.
+- **HTTP services** only wrap `HttpClient` calls. Data shaping and state belong in components or app services. HTTP services are excluded from coverage.
+- **Models** are TypeScript interfaces that mirror the API responses. Enums use the same string values as the backend.
 
-- **Core**:
-  As the backbone of the application, the `@core` folder contains essential components, services, and utilities for the app’s overall functionality.
-  - **Constants**: Contains constant values that are used throughout the app, similar to app settings or configurations.
-  - **Entities**: Holds entity models for data manipulation, representing core business objects used throughout the app.
-  - **Enums**: Stores all enums to ensure type safety and centralized enum management.
-  - **Guards**: Contains additional guards for protecting routes and handling authorization logic.
-  - **Helpers**: Utility functions or services like authentication helpers, query builders, error handlers, etc.
-  - **Interceptors**: Holds files that intercept and manipulate HTTP requests or responses.
-  - **Interfaces**: Centralized location for interface declarations across the app for consistent data contracts.
-  - **Services**: This folder includes services dedicated to fetching or sending data to/from the backend through HTTP requests. Services here are aligned with the Single Responsibility Principle.
-  - **Usecases**: These are composition functions that act as the intermediary between services and views. They manipulate or transform data fetched from services before passing it to the UI.
-  - **Utils**: Utility functions like validators, transformers, or helper functions that don’t depend on specific app features.
+### File naming
 
-- **Auth** (Independent module):
-  A completely independent authentication module.
-  - **Enums**: Manages enums specific to authentication.
-  - **Guards**: Contains guards related to authentication, like the auth guard and permission guard.
-  - **Login**: The login page that serves as the app’s default landing page.
-  - **Logout**: The logout page, accessible via route to terminate sessions.
-  - **Services**: Contains services related to authentication, managing user sessions, credentials, and permissions.
-    - Authentication Service: Handles login and logout functionality.
-    - Credentials Service: Manages session state and user data in local storage.
-    - Permission Service: Handles user access levels and permissions.
+Each component has its own folder holding its `.ts`, `.html`, `.scss` and `.spec.ts` files.
 
-- **i18n**:
-  Manages internationalization, including:
-  - **i18n Service**: Handles language selection and translation.
-  - **Language Selector Component**: A reusable component to switch between languages in the app.
+**File and folder names are camelCase**, followed by a role suffix: `listBooks/listBooks.component.ts`, `customizedTable/customizedTable.component.ts`, `chooseUser.dialog.component.ts`, `dateTime.utility.ts`, `book.http.service.ts`.
 
-- **Pages**:
-  Manages all views/screens shown to the user.
-  - **Pages Module**: The module approach used to group related screens into modules that are lazy-loaded. Each major section or feature can have its own module, and these modules are imported into the shell module.
-  - **Pages Routing**: Main routing file for the app's screens. It handles lazy-loading of other modules, components, and views to improve performance.
+Lint enforces this (`eslint-plugin-check-file`) for `.ts` and `.html` files and all folders under `src/`; the suffixes after the first dot aren't checked. The translation files are the one exception: they keep their locale codes (`en-US.ts`, `pt-BR.ts`).
 
-- **Shared**:
-  This folder contains reusable components, directives, and pipes that can be used across the entire application.
-  - **Components**: Shared components like buttons, forms, or other UI elements that can be used across multiple views.
-  - **Directives**: Shared directives that can be used across multiple modules.
-  - **Pipes**: Reusable pipes for formatting or transforming data within the app.
+Component selectors and CSS classes are a separate matter and stay kebab-case (`app-customized-table`, `.language-selector`).
 
-- **Shell**:
-  Manages the core layout components that are used throughout the app.
-  - **Components**: Reusable components like the header, footer, sidebar, etc., which make up the app’s structure.
-  - **Services**:
-    - **Shell Service**: Manages data related to the layout, like the sidebar toggle state or handling child routes.
-    - **Theme Service**: Manages app themes, including theme switching and selection.
+Class names use a role suffix: `ListBooksComponent`, `BookService`, `ChooseUserDialogComponent`.
 
-- **Assets**:
-  Contains static files, such as images, icons, and language files, used across the app.
+## Translations
 
-- **Theme**:
-  This folder contains all SCSS files responsible for managing the application's theme and styles.
-  - **\_base**: Handles basic style definitions and resets.
-  - **\_layout**: Manages layout-specific styles such as grids, containers, and spacing.
-  - **\_mixin**: Defines reusable SCSS mixins for consistent styling across the app.
-  - **\_overrides**: Contains styles that override third-party or default styles.
-  - **\_utilities**: Utility classes for common tasks like margin, padding, or text alignment.
-  - **\_variables**: Stores SCSS variables for colors, fonts, breakpoints, etc.
-  - **Main theme file**: Imports all the partials and applies the complete theme to the app, handling customization and styling of various components.
+Translations are TypeScript files in `shared/i18n/translations/`. Keys are the English text itself (`"Books List"`).
 
-- **Environments**:
-  Stores environment-specific configurations like API endpoints for different builds (development, production, etc.).
+To add a string:
+
+1. Add the key to the `keys` union in `allTranslations.ts`.
+2. Add the text to both `en-US.ts` and `pt-BR.ts`.
+
+Both files are typed as `AllTranslations`, so the build fails if a language is missing a key.
+
+## Styles
+
+- Component styles go in the component's `.scss` file. Shared variables and mixins come from `src/theme/` (`_variables.scss`, `_mixins.scss`).
+- Stylelint limits: nesting depth 3, no ID selectors, no `!important`, no vendor prefixes, lowercase kebab-case class names.
+- Override Angular Material styles in `src/theme/_overrides.scss`. No component uses `::ng-deep` today; keep it that way.
+
+## Tests
+
+- Specs sit next to the file they test (`*.spec.ts`) and run on Vitest through `ng test`.
+- Use `@ngneat/spectator/vitest`:
+  - `createComponentFactory` for components
+  - `createServiceFactory` for services
+  - `createInjectionContextFactory` for guards and interceptors
+- Mock dependencies with `mocks: [...]` and stub them with `spectator.inject(Service).method.mockReturnValue(...)`.
+- Test HTTP calls with `provideHttpClientTesting()` and `HttpTestingController`, and call `httpMock.verify()` in `afterEach`.
+- Coverage must stay at or above 80% (`angular.json`).
