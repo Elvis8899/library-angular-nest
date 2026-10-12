@@ -145,4 +145,27 @@ describe("[Unit] Update BookInfo", () => {
     //Then it should have updated the bookInfo and emitted an event
     expect(spy).toHaveBeenCalledTimes(1);
   });
+
+  it("Should not rent book item that already has an active rental", async () => {
+    // Given a book item that was rented concurrently, before its status changed
+    const bookRental = bookRentalBuilder.buildCreateDTO();
+    await executeTask(
+      bookRentalRepository.save(new BookRentalBuilder(1).build()),
+    );
+
+    //When we try renting it
+    const resultPromise = rentBookCommandHandler.execute(
+      new RentBookCommand({
+        bookItemId: bookRental.bookItemId,
+        userId: bookRental.userId,
+      }),
+    );
+
+    //Then it should be rejected
+    await expect(resultPromise).rejects.toBeInstanceOf(
+      BookRentalNotAvailableException,
+    );
+    const bookRentals = await executeTask(bookRentalRepository.findAll());
+    expect(bookRentals.length).toEqual(1);
+  });
 });

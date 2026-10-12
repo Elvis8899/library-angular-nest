@@ -21,4 +21,10 @@ export abstract class BookRentalRepository implements RepositoryDefaultPort<Book
   save!: <U extends BookRental>(
     bookRental: Partial<U>,
   ) => TE.TaskEither<Error, void>;
+  /** Atomically marks the book item as rented and stores the rental.
+   * Fails with BookRentalNotAvailableException if the item is not available. */
+  rent!: (bookRental: BookRental) => TE.TaskEither<Error, void>;
+  /** Atomically finishes an active rental and makes the book item available.
+   * Fails with BookRentalFinishedException if the rental is not active. */
+  finish!: (bookRental: BookRental) => TE.TaskEither<Error, void>;
 }

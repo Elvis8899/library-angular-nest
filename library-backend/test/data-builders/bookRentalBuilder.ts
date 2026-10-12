@@ -55,6 +55,11 @@ export class BookRentalBuilder {
     return this;
   }
 
+  withUserId(userId: string) {
+    this.overrides.userId = userId;
+    return this;
+  }
+
   withStatus(status: RentalStatusEnum) {
     this.overrides.rentalStatus = status;
     return this;

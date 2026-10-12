@@ -66,7 +66,7 @@ export class RentBookCommandHandler implements ICommandHandler<
           (data) => data.bookItemId,
           performRTE(
             this.bookInfoRepository.findBookItemById,
-            "get user by id",
+            "get book item by id",
           ),
 
           RTE.chainW(RTE.fromOption<Error>(bookRentalNotAvailableException)),
@@ -77,24 +77,19 @@ export class RentBookCommandHandler implements ICommandHandler<
         ),
       ),
 
-      //Store entity
-      RTE.tap(
-        performRTE(
-          this.bookRentalRepository.save,
-          "save bookInfo in storage system.",
-        ),
-      ),
+      //Mark book item as rented and store rental atomically
+      RTE.tap(performRTE(this.bookRentalRepository.rent, "rent book item.")),
 
-      // //Emit domain event
-      RTE.chain((bookInfo) =>
+      //Emit domain event
+      RTE.chain((bookRental) =>
         performRTE(
           this.domainEventPublisher.publishEvent,
-          "emit bookInfo created event.",
+          "emit book rented event.",
         )({
           eventKey: BOOK_RENTAL_RENTED,
           payload: {
-            id: bookInfo.id,
-            bookItemId: bookInfo.bookItemId,
+            id: bookRental.id,
+            bookItemId: bookRental.bookItemId,
           },
         }),
       ),

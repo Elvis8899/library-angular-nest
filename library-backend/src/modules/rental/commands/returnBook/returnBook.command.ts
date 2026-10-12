@@ -1,10 +1,7 @@
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
 import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
-import {
-  bookRentalFinishedException,
-  bookRentalNotFoundException,
-} from "@rental/domain/bookRental.errors";
+import { bookRentalNotFoundException } from "@rental/domain/bookRental.errors";
 import { BOOK_RENTAL_RETURNED } from "@rental/domain/events/bookReturned.event";
 import { DomainEventPublisher } from "@shared/domain-event-publisher/adapters/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -50,7 +47,7 @@ export class ReturnBookCommandHandler implements ICommandHandler<
 
       RTE.fromReaderEither,
 
-      //Validate BookRental exists and is not finished
+      //Validate BookRental exists
       RTE.chain((data) =>
         FPF.pipe(
           data.id,
@@ -59,35 +56,28 @@ export class ReturnBookCommandHandler implements ICommandHandler<
             "get book rental by id",
           ),
           RTE.chainW(RTE.fromOption<Error>(bookRentalNotFoundException)),
-          RTE.filterOrElseW(
-            (bookRental) =>
-              bookRental.rentalStatus !== RentalStatusEnum.Finished,
-            bookRentalFinishedException,
-          ),
           RTE.map((bookRental) => ({
             ...bookRental,
             ...data,
           })),
         ),
       ),
-      //Store entity
+      //Finish rental and make book item available atomically;
+      //fails if the rental was already finished
       RTE.tap(
-        performRTE(
-          this.bookRentalRepository.save,
-          "save bookInfo in storage system.",
-        ),
+        performRTE(this.bookRentalRepository.finish, "finish book rental."),
       ),
 
       //Emit domain event
-      RTE.chain((bookInfo) =>
+      RTE.chain((bookRental) =>
         performRTE(
           this.domainEventPublisher.publishEvent,
-          "emit bookInfo Updated event.",
+          "emit book returned event.",
         )({
           eventKey: BOOK_RENTAL_RETURNED,
           payload: {
-            id: bookInfo.id,
-            bookItemId: bookInfo.bookItemId,
+            id: bookRental.id,
+            bookItemId: bookRental.bookItemId,
           },
         }),
       ),
