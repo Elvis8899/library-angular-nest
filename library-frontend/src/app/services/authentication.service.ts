@@ -2,7 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import { Credentials } from "@app/models/credentials.entity";
 import { CredentialsService } from "@app/services/credentials.service";
 import { UserService } from "@app/services/user.http.service";
-import { map, Observable, of } from "rxjs";
+import { finalize, map, Observable, of, shareReplay, throwError } from "rxjs";
 
 export interface LoginContext {
   email: string;
@@ -21,6 +21,7 @@ export interface LoginContext {
 export class AuthenticationService {
   private readonly _userService = inject(UserService);
   private readonly _credentialsService = inject(CredentialsService);
+  private _refreshInFlight$: Observable<Credentials> | null = null;
 
   /**
    * Authenticates the user.
@@ -34,6 +35,27 @@ export class AuthenticationService {
         return credentials;
       })
     );
+  }
+
+  /**
+   * Gets new tokens using the stored refresh token.
+   * Concurrent calls share a single request.
+   * @return The new user credentials.
+   */
+  refresh(): Observable<Credentials> {
+    const refreshToken = this._credentialsService.credentials?.refreshToken;
+    if (!refreshToken) {
+      return throwError(() => new Error("No refresh token"));
+    }
+    this._refreshInFlight$ ??= this._userService.refresh(refreshToken).pipe(
+      map((credentials) => {
+        this._credentialsService.setCredentials(credentials);
+        return credentials;
+      }),
+      finalize(() => (this._refreshInFlight$ = null)),
+      shareReplay(1)
+    );
+    return this._refreshInFlight$;
   }
 
   /**

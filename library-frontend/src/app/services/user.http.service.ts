@@ -23,6 +23,14 @@ export class UserService {
     return this._http.post<Credentials>("/v1/login", credentials);
   }
 
+  refresh(refreshToken: string): Observable<Credentials> {
+    return this._http.post<Credentials>(
+      "/v1/refresh",
+      { refreshToken },
+      { headers: { noauth: "true" } }
+    );
+  }
+
   getPaginatedUsers(
     req?: PageRequest<UserEntity, object>
   ): Observable<PaginatedResponse<UserEntity>> {

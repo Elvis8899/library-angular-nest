@@ -7,3 +7,12 @@ export class WrongAuthException extends UnauthorizedException {
 }
 
 export const wrongAuthException = () => new WrongAuthException();
+
+export class InvalidRefreshTokenException extends UnauthorizedException {
+  constructor() {
+    super("Sessão expirada. Faça login novamente.");
+  }
+}
+
+export const invalidRefreshTokenException = () =>
+  new InvalidRefreshTokenException();

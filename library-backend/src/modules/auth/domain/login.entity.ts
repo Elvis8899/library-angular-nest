@@ -8,6 +8,10 @@ export const LoginInput = z.object({
 
 export type User = z.infer<typeof LoginInput>;
 
+export const RefreshTokenInput = z.object({
+  refreshToken: z.string().min(1),
+});
+
 export type RequestJWTPayload = {
   sub: string;
   email: string;

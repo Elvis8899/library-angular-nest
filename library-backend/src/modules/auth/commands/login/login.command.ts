@@ -2,10 +2,7 @@ import { wrongAuthException } from "@auth/domain/auth.errors";
 import { LoginInput } from "@auth/domain/login.entity";
 import { AuthResponseDto } from "@auth/dtos/authResponse.dto";
 import { LoginDto } from "@auth/dtos/login.dto";
-import {
-  comparePassword,
-  getSignTokenParams,
-} from "@auth/util/signTokenParams";
+import { comparePassword, generateTokens } from "@auth/util/signTokenParams";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { JwtService } from "@nestjs/jwt";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -13,7 +10,6 @@ import { fromInputRE } from "@shared/utils/application/fromInput";
 import { B, FPF, RE, RTE, TE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
 import { UserRepository } from "@user/database/user.repository.port";
-import { User } from "@user/domain/user.entity";
 import { PinoLogger } from "nestjs-pino";
 
 export class LoginCommand implements ICommand {
@@ -64,32 +60,8 @@ export class LoginCommandHandler implements ICommandHandler<
           ),
         ),
       ),
-      RTE.chainTaskK((user) => () => this.generateTokens(user)),
+      RTE.chainTaskK((user) => () => generateTokens(this.jwtService)(user)),
     )({ logger: this.logger });
     return executeTask(task);
-  }
-
-  public async generateTokens(user: User): Promise<AuthResponseDto> {
-    const { payload, signOptions, refreshOptions } = getSignTokenParams(
-      user.id,
-      {
-        email: user.email,
-        role: user.role,
-      },
-    );
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload, signOptions),
-      this.jwtService.signAsync(payload, refreshOptions),
-    ]);
-    return {
-      accessToken,
-      refreshToken,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    };
   }
 }

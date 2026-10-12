@@ -10,7 +10,7 @@ import {
   SpectatorService,
   SpyObject,
 } from "@ngneat/spectator/vitest";
-import { of } from "rxjs";
+import { of, Subject } from "rxjs";
 
 describe("AuthService", () => {
   const loginContext: LoginContext = {
@@ -63,5 +63,46 @@ describe("AuthService", () => {
 
     expect(credentialServiceMock.clearCredentials).toBeCalled();
     expect(res).toBe(true);
+  });
+
+  it("On refresh, should request new tokens and set credentials", () => {
+    // Given stored credentials with a refresh token
+    credentialServiceMock.castToWritable().credentials = credential;
+    const newCredential = { ...credential, accessToken: "new" };
+    userServiceMock.refresh.mockReturnValue(of(newCredential));
+
+    // When refreshing
+    let res: Credentials | undefined;
+    spectator.service.refresh().subscribe({ next: (v) => (res = v) });
+
+    expect(userServiceMock.refresh).toBeCalledWith(credential.refreshToken);
+    expect(credentialServiceMock.setCredentials).toBeCalledWith(newCredential);
+    expect(res).toEqual(newCredential);
+  });
+
+  it("On concurrent refresh, should send a single request", () => {
+    credentialServiceMock.castToWritable().credentials = credential;
+    const response$ = new Subject<Credentials>();
+    userServiceMock.refresh.mockReturnValue(response$);
+
+    // When refreshing twice before the first response arrives
+    const results: Credentials[] = [];
+    spectator.service.refresh().subscribe((v) => results.push(v));
+    spectator.service.refresh().subscribe((v) => results.push(v));
+    response$.next(credential);
+    response$.complete();
+
+    expect(userServiceMock.refresh).toHaveBeenCalledTimes(1);
+    expect(results).toEqual([credential, credential]);
+  });
+
+  it("On refresh without refresh token, should fail", () => {
+    credentialServiceMock.castToWritable().credentials = null;
+
+    let failed = false;
+    spectator.service.refresh().subscribe({ error: () => (failed = true) });
+
+    expect(failed).toBe(true);
+    expect(userServiceMock.refresh).not.toBeCalled();
   });
 });

@@ -1,5 +1,7 @@
 import { authConfig } from "@auth/auth.config";
-import { JwtSignOptions } from "@nestjs/jwt";
+import { AuthResponseDto } from "@auth/dtos/authResponse.dto";
+import { JwtService, JwtSignOptions, JwtVerifyOptions } from "@nestjs/jwt";
+import { User } from "@user/domain/user.entity";
 import * as bcrypt from "bcrypt";
 
 export const getSignTokenParams = (
@@ -29,6 +31,38 @@ export const getSignTokenParams = (
     },
   };
 };
+
+export const refreshVerifyOptions: JwtVerifyOptions = {
+  audience: authConfig.audience,
+  issuer: authConfig.issuer,
+  secret: authConfig.refreshSecret,
+};
+
+export const generateTokens =
+  (jwtService: JwtService) =>
+  async (user: User): Promise<AuthResponseDto> => {
+    const { payload, signOptions, refreshOptions } = getSignTokenParams(
+      user.id,
+      {
+        email: user.email,
+        role: user.role,
+      },
+    );
+    const [accessToken, refreshToken] = await Promise.all([
+      jwtService.signAsync(payload, signOptions),
+      jwtService.signAsync(payload, refreshOptions),
+    ]);
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    };
+  };
 
 export const comparePassword = async (
   password: string,
