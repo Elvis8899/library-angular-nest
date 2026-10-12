@@ -6,7 +6,6 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "target": "ES2017",
-    "lib": ["ES2023"],
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./",
@@ -32,8 +31,7 @@
       "@auth/*": ["./src/modules/auth/*"],
       "@user/*": ["./src/modules/user/*"],
       "@rental/*": ["./src/modules/rental/*"],
-      "@book/*": ["./src/modules/book/*"],
-      "@db/*": ["./prisma/*"]
+      "@book/*": ["./src/modules/book/*"]
     }
   },
   "exclude": ["node_modules", "dist"]
