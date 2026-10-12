@@ -69,6 +69,8 @@ describe("[Unit] Update User", () => {
 
     const users = await executeTask(userRepository.findAll());
     expect(users.length).toEqual(1);
+    //And revoked the user's existing refresh tokens
+    expect(users[0]?.tokenVersion).toEqual(1);
   });
 
   it("Should update user without optional keys", async () => {

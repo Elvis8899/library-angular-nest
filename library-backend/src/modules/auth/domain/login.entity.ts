@@ -22,6 +22,10 @@ export type RequestJWTPayload = {
   iss: string;
 };
 
+export type RefreshJWTPayload = RequestJWTPayload & {
+  ver?: number;
+};
+
 export type AuthenticatedRequest = {
   user: RequestJWTPayload;
 };

@@ -43,6 +43,7 @@ export class UserResponseDto extends OmitType(UserDto, ["password"]) {}
 
 export const toUserResponse = ({
   password: _password,
+  tokenVersion: _tokenVersion,
   ...user
 }: User): UserResponseDto => user;
 

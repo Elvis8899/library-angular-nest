@@ -16,4 +16,6 @@ export abstract class UserRepository implements RepositoryDefaultPort<User> {
   ) => TE.TaskEither<Error, Paginated<User>>;
   deleteById!: (id: string) => TE.TaskEither<Error, void>;
   save!: (user: User) => TE.TaskEither<Error, void>;
+  /** Revokes every refresh token issued to the user. */
+  incrementTokenVersion!: (userId: string) => TE.TaskEither<Error, void>;
 }

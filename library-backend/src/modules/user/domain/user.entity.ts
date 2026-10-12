@@ -16,6 +16,7 @@ export const User = z
     password: z.string(),
     cpf: DocumentType.optional().default("").or(z.literal("")),
     role: z.enum(UserRoleEnum),
+    tokenVersion: z.number().int().min(0).default(0),
   })
   .and(BaseDateEntity)
   .refine((user) => {

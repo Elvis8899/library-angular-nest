@@ -4,14 +4,9 @@ Improvements found while reviewing the repository (2026-10-12), most important f
 
 ## Bugs and security
 
-- [ ] **Protect the return-book endpoint.** `PUT /v1/bookRentals/return/:id` has no guards, so anyone can mark any rental as returned without logging in.
-  `library-backend/src/modules/rental/commands/returnBook/returnBook.controller.ts`. Add `AuthGuard`, and decide whether clients may return their own rentals or only admins can.
-- [ ] **User updates only persist `name`.** `RealUserRepository.save` upserts with `update: { name }`, so changes to email, CPF, role and password look successful but are silently dropped. No test checks the stored values after an update.
-  `library-backend/src/modules/user/database/realUser.repository.ts`. Add an e2e test that asserts the stored values, then fix the update. Make sure a password change is re-hashed.
-- [ ] **Verify audience and issuer on access tokens.** `login.module.ts` passes `audience` and `issuer` at the top level of the `JwtModule` options, where they're ignored. Access tokens are signed with them but never checked against them. Move them into `signOptions` and `verifyOptions`.
-- [ ] **Refresh tokens can't be revoked.** A stolen refresh token works until it expires (24h by default), and logging out doesn't invalidate it. Consider storing a token version or ID per user and rotating it on each refresh.
-- [ ] **Rate-limit `POST /v1/login`** (and `/v1/refresh`) against brute force, for example with `@nestjs/throttler` or `@fastify/rate-limit`.
-- [ ] **Fix `yarn start:prod`.** It runs `node dist/main`, but the build writes `dist/src/main.js`. Docker isn't affected, because `entrypoint.sh` uses the correct path.
+- [ ] **Configure `TRUST_PROXY` on the production server.** Production nginx now forwards the client IP, but the app only uses it when `TRUST_PROXY` lists the proxy (for example `172.18.0.0/16`, the Docker gateway range). Until then, login rate limiting works per account rather than per IP and account.
+- [ ] **Stop publishing the API port directly in production.** `.docker/docker-compose.yml` maps `3000:3000`, so the API can be reached without going through nginx. nginx reaches it through the Docker gateway (`172.18.0.1:3000`), so bind the port to that address (`"172.18.0.1:3000:3000"`) or block it with a firewall; binding to `127.0.0.1` would cut nginx off.
+- [ ] **Consider rotating refresh tokens on each use.** Logout and user updates revoke refresh tokens, but a stolen token stays usable until then or until it expires (24h). Rotation would make each token single-use, but the frontend would first need to share refreshed credentials between open tabs.
 
 ## Runtime and infrastructure
 

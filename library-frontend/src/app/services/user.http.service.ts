@@ -23,6 +23,10 @@ export class UserService {
     return this._http.post<Credentials>("/v1/login", credentials);
   }
 
+  logout(): Observable<void> {
+    return this._http.post<void>("/v1/logout", {});
+  }
+
   refresh(refreshToken: string): Observable<Credentials> {
     return this._http.post<Credentials>(
       "/v1/refresh",

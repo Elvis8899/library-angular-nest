@@ -2,7 +2,15 @@ import { inject, Injectable } from "@angular/core";
 import { Credentials } from "@app/models/credentials.entity";
 import { CredentialsService } from "@app/services/credentials.service";
 import { UserService } from "@app/services/user.http.service";
-import { finalize, map, Observable, of, shareReplay, throwError } from "rxjs";
+import {
+  catchError,
+  finalize,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  throwError,
+} from "rxjs";
 
 export interface LoginContext {
   email: string;
@@ -59,11 +67,20 @@ export class AuthenticationService {
   }
 
   /**
-   * Logs out the user and clear credentials.
+   * Logs out the user: revokes its refresh tokens on the server and clears
+   * the stored credentials. The local session ends even if the server call
+   * fails.
    * @return True if the user was logged out successfully.
    */
   logout(): Observable<boolean> {
-    this._credentialsService.clearCredentials();
-    return of(true);
+    const revoke$ = this._credentialsService.isAuthenticated()
+      ? this._userService.logout().pipe(catchError(() => of(undefined)))
+      : of(undefined);
+    return revoke$.pipe(
+      map(() => {
+        this._credentialsService.clearCredentials();
+        return true;
+      })
+    );
   }
 }

@@ -98,4 +98,19 @@ describe("[Unit] Refresh token", () => {
       InvalidRefreshTokenException,
     );
   });
+
+  it("Should not refresh after the user's tokens were revoked", async () => {
+    //Given a refresh token issued before logout
+    await executeTask(userRepository.save(user));
+    const { refreshToken } = await generateTokens(jwtService)(user);
+    await executeTask(userRepository.incrementTokenVersion(user.id));
+
+    const resultPromise = refreshTokenCommandHandler.execute(
+      new RefreshTokenCommand({ refreshToken }),
+    );
+
+    await expect(resultPromise).rejects.toBeInstanceOf(
+      InvalidRefreshTokenException,
+    );
+  });
 });

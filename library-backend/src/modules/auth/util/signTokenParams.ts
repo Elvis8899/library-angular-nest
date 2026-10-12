@@ -50,7 +50,11 @@ export const generateTokens =
     );
     const [accessToken, refreshToken] = await Promise.all([
       jwtService.signAsync(payload, signOptions),
-      jwtService.signAsync(payload, refreshOptions),
+      // The token version lets the server revoke refresh tokens
+      jwtService.signAsync(
+        { ...payload, ver: user.tokenVersion },
+        refreshOptions,
+      ),
     ]);
     return {
       accessToken,

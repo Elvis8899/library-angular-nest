@@ -1,7 +1,7 @@
 import { invalidRefreshTokenException } from "@auth/domain/auth.errors";
 import {
+  RefreshJWTPayload,
   RefreshTokenInput,
-  RequestJWTPayload,
 } from "@auth/domain/login.entity";
 import { AuthResponseDto } from "@auth/dtos/authResponse.dto";
 import { RefreshTokenDto } from "@auth/dtos/refreshToken.dto";
@@ -47,7 +47,7 @@ export class RefreshTokenCommandHandler implements ICommandHandler<
       RTE.chainTaskEitherKW(({ refreshToken }) =>
         TE.tryCatch(
           () =>
-            this.jwtService.verifyAsync<RequestJWTPayload>(
+            this.jwtService.verifyAsync<RefreshJWTPayload>(
               refreshToken,
               refreshVerifyOptions,
             ),
@@ -55,12 +55,18 @@ export class RefreshTokenCommandHandler implements ICommandHandler<
         ),
       ),
 
-      //Validate User still exists, and use its current data for new tokens
+      //Validate User still exists and the token was not revoked
+      //(logout or user update increments the user's token version),
+      //then use the user's current data for new tokens
       RTE.chain((payload) =>
         FPF.pipe(
           payload.sub,
           performRTE(this.userRepository.findById, "get user by id"),
           RTE.chainW(RTE.fromOption<Error>(invalidRefreshTokenException)),
+          RTE.filterOrElseW(
+            (user) => user.tokenVersion === payload.ver,
+            invalidRefreshTokenException,
+          ),
         ),
       ),
       RTE.chainTaskK((user) => () => generateTokens(this.jwtService)(user)),

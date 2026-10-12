@@ -10,7 +10,7 @@ import {
   SpectatorService,
   SpyObject,
 } from "@ngneat/spectator/vitest";
-import { of, Subject } from "rxjs";
+import { of, Subject, throwError } from "rxjs";
 
 describe("AuthService", () => {
   const loginContext: LoginContext = {
@@ -104,5 +104,30 @@ describe("AuthService", () => {
 
     expect(failed).toBe(true);
     expect(userServiceMock.refresh).not.toBeCalled();
+  });
+
+  it("On logout while authenticated, should revoke tokens on the server", () => {
+    credentialServiceMock.isAuthenticated.mockReturnValue(true);
+    userServiceMock.logout.mockReturnValue(of(undefined));
+
+    let res = false;
+    spectator.service.logout().subscribe({ next: (v) => (res = v) });
+
+    expect(userServiceMock.logout).toHaveBeenCalledTimes(1);
+    expect(credentialServiceMock.clearCredentials).toBeCalled();
+    expect(res).toBe(true);
+  });
+
+  it("On logout, should clear credentials even if the server call fails", () => {
+    credentialServiceMock.isAuthenticated.mockReturnValue(true);
+    userServiceMock.logout.mockReturnValue(
+      throwError(() => new Error("offline"))
+    );
+
+    let res = false;
+    spectator.service.logout().subscribe({ next: (v) => (res = v) });
+
+    expect(credentialServiceMock.clearCredentials).toBeCalled();
+    expect(res).toBe(true);
   });
 });

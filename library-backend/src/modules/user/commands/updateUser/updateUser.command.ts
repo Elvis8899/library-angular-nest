@@ -102,6 +102,14 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
         performRTE(this.userRepository.save, "save user in storage system."),
       ),
 
+      //Revoke existing sessions, as password, role or email may have changed
+      RTE.tap((user) =>
+        performRTE(
+          this.userRepository.incrementTokenVersion,
+          "revoke user refresh tokens",
+        )(user.id),
+      ),
+
       //Emit domain event
       RTE.chain((user) =>
         performRTE(
