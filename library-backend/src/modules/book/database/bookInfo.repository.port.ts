@@ -20,6 +20,4 @@ export abstract class BookInfoRepository implements RepositoryDefaultPort<BookIn
   ) => TE.TaskEither<Error, O.Option<BookItem>>;
   createBookItem!: (bookItem: BookItem) => TE.TaskEither<Error, void>;
   deleteBookItem!: (bookItemId: string) => TE.TaskEither<Error, void>;
-
-  updateBookItem!: (bookItem: Partial<BookItem>) => TE.TaskEither<Error, void>;
 }

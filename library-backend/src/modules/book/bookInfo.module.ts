@@ -1,6 +1,5 @@
 import { AddBookItemHandler } from "@book/commands/addBookItem/addBookItem.command";
 import { AddBookItemController } from "@book/commands/addBookItem/addBookItem.controller";
-import { ChangeBookItemStatusHandler } from "@book/commands/changeBookItemStatus/changeBookItemStatus.command";
 import { CreateBookInfoHandler } from "@book/commands/createBookInfo/createBookInfo.command";
 import { CreateBookInfoController } from "@book/commands/createBookInfo/createBookInfo.controller";
 import { DeleteBookInfoHandler } from "@book/commands/deleteBookInfo/deleteBookInfo.command";
@@ -35,7 +34,6 @@ const commandHandlers = [
   DeleteBookInfoHandler,
   AddBookItemHandler,
   RemoveBookItemHandler,
-  ChangeBookItemStatusHandler,
 ];
 const queryHandlers = [
   PaginatedBookInfosQueryHandler,
