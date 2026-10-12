@@ -15,7 +15,14 @@ import { UUID } from "@shared/uuid/entities/uuid";
 import { PinoLogger } from "nestjs-pino";
 
 export class ReturnBookCommand implements ICommand {
-  constructor(public readonly bookRentalId: string) {}
+  /**
+   * @param ownerId when set, the rental must belong to this user
+   * (used for clients, who may only return their own rentals)
+   */
+  constructor(
+    public readonly bookRentalId: string,
+    public readonly ownerId?: string,
+  ) {}
 }
 
 @CommandHandler(ReturnBookCommand)
@@ -47,7 +54,8 @@ export class ReturnBookCommandHandler implements ICommandHandler<
 
       RTE.fromReaderEither,
 
-      //Validate BookRental exists
+      //Validate BookRental exists and belongs to the requester;
+      //someone else's rental is reported as not found
       RTE.chain((data) =>
         FPF.pipe(
           data.id,
@@ -56,6 +64,12 @@ export class ReturnBookCommandHandler implements ICommandHandler<
             "get book rental by id",
           ),
           RTE.chainW(RTE.fromOption<Error>(bookRentalNotFoundException)),
+          RTE.filterOrElseW(
+            (bookRental) =>
+              command.ownerId === undefined ||
+              bookRental.userId === command.ownerId,
+            bookRentalNotFoundException,
+          ),
           RTE.map((bookRental) => ({
             ...bookRental,
             ...data,

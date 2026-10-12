@@ -1,6 +1,19 @@
-import { Controller, HttpCode, HttpStatus, Param, Put } from "@nestjs/common";
+import { Roles } from "@auth/decorators/roles.decorator";
+import { AuthenticatedRequest } from "@auth/domain/login.entity";
+import { AuthGuard } from "@auth/guards/auth.guard";
+import { RolesGuard } from "@auth/guards/roles.guard";
+import {
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Put,
+  Request,
+  UseGuards,
+} from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -8,9 +21,12 @@ import {
 } from "@nestjs/swagger";
 import { ReturnBookCommand } from "@rental/commands/returnBook/returnBook.command";
 import { noop } from "@shared/utils/application/noop";
+import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Controller("v1/bookRentals")
 @ApiTags("Empréstimos")
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class ReturnBookController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -19,12 +35,24 @@ export class ReturnBookController {
 
   @Put("return/:id")
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles(UserRoleEnum.Admin, UserRoleEnum.Client)
   @ApiCreatedResponse({ description: "Empréstimo finalizado com sucesso." })
   @ApiNotFoundResponse({ description: "Empréstimo não encontrado." })
-  @ApiOperation({ summary: "Retornar Livro" })
-  async updateBookInfo(@Param("id") bookRentalId: string): Promise<void> {
+  @ApiOperation({
+    summary: "Retornar Livro",
+    description:
+      "Administradores podem finalizar qualquer empréstimo; clientes, apenas os próprios.",
+  })
+  async updateBookInfo(
+    @Param("id") bookRentalId: string,
+    @Request() req: AuthenticatedRequest,
+  ): Promise<void> {
+    // Clients may only return their own rentals
+    const ownerId =
+      req.user.role === UserRoleEnum.Admin ? undefined : req.user.sub;
     return this.commandBus
-      .execute(new ReturnBookCommand(bookRentalId))
+      .execute(new ReturnBookCommand(bookRentalId, ownerId))
       .then(noop);
   }
 }

@@ -154,4 +154,30 @@ describe("[Unit] Update BookInfo", () => {
     //And it should have emitted an event
     expect(spy).toHaveBeenCalledTimes(1);
   });
+
+  it("Should return book if it belongs to the given owner", async () => {
+    const bookRental = bookRentalBuilder.build();
+    await executeTask(bookRentalRepository.save(bookRental));
+
+    const resultPromise = returnBookCommandHandler.execute(
+      new ReturnBookCommand(bookRental.id, bookRental.userId),
+    );
+
+    await expect(resultPromise).resolves.toEqual(undefined);
+  });
+
+  it("Should not return book that belongs to another user", async () => {
+    const bookRental = bookRentalBuilder.build();
+    await executeTask(bookRentalRepository.save(bookRental));
+
+    const resultPromise = returnBookCommandHandler.execute(
+      new ReturnBookCommand(bookRental.id, createTestId(TableNameEnum.User, 5)),
+    );
+
+    await expect(resultPromise).rejects.toBeInstanceOf(
+      BookRentalNotFoundException,
+    );
+    const [stored] = await executeTask(bookRentalRepository.findAll());
+    expect(stored?.rentalStatus).toBe(RentalStatusEnum.Rented);
+  });
 });
