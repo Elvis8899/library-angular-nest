@@ -1,3 +1,4 @@
+import { BookInfoSort } from "@book/database/bookInfo.repository.port";
 import { RealBookInfoRepository } from "@book/database/realBookInfo.repository";
 import { BookInfo } from "@book/domain/bookInfo.entity";
 import {
@@ -31,6 +32,7 @@ afterAll(async () => {
 });
 
 describe("[Integration] BookInfo repository", () => {
+  const newestFirst: BookInfoSort = { by: "createdAt", order: "desc" };
   const bookInfoBuilder = new BookInfoBuilder();
   const allBuilders = [bookInfoBuilder];
 
@@ -82,13 +84,84 @@ describe("[Integration] BookInfo repository", () => {
         page: 0,
         limit: 10,
         offset: 0,
-        query: { name: "CASM" },
+        query: { name: "CASM", sort: newestFirst },
       }),
     );
 
     //Then only that book is found and counted
     expect(result.count).toBe(1);
     expect(result.data.map((book) => book.id)).toEqual([domCasmurro.id]);
+  });
+
+  it("Should find books created in a time range, end exclusive", async () => {
+    //Given books created just before, at the start, at the end and after one day
+    const book = (index: number, createdAt: string) =>
+      new BookInfoBuilder(index)
+        .withCreatedAt(new Date(createdAt))
+        .withBookItems([])
+        .build();
+    const start = book(2, "2026-10-13T03:00:00.000Z");
+    const end = book(3, "2026-10-14T02:59:59.999Z");
+    await saveBookInfo(book(1, "2026-10-13T02:59:59.999Z"));
+    await saveBookInfo(start);
+    await saveBookInfo(end);
+    await saveBookInfo(book(4, "2026-10-14T03:00:00.000Z"));
+
+    //When we list that day
+    const result = await executeTask(
+      bookInfoRepository.findAllPaginated({
+        page: 0,
+        limit: 10,
+        offset: 0,
+        query: {
+          createdFrom: new Date("2026-10-13T03:00:00.000Z"),
+          createdBefore: new Date("2026-10-14T03:00:00.000Z"),
+          sort: { by: "createdAt", order: "asc" },
+        },
+      }),
+    );
+
+    //Then only the books of that day are found, oldest first
+    expect(result.count).toBe(2);
+    expect(result.data.map((b) => b.id)).toEqual([start.id, end.id]);
+  });
+
+  it("Should sort books by name, breaking ties by id", async () => {
+    //Given books with names out of order and one repeated
+    const book = (index: number, name: string) =>
+      new BookInfoBuilder(index).withName(name).withBookItems([]).build();
+    const cortico = book(1, "O Cortiço");
+    const domCasmurro = book(2, "Dom Casmurro");
+    const iracema = book(3, "Iracema");
+    const domCasmurro2 = book(4, "Dom Casmurro");
+    for (const b of [cortico, domCasmurro, iracema, domCasmurro2]) {
+      await saveBookInfo(b);
+    }
+
+    //When we list them by name in each direction
+    const list = (order: BookInfoSort["order"]) =>
+      executeTask(
+        bookInfoRepository.findAllPaginated({
+          page: 0,
+          limit: 10,
+          offset: 0,
+          query: { sort: { by: "name", order } },
+        }),
+      ).then((result) => result.data.map((b) => b.id));
+
+    //Then they are in name order, and equal names keep the same order
+    expect(await list("asc")).toEqual([
+      domCasmurro.id,
+      domCasmurro2.id,
+      iracema.id,
+      cortico.id,
+    ]);
+    expect(await list("desc")).toEqual([
+      cortico.id,
+      iracema.id,
+      domCasmurro.id,
+      domCasmurro2.id,
+    ]);
   });
 
   it.each([["book", bookInfoBuilder.withBookItems([]).build()]])(
@@ -108,7 +181,7 @@ describe("[Integration] BookInfo repository", () => {
             page: 0,
             limit: 10,
             offset: 0,
-            query: {},
+            query: { sort: newestFirst },
           }),
         ),
         executeTask(bookInfoRepository.findAll()),
@@ -178,7 +251,7 @@ describe("[Integration] BookInfo repository", () => {
           page: 0,
           limit: 10,
           offset: 0,
-          query: {},
+          query: { sort: newestFirst },
         }),
       ),
       executeTask(bookInfoRepository.findAll()),

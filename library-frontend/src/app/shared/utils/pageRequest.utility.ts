@@ -11,7 +11,11 @@ export class PageRequestUtility {
     let params = new HttpParams();
     if (req?.page) params = params.append("page", req.page);
     if (req?.limit) params = params.append("limit", req.limit);
-    if (req?.sort) params = params.append("sort", JSON.stringify(req.sort));
+    if (req?.sort) {
+      params = params
+        .append("sortBy", String(req.sort.property))
+        .append("order", req.sort.order);
+    }
     return params;
   }
 }

@@ -79,7 +79,7 @@ export class ListBooksComponent implements OnInit {
         query: { name: "" },
         sort: {
           property: "createdAt",
-          order: "asc",
+          order: "desc",
         },
         displayedColumns: ["image", "name", "price", "availability", "actions"],
       }

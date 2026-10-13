@@ -7,9 +7,18 @@ import {
 } from "@shared/utils/database/repository.port";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
+export type BookInfoSort = {
+  by: "name" | "createdAt";
+  order: "asc" | "desc";
+};
+
 export type BookInfoFindAllQuery = {
   // Case-insensitive part of the book name
   name?: string;
+  // Creation time range: from is inclusive, before is exclusive
+  createdFrom?: Date;
+  createdBefore?: Date;
+  sort: BookInfoSort;
 };
 
 export abstract class BookInfoRepository implements RepositoryDefaultPort<BookInfo> {

@@ -24,7 +24,8 @@ describe("PageRequestUtility", () => {
 
     expect(params.get("page")).toBe("2");
     expect(params.get("limit")).toBe("10");
-    expect(params.get("sort")).toBe('{"property":"createdAt","order":"desc"}');
+    expect(params.get("sortBy")).toBe("createdAt");
+    expect(params.get("order")).toBe("desc");
     expect(params.has("query")).toBe(false);
   });
 });

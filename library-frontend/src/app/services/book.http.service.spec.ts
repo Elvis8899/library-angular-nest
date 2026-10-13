@@ -65,6 +65,49 @@ describe("BookService", () => {
     req.flush({ data: [], count: 0, limit: 10, page: 0 });
   });
 
+  it("Should filter by the picked day, in the local time zone", () => {
+    const picked = new Date(2026, 9, 13, 15, 30);
+
+    spectator.service
+      .getPaginatedBooks({ page: 0, limit: 10, query: { createdAt: picked } })
+      .subscribe();
+
+    const req = http.expectOne((r) => r.url === "/v1/bookInfos");
+    expect(req.request.params.get("createdFrom")).toBe(
+      new Date(2026, 9, 13).toISOString()
+    );
+    expect(req.request.params.get("createdBefore")).toBe(
+      new Date(2026, 9, 14).toISOString()
+    );
+    req.flush({ data: [], count: 0, limit: 10, page: 0 });
+  });
+
+  it("Should not filter by date once the date is cleared", () => {
+    spectator.service
+      .getPaginatedBooks({ page: 0, limit: 10, query: { createdAt: null } })
+      .subscribe();
+
+    const req = http.expectOne((r) => r.url === "/v1/bookInfos");
+    expect(req.request.params.has("createdFrom")).toBe(false);
+    expect(req.request.params.has("createdBefore")).toBe(false);
+    req.flush({ data: [], count: 0, limit: 10, page: 0 });
+  });
+
+  it("Should send the sort field and order", () => {
+    spectator.service
+      .getPaginatedBooks({
+        page: 0,
+        limit: 10,
+        sort: { property: "name", order: "asc" },
+      })
+      .subscribe();
+
+    const req = http.expectOne((r) => r.url === "/v1/bookInfos");
+    expect(req.request.params.get("sortBy")).toBe("name");
+    expect(req.request.params.get("order")).toBe("asc");
+    req.flush({ data: [], count: 0, limit: 10, page: 0 });
+  });
+
   it("Should create a book", () => {
     spectator.service.addBook({ name: "Dom Casmurro" }).subscribe();
 

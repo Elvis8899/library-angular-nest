@@ -161,6 +161,11 @@ describe("ListBooksComponent", () => {
     expect(queryBySpy).toHaveBeenCalledWith({ createdAt: date });
   });
 
+  it("Should let the user change the sort", () => {
+    expect(spectator.query(MatSelect)?.disabled).toBe(false);
+    expect(spectator.query(MatButtonToggleGroup)?.disabled).toBe(false);
+  });
+
   it("Should sort by the selected property", () => {
     // Arrange
     const sortBySpy = vi.spyOn(spectator.component.data, "sortBy");

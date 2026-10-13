@@ -18,6 +18,16 @@ export class BookService {
     let params = PageRequestUtility.toHttpParams(req);
     const name = req?.query?.name?.trim();
     if (name) params = params.append("name", name);
+    const day = req?.query?.createdAt;
+    if (day) {
+      // The picked day in the user's time zone, as an instant range
+      const start = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      params = params
+        .append("createdFrom", start.toISOString())
+        .append("createdBefore", end.toISOString());
+    }
     return this._http.get<PaginatedResponse<BookEntity>>("/v1/bookInfos", {
       params,
     });

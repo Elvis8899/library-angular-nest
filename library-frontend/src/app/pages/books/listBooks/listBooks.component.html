@@ -37,10 +37,9 @@
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
       </mat-form-field>
-      <mat-form-field class="property-form" disabled>
+      <mat-form-field class="property-form">
         <mat-label>Order by</mat-label>
         <mat-select
-          disabled
           value="createdAt"
           (selectionChange)="data.sortBy({ property: $event.value })"
         >
@@ -51,7 +50,6 @@
       <mat-button-toggle-group
         value="desc"
         (change)="data.sortBy({ order: $event.value })"
-        disabled
       >
         <mat-button-toggle value="asc"
           ><mat-icon>arrow_upward</mat-icon></mat-button-toggle

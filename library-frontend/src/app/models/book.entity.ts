@@ -19,5 +19,6 @@ export interface BookEntity extends BaseEntity {
 
 export interface BookQuery {
   name?: string;
-  createdAt?: string;
+  // The day picked in the date filter, at local midnight
+  createdAt?: Date | null;
 }

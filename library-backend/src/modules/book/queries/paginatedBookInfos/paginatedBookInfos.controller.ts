@@ -27,10 +27,15 @@ export class PaginatedBookInfoController {
     @Query() queryParams: PaginatedBookInfoQueryRequestDto,
   ): Promise<PaginatedBookInfoResponseDto> {
     return this.queryBus
-      .execute<
-        PaginatedBookInfosQuery,
-        PaginatedResponseDto<BookInfoDto>
-      >(new PaginatedBookInfosQuery(queryParams, queryParams.name))
+      .execute<PaginatedBookInfosQuery, PaginatedResponseDto<BookInfoDto>>(
+        new PaginatedBookInfosQuery(queryParams, {
+          name: queryParams.name,
+          createdFrom: queryParams.createdFrom,
+          createdBefore: queryParams.createdBefore,
+          sortBy: queryParams.sortBy,
+          order: queryParams.order,
+        }),
+      )
       .then((result) => new PaginatedBookInfoResponseDto(result));
   }
 }

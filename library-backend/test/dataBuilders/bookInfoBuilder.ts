@@ -60,6 +60,11 @@ export class BookInfoBuilder {
     return this;
   }
 
+  withCreatedAt(createdAt: Date) {
+    this.overrides.createdAt = createdAt;
+    return this;
+  }
+
   withBookItems(bookItems: z.input<typeof BookInfo>["bookItems"]) {
     this.overrides.bookItems = bookItems;
     return this;

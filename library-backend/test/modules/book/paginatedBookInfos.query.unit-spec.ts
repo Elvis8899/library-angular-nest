@@ -97,7 +97,10 @@ describe("[Unit] List BookInfos", () => {
 
       //When we search for part of one name, in another case
       const result = await paginatedBookInfosQueryHandler.execute(
-        new PaginatedBookInfosQuery({ limit: 10, page: 0 }, "  CASMURRO "),
+        new PaginatedBookInfosQuery(
+          { limit: 10, page: 0 },
+          { name: "  CASMURRO " },
+        ),
       );
 
       //Then only that book is listed and counted
@@ -111,7 +114,7 @@ describe("[Unit] List BookInfos", () => {
 
       //When we search for spaces only
       const result = await paginatedBookInfosQueryHandler.execute(
-        new PaginatedBookInfosQuery({ limit: 10, page: 0 }, "   "),
+        new PaginatedBookInfosQuery({ limit: 10, page: 0 }, { name: "   " }),
       );
 
       //Then no filter is applied
@@ -121,7 +124,10 @@ describe("[Unit] List BookInfos", () => {
     it("Should reject a search longer than 200 characters", async () => {
       //When we search with a very long text
       const resultPromise = paginatedBookInfosQueryHandler.execute(
-        new PaginatedBookInfosQuery({ limit: 10, page: 0 }, "a".repeat(201)),
+        new PaginatedBookInfosQuery(
+          { limit: 10, page: 0 },
+          { name: "a".repeat(201) },
+        ),
       );
 
       //Then the query is rejected as invalid
@@ -129,6 +135,146 @@ describe("[Unit] List BookInfos", () => {
         UnprocessableEntityException,
       );
     });
+  });
+
+  describe("Filtering by creation date", () => {
+    const saveBooksCreatedOn = async () => {
+      const book = (index: number, createdAt: string) =>
+        new BookInfoBuilder(index).withCreatedAt(new Date(createdAt)).build();
+      const books = {
+        before: book(1, "2026-10-12T23:59:59.999Z"),
+        start: book(2, "2026-10-13T00:00:00.000Z"),
+        end: book(3, "2026-10-13T23:59:59.999Z"),
+        after: book(4, "2026-10-14T00:00:00.000Z"),
+      };
+      for (const b of Object.values(books)) {
+        await executeTask(bookInfoRepository.save(b));
+      }
+      return books;
+    };
+
+    it("Should list books created from the start, inclusive, to before the end", async () => {
+      //Given books created around one day
+      const books = await saveBooksCreatedOn();
+
+      //When we list that day
+      const result = await paginatedBookInfosQueryHandler.execute(
+        new PaginatedBookInfosQuery(
+          { limit: 10, page: 0 },
+          {
+            createdFrom: "2026-10-13T00:00:00.000Z",
+            createdBefore: "2026-10-14T00:00:00.000Z",
+            order: "asc",
+          },
+        ),
+      );
+
+      //Then only the books of that day are listed
+      expect(result.data.map((b) => b.id)).toEqual([
+        books.start.id,
+        books.end.id,
+      ]);
+      expect(result.count).toBe(2);
+    });
+
+    it("Should reject a range that ends before it starts", async () => {
+      const resultPromise = paginatedBookInfosQueryHandler.execute(
+        new PaginatedBookInfosQuery(
+          { limit: 10, page: 0 },
+          {
+            createdFrom: "2026-10-14T00:00:00.000Z",
+            createdBefore: "2026-10-13T00:00:00.000Z",
+          },
+        ),
+      );
+
+      await expect(resultPromise).rejects.toBeInstanceOf(
+        UnprocessableEntityException,
+      );
+    });
+
+    it("Should reject a date that isn't a date", async () => {
+      const resultPromise = paginatedBookInfosQueryHandler.execute(
+        new PaginatedBookInfosQuery(
+          { limit: 10, page: 0 },
+          { createdFrom: "yesterday" },
+        ),
+      );
+
+      await expect(resultPromise).rejects.toBeInstanceOf(
+        UnprocessableEntityException,
+      );
+    });
+  });
+
+  describe("Sorting", () => {
+    // Created in this order, with names out of order and one repeated
+    const saveBooks = async () => {
+      const book = (index: number, name: string) =>
+        new BookInfoBuilder(index)
+          .withName(name)
+          .withCreatedAt(new Date(2026, 9, index))
+          .build();
+      const books = [
+        book(1, "O Cortiço"),
+        book(2, "Dom Casmurro"),
+        book(3, "Iracema"),
+        book(4, "Dom Casmurro"),
+      ];
+      for (const b of books) {
+        await executeTask(bookInfoRepository.save(b));
+      }
+      return books.map((b) => b.id);
+    };
+    const list = (filters: { sortBy?: string; order?: string }) =>
+      paginatedBookInfosQueryHandler
+        .execute(new PaginatedBookInfosQuery({ limit: 10, page: 0 }, filters))
+        .then((result) => result.data.map((b) => b.id));
+
+    it("Should list the newest books first by default", async () => {
+      const [first, second, third, fourth] = await saveBooks();
+
+      expect(await list({})).toEqual([fourth, third, second, first]);
+    });
+
+    it("Should list the oldest books first in ascending order", async () => {
+      const [first, second, third, fourth] = await saveBooks();
+
+      expect(await list({ order: "asc" })).toEqual([
+        first,
+        second,
+        third,
+        fourth,
+      ]);
+    });
+
+    it("Should sort by name, breaking ties by id", async () => {
+      const [cortico, domCasmurro, iracema, domCasmurro2] = await saveBooks();
+
+      expect(await list({ sortBy: "name", order: "asc" })).toEqual([
+        domCasmurro,
+        domCasmurro2,
+        iracema,
+        cortico,
+      ]);
+      expect(await list({ sortBy: "name", order: "desc" })).toEqual([
+        cortico,
+        iracema,
+        domCasmurro,
+        domCasmurro2,
+      ]);
+    });
+
+    it.each([{ sortBy: "price" }, { order: "up" }])(
+      "Should reject an unknown sort %o",
+      async (filters) => {
+        await expect(
+          paginatedBookInfosQueryHandler.execute(
+            new PaginatedBookInfosQuery({ limit: 10, page: 0 }, filters),
+          ),
+        ).rejects.toBeInstanceOf(UnprocessableEntityException);
+      },
+    );
   });
 
   it("Shouldnt list bookInfos if there isnt bookInfos", async () => {

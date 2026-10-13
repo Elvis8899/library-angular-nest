@@ -48,9 +48,8 @@ describe("RentalService", () => {
     );
     expect(req.request.params.has("page")).toBe(false);
     expect(req.request.params.get("limit")).toBe("5");
-    expect(req.request.params.get("sort")).toBe(
-      '{"property":"createdAt","order":"desc"}'
-    );
+    expect(req.request.params.get("sortBy")).toBe("createdAt");
+    expect(req.request.params.get("order")).toBe("desc");
     req.flush(response);
     expect(result).toEqual(response);
   });
