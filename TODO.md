@@ -8,7 +8,6 @@ Improvements found while reviewing the repository (2026-10-12), most important f
 
 ## Runtime and infrastructure
 
-- [ ] **Move the backend to Node 24.** Node 20 reached end of life in April 2026. Update `.docker/Dockerfile`, `.docker/Dockerfile.dev` and the CI matrix (`node-version: [20.x]`). The frontend already requires Node 24.
 - [ ] **Stop the dev container from creating root-owned files in `library-backend/node_modules`.** It mounts the source folder (`../:/usr/src/app`) and runs yarn as root, which breaks later host-side `yarn add` with EACCES. Run it as the host user or give `node_modules` its own volume.
 - [ ] **Run the frontend in CI.** `.github/workflows/node.js.yml` only covers the backend. Add `yarn lint`, `yarn test` and `yarn build` for `library-frontend` on Node 24.
 - [ ] **Make `yarn test:docker:up` non-interactive.** `prisma migrate reset` waits for confirmation. Use `--force` (it only targets the test database) or call `test:migrate` instead.
