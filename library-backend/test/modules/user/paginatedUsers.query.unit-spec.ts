@@ -3,6 +3,7 @@ import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.servi
 import { executeTask } from "@shared/utils/application/executeTask";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
+import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { FakeUserRepository } from "@user/database/fakeUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 import {
@@ -74,6 +75,35 @@ describe("[Unit] List Users", () => {
     //Then it should show a list of users
     expect(result.data.length).toBe(0);
     expect(result.count).toBe(1);
+    expect(result.page).toBe(page);
+    expect(result.limit).toBe(limit);
+  });
+
+  it("Should list the users of a page after the first", async () => {
+    //Given a query for the second page
+    const limit = 2;
+    const page = 1;
+    const query = new PaginatedUsersQuery({
+      limit,
+      page,
+    });
+
+    //With three users in database
+    const users = [1, 2, 3].map((n) =>
+      new UserBuilder()
+        .withId(createTestId(TableNameEnum.User, n))
+        .withEmail(`user${String(n)}@email.com`)
+        .build(),
+    );
+    for (const user of users) {
+      await executeTask(userRepository.save(user));
+    }
+
+    //When we list users
+    const result = await paginatedUsersQueryHandler.execute(query);
+    //Then it should show only the third user
+    expect(result.data).toStrictEqual([users[2]]);
+    expect(result.count).toBe(3);
     expect(result.page).toBe(page);
     expect(result.limit).toBe(limit);
   });
