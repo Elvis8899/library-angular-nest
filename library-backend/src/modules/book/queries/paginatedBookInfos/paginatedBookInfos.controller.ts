@@ -1,15 +1,23 @@
+import { AuthGuard } from "@auth/guards/auth.guard";
 import {
   BookInfoDto,
   PaginatedBookInfoQueryRequestDto,
   PaginatedBookInfoResponseDto,
 } from "@book/dtos/bookInfo.dto";
 import { PaginatedBookInfosQuery } from "@book/queries/paginatedBookInfos/paginatedBookInfos.query";
-import { Controller, Get, HttpStatus, Query } from "@nestjs/common";
+import { Controller, Get, HttpStatus, Query, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { PaginatedResponseDto } from "@shared/utils/dtos/paginated.response.base";
 
 @Controller("v1/")
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 @ApiTags("Livros")
 export class PaginatedBookInfoController {
   constructor(

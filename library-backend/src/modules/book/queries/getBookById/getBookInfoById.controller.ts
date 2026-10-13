@@ -1,8 +1,10 @@
+import { AuthGuard } from "@auth/guards/auth.guard";
 import { BookInfoDto } from "@book/dtos/bookInfo.dto";
 import { GetBookInfoByIdQuery } from "@book/queries/getBookById/getBookInfoById.query";
-import { Controller, Get, HttpStatus, Param } from "@nestjs/common";
+import { Controller, Get, HttpStatus, Param, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
@@ -10,6 +12,8 @@ import {
 } from "@nestjs/swagger";
 
 @Controller("v1/")
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 @ApiTags("Livros")
 export class GetBookInfoByIdController {
   constructor(
