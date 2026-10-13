@@ -96,8 +96,14 @@ export class AppUpdateService {
     toastRef.afterClosed.subscribe(({ dismissedByAction }) => {
       this._isUpdateToastShown = false;
       if (dismissedByAction) return;
-      this._swUpdate.activateUpdate().then(() => document.location.reload());
+      this._swUpdate.activateUpdate().then(() => this.reloadPage());
     });
+  }
+
+  // Separate so tests can stub it: jsdom can't reload or spy on location
+  /* v8 ignore next 3 */
+  reloadPage(): void {
+    document.location.reload();
   }
 }
 
