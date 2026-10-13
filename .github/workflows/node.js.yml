@@ -70,3 +70,23 @@ jobs:
 
       - name: ⬆️ Push badges branch
         run: git push origin badges
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js from .nvmrc
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ./library-frontend/.nvmrc
+          cache: "yarn"
+          cache-dependency-path: ./library-frontend/yarn.lock
+
+      - name: Lint, test and build
+        working-directory: library-frontend
+        run: |
+          yarn install --frozen-lockfile
+          yarn lint
+          yarn test --watch=false
+          yarn build

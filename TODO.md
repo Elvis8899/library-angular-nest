@@ -4,7 +4,6 @@ Improvements found while reviewing the repository (2026-10-12), most important f
 
 ## Runtime and infrastructure
 
-- [ ] **Run the frontend in CI.** `.github/workflows/node.js.yml` only covers the backend. Add `yarn lint`, `yarn test` and `yarn build` for `library-frontend` on Node 24.
 - [ ] **Make `yarn test:docker:up` non-interactive.** `prisma migrate reset` waits for confirmation. Use `--force` (it only targets the test database) or call `test:migrate` instead.
 
 ## Code quality
