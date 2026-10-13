@@ -1,9 +1,10 @@
-import { HttpClient, HttpParams } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { Credentials } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
 import { PageRequest } from "@app/models/utils/paginatedDataSource.entity";
 import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
+import { PageRequestUtility } from "@app/shared/utils/pageRequest.utility";
 import { Observable } from "rxjs";
 
 @Injectable({
@@ -38,10 +39,7 @@ export class UserService {
   getPaginatedUsers(
     req?: PageRequest<UserEntity, object>
   ): Observable<PaginatedResponse<UserEntity>> {
-    let params = new HttpParams();
-    if (req?.page) params = params.append("page", req?.page);
-    if (req?.limit) params = params.append("limit", req.limit.toString());
-    if (req?.sort) params = params.append("sort", JSON.stringify(req.sort));
+    const params = PageRequestUtility.toHttpParams(req);
     return this._http.get<PaginatedResponse<UserEntity>>("/v1/users", {
       params,
     });
