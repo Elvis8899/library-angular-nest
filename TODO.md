@@ -4,8 +4,7 @@ Improvements found while reviewing the repository (2026-10-12), most important f
 
 ## Bugs and security
 
-- [ ] **Configure `TRUST_PROXY` on the production server.** Production nginx now forwards the client IP, but the app only uses it when `TRUST_PROXY` lists the proxy (for example `172.18.0.0/16`, the Docker gateway range). Until then, login rate limiting works per account rather than per IP and account.
-- [ ] **Stop publishing the API port directly in production.** `.docker/docker-compose.yml` maps `3000:3000`, so the API can be reached without going through nginx. nginx reaches it through the Docker gateway (`172.18.0.1:3000`), so bind the port to that address (`"172.18.0.1:3000:3000"`) or block it with a firewall; binding to `127.0.0.1` would cut nginx off.
+- [ ] **Stop publishing Postgres and pgAdmin in production.** `.docker/docker-compose.yml` publishes `5432` (with the default `user`/`password` credentials) and `5050` on all interfaces. nginx reaches pgAdmin through the gateway, so bind it to `172.18.0.1` like the API, and drop or restrict the Postgres port.
 - [ ] **Consider rotating refresh tokens on each use.** Logout and user updates revoke refresh tokens, but a stolen token stays usable until then or until it expires (24h). Rotation would make each token single-use, but the frontend would first need to share refreshed credentials between open tabs.
 
 ## Runtime and infrastructure

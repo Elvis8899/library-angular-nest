@@ -27,8 +27,14 @@ services:
     image: library-api
     # Uncomment this line in case you are in M1
     # platform: linux/amd64
+    # Reachable only through nginx, which proxies to the nginx_network
+    # gateway (172.18.0.1); publishing on all interfaces would bypass it
     ports:
-      - "3000:3000"
+      - "172.18.0.1:3000:3000"
+    environment:
+      # Requests come from nginx through the gateway: trust its
+      # X-Forwarded-For so login rate limiting sees the client IP
+      TRUST_PROXY: "172.18.0.0/16"
     networks:
       - "nginx_network"
     depends_on:
