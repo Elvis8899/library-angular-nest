@@ -13,7 +13,7 @@ See the [root README](../README.md) for setup, demo accounts and the Docker dev 
 | `yarn lint` | ESLint |
 | `yarn migrate` | Create and apply a migration (`prisma migrate dev`) |
 | `npx prisma db seed` | Seed demo users and books |
-| `make dockerDev` | Start the full dev stack with Docker Compose |
+| `make dockerDev` | Start the full dev stack with Docker Compose (run it from the repo root) |
 
 ## Configuration
 
@@ -26,7 +26,7 @@ The app reads `.env` (`.env.dev` in the Docker dev stack, `.env.test` for tests)
 Tests run against a real PostgreSQL database (`library-test`):
 
 ```bash
-docker compose -f .docker/docker-compose-dev.yml up postgres -d
+docker compose -f ../.docker/docker-compose-dev.yml up postgres -d
 yarn test:migrate
 ```
 

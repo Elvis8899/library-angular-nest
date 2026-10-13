@@ -19,7 +19,7 @@ services:
 
   app:
     build:
-      context: ..
+      context: ../library-backend
       dockerfile: .docker/Dockerfile
     container_name: library-api-prod
     hostname: library-api
@@ -73,7 +73,7 @@ services:
 
   migrate-deploy:
     build:
-      context: ..
+      context: ../library-backend
       dockerfile: .docker/Dockerfile
       target: migrate
     container_name: migrate-deploy-prod
