@@ -30,7 +30,7 @@ import { Logger } from "@app/services/logger.service";
 import { RentalService } from "@app/services/rental.http.service";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { TypedDialog } from "@app/shared/components/dialog/typedDialog";
-import { TranslateModule } from "@ngx-translate/core";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 
 const log = new Logger("ListBooksComponent");
@@ -69,6 +69,7 @@ export class ListBooksComponent implements OnInit {
   private readonly _router = inject(Router);
   private readonly _credentialsService = inject(CredentialsService);
   private readonly _toast = inject(HotToastService);
+  private readonly _translate = inject(TranslateService);
 
   ngOnInit(): void {
     this.data = new PaginatedDataSource<BookEntity, BookQuery>(
@@ -90,7 +91,7 @@ export class ListBooksComponent implements OnInit {
       (item) => item.status === BookItemStatusEnum.Available
     );
     if (!bookItem) {
-      this._toast.error("Sem livros disponíveis para locação");
+      this._toast.error(this._translate.instant("No books available to rent"));
       return;
     }
     const bookItemId = bookItem.id;
@@ -140,7 +141,9 @@ export class ListBooksComponent implements OnInit {
   rentBook(book: BookRentEntity) {
     this._rentalService.rentBook(book).subscribe({
       next: () => {
-        this._toast.success("Book rented successfully");
+        this._toast.success(
+          this._translate.instant("Book rented successfully")
+        );
         this.refresh();
       },
       error: this.defaultErrorHandler,
@@ -161,7 +164,9 @@ export class ListBooksComponent implements OnInit {
       (item) => item.status === BookItemStatusEnum.Available
     );
     if (!bookItem) {
-      this._toast.error("Sem livros disponíveis para remoção");
+      this._toast.error(
+        this._translate.instant("No books available to remove")
+      );
       return;
     }
     this._bookService.deleteBookItem(bookItem.id).subscribe({

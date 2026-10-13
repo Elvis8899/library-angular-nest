@@ -20,6 +20,12 @@ type keys =
   | "Create User"
   | "Books List"
   | "Add Book"
-  | "Name";
+  | "Name"
+  | "Book created successfully"
+  | "Book returned successfully"
+  | "Book rented successfully"
+  | "User created successfully"
+  | "No books available to rent"
+  | "No books available to remove";
 
 export type AllTranslations = Record<keys, StrictTranslation>;

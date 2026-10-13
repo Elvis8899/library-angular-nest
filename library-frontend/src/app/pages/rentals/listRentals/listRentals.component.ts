@@ -7,7 +7,7 @@ import { Logger } from "@app/services/logger.service";
 import { RentalService } from "@app/services/rental.http.service";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { DateTimeUtility } from "@app/shared/utils/dateTime.utility";
-import { TranslateDirective } from "@ngx-translate/core";
+import { TranslateDirective, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 
 const log = new Logger("ListRentalsComponent");
@@ -25,6 +25,7 @@ export class ListRentalsComponent implements OnInit {
   private readonly _rentalService = inject(RentalService);
   private readonly _router = inject(Router);
   private readonly _toast = inject(HotToastService);
+  private readonly _translate = inject(TranslateService);
 
   ngOnInit() {
     this.data = new PaginatedDataSource<BookRentalEntity, object>(
@@ -59,7 +60,9 @@ export class ListRentalsComponent implements OnInit {
   returnBook(rental: BookRentalEntity) {
     this._rentalService.returnBook(rental.id).subscribe({
       next: () => {
-        this._toast.success("Book returned successfully");
+        this._toast.success(
+          this._translate.instant("Book returned successfully")
+        );
         this.refresh();
       },
       error: (error: Error) => {

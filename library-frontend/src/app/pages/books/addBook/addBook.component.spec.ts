@@ -6,13 +6,15 @@ import { RouterModule } from "@angular/router";
 import { AddBooksComponent } from "@app/pages/books/addBook/addBook.component";
 import { BookService } from "@app/services/book.http.service";
 import { Logger } from "@app/services/logger.service";
+import { LanguagesEnum } from "@app/shared/i18n/translations/allTranslations";
+import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
 import {
   createComponentFactory,
   Spectator,
   SpyObject,
 } from "@ngneat/spectator/vitest";
-import { TranslateModule } from "@ngx-translate/core";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { of, throwError } from "rxjs";
 
@@ -67,6 +69,26 @@ describe("LanguageSelectorComponent", () => {
 
     expect(bookServiceMock.addBook).toHaveBeenCalledTimes(1);
     expect(toastService.success).toHaveBeenCalledTimes(1);
+  });
+
+  it("Should show the success toast in the current language", () => {
+    // Arrange
+    const translate = spectator.inject(TranslateService);
+    translate.setTranslation(LanguagesEnum.PT_BR, ptBR);
+    translate.use(LanguagesEnum.PT_BR);
+    spectator.typeInElement("João da Silva", inputs.name);
+    spectator.typeInElement("senha123", inputs.image);
+    spectator.typeInElement("100", inputs.price);
+    const toastService = spectator.inject(HotToastService);
+    spectator.detectChanges();
+
+    // Act
+    spectator.click("button");
+
+    // Assert
+    expect(toastService.success).toHaveBeenCalledWith(
+      "Livro criado com sucesso"
+    );
   });
   it("Should show error if form is valid, but addUser returns error", () => {
     // Arrange

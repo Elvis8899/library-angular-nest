@@ -18,4 +18,10 @@ export const enUS: AllTranslations = {
   "Books List": "Books List",
   "Add Book": "Add Book",
   Name: "Name",
+  "Book created successfully": "Book created successfully",
+  "Book returned successfully": "Book returned successfully",
+  "Book rented successfully": "Book rented successfully",
+  "User created successfully": "User created successfully",
+  "No books available to rent": "No books available to rent",
+  "No books available to remove": "No books available to remove",
 };

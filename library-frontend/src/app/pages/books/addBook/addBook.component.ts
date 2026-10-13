@@ -4,6 +4,7 @@ import { Router } from "@angular/router";
 import { BookEntity } from "@app/models/book.entity";
 import { BookService } from "@app/services/book.http.service";
 import { Logger } from "@app/services/logger.service";
+import { TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 
 const log = new Logger("AddBookComponent");
@@ -23,6 +24,7 @@ export class AddBooksComponent implements OnInit {
     price: ["", [Validators.required]],
   });
   private readonly _toast = inject(HotToastService);
+  private readonly _translate = inject(TranslateService);
   private readonly _bookService = inject(BookService);
   private readonly _router = inject(Router);
 
@@ -35,7 +37,9 @@ export class AddBooksComponent implements OnInit {
       .addBook({ ...this.addBookForm?.value } as Partial<BookEntity>)
       .subscribe({
         next: () => {
-          this._toast.success("Book created successfully");
+          this._toast.success(
+            this._translate.instant("Book created successfully")
+          );
           this._router.navigate(["/books/list"]);
         },
         error: (error: Error) => {

@@ -18,4 +18,10 @@ export const ptBR: AllTranslations = {
   "Books List": "Lista de Livros",
   "Add Book": "Adicionar Livro",
   Name: "Nome",
+  "Book created successfully": "Livro criado com sucesso",
+  "Book returned successfully": "Livro devolvido com sucesso",
+  "Book rented successfully": "Livro alugado com sucesso",
+  "User created successfully": "Usuário criado com sucesso",
+  "No books available to rent": "Sem livros disponíveis para locação",
+  "No books available to remove": "Sem livros disponíveis para remoção",
 };

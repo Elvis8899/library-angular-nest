@@ -6,6 +6,7 @@ import { UserEntity } from "@app/models/user.entity";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
 import { FormValidatorUtility } from "@app/shared/utils/formValidators.utility";
+import { TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { noop } from "rxjs";
 
@@ -41,6 +42,7 @@ export class AddUsersComponent implements OnInit {
   });
 
   private readonly _toast = inject(HotToastService);
+  private readonly _translate = inject(TranslateService);
 
   onSubmit() {
     this._userService
@@ -50,7 +52,9 @@ export class AddUsersComponent implements OnInit {
       } as Partial<UserEntity>)
       .subscribe({
         next: () => {
-          this._toast.success("User created successfully");
+          this._toast.success(
+            this._translate.instant("User created successfully")
+          );
           this._router.navigate(["/users/list"]);
         },
         error: (error: Error) => {
