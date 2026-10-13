@@ -1,5 +1,6 @@
 import {
   BookInfoDto,
+  PaginatedBookInfoQueryRequestDto,
   PaginatedBookInfoResponseDto,
 } from "@book/dtos/bookInfo.dto";
 import { PaginatedBookInfosQuery } from "@book/queries/paginatedBookInfos/paginatedBookInfos.query";
@@ -7,7 +8,6 @@ import { Controller, Get, HttpStatus, Query } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { PaginatedResponseDto } from "@shared/utils/dtos/paginated.response.base";
-import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginatedQuery.request.dto";
 
 @Controller("v1/")
 @ApiTags("Livros")
@@ -24,13 +24,13 @@ export class PaginatedBookInfoController {
     type: PaginatedBookInfoResponseDto,
   })
   async paginatedBookInfos(
-    @Query() queryParams: PaginatedQueryRequestDto,
+    @Query() queryParams: PaginatedBookInfoQueryRequestDto,
   ): Promise<PaginatedBookInfoResponseDto> {
     return this.queryBus
       .execute<
         PaginatedBookInfosQuery,
         PaginatedResponseDto<BookInfoDto>
-      >(new PaginatedBookInfosQuery(queryParams))
+      >(new PaginatedBookInfosQuery(queryParams, queryParams.name))
       .then((result) => new PaginatedBookInfoResponseDto(result));
   }
 }

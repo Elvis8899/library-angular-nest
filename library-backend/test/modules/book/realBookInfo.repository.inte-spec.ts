@@ -67,6 +67,30 @@ describe("[Integration] BookInfo repository", () => {
     },
   );
 
+  it("Should find books by part of their name, ignoring case", async () => {
+    //Given three books in database
+    const book = (index: number, name: string) =>
+      new BookInfoBuilder(index).withName(name).withBookItems([]).build();
+    const domCasmurro = book(1, "Dom Casmurro");
+    await saveBookInfo(domCasmurro);
+    await saveBookInfo(book(2, "Memórias Póstumas"));
+    await saveBookInfo(book(3, "O Cortiço"));
+
+    //When we search for part of a name in another case
+    const result = await executeTask(
+      bookInfoRepository.findAllPaginated({
+        page: 0,
+        limit: 10,
+        offset: 0,
+        query: { name: "CASM" },
+      }),
+    );
+
+    //Then only that book is found and counted
+    expect(result.count).toBe(1);
+    expect(result.data.map((book) => book.id)).toEqual([domCasmurro.id]);
+  });
+
   it.each([["book", bookInfoBuilder.withBookItems([]).build()]])(
     "Successfully get %s after save",
     async (_: string, bookInfo: BookInfo) => {
@@ -84,6 +108,7 @@ describe("[Integration] BookInfo repository", () => {
             page: 0,
             limit: 10,
             offset: 0,
+            query: {},
           }),
         ),
         executeTask(bookInfoRepository.findAll()),
@@ -153,6 +178,7 @@ describe("[Integration] BookInfo repository", () => {
           page: 0,
           limit: 10,
           offset: 0,
+          query: {},
         }),
       ),
       executeTask(bookInfoRepository.findAll()),

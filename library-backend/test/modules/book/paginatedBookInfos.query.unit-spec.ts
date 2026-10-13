@@ -4,6 +4,7 @@ import {
   PaginatedBookInfosQuery,
   PaginatedBookInfosQueryHandler,
 } from "@book/queries/paginatedBookInfos/paginatedBookInfos.query";
+import { UnprocessableEntityException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -77,6 +78,57 @@ describe("[Unit] List BookInfos", () => {
     expect(result.count).toBe(1);
     expect(result.page).toBe(page);
     expect(result.limit).toBe(limit);
+  });
+
+  describe("Searching by name", () => {
+    const saveBooks = async () => {
+      const book = (index: number, name: string) =>
+        new BookInfoBuilder(index).withName(name).build();
+      const domCasmurro = book(1, "Dom Casmurro");
+      const cortico = book(2, "O Cortiço");
+      await executeTask(bookInfoRepository.save(domCasmurro));
+      await executeTask(bookInfoRepository.save(cortico));
+      return { domCasmurro, cortico };
+    };
+
+    it("Should list only books whose name contains the search, ignoring case", async () => {
+      //Given two books in database
+      const { domCasmurro } = await saveBooks();
+
+      //When we search for part of one name, in another case
+      const result = await paginatedBookInfosQueryHandler.execute(
+        new PaginatedBookInfosQuery({ limit: 10, page: 0 }, "  CASMURRO "),
+      );
+
+      //Then only that book is listed and counted
+      expect(result.data).toStrictEqual([domCasmurro]);
+      expect(result.count).toBe(1);
+    });
+
+    it("Should list every book when the search is blank", async () => {
+      //Given two books in database
+      await saveBooks();
+
+      //When we search for spaces only
+      const result = await paginatedBookInfosQueryHandler.execute(
+        new PaginatedBookInfosQuery({ limit: 10, page: 0 }, "   "),
+      );
+
+      //Then no filter is applied
+      expect(result.count).toBe(2);
+    });
+
+    it("Should reject a search longer than 200 characters", async () => {
+      //When we search with a very long text
+      const resultPromise = paginatedBookInfosQueryHandler.execute(
+        new PaginatedBookInfosQuery({ limit: 10, page: 0 }, "a".repeat(201)),
+      );
+
+      //Then the query is rejected as invalid
+      await expect(resultPromise).rejects.toBeInstanceOf(
+        UnprocessableEntityException,
+      );
+    });
   });
 
   it("Shouldnt list bookInfos if there isnt bookInfos", async () => {

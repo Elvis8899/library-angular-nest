@@ -7,11 +7,16 @@ import {
 } from "@shared/utils/database/repository.port";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
+export type BookInfoFindAllQuery = {
+  // Case-insensitive part of the book name
+  name?: string;
+};
+
 export abstract class BookInfoRepository implements RepositoryDefaultPort<BookInfo> {
   findById!: (id: string) => TE.TaskEither<Error, O.Option<BookInfo>>;
   findAll!: () => TE.TaskEither<Error, BookInfo[]>;
   findAllPaginated!: (
-    params: PaginatedQueryParams,
+    params: PaginatedQueryParams<BookInfoFindAllQuery>,
   ) => TE.TaskEither<Error, Paginated<BookInfo>>;
   deleteById!: (id: string) => TE.TaskEither<Error, void>;
   save!: (bookInfo: BookInfo) => TE.TaskEither<Error, void>;

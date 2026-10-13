@@ -45,6 +45,26 @@ describe("BookService", () => {
     expect(result).toEqual(response);
   });
 
+  it("Should search books by name", () => {
+    spectator.service
+      .getPaginatedBooks({ page: 0, limit: 10, query: { name: " Dom " } })
+      .subscribe();
+
+    const req = http.expectOne((r) => r.url === "/v1/bookInfos");
+    expect(req.request.params.get("name")).toBe("Dom");
+    req.flush({ data: [], count: 0, limit: 10, page: 0 });
+  });
+
+  it("Should not send a blank search", () => {
+    spectator.service
+      .getPaginatedBooks({ page: 0, limit: 10, query: { name: "  " } })
+      .subscribe();
+
+    const req = http.expectOne((r) => r.url === "/v1/bookInfos");
+    expect(req.request.params.has("name")).toBe(false);
+    req.flush({ data: [], count: 0, limit: 10, page: 0 });
+  });
+
   it("Should create a book", () => {
     spectator.service.addBook({ name: "Dom Casmurro" }).subscribe();
 

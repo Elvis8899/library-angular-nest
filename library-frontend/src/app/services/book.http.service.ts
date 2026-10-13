@@ -15,7 +15,9 @@ export class BookService {
   getPaginatedBooks(
     req?: PageRequest<BookEntity, BookQuery>
   ): Observable<PaginatedResponse<BookEntity>> {
-    const params = PageRequestUtility.toHttpParams(req);
+    let params = PageRequestUtility.toHttpParams(req);
+    const name = req?.query?.name?.trim();
+    if (name) params = params.append("name", name);
     return this._http.get<PaginatedResponse<BookEntity>>("/v1/bookInfos", {
       params,
     });
