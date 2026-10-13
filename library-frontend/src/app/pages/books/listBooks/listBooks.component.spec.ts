@@ -2,7 +2,17 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
+import {
+  MatButtonToggle,
+  MatButtonToggleChange,
+  MatButtonToggleGroup,
+} from "@angular/material/button-toggle";
+import {
+  MatDatepickerInput,
+  MatDatepickerInputEvent,
+} from "@angular/material/datepicker";
 import { MatDialog } from "@angular/material/dialog";
+import { MatSelect, MatSelectChange } from "@angular/material/select";
 import { Router, RouterModule } from "@angular/router";
 import { BookEntity, BookItemStatusEnum } from "@app/models/book.entity";
 import { ListBooksComponent } from "@app/pages/books/listBooks/listBooks.component";
@@ -130,6 +140,51 @@ describe("ListBooksComponent", () => {
     spectator.typeInElement("Dom Casmurro", "input[placeholder='Search']");
     // Assert
     expect(queryBySpy).toHaveBeenLastCalledWith({ name: "Dom Casmurro" });
+  });
+
+  it("Should query by the picked creation date", () => {
+    // Arrange
+    const queryBySpy = vi.spyOn(spectator.component.data, "queryBy");
+    const date = new Date(2026, 9, 13);
+    // Act
+    const datepickerInput = spectator.query(MatDatepickerInput)!;
+    datepickerInput.value = date;
+    spectator.triggerEventHandler(
+      MatDatepickerInput,
+      "dateChange",
+      new MatDatepickerInputEvent(
+        datepickerInput,
+        spectator.query("input[placeholder='Created At']")!
+      )
+    );
+    // Assert
+    expect(queryBySpy).toHaveBeenCalledWith({ createdAt: date });
+  });
+
+  it("Should sort by the selected property", () => {
+    // Arrange
+    const sortBySpy = vi.spyOn(spectator.component.data, "sortBy");
+    // Act
+    spectator.triggerEventHandler(
+      MatSelect,
+      "selectionChange",
+      new MatSelectChange(spectator.query(MatSelect)!, "name")
+    );
+    // Assert
+    expect(sortBySpy).toHaveBeenCalledWith({ property: "name" });
+  });
+
+  it("Should sort in the selected order", () => {
+    // Arrange
+    const sortBySpy = vi.spyOn(spectator.component.data, "sortBy");
+    // Act
+    spectator.triggerEventHandler(
+      MatButtonToggleGroup,
+      "change",
+      new MatButtonToggleChange(spectator.query(MatButtonToggle)!, "asc")
+    );
+    // Assert
+    expect(sortBySpy).toHaveBeenCalledWith({ order: "asc" });
   });
 
   it("Should show error message on errors", () => {

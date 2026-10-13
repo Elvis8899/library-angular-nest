@@ -95,7 +95,11 @@
             "coverageExclude": [
               "app.config.ts",
               "**.http.service.ts",
-              "**.routes.ts"
+              "**.routes.ts",
+              "**/shared/utils/test/**",
+              "**/models/book.entity.ts",
+              "**/models/bookRental.entity.ts",
+              "**/shared/i18n/translations/allTranslations.ts"
             ],
             "coverageThresholds": {
               "statements": 80,

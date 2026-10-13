@@ -6,8 +6,12 @@ import {
   MatDialogRef,
 } from "@angular/material/dialog";
 
+// The factory Angular generates has a fallback for building the class
+// directly, which can't happen for an abstract class
+/* v8 ignore start */
 @Directive()
 export abstract class StronglyTypedDialog<DialogData, DialogResult> {
+  /* v8 ignore stop */
   protected data: DialogData = inject(MAT_DIALOG_DATA);
   protected dialogRef: MatDialogRef<
     StronglyTypedDialog<DialogData, DialogResult>,
