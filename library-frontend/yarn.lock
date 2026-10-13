@@ -1388,10 +1388,10 @@
     "@napi-rs/nice-win32-ia32-msvc" "1.1.1"
     "@napi-rs/nice-win32-x64-msvc" "1.1.1"
 
-"@ngneat/overview@6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@ngneat/overview/-/overview-6.0.0.tgz#344a843db7bd922014f6825efe1c8406e6d74be5"
-  integrity sha512-pm4bAEYtnUl8q82dwjh5NN9HF0WTFEI58VtR12izp9Oaa2dtseX82VUArfb4fadmlbHpPMUwXHrsm0ORyWii2A==
+"@ngneat/overview@8.1.0":
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/@ngneat/overview/-/overview-8.1.0.tgz#4493772c5dd8af1612ae6a6945d0795f7ddfd491"
+  integrity sha512-AX1Q8g7gH8S571TIYVGQ/qORF6MkbPR0RvlYu9OoRg/awOmJWKUO5s6+w9hKlAHt9CTPwXgoNwh3gRXAJAF+Mg==
   dependencies:
     tslib "^2.0.0"
 

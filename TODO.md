@@ -5,7 +5,6 @@ Improvements found while reviewing the repository (2026-10-12), most important f
 ## Code quality
 
 - [ ] **Remove the unused `skip` value in the paginated repository queries.** All three real repositories compute `skip` with `TE.let` but pass `offset`, which already equals `page * limit`.
-- [ ] **Align `@ngneat/overview` with `@ngxpert/hot-toast`.** hot-toast 6.1 needs overview `>= 7`, but 6.0.0 is installed (a peer dependency warning).
 - [ ] **Clear out commented-out code**, such as the CEP and phone value objects in `document.ts`, the multipart and CSP blocks in `main.ts`, and the commented providers in the modules.
 - [ ] **Run Stylelint.** `.stylelintrc` is configured but no script or CI step runs it. Add `"lint:styles": "stylelint \"src/**/*.scss\""` and fix what it reports.
 - [ ] **Translate toast messages.** They're hard-coded English strings (for example `"Book created successfully"`) instead of going through ngx-translate.
