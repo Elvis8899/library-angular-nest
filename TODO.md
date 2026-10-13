@@ -2,10 +2,6 @@
 
 Improvements found while reviewing the repository (2026-10-12), most important first.
 
-## Runtime and infrastructure
-
-- [ ] **Make `yarn test:docker:up` non-interactive.** `prisma migrate reset` waits for confirmation. Use `--force` (it only targets the test database) or call `test:migrate` instead.
-
 ## Code quality
 
 - [ ] **Move frontend components to OnPush.** The Angular 22 migration marked 13 components `ChangeDetectionStrategy.Eager` to keep the old behaviour, and the `prefer-on-push-component-change-detection` lint rule is turned off for now (`library-frontend/eslint.config.mjs`). Convert them one at a time, which may need signals or `markForCheck`, then turn the rule back on.
