@@ -34,9 +34,6 @@ describe("ListUsersComponent", () => {
       updatedAt: new Date().toDateString(),
     },
   ];
-  // const userServiceMock = {
-  //   getPaginatedUsers: vi.fn().mockReturnValue(of({ data: users })),
-  // };
   const userServiceMock = createSpyObject(UserService);
   userServiceMock.getPaginatedUsers.mockReturnValue(
     of({ data: users, count: 1, limit: 10, page: 0 })

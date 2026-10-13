@@ -35,7 +35,6 @@ describe("AuthService", () => {
   });
 
   it("should save credentials", () => {
-    // const dateService = spectator.inject<DateService>(DateService);
     spectator.service.setCredentials(credential);
     expect(spectator.service.credentials).toEqual(credential);
   });

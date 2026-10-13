@@ -31,9 +31,6 @@ export const authHttpInterceptor: HttpInterceptorFn = (
     lang: currentLang,
   };
   if (accessToken) {
-    // if (!(request.body instanceof FormData)) {
-    //   newHeaders["content-type"] = "application/json";
-    // }
     newHeaders["Authorization"] = `Bearer ${accessToken}`;
   }
 

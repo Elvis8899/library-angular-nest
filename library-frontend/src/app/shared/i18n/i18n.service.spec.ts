@@ -192,8 +192,6 @@ describe("I18nService", () => {
       spy.mockReturnValueOnce(["title", "title1", "title2"]);
       // Act
       spectator.service.setTitle();
-      // Assert
-      // expect(onLangChangeSpy).toHaveBeenCalledWith("title");
     });
 
     it("should set title", () => {
@@ -203,8 +201,6 @@ describe("I18nService", () => {
       spy.mockReturnValueOnce([]);
       // Act
       spectator.service.setTitle();
-      // Assert
-      // expect(onLangChangeSpy).toHaveBeenCalledWith("title");
     });
 
     it("should set title without fn", () => {
@@ -218,19 +214,6 @@ describe("I18nService", () => {
       // Assert
       expect(title).toBe(newTitle);
     });
-    // it("should set title", () => {
-    //   // Arrange
-    //   spectator.service.init(defaultLanguage, supportedLanguages);
-    //   const spy = vi.spyOn(spectator.service, "getTitle");
-    //   spy.mockResolvedValueOnce([]);
-    //   const translateService = spectator.inject(TranslateService);
-    //   const translateSpy = vi.spyOn(translateService, "instant");
-    //   (translateService as unknown as Mock).mockReturnValue(null);
-    //   // Act
-    //   spectator.service.setTitle();
-    //   // Assert
-    //   // expect(onLangChangeSpy).toHaveBeenCalledWith("title");
-    // });
   });
 
   describe("on  destroy", () => {

@@ -1,4 +1,3 @@
-// import { UnprocessableEntityException } from "@nestjs/common";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
 import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
 import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
@@ -71,9 +70,6 @@ describe("[Unit] Update BookInfo", () => {
     await executeTask(bookInfoRepository.save(bookInfo));
     await executeTask(userRepository.save(user));
     bookRentalBuilder.reset();
-    //.withStatus(RentalStatusEnum);
-    //const originalBookInfo = bookRentalBuilder.build();
-    // await bookRentalRepository.save(originalBookInfo);
   });
 
   it("Should rent book if data is valid", async () => {

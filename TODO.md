@@ -4,7 +4,6 @@ Improvements found while reviewing the repository (2026-10-12), most important f
 
 ## Code quality
 
-- [ ] **Clear out commented-out code**, such as the CEP and phone value objects in `document.ts`, the multipart and CSP blocks in `main.ts`, and the commented providers in the modules.
 - [ ] **Run Stylelint.** `.stylelintrc` is configured but no script or CI step runs it. Add `"lint:styles": "stylelint \"src/**/*.scss\""` and fix what it reports.
 
 ## Tests

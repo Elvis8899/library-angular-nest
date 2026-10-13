@@ -52,7 +52,6 @@ const repositories = [
   imports: [CqrsModule],
   controllers: [...controllers],
   providers: [
-    //...controllers,
     ...commandHandlers,
     ...queryHandlers,
     ...services,

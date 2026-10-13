@@ -73,7 +73,6 @@ describe("[Unit] Update BookInfo", () => {
     const bookInfoDTO = bookInfoBuilder.buildCreateDTO();
 
     //When we update it without optional keys
-    // bookInfoDTO.cpf = "";
     const resultPromise = updateBookInfoHandler.execute(
       new UpdateBookInfo(bookInfoDTO, originalBookInfoId),
     );
@@ -135,24 +134,4 @@ describe("[Unit] Update BookInfo", () => {
     const bookInfos = await executeTask(bookInfoRepository.findAll());
     expect(bookInfos.length).toEqual(1);
   });
-
-  // it("Should not update an bookInfo if cpf already exists", async () => {
-  //   // Given a potentially valid name
-  //   // When an bookInfo with the same name exists
-  //   const bookInfo = new BookInfoBuilder(2).build();
-
-  //   const repeatCPF = bookInfo.cpf;
-  //   await bookInfoRepository.save(bookInfo);
-
-  //   //When we update the bookInfo to have same name
-  //   const bookInfoDTO = bookInfoBuilder.buildCreateDTO();
-  //   const resultPromise = updateBookInfoHandler.execute(
-  //     new UpdateBookInfo(bookInfoDTO, bookInfo.id),
-  //   );
-
-  //   //Then it should have thrown an error and not have updated the bookInfo
-  //   await expect(resultPromise).rejects.toBeInstanceOf(
-  //     BookInfoCPFAlreadyExistsException,
-  //   );
-  // });
 });

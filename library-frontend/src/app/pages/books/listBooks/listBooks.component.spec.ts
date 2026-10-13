@@ -223,7 +223,6 @@ describe("ListBooksComponent", () => {
       spectator
         .queryLast("button[name='removeBook']")
         ?.dispatchEvent(new Event("click"));
-      //spectator.click("button[name='removeBook']");
       expect(bookServiceMock.deleteBookItem).toHaveBeenCalledTimes(0);
     });
   });

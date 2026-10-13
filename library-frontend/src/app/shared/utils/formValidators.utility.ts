@@ -3,9 +3,6 @@ import { AbstractControl, ValidationErrors, ValidatorFn } from "@angular/forms";
 export class FormValidatorUtility {
   static removeNonNumeric = (v: string) => v.replace(/\D/g, "");
 
-  // const cpfMask = (v: string) =>
-  //   v.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
-
   static validateCPF(): ValidatorFn {
     return (control: AbstractControl): Record<string, unknown> | null => {
       // Custom validation logic

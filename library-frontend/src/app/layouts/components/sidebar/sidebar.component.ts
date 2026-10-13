@@ -27,8 +27,6 @@ enum NavMode {
   imports: [NgClass, RouterLink, RouterLinkActive, TranslatePipe],
 })
 export class SidebarComponent implements OnInit {
-  // version: string = environment.version;
-  // year: number = new Date().getFullYear();
   sidebarItems: NavMenuItem[] = webSidebarMenuItems;
   sidebarExtendedItem = -1;
   navExpanded = true;

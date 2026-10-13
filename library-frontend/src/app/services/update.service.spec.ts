@@ -22,15 +22,6 @@ describe("Update Service", () => {
     version: { hash: "1.0.1" },
   };
 
-  // const versionReadyEvent: VersionEvent = {
-  //   type: "VERSION_READY",
-  //   currentVersion: {
-  //     hash: "1.0.0",
-  //   },
-  //   latestVersion: {
-  //     hash: "1.0.1",
-  //   },
-  // };
   const swSpy = createSpyObject(SwUpdate, {
     isEnabled: true,
     versionUpdates: new BehaviorSubject(versionDetectedEvent),
@@ -69,13 +60,4 @@ describe("Update Service", () => {
     );
     expect(toastService.info).toBeCalledTimes(0);
   });
-
-  // it("Should show toast on version ready event", () => {
-  //   const toastService = spectator.inject(HotToastService);
-  //   spectator = createService();
-  //   (swSpy.versionUpdates as BehaviorSubject<VersionEvent>).next(
-  //     versionReadyEvent
-  //   );
-  //   expect(toastService.info).toBeCalledTimes(0);
-  // });
 });

@@ -34,9 +34,6 @@ describe("LanguageSelectorComponent", () => {
     ],
   });
 
-  // beforeEach(() => {
-  // });
-
   afterEach(() => {
     httpMock.verify();
     authServiceMock.logout.mockClear();
@@ -46,7 +43,6 @@ describe("LanguageSelectorComponent", () => {
     spectator = createComponent();
     httpMock = spectator.inject(HttpTestingController);
     // Assert
-    //expect(authServiceMock.logout).toHaveBeenCalledTimes(1);
     expect(spectator.query("p")).toContainText("Logged Out!");
   });
 
@@ -61,6 +57,5 @@ describe("LanguageSelectorComponent", () => {
     // Act
     // Assert
     expect(authServiceMock.logout).toHaveBeenCalledTimes(1);
-    //expect(spectator.query("p")).toContainText("Error logging out");
   });
 });
