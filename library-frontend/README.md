@@ -1,6 +1,6 @@
 # Library Frontend
 
-Web app for the [Library](../README.md) project: Angular 22 with Angular Material, translated into Portuguese (pt-BR) and English (en-US).
+Web app for the [Library](../README.md) project: zoneless Angular 22 with Angular Material, translated into Portuguese (pt-BR) and English (en-US).
 
 See the [root README](../README.md) for the full setup and demo accounts.
 
@@ -39,5 +39,7 @@ npx ng test --watch=false --coverage=false --include src/app/services/authentica
 - `src/app/pages/`: lazy-loaded feature routes (`books`, `rentals`, `users`, `auth`). Routes can be limited to certain roles with `data: { roles: [...] }`.
 - `src/app/services/`: HTTP services, login/logout/token refresh, and credential storage.
 - `src/app/shared/`: guards, HTTP interceptors (auth headers, error handling, automatic token refresh), i18n, and shared components.
+
+The app is zoneless (`provideZonelessChangeDetection()`, no zone.js). Views refresh only after signal changes, `async` pipe emissions, template event handlers or `markForCheck()`. A plain field changed in a `setTimeout` or promise callback is not rendered until something else triggers change detection.
 
 Imports use path aliases (`@app/`, `@shared/`, `@pages/`, `@env/`); relative imports are rejected by lint. See [docs/coding-style.md](docs/coding-style.md) for conventions.
