@@ -19,6 +19,13 @@ export class CredentialsService {
   private _credentials: Credentials | null = null;
   constructor() {
     this.refresh();
+    // Another tab logged in, refreshed the tokens or logged out: refresh
+    // tokens are single-use, so this tab must not keep using an old one
+    window.addEventListener("storage", (event) => {
+      if (event.key === credentialsKey || event.key === null) {
+        this.refresh();
+      }
+    });
   }
 
   refresh() {

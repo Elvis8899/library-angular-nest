@@ -4,13 +4,22 @@ import { CredentialsService } from "@app/services/credentials.service";
 import { UserService } from "@app/services/user.http.service";
 import {
   catchError,
+  defer,
   finalize,
+  firstValueFrom,
   map,
   Observable,
   of,
   shareReplay,
   throwError,
 } from "rxjs";
+
+const refreshLockName = "auth-refresh";
+
+// Runs the task while holding a lock shared by every tab of the app (Web
+// Locks API), or directly where the API is unavailable
+const withRefreshLock = <T>(task: () => Promise<T>): Promise<T> =>
+  navigator.locks ? navigator.locks.request(refreshLockName, task) : task();
 
 export interface LoginContext {
   email: string;
@@ -47,7 +56,8 @@ export class AuthenticationService {
 
   /**
    * Gets new tokens using the stored refresh token.
-   * Concurrent calls share a single request.
+   * Refresh tokens are single-use, so concurrent calls share a single request,
+   * and tabs take turns: a tab that waited reuses the tokens another tab got.
    * @return The new user credentials.
    */
   refresh(): Observable<Credentials> {
@@ -55,15 +65,30 @@ export class AuthenticationService {
     if (!refreshToken) {
       return throwError(() => new Error("No refresh token"));
     }
-    this._refreshInFlight$ ??= this._userService.refresh(refreshToken).pipe(
-      map((credentials) => {
-        this._credentialsService.setCredentials(credentials);
-        return credentials;
-      }),
+    this._refreshInFlight$ ??= defer(() =>
+      withRefreshLock(() => this.refreshOnce(refreshToken))
+    ).pipe(
       finalize(() => (this._refreshInFlight$ = null)),
       shareReplay(1)
     );
     return this._refreshInFlight$;
+  }
+
+  private async refreshOnce(refreshToken: string): Promise<Credentials> {
+    // Another tab may have refreshed while this one waited for the lock
+    this._credentialsService.refresh();
+    const stored = this._credentialsService.credentials;
+    if (stored?.refreshToken !== refreshToken) {
+      if (!stored) {
+        throw new Error("Logged out");
+      }
+      return stored;
+    }
+    const credentials = await firstValueFrom(
+      this._userService.refresh(refreshToken)
+    );
+    this._credentialsService.setCredentials(credentials);
+    return credentials;
   }
 
   /**

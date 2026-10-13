@@ -40,6 +40,30 @@ describe("AuthService", () => {
     expect(spectator.service.credentials).toEqual(credential);
   });
 
+  it("should load credentials saved by another tab", () => {
+    // When another tab saves credentials
+    localStorage.setItem("credentials", JSON.stringify(credential));
+    window.dispatchEvent(new StorageEvent("storage", { key: "credentials" }));
+
+    expect(spectator.service.credentials).toEqual(credential);
+  });
+
+  it("should forget credentials when another tab clears the storage", () => {
+    spectator.service.setCredentials(credential);
+    localStorage.clear();
+    window.dispatchEvent(new StorageEvent("storage", { key: null }));
+
+    expect(spectator.service.credentials).toBeNull();
+  });
+
+  it("should ignore other storage changes", () => {
+    spectator.service.setCredentials(credential);
+    localStorage.removeItem("credentials");
+    window.dispatchEvent(new StorageEvent("storage", { key: "other" }));
+
+    expect(spectator.service.credentials).toEqual(credential);
+  });
+
   it("should clear credentials", () => {
     spectator.service.setCredentials(credential);
     spectator.service.clearCredentials();

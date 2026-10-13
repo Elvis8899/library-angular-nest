@@ -4,6 +4,7 @@ import { generateTokens } from "@auth/util/signTokenParams";
 import { ExecutionContext, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
+import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { unsafeCoerce } from "fp-ts/lib/function";
 
 // Uses the real JwtService configured like JwtModule, unlike
@@ -12,6 +13,10 @@ describe("[Unit] JWT verification", () => {
   const jwtService = new JwtService(jwtModuleOptions());
   const guard = new AuthGuard(jwtService);
   const user = new UserBuilder().build();
+  const session = {
+    sessionId: createTestId(TableNameEnum.RefreshSession, 1),
+    jti: createTestId(TableNameEnum.None, 1),
+  };
 
   const contextWithToken = (token: string) =>
     unsafeCoerce<unknown, ExecutionContext>({
@@ -27,7 +32,7 @@ describe("[Unit] JWT verification", () => {
     );
 
   it("Should accept an access token issued at login", async () => {
-    const { accessToken } = await generateTokens(jwtService)(user);
+    const { accessToken } = await generateTokens(jwtService)(user, session);
 
     await expect(
       guard.canActivate(contextWithToken(accessToken)),
@@ -57,7 +62,7 @@ describe("[Unit] JWT verification", () => {
   });
 
   it("Should reject a refresh token used as access token", async () => {
-    const { refreshToken } = await generateTokens(jwtService)(user);
+    const { refreshToken } = await generateTokens(jwtService)(user, session);
 
     await expect(
       guard.canActivate(contextWithToken(refreshToken)),

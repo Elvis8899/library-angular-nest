@@ -1,14 +1,21 @@
+import { RefreshSessionRepository } from "@auth/database/refreshSession.repository.port";
 import { wrongAuthException } from "@auth/domain/auth.errors";
 import { LoginInput } from "@auth/domain/login.entity";
 import { AuthResponseDto } from "@auth/dtos/authResponse.dto";
 import { LoginDto } from "@auth/dtos/login.dto";
-import { comparePassword, generateTokens } from "@auth/util/signTokenParams";
+import {
+  comparePassword,
+  generateTokens,
+  refreshSessionExpiry,
+  RefreshTokenRef,
+} from "@auth/util/signTokenParams";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { JwtService } from "@nestjs/jwt";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { B, FPF, RE, RTE, TE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
+import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UserRepository } from "@user/database/user.repository.port";
 import { PinoLogger } from "nestjs-pino";
 
@@ -23,6 +30,8 @@ export class LoginCommandHandler implements ICommandHandler<
 > {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly refreshSessionRepository: RefreshSessionRepository,
+    private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly jwtService: JwtService,
     private readonly logger: PinoLogger,
   ) {
@@ -60,8 +69,45 @@ export class LoginCommandHandler implements ICommandHandler<
           ),
         ),
       ),
-      RTE.chainTaskK((user) => () => generateTokens(this.jwtService)(user)),
+      RTE.bindTo("user"),
+      RTE.bindW("session", ({ user }) => this.startSession(user.id)),
+      RTE.chainTaskK(
+        ({ user, session }) =>
+          () =>
+            generateTokens(this.jwtService)(user, session),
+      ),
     )({ logger: this.logger });
     return executeTask(task);
   }
+
+  // Each login starts a refresh session; the user's expired ones are
+  // removed at the same time
+  private startSession = (userId: string) => {
+    const session: RefreshTokenRef = {
+      sessionId: this.uuidGeneratorService.generateUUID(),
+      jti: this.uuidGeneratorService.generateUUID(),
+    };
+    return FPF.pipe(
+      userId,
+      performRTE(
+        this.refreshSessionRepository.deleteExpired,
+        "remove expired refresh sessions",
+      ),
+      RTE.chainW(() =>
+        FPF.pipe(
+          {
+            id: session.sessionId,
+            userId,
+            currentJti: session.jti,
+            expiresAt: refreshSessionExpiry(),
+          },
+          performRTE(
+            this.refreshSessionRepository.create,
+            "create refresh session",
+          ),
+        ),
+      ),
+      RTE.map(() => session),
+    );
+  };
 }

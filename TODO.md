@@ -5,7 +5,6 @@ Improvements found while reviewing the repository (2026-10-12), most important f
 ## Bugs and security
 
 - [ ] **Stop publishing Postgres and pgAdmin in production.** `.docker/docker-compose.yml` publishes `5432` (with the default `user`/`password` credentials) and `5050` on all interfaces. nginx reaches pgAdmin through the gateway, so bind it to `172.18.0.1` like the API, and drop or restrict the Postgres port.
-- [ ] **Consider rotating refresh tokens on each use.** Logout and user updates revoke refresh tokens, but a stolen token stays usable until then or until it expires (24h). Rotation would make each token single-use, but the frontend would first need to share refreshed credentials between open tabs.
 
 ## Runtime and infrastructure
 

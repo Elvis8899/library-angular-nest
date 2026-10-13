@@ -10,7 +10,7 @@ import {
   SpectatorService,
   SpyObject,
 } from "@ngneat/spectator/vitest";
-import { of, Subject, throwError } from "rxjs";
+import { firstValueFrom, of, throwError } from "rxjs";
 
 describe("AuthService", () => {
   const loginContext: LoginContext = {
@@ -49,6 +49,8 @@ describe("AuthService", () => {
     credentialServiceMock.clearCredentials.mockReturnValue(undefined);
   });
 
+  afterEach(() => vi.unstubAllGlobals());
+
   it("On login, should set credentials", () => {
     // When saving the credentials
     spectator.service.login(loginContext).subscribe();
@@ -65,35 +67,71 @@ describe("AuthService", () => {
     expect(res).toBe(true);
   });
 
-  it("On refresh, should request new tokens and set credentials", () => {
+  it("On refresh, should request new tokens and set credentials", async () => {
     // Given stored credentials with a refresh token
     credentialServiceMock.castToWritable().credentials = credential;
     const newCredential = { ...credential, accessToken: "new" };
     userServiceMock.refresh.mockReturnValue(of(newCredential));
 
     // When refreshing
-    let res: Credentials | undefined;
-    spectator.service.refresh().subscribe({ next: (v) => (res = v) });
+    const res = await firstValueFrom(spectator.service.refresh());
 
     expect(userServiceMock.refresh).toBeCalledWith(credential.refreshToken);
     expect(credentialServiceMock.setCredentials).toBeCalledWith(newCredential);
     expect(res).toEqual(newCredential);
   });
 
-  it("On concurrent refresh, should send a single request", () => {
+  it("On concurrent refresh, should send a single request", async () => {
     credentialServiceMock.castToWritable().credentials = credential;
-    const response$ = new Subject<Credentials>();
-    userServiceMock.refresh.mockReturnValue(response$);
+    userServiceMock.refresh.mockReturnValue(of(credential));
 
     // When refreshing twice before the first response arrives
-    const results: Credentials[] = [];
-    spectator.service.refresh().subscribe((v) => results.push(v));
-    spectator.service.refresh().subscribe((v) => results.push(v));
-    response$.next(credential);
-    response$.complete();
+    const results = await Promise.all([
+      firstValueFrom(spectator.service.refresh()),
+      firstValueFrom(spectator.service.refresh()),
+    ]);
 
     expect(userServiceMock.refresh).toHaveBeenCalledTimes(1);
     expect(results).toEqual([credential, credential]);
+  });
+
+  it("On refresh, should reuse the tokens another tab already got", async () => {
+    // Given another tab that used the same refresh token while this one waited
+    const otherTabCredential = { ...credential, refreshToken: "rotated" };
+    credentialServiceMock.castToWritable().credentials = credential;
+    credentialServiceMock.refresh.mockImplementation(() => {
+      credentialServiceMock.castToWritable().credentials = otherTabCredential;
+    });
+
+    const res = await firstValueFrom(spectator.service.refresh());
+
+    // Then the single-use token is not sent again
+    expect(userServiceMock.refresh).not.toBeCalled();
+    expect(res).toEqual(otherTabCredential);
+  });
+
+  it("On refresh, should fail if another tab logged out", async () => {
+    credentialServiceMock.castToWritable().credentials = credential;
+    credentialServiceMock.refresh.mockImplementation(() => {
+      credentialServiceMock.castToWritable().credentials = null;
+    });
+
+    await expect(firstValueFrom(spectator.service.refresh())).rejects.toThrow();
+    expect(userServiceMock.refresh).not.toBeCalled();
+  });
+
+  it("On refresh, should hold the lock shared between tabs", async () => {
+    // Given a browser with the Web Locks API
+    const request = vi.fn((_name: string, task: () => Promise<Credentials>) =>
+      task()
+    );
+    vi.stubGlobal("navigator", { ...navigator, locks: { request } });
+    credentialServiceMock.castToWritable().credentials = credential;
+    userServiceMock.refresh.mockReturnValue(of(credential));
+
+    await firstValueFrom(spectator.service.refresh());
+
+    expect(request).toBeCalledWith("auth-refresh", expect.any(Function));
   });
 
   it("On refresh without refresh token, should fail", () => {

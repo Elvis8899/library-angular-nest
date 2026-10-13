@@ -3,6 +3,7 @@ export enum TableNameEnum {
   BookInfo = "BookInfo",
   BookItem = "BookItem",
   BookRentalDetails = "BookRentalDetails",
+  RefreshSession = "RefreshSession",
   None = "None",
 }
 
@@ -11,6 +12,7 @@ export const defaultIdPrefixEnum: Record<TableNameEnum, string> = {
   [TableNameEnum.BookInfo]: "00000000-0000-0000-0002-",
   [TableNameEnum.BookItem]: "00000000-0000-0000-0003-",
   [TableNameEnum.BookRentalDetails]: "00000000-0000-0000-0004-",
+  [TableNameEnum.RefreshSession]: "00000000-0000-0000-0005-",
   [TableNameEnum.None]: "99999999-0000-0000-0000-",
 };
 

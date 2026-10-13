@@ -1,3 +1,4 @@
+import { UUID } from "@shared/uuid/entities/uuid";
 import { UserRoleEnum } from "@user/domain/user.entity";
 import { z } from "zod";
 
@@ -22,9 +23,15 @@ export type RequestJWTPayload = {
   iss: string;
 };
 
-export type RefreshJWTPayload = RequestJWTPayload & {
-  ver?: number;
-};
+// Claims of a verified refresh token that refreshing relies on
+export const RefreshTokenClaims = z.object({
+  sub: UUID,
+  ver: z.number().int(),
+  sid: UUID,
+  jti: UUID,
+});
+
+export type RefreshTokenClaims = z.infer<typeof RefreshTokenClaims>;
 
 export type AuthenticatedRequest = {
   user: RequestJWTPayload;
