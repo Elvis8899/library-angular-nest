@@ -1,10 +1,5 @@
 import { NgClass } from "@angular/common";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnInit,
-} from "@angular/core";
+import { ChangeDetectorRef, Component, inject, OnInit } from "@angular/core";
 import {
   NavigationEnd,
   Router,
@@ -29,7 +24,6 @@ enum NavMode {
   selector: "app-sidebar",
   templateUrl: "./sidebar.component.html",
   styleUrls: ["./sidebar.component.scss"],
-  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [NgClass, RouterLink, RouterLinkActive, TranslatePipe],
 })
 export class SidebarComponent implements OnInit {
@@ -44,6 +38,7 @@ export class SidebarComponent implements OnInit {
 
   private readonly _router = inject(Router);
   private readonly _permissionService = inject(CredentialsService);
+  private readonly _cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.activeNavTab(this.sidebarItems, this.sidebarExtendedItem);
@@ -53,6 +48,8 @@ export class SidebarComponent implements OnInit {
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
         this.activeNavTab(this.sidebarItems, this.sidebarExtendedItem);
+        // Navigation can start outside the sidebar, so nothing else marks it dirty
+        this._cdr.markForCheck();
       });
 
     this.navMode$.pipe(untilDestroyed(this)).subscribe((mode) => {

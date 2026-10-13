@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, OnInit } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { HeaderComponent } from "@app/layouts/components/header/header.component";
 import { SidebarComponent } from "@app/layouts/components/sidebar/sidebar.component";
@@ -8,7 +8,6 @@ import { Subject } from "rxjs";
 @UntilDestroy()
 @Component({
   templateUrl: "./layout.component.html",
-  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [CommonModule, SidebarComponent, HeaderComponent, RouterModule],
 })
 export class LayoutComponent implements OnInit {

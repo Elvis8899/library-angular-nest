@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnInit,
-} from "@angular/core";
+import { Component, inject, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { AuthenticationService } from "@app/services/authentication.service";
 import { Logger } from "@app/services/logger.service";
@@ -12,7 +7,6 @@ const log = new Logger("LogoutComponent");
 
 @Component({
   selector: "app-logout",
-  changeDetection: ChangeDetectionStrategy.Eager,
   template: "<p>Logged Out!</p>",
 })
 export class LogoutComponent implements OnInit {

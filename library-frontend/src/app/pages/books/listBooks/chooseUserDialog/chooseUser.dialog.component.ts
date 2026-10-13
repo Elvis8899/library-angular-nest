@@ -1,10 +1,5 @@
 import { AsyncPipe } from "@angular/common";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnInit,
-} from "@angular/core";
+import { Component, inject, OnInit } from "@angular/core";
 import {
   FormControl,
   FormsModule,
@@ -37,7 +32,6 @@ export interface ChooseUserDialogData {
 @Component({
   selector: "app-choose-user-dialog",
   templateUrl: "chooseUser.dialog.component.html",
-  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     AsyncPipe,
     MatFormFieldModule,

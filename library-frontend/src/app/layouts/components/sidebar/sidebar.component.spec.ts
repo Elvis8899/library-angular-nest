@@ -85,6 +85,14 @@ describe("LanguageSelectorComponent", () => {
     expect(spy).toHaveBeenCalled();
   });
 
+  it("should highlight the item when navigation starts outside the sidebar", async () => {
+    // Act
+    await spectator.inject(Router).navigate(["/users"]);
+    await spectator.fixture.whenStable();
+    // Assert
+    expect(spectator.queryAll(".menu-item")[0]).toHaveClass("active");
+  });
+
   it("should activate item", () => {
     // Arrange
     spectator.click(".toggle-icon");

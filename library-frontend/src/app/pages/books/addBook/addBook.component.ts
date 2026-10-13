@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnInit,
-} from "@angular/core";
+import { Component, inject, OnInit } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { BookEntity } from "@app/models/book.entity";
@@ -17,7 +12,6 @@ const log = new Logger("AddBookComponent");
   selector: "app-list",
   templateUrl: "./addBook.component.html",
   styleUrl: "./addBook.component.scss",
-  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [ReactiveFormsModule],
 })
 export class AddBooksComponent implements OnInit {
