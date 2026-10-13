@@ -53,23 +53,11 @@ jobs:
           yarn build
           yarn test:cov
 
-      - name: 🔴 Delete remote badges branch
-        # The branch does not exist on the first run
-        run: git push origin --delete badges || true
-
-      - name: ➕ Create badges branch
-        run: git checkout -b badges
-
-      - name: ⚙️ Generating coverage badges
-        uses: jpb06/coverage-badges-action@latest
+      - name: Upload coverage summary
+        uses: actions/upload-artifact@v4
         with:
-          branches: "*"
-          target-branch: badges
-          coverage-summary-path: |
-            ./**/coverage/coverage-summary.json
-
-      - name: ⬆️ Push badges branch
-        run: git push origin badges
+          name: backend-coverage
+          path: library-backend/coverage/coverage-summary.json
 
   frontend:
     runs-on: ubuntu-latest
@@ -90,3 +78,49 @@ jobs:
           yarn lint
           yarn test --watch=false
           yarn build
+
+      - name: Upload coverage summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: library-frontend/coverage/library-frontend/coverage-summary.json
+
+  badges:
+    needs: [build, frontend]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download backend coverage summary
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage
+          path: library-backend/coverage
+
+      - name: Download frontend coverage summary
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage
+          path: library-frontend/coverage/library-frontend
+
+      - name: 🔴 Delete remote badges branch
+        # The branch does not exist on the first run
+        run: git push origin --delete badges || true
+
+      - name: ➕ Create badges branch
+        run: git checkout -b badges
+
+      # The part of the path matched by ** names each badge folder:
+      # badges/library-backend and badges/library-frontend
+      - name: ⚙️ Generating coverage badges
+        uses: jpb06/coverage-badges-action@latest
+        with:
+          branches: "*"
+          target-branch: badges
+          coverage-summary-path: |
+            ./**/coverage/coverage-summary.json
+            ./**/coverage/library-frontend/coverage-summary.json
+
+      - name: ⬆️ Push badges branch
+        run: git push origin badges
