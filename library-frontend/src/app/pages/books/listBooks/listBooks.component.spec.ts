@@ -123,6 +123,15 @@ describe("ListBooksComponent", () => {
     //spectator.selectOption
   });
 
+  it("Should query by the typed name", () => {
+    // Arrange
+    const queryBySpy = vi.spyOn(spectator.component.data, "queryBy");
+    // Act
+    spectator.typeInElement("Dom Casmurro", "input[placeholder='Search']");
+    // Assert
+    expect(queryBySpy).toHaveBeenLastCalledWith({ name: "Dom Casmurro" });
+  });
+
   it("Should show error message on errors", () => {
     const toastService = spectator.inject(HotToastService);
     spectator.component.defaultErrorHandler(new Error("Error"));

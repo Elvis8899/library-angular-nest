@@ -21,7 +21,8 @@
       <mat-form-field class="name-form">
         <mat-icon matPrefix>search</mat-icon>
         <input
-          (input)="data.queryBy({ name: $event.value })"
+          #searchInput
+          (input)="data.queryBy({ name: searchInput.value })"
           matInput
           placeholder="Search"
         />
