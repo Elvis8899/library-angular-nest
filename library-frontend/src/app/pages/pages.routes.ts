@@ -50,6 +50,8 @@ export const routes: Routes = [
       { path: "**", redirectTo: "books", pathMatch: "full" },
     ],
     canActivate: [authenticationGuard, permissionGuard],
+    // canActivate runs only for this route; this checks each child's roles
+    canActivateChild: [permissionGuard],
     data: { reuse: true, roles: [ROLE.ADMIN, ROLE.CLIENT] },
   },
 ];

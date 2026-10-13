@@ -95,7 +95,6 @@
             "coverageExclude": [
               "app.config.ts",
               "**.http.service.ts",
-              "**.routes.ts",
               "**/shared/utils/test/**",
               "**/models/book.entity.ts",
               "**/models/bookRental.entity.ts",
