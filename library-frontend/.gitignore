@@ -8,6 +8,8 @@
 
 # Node
 /node_modules
+# Yarn cache of the Docker dev container
+/.yarn-cache
 npm-debug.log
 yarn-error.log
 

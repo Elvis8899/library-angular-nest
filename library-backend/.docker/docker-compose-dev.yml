@@ -11,11 +11,28 @@ services:
       - ./nginx.dev.conf:/etc/nginx/nginx.conf
     depends_on:
       - app
+      - frontend
       - postgres
     networks:
       - library_dev_network
     environment:
       UPLOAD_FILE_SIZE_LIMIT: 20
+
+  # Angular dev server, served by nginx at /. The browser calls /v1 on the
+  # same origin, so nginx sends those to the API and proxy.conf.json is unused
+  frontend:
+    image: node:24-slim
+    container_name: library-frontend-dev
+    working_dir: /usr/src/app
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    environment:
+      YARN_CACHE_FOLDER: /usr/src/app/.yarn-cache
+      NG_CLI_ANALYTICS: "false"
+    volumes:
+      - ../../library-frontend:/usr/src/app
+    command: sh -c "yarn install --frozen-lockfile && yarn ng serve --host 0.0.0.0 --port 4200"
+    networks:
+      - "library_dev_network"
 
   app:
     build:
