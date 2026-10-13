@@ -22,6 +22,12 @@ services:
       context: ..
       dockerfile: .docker/Dockerfile.dev
     env_file: ../.env.dev
+    # Run as the host user so files written to the mounted source folder
+    # (node_modules, dist, migrations) are not owned by root. The default
+    # matches the image's node user; set HOST_UID/HOST_GID if yours differ.
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    environment:
+      YARN_CACHE_FOLDER: /usr/src/app/.docker/.yarn-cache
     container_name: library-api-dev
     image: library-api
     # Uncomment this line in case you are in M1

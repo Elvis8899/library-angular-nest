@@ -8,7 +8,6 @@ Improvements found while reviewing the repository (2026-10-12), most important f
 
 ## Runtime and infrastructure
 
-- [ ] **Stop the dev container from creating root-owned files in `library-backend/node_modules`.** It mounts the source folder (`../:/usr/src/app`) and runs yarn as root, which breaks later host-side `yarn add` with EACCES. Run it as the host user or give `node_modules` its own volume.
 - [ ] **Run the frontend in CI.** `.github/workflows/node.js.yml` only covers the backend. Add `yarn lint`, `yarn test` and `yarn build` for `library-frontend` on Node 24.
 - [ ] **Make `yarn test:docker:up` non-interactive.** `prisma migrate reset` waits for confirmation. Use `--force` (it only targets the test database) or call `test:migrate` instead.
 - [ ] **Decide whether Swagger (`/swagger`) should be public in production.**
