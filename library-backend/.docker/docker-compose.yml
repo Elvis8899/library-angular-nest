@@ -44,8 +44,10 @@ services:
     container_name: postgres-container-prod
     image: postgres:latest
     restart: always
+    # Not reachable from outside the server: the app uses the Docker
+    # network, and admins can connect from the server or an SSH tunnel
     ports:
-      - 5432:5432
+      - "172.18.0.1:5432:5432"
     environment:
       POSTGRES_USER: "user"
       POSTGRES_PASSWORD: "password"
@@ -63,8 +65,9 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@email.com
       PGADMIN_DEFAULT_PASSWORD: admin
       SCRIPT_NAME: "/pgadmin4"
+    # Reachable only through nginx (/pgadmin4/), like the API
     ports:
-      - 5050:80
+      - "172.18.0.1:5050:80"
     networks:
       - "nginx_network"
 

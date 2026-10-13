@@ -2,10 +2,6 @@
 
 Improvements found while reviewing the repository (2026-10-12), most important first.
 
-## Bugs and security
-
-- [ ] **Stop publishing Postgres and pgAdmin in production.** `.docker/docker-compose.yml` publishes `5432` (with the default `user`/`password` credentials) and `5050` on all interfaces. nginx reaches pgAdmin through the gateway, so bind it to `172.18.0.1` like the API, and drop or restrict the Postgres port.
-
 ## Runtime and infrastructure
 
 - [ ] **Run the frontend in CI.** `.github/workflows/node.js.yml` only covers the backend. Add `yarn lint`, `yarn test` and `yarn build` for `library-frontend` on Node 24.
