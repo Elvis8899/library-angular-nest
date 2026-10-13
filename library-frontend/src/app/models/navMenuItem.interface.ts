@@ -1,14 +1,11 @@
-import { PERMISSIONS, ROLE } from "@app/models/credentials.entity";
+import { ROLE } from "@app/models/credentials.entity";
 
 export interface NavMenuItem {
+  // Translation key
   title: string;
-  href: string;
-  icon?: string;
-  url?: string;
-  active?: boolean;
-  subItems?: NavMenuItem[];
-  disabled?: boolean;
-  divider?: boolean;
-  roles?: ROLE[];
-  permissions?: PERMISSIONS[];
+  route: string;
+  // Material Icons ligature name
+  icon: string;
+  // Roles that see the item
+  roles: ROLE[];
 }

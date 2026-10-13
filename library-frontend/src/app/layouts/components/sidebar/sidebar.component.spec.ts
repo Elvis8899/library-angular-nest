@@ -1,105 +1,106 @@
-import { NavigationEnd, Router, RouterModule } from "@angular/router";
+import { provideRouter, Router } from "@angular/router";
 import { SidebarComponent } from "@app/layouts/components/sidebar/sidebar.component";
+import { ROLE } from "@app/models/credentials.entity";
 import { CredentialsService } from "@app/services/credentials.service";
-import { Logger } from "@app/services/logger.service";
+import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
 import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
-import { TranslateService } from "@ngx-translate/core";
-import { of, Subject } from "rxjs";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 
-Logger.level = 0;
-const translateServiceMock = {
-  addLangs: vi.fn(),
-  setDefaultLang: vi.fn().mockReturnValue(of("da")),
-  use: vi.fn().mockReturnValue(of("da")),
-  getLangs: vi.fn().mockReturnValue(["da", "en"]),
-  get: vi.fn().mockReturnValue(of("translated text")),
-  instant: vi.fn((key: string) => key),
-  onLangChange: of({ lang: "en" }),
-  // add the following 2 lines
-  onTranslationChange: of(),
-  onDefaultLangChange: of(),
-  onFallbackLangChange: of(),
-  setFallbackLang: of(),
-  getParsedResult: of(),
-  getStreamOnTranslationChange: of(),
-  stream: of(),
-  reloadLang: of(),
-};
-
-describe("LanguageSelectorComponent", () => {
+describe("SidebarComponent", () => {
   let spectator: Spectator<SidebarComponent>;
+  let role: ROLE;
+
+  const credentialsServiceMock = {
+    hasRole: (roles: ROLE[]) => roles.includes(role),
+  };
+
   const createComponent = createComponentFactory({
     component: SidebarComponent,
-    imports: [
-      RouterModule.forRoot([{ path: "users", component: MockComponent }]),
+    imports: [TranslateModule.forRoot()],
+    providers: [
+      provideRouter([
+        { path: "books", component: MockComponent },
+        { path: "rentals", component: MockComponent },
+      ]),
+      { provide: CredentialsService, useValue: credentialsServiceMock },
     ],
-    mocks: [CredentialsService],
-    providers: [{ provide: TranslateService, useValue: translateServiceMock }],
   });
 
-  beforeEach(() => {
-    spectator = createComponent();
-    const credentialsService = spectator.inject(CredentialsService);
+  const labels = () =>
+    spectator.queryAll(".menu-label").map((label) => label.textContent?.trim());
 
-    credentialsService.hasRole.mockReturnValue(true);
-    credentialsService.hasPermission.mockReturnValue(true);
+  describe("As an admin", () => {
+    beforeEach(() => {
+      role = ROLE.ADMIN;
+      spectator = createComponent();
+    });
+
+    it("Should list every page, with logout last", () => {
+      expect(labels()).toEqual(["Users", "Books", "Rentals", "Logout"]);
+    });
+
+    it("Should link each item to its page", () => {
+      const links = spectator
+        .queryAll("a.menu-link")
+        .map((link) => link.getAttribute("href"));
+
+      expect(links).toEqual(["/users", "/books", "/rentals", "/logout"]);
+      expect(spectator.query("a.brand")).toHaveAttribute("href", "/");
+    });
   });
 
-  it("should have a success class by default", () => {
-    // Assert
-    expect(spectator.query("nav")).toHaveClass("pb");
-  });
+  describe("As a client", () => {
+    beforeEach(() => {
+      role = ROLE.CLIENT;
+      spectator = createComponent();
+    });
 
-  it("should expand on click", () => {
-    // Arrange
-    const toggleSpy = vi.spyOn(spectator.component, "toggleSidebar");
-    // Act
-    spectator.click(".toggle-icon");
-    // Assert
-    expect(spectator.query("nav")).toHaveClass("squeeze");
-    expect(toggleSpy).toHaveBeenCalledOnce();
-  });
+    it("Should hide the admin pages", () => {
+      expect(labels()).toEqual(["Books", "Rentals", "Logout"]);
+    });
 
-  it("should close back on second click", () => {
-    // Arrange
-    const toggleSpy = vi.spyOn(spectator.component, "toggleSidebar");
-    // Act
-    spectator.click(".toggle-icon");
-    spectator.click(".toggle-icon");
-    // Assert
-    expect(spectator.query("nav")).toHaveClass("pb");
-    expect(toggleSpy).toHaveBeenCalledTimes(2);
-  });
+    it("Should highlight the current page, wherever navigation started", async () => {
+      await spectator.inject(Router).navigate(["/rentals"]);
+      await spectator.fixture.whenStable();
 
-  it("Pipe should be activated on Router NavigationEnd", () => {
-    // Arrange
-    const spy = vi.spyOn(spectator.component, "activeNavTab");
-    const router = spectator.inject(Router);
-    const event = new NavigationEnd(1703, `/book/list`, "/");
-    // Act
-    (router.events as unknown as Subject<Event>).next(
-      event as unknown as Event
-    );
-    // Assert
-    expect(spy).toHaveBeenCalled();
-  });
+      const active = spectator.queryAll("a.menu-link.active");
+      expect(active).toHaveLength(1);
+      expect(active[0]).toHaveAttribute("href", "/rentals");
+    });
 
-  it("should highlight the item when navigation starts outside the sidebar", async () => {
-    // Act
-    await spectator.inject(Router).navigate(["/users"]);
-    await spectator.fixture.whenStable();
-    // Assert
-    expect(spectator.queryAll(".menu-item")[0]).toHaveClass("active");
-  });
+    it("Should collapse and expand", () => {
+      const nav = () => spectator.query("nav");
+      const toggle = () => spectator.query("button.toggle");
+      expect(nav()).not.toHaveClass("collapsed");
+      expect(toggle()).toHaveAttribute("aria-expanded", "true");
+      // Labels are visible, so links need no tooltip
+      expect(spectator.query("a.menu-link")).not.toHaveAttribute("title");
 
-  it("should activate item", () => {
-    // Arrange
-    spectator.click(".toggle-icon");
-    const spy = vi.spyOn(spectator.component, "activateSidebarItem");
-    // Act
-    spectator.click(".menu-item");
-    // Assert
-    expect(spy).toHaveBeenCalled();
+      spectator.click("button.toggle");
+
+      expect(nav()).toHaveClass("collapsed");
+      expect(toggle()).toHaveAttribute("aria-expanded", "false");
+      // Only icons are shown, so the title names the page
+      expect(spectator.query("a.menu-link")).toHaveAttribute("title", "Books");
+
+      spectator.click("button.toggle");
+
+      expect(nav()).not.toHaveClass("collapsed");
+    });
+
+    it("Should show the labels in the current language", async () => {
+      const translate = spectator.inject(TranslateService);
+      translate.setTranslation("pt-BR", ptBR);
+      translate.use("pt-BR");
+      await spectator.fixture.whenStable();
+
+      expect(labels()).toEqual(["Livros", "Empréstimos", "Sair"]);
+      expect(spectator.query(".brand-name")).toHaveText("Biblioteca");
+      expect(spectator.query("button.toggle")).toHaveAttribute(
+        "aria-label",
+        "Mostrar ou esconder o menu"
+      );
+    });
   });
 });
