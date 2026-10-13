@@ -25,6 +25,7 @@ const config: Config = {
     "^@auth/(.*)$": "<rootDir>/src/modules/auth/$1",
     "^@book/(.*)$": "<rootDir>/src/modules/book/$1",
     "^@rental/(.*)$": "<rootDir>/src/modules/rental/$1",
+    "^@db/(.*)$": "<rootDir>/prisma/$1",
   },
   transformIgnorePatterns: ["node_modules/(?!(uuid)/)"],
   coverageReporters: ["json", "text-summary", "lcov", "clover", "json-summary"],

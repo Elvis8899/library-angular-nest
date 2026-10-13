@@ -1,39 +1,55 @@
-import { PrismaClient } from "@prisma/client";
-import { userSeed } from "./seed/user.seed";
-import { bookSeed } from "./seed/book.seed";
 import { hashPassword } from "@auth/util/signTokenParams";
+import { bookSeed } from "@db/seed/book.seed";
+import { userSeed } from "@db/seed/user.seed";
+import { PrismaClient } from "@prisma/client";
 import { formatDocument } from "@user/domain/valueObject/document";
 
-const prisma = new PrismaClient();
+/**
+ * Seeds the demo users and books. Safe to run on every start: the seeded
+ * books' rentals point at the seeded client, so it seeds all or nothing,
+ * and only into an empty database.
+ */
+export async function seed(
+  prisma: PrismaClient,
+): Promise<"seeded" | "skipped"> {
+  const [users, books] = await Promise.all([
+    prisma.user.count(),
+    prisma.bookInfo.count(),
+  ]);
+  if (users > 0 || books > 0) {
+    console.log(
+      `Skipping seed: the database already has ${String(users)} users and ${String(books)} books.`,
+    );
+    return "skipped";
+  }
 
-async function main() {
   console.log(`Start seeding ...`);
-  const userWithHashedPassword = await Promise.all(
-    userSeed.map(async (user) => {
-      user.password = await hashPassword(user.password);
-      user.cpf = formatDocument(user.cpf || "");
-      return user;
-    }),
+  const usersToCreate = await Promise.all(
+    userSeed.map(async (user) => ({
+      ...user,
+      password: await hashPassword(user.password),
+      cpf: formatDocument(user.cpf || ""),
+    })),
   );
-  await Promise.all(
-    userWithHashedPassword.map((data) => prisma.user.create({ data })),
-  );
-
+  await Promise.all(usersToCreate.map((data) => prisma.user.create({ data })));
   console.log(`Created users`);
 
   await Promise.all(bookSeed.map((data) => prisma.bookInfo.create({ data })));
-
   console.log(`Created books`);
 
   console.log(`Seeding finished.`);
+  return "seeded";
 }
 
-main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+// Run by `yarn seed` (prisma db seed), not when a test imports seed()
+/* istanbul ignore next */
+if (require.main === module) {
+  const prisma = new PrismaClient();
+  seed(prisma)
+    .then(() => prisma.$disconnect())
+    .catch(async (e: unknown) => {
+      console.error(e);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+}

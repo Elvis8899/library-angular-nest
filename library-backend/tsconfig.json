@@ -32,7 +32,8 @@
       "@auth/*": ["./src/modules/auth/*"],
       "@user/*": ["./src/modules/user/*"],
       "@rental/*": ["./src/modules/rental/*"],
-      "@book/*": ["./src/modules/book/*"]
+      "@book/*": ["./src/modules/book/*"],
+      "@db/*": ["./prisma/*"]
     }
   },
   "exclude": ["node_modules", "dist"]
