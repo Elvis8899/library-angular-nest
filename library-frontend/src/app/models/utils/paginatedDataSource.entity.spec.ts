@@ -146,6 +146,16 @@ describe("PaginatedDataSource", () => {
     });
   });
 
+  it("Should keep fetching after a failed request", () => {
+    endpoint.mockReturnValueOnce(throwError(() => new Error("offline")));
+    const dataSource = create();
+
+    dataSource.queryBy({ name: "Dom" });
+
+    expect(endpoint).toHaveBeenCalledTimes(2);
+    expect(dataSource.data$.getValue()).toEqual(items);
+  });
+
   it("Should give the table the data stream", () => {
     const dataSource = create();
 

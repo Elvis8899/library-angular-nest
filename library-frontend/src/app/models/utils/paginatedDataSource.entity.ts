@@ -106,15 +106,17 @@ export class PaginatedDataSource<T, Q> implements SimpleDataSource<T> {
           startWith(0),
           switchMap((page) =>
             this.endpoint({ page, sort, limit, query }).pipe(
-              indicate(this.loading)
+              indicate(this.loading),
+              // Caught here so a failed request doesn't end the stream:
+              // later pages, searches and refreshes still fetch
+              catchError((error) => {
+                config.log.error(error);
+                return of({ data: [], count: 0, limit: 0, page: 0 });
+              })
             )
           )
         )
       ),
-      catchError((error) => {
-        config.log.error(error);
-        return of({ data: [], count: 0, limit: 0, page: 0 });
-      }),
       share()
     );
     param$.subscribe({
