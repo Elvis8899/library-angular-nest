@@ -81,20 +81,3 @@ h5,
 h6 {
   color: var(--text-color-dark);
 }
-
-// set style to all disabled text elements
-label[disabled],
-p[disabled],
-span[disabled],
-a[disabled],
-li[disabled],
-h1[disabled],
-h2[disabled],
-h3[disabled],
-h4[disabled],
-h5[disabled],
-h6[disabled] {
-  color: var(--gray) !important;
-  pointer-events: none;
-  cursor: default;
-}
