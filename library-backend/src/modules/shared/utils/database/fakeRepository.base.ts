@@ -15,7 +15,7 @@ import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
  * In-memory stand-in for a Prisma repository, used by the unit tests.
  * Rows are kept by id, in insertion order.
  */
-export abstract class InMemoryRepository<
+export abstract class FakeRepository<
   Entity extends { id: string },
   Query = undefined,
 > implements RepositoryDefaultPort<Entity, Query> {

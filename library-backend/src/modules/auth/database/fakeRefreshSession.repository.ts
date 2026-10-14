@@ -6,11 +6,11 @@ import {
 import { Injectable } from "@nestjs/common";
 import { FPF, O, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
-import { InMemoryRepository } from "@shared/utils/database/inMemoryRepository.base";
+import { FakeRepository } from "@shared/utils/database/fakeRepository.base";
 
 @Injectable()
-export class InMemoryRefreshSessionRepository
-  extends InMemoryRepository<RefreshSession>
+export class FakeRefreshSessionRepository
+  extends FakeRepository<RefreshSession>
   implements RefreshSessionRepository
 {
   protected readonly validate = validateFromUnknown(

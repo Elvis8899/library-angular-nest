@@ -1,5 +1,5 @@
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { InMemoryBookInfoRepository } from "@book/database/inMemoryBookInfo.repository";
+import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
 import { BookInfoNotFoundException } from "@book/domain/bookInfo.errors";
 import {
   GetBookInfoByIdQuery,
@@ -23,7 +23,7 @@ describe("[Unit] List BookInfos", () => {
       providers: [
         GetBookInfoByIdQueryHandler,
         RealUUIDGeneratorService,
-        { provide: BookInfoRepository, useClass: InMemoryBookInfoRepository },
+        { provide: BookInfoRepository, useClass: FakeBookInfoRepository },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],
     }).compile();

@@ -1,15 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { O, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
-import { InMemoryRepository } from "@shared/utils/database/inMemoryRepository.base";
+import { FakeRepository } from "@shared/utils/database/fakeRepository.base";
 import { validateMaybeRow } from "@shared/utils/database/rowValidation";
 import { UserRepository } from "@user/database/user.repository.port";
 import { User, UserRoleEnum } from "@user/domain/user.entity";
 import { formatDocument } from "@user/domain/valueObject/document";
 
 @Injectable()
-export class InMemoryUserRepository
-  extends InMemoryRepository<User>
+export class FakeUserRepository
+  extends FakeRepository<User>
   implements UserRepository
 {
   protected readonly validate = validateFromUnknown(User, "User");

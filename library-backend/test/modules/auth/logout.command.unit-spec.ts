@@ -9,7 +9,7 @@ import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { InMemoryUserRepository } from "@user/database/inMemoryUser.repository";
+import { FakeUserRepository } from "@user/database/fakeUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 import { PinoLogger } from "nestjs-pino";
 
@@ -22,7 +22,7 @@ describe("[Unit] Logout", () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         LogoutCommandHandler,
-        { provide: UserRepository, useClass: InMemoryUserRepository },
+        { provide: UserRepository, useClass: FakeUserRepository },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],
     }).compile();

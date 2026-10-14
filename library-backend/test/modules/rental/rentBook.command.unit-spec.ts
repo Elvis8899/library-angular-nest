@@ -1,5 +1,5 @@
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { InMemoryBookInfoRepository } from "@book/database/inMemoryBookInfo.repository";
+import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
 import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
 import { Test } from "@nestjs/testing";
 import {
@@ -7,7 +7,7 @@ import {
   RentBookCommandHandler,
 } from "@rental/commands/rentBook/rentBook.command";
 import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
-import { InMemoryBookRentalRepository } from "@rental/database/inMemoryBookRental.repository";
+import { FakeBookRentalRepository } from "@rental/database/fakeBookRental.repository";
 import { BookRentalNotAvailableException } from "@rental/domain/bookRental.errors";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
 import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
@@ -18,7 +18,7 @@ import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { InMemoryUserRepository } from "@user/database/inMemoryUser.repository";
+import { FakeUserRepository } from "@user/database/fakeUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 import { PinoLogger } from "nestjs-pino";
 
@@ -51,12 +51,9 @@ describe("[Unit] Update BookInfo", () => {
         },
         RentBookCommandHandler,
         RealUUIDGeneratorService,
-        { provide: BookInfoRepository, useClass: InMemoryBookInfoRepository },
-        { provide: UserRepository, useClass: InMemoryUserRepository },
-        {
-          provide: BookRentalRepository,
-          useClass: InMemoryBookRentalRepository,
-        },
+        { provide: BookInfoRepository, useClass: FakeBookInfoRepository },
+        { provide: UserRepository, useClass: FakeUserRepository },
+        { provide: BookRentalRepository, useClass: FakeBookRentalRepository },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],
     }).compile();

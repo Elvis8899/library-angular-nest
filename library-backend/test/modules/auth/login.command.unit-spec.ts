@@ -2,7 +2,7 @@ import {
   LoginCommand,
   LoginCommandHandler,
 } from "@auth/commands/login/login.command";
-import { InMemoryRefreshSessionRepository } from "@auth/database/inMemoryRefreshSession.repository";
+import { FakeRefreshSessionRepository } from "@auth/database/fakeRefreshSession.repository";
 import { RefreshSessionRepository } from "@auth/database/refreshSession.repository.port";
 import { WrongAuthException } from "@auth/domain/auth.errors";
 import { hashPassword } from "@auth/util/signTokenParams";
@@ -15,13 +15,13 @@ import { executeTask } from "@shared/utils/application/executeTask";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { InMemoryUserRepository } from "@user/database/inMemoryUser.repository";
+import { FakeUserRepository } from "@user/database/fakeUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 let userRepository: UserRepository;
-let refreshSessionRepository: InMemoryRefreshSessionRepository;
+let refreshSessionRepository: FakeRefreshSessionRepository;
 
 describe("[Unit] Create User", () => {
   let loginCommandHandler: LoginCommandHandler;
@@ -37,10 +37,10 @@ describe("[Unit] Create User", () => {
         JwtService,
         LoginCommandHandler,
         RealUUIDGeneratorService,
-        { provide: UserRepository, useClass: InMemoryUserRepository },
+        { provide: UserRepository, useClass: FakeUserRepository },
         {
           provide: RefreshSessionRepository,
-          useClass: InMemoryRefreshSessionRepository,
+          useClass: FakeRefreshSessionRepository,
         },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],

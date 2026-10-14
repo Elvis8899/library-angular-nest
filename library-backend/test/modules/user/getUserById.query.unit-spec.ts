@@ -3,7 +3,7 @@ import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.servi
 import { executeTask } from "@shared/utils/application/executeTask";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
-import { InMemoryUserRepository } from "@user/database/inMemoryUser.repository";
+import { FakeUserRepository } from "@user/database/fakeUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 import { UserNotFoundException } from "@user/domain/user.errors";
 import {
@@ -23,7 +23,7 @@ describe("[Unit] List Users", () => {
       providers: [
         GetUserByIdQueryHandler,
         RealUUIDGeneratorService,
-        { provide: UserRepository, useClass: InMemoryUserRepository },
+        { provide: UserRepository, useClass: FakeUserRepository },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],
     }).compile();

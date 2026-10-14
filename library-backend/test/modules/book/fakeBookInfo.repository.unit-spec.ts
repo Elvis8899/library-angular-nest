@@ -1,14 +1,14 @@
-import { InMemoryBookInfoRepository } from "@book/database/inMemoryBookInfo.repository";
+import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
 import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 
-describe("[Unit] In-memory BookInfo repository", () => {
-  let repository: InMemoryBookInfoRepository;
+describe("[Unit] Fake BookInfo repository", () => {
+  let repository: FakeBookInfoRepository;
 
   beforeEach(() => {
-    repository = new InMemoryBookInfoRepository();
+    repository = new FakeBookInfoRepository();
   });
 
   it("Should ignore a new item whose book doesn't exist", async () => {

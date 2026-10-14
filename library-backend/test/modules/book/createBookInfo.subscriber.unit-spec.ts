@@ -1,7 +1,7 @@
 import { AddBookItemHandler } from "@book/commands/addBookItem/addBookItem.command";
 import { CreateBookInfoHandler } from "@book/commands/createBookInfo/createBookInfo.command";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { InMemoryBookInfoRepository } from "@book/database/inMemoryBookInfo.repository";
+import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
 import {
   BOOK_INFO_CREATED,
   BookInfoCreatedEvent,
@@ -32,7 +32,7 @@ describe("[Unit] Endpoint Response - Subscriber", () => {
         RealUUIDGeneratorService,
         {
           provide: BookInfoRepository,
-          useClass: InMemoryBookInfoRepository,
+          useClass: FakeBookInfoRepository,
         },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],

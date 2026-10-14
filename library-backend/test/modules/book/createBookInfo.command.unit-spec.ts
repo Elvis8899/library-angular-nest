@@ -3,7 +3,7 @@ import {
   CreateBookInfoHandler,
 } from "@book/commands/createBookInfo/createBookInfo.command";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { InMemoryBookInfoRepository } from "@book/database/inMemoryBookInfo.repository";
+import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
 import { Test } from "@nestjs/testing";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
 import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
@@ -30,7 +30,7 @@ describe("[Unit] Create BookInfo", () => {
         },
         CreateBookInfoHandler,
         RealUUIDGeneratorService,
-        { provide: BookInfoRepository, useClass: InMemoryBookInfoRepository },
+        { provide: BookInfoRepository, useClass: FakeBookInfoRepository },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],
     }).compile();

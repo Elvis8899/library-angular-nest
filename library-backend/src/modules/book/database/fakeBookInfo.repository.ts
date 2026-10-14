@@ -7,7 +7,7 @@ import { BookItem } from "@book/domain/valueObject/bookItem.entity";
 import { Injectable } from "@nestjs/common";
 import { O, Ord, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
-import { InMemoryRepository } from "@shared/utils/database/inMemoryRepository.base";
+import { FakeRepository } from "@shared/utils/database/fakeRepository.base";
 import { Paginated } from "@shared/utils/database/repository.port";
 import { validateMaybeRow } from "@shared/utils/database/rowValidation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
@@ -18,8 +18,8 @@ const compareBy =
     key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0;
 
 @Injectable()
-export class InMemoryBookInfoRepository
-  extends InMemoryRepository<BookInfo, BookInfoFindAllQuery>
+export class FakeBookInfoRepository
+  extends FakeRepository<BookInfo, BookInfoFindAllQuery>
   implements BookInfoRepository
 {
   protected readonly validate = validateFromUnknown(BookInfo, "BookInfo");
