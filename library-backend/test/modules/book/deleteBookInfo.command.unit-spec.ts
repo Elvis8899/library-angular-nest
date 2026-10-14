@@ -3,7 +3,7 @@ import {
   DeleteBookInfoHandler,
 } from "@book/commands/deleteBookInfo/deleteBookInfo.command";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
+import { InMemoryBookInfoRepository } from "@book/database/inMemoryBookInfo.repository";
 import { BookInfoNotFoundException } from "@book/domain/bookInfo.errors";
 import { Test } from "@nestjs/testing";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
@@ -28,7 +28,7 @@ describe("[Unit] Delete BookInfo", () => {
         { provide: DomainEventPublisherModule, useClass: DomainEventPublisher },
         DeleteBookInfoHandler,
         RealUUIDGeneratorService,
-        { provide: BookInfoRepository, useClass: FakeBookInfoRepository },
+        { provide: BookInfoRepository, useClass: InMemoryBookInfoRepository },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],
     }).compile();

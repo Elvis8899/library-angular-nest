@@ -3,7 +3,7 @@ import {
   RemoveBookItemHandler,
 } from "@book/commands/removeBookItem/removeBookItem.command";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
+import { InMemoryBookInfoRepository } from "@book/database/inMemoryBookInfo.repository";
 import {
   AvailableBookItemNotFoundException,
   BookInfoNotFoundException,
@@ -33,7 +33,7 @@ describe("[Unit] Delete BookInfo", () => {
         { provide: DomainEventPublisherModule, useClass: DomainEventPublisher },
         RemoveBookItemHandler,
         RealUUIDGeneratorService,
-        { provide: BookInfoRepository, useClass: FakeBookInfoRepository },
+        { provide: BookInfoRepository, useClass: InMemoryBookInfoRepository },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],
     }).compile();

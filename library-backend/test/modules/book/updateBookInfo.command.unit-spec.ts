@@ -3,7 +3,7 @@ import {
   UpdateBookInfoHandler,
 } from "@book/commands/updateBookInfo/updateBookInfo.command";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
+import { InMemoryBookInfoRepository } from "@book/database/inMemoryBookInfo.repository";
 import { BookInfoNotFoundException } from "@book/domain/bookInfo.errors";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
@@ -35,7 +35,7 @@ describe("[Unit] Update BookInfo", () => {
         },
         UpdateBookInfoHandler,
         RealUUIDGeneratorService,
-        { provide: BookInfoRepository, useClass: FakeBookInfoRepository },
+        { provide: BookInfoRepository, useClass: InMemoryBookInfoRepository },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],
     }).compile();

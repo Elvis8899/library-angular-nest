@@ -10,7 +10,7 @@ import {
   UpdateUser,
   UpdateUserHandler,
 } from "@user/commands/updateUser/updateUser.command";
-import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { InMemoryUserRepository } from "@user/database/inMemoryUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 import { UserRoleEnum } from "@user/domain/user.entity";
 import {
@@ -40,7 +40,7 @@ describe("[Unit] Update User", () => {
         },
         UpdateUserHandler,
         RealUUIDGeneratorService,
-        { provide: UserRepository, useClass: FakeUserRepository },
+        { provide: UserRepository, useClass: InMemoryUserRepository },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],
     }).compile();

@@ -10,13 +10,13 @@ import {
 } from "@rental/domain/bookRental.errors";
 import { O, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
-import { FakeRepository } from "@shared/utils/database/fakeRepository.base";
+import { InMemoryRepository } from "@shared/utils/database/inMemoryRepository.base";
 import { Paginated } from "@shared/utils/database/repository.port";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
 @Injectable()
-export class FakeBookRentalRepository
-  extends FakeRepository<BookRental, BookRentalFindAllQuery>
+export class InMemoryBookRentalRepository
+  extends InMemoryRepository<BookRental, BookRentalFindAllQuery>
   implements BookRentalRepository
 {
   protected readonly validate = validateFromUnknown(BookRental, "BookRental");

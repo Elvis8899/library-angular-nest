@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
-import { FakeBookRentalRepository } from "@rental/database/fakeBookRental.repository";
+import { InMemoryBookRentalRepository } from "@rental/database/inMemoryBookRental.repository";
 import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
 import {
   PaginatedBookRentalsQuery,
@@ -24,7 +24,10 @@ describe("[Unit] List Users", () => {
       providers: [
         PaginatedBookRentalsQueryHandler,
         RealUUIDGeneratorService,
-        { provide: BookRentalRepository, useClass: FakeBookRentalRepository },
+        {
+          provide: BookRentalRepository,
+          useClass: InMemoryBookRentalRepository,
+        },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],
     }).compile();

@@ -10,7 +10,7 @@ import {
   CreateUser,
   CreateUserHandler,
 } from "@user/commands/createUser/createUser.command";
-import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { InMemoryUserRepository } from "@user/database/inMemoryUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 import { UserRoleEnum } from "@user/domain/user.entity";
 import { UserCPFAlreadyExistsException } from "@user/domain/user.errors";
@@ -33,7 +33,7 @@ describe("[Unit] Create User", () => {
         },
         CreateUserHandler,
         RealUUIDGeneratorService,
-        { provide: UserRepository, useClass: FakeUserRepository },
+        { provide: UserRepository, useClass: InMemoryUserRepository },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],
     }).compile();

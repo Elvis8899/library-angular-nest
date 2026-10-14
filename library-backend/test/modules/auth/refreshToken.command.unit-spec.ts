@@ -2,7 +2,7 @@ import {
   RefreshTokenCommand,
   RefreshTokenCommandHandler,
 } from "@auth/commands/refreshToken/refreshToken.command";
-import { FakeRefreshSessionRepository } from "@auth/database/fakeRefreshSession.repository";
+import { InMemoryRefreshSessionRepository } from "@auth/database/inMemoryRefreshSession.repository";
 import { RefreshSessionRepository } from "@auth/database/refreshSession.repository.port";
 import { InvalidRefreshTokenException } from "@auth/domain/auth.errors";
 import {
@@ -20,14 +20,14 @@ import { O } from "@shared/utils/application/monads";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { InMemoryUserRepository } from "@user/database/inMemoryUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 import { PinoLogger } from "nestjs-pino";
 
 describe("[Unit] Refresh token", () => {
   let refreshTokenCommandHandler: RefreshTokenCommandHandler;
   let userRepository: UserRepository;
-  let refreshSessionRepository: FakeRefreshSessionRepository;
+  let refreshSessionRepository: InMemoryRefreshSessionRepository;
   let jwtService: JwtService;
   const user = new UserBuilder().build();
   const session = {
@@ -60,10 +60,10 @@ describe("[Unit] Refresh token", () => {
         JwtService,
         RefreshTokenCommandHandler,
         RealUUIDGeneratorService,
-        { provide: UserRepository, useClass: FakeUserRepository },
+        { provide: UserRepository, useClass: InMemoryUserRepository },
         {
           provide: RefreshSessionRepository,
-          useClass: FakeRefreshSessionRepository,
+          useClass: InMemoryRefreshSessionRepository,
         },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],

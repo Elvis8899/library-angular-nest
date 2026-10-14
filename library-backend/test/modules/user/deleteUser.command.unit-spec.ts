@@ -9,7 +9,7 @@ import {
   DeleteUser,
   DeleteUserHandler,
 } from "@user/commands/deleteUser/deleteUser.command";
-import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { InMemoryUserRepository } from "@user/database/inMemoryUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 import { UserNotFoundException } from "@user/domain/user.errors";
 import { PinoLogger } from "nestjs-pino";
@@ -28,7 +28,7 @@ describe("[Unit] Delete User", () => {
         { provide: DomainEventPublisherModule, useClass: DomainEventPublisher },
         DeleteUserHandler,
         RealUUIDGeneratorService,
-        { provide: UserRepository, useClass: FakeUserRepository },
+        { provide: UserRepository, useClass: InMemoryUserRepository },
         { provide: PinoLogger, useClass: FakeLoggerService },
       ],
     }).compile();
