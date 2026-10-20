@@ -20,7 +20,7 @@
     overflow: hidden;
 
     .main-header {
-      box-shadow: 0 1px 5px -3px rgb(173 171 173 / 50%);
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
       z-index: 30;
     }
 
@@ -48,13 +48,16 @@
       position: absolute;
       right: 0;
       top: 0;
-      background-color: rgba(#393b3d, 0.4);
+      background-color: color-mix(
+        in srgb,
+        var(--mat-sys-scrim) 40%,
+        transparent
+      );
       z-index: 200;
     }
   }
 }
 
 .main-container {
-  padding: 24px;
-  background: var(--surface-1);
+  padding: var(--space-4);
 }

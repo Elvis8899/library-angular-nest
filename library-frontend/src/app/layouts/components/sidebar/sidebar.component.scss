@@ -7,7 +7,7 @@
   padding: 30px 18px;
   overflow: hidden auto;
   scrollbar-width: none;
-  background-color: var(--deep-gray);
+  background-color: var(--sidebar-background);
   transition: width 0.2s ease-in-out;
 
   &.collapsed {
@@ -30,13 +30,17 @@
   padding: 0;
   border: none;
   border-radius: 50%;
-  color: var(--white);
-  background: var(--gradient-primary-light);
+  color: var(--mat-sys-on-tertiary);
+  background: var(--mat-sys-tertiary);
   cursor: pointer;
   transition: transform 0.3s ease-in-out;
 
   &:hover {
-    background: var(--dull-orange);
+    background: color-mix(
+      in srgb,
+      var(--mat-sys-tertiary),
+      var(--mat-sys-on-tertiary) 8%
+    );
   }
 
   .collapsed & {
@@ -49,7 +53,7 @@
   align-items: center;
   gap: 10px;
   margin: 0 8px 43px;
-  color: var(--white);
+  color: var(--sidebar-text-active);
   text-decoration: none;
 }
 
@@ -57,13 +61,6 @@
   flex-shrink: 0;
   width: 30px;
   height: 30px;
-}
-
-// theme.scss colors every span dark; the sidebar's spans take their
-// link's color instead
-.brand-name,
-.menu-label {
-  color: inherit;
 }
 
 .brand-name {
@@ -92,15 +89,15 @@
   padding-top: 15px;
   background: linear-gradient(
       270deg,
-      rgb(97 98 100 / 0%) 0%,
-      #616264 51.38%,
-      rgb(97 98 100 / 0%) 100%
+      transparent,
+      var(--sidebar-divider),
+      transparent
     )
     top / 100% 1px no-repeat;
 }
 
-// Text contrast on the panel: gray-400 7.5:1, white on the active
-// background 8.2:1 (WCAG AA asks for 4.5:1)
+// Text contrast on the light scheme's panel: 7.5:1, and white on the
+// active background 8.2:1 (WCAG AA asks for 4.5:1)
 .menu-link {
   display: flex;
   align-items: center;
@@ -108,7 +105,7 @@
   padding: 10px;
   overflow: hidden;
   border-radius: 9px;
-  color: var(--gray-400);
+  color: var(--sidebar-text);
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
@@ -120,9 +117,9 @@
 
   // The bar marks the current page without relying on color alone
   &.active {
-    color: var(--white);
+    color: var(--sidebar-text-active);
     background-color: rgb(255 255 255 / 10%);
-    box-shadow: inset 3px 0 0 var(--dull-orange);
+    box-shadow: inset 3px 0 0 var(--sidebar-accent);
   }
 }
 

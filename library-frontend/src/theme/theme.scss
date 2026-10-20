@@ -3,15 +3,11 @@
  * All global classes and theme styles for html elements and classes should be defined here.
  */
 
-// For Example
-// Custom Input Fields Global Styles
+// Plain inputs, until the forms move to mat-form-field
 label {
   display: block;
-  color: var(--text-color-dark);
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: normal;
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-label-large);
 }
 
 input[type="text"],
@@ -26,16 +22,13 @@ input[type="url"],
 input[type="time"],
 textarea {
   width: 100%;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-color-medium);
+  padding: var(--space-2) var(--space-3);
+  color: var(--mat-sys-on-surface);
   outline: none;
-  background-color: var(--white);
-  border: 1px solid var(--gray);
+  background-color: var(--mat-sys-surface-container-lowest);
+  border: 1px solid var(--mat-sys-outline-variant);
   box-sizing: border-box;
-  //box-shadow: 0px 0px 6px rgba(23, 43, 77, 0.04);
-  border-radius: 6px;
+  border-radius: var(--mat-sys-corner-small);
 }
 
 input[type="text"]:focus,
@@ -49,7 +42,7 @@ input[type="file"]:focus,
 input[type="url"]:focus,
 input[type="time"]:focus,
 textarea:focus {
-  border: 1px solid var(--deep-slate-gray);
+  border-color: var(--mat-sys-primary);
   outline: none;
 }
 
@@ -66,18 +59,4 @@ input[type="number"] {
 textarea {
   overflow: hidden scroll;
   max-height: 200px;
-}
-
-// set color of all text elements
-label,
-p,
-span,
-a,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  color: var(--text-color-dark);
 }

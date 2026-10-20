@@ -23,6 +23,7 @@ import {
 import { provideServiceWorker } from "@angular/service-worker";
 import { routes } from "@app/pages/pages.routes";
 import { Logger } from "@app/services/logger.service";
+import { ThemeService } from "@app/services/theme.service";
 import { AppUpdateService } from "@app/services/update.service";
 import { RouteReusableStrategy } from "@app/shared/helpers/routeReusableStrategy";
 import { I18nService } from "@app/shared/i18n/i18n.service";
@@ -68,6 +69,8 @@ export const appConfig: ApplicationConfig = {
     }),
     provideAppInitializer(() => {
       inject(I18nService);
+      // Applies a stored light or dark choice before the first page renders
+      inject(ThemeService);
       inject(AppUpdateService);
       if (environment.production) {
         enableProdMode();

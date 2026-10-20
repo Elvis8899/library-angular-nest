@@ -2,12 +2,10 @@
  *  Sets up base styles for the application like body background, font family, etc.
  */
 
-// font import
-
 @font-face {
   font-family: Manrope;
   src: url("/fonts/Manrope-Regular.ttf") format("truetype");
-  font-weight: 400; // Regular weight
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
@@ -15,7 +13,7 @@
 @font-face {
   font-family: Manrope;
   src: url("/fonts/Manrope-Medium.ttf") format("truetype");
-  font-weight: 500; // Medium weight
+  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
@@ -23,7 +21,7 @@
 @font-face {
   font-family: Manrope;
   src: url("/fonts/Manrope-SemiBold.ttf") format("truetype");
-  font-weight: 600; // SemiBold weight
+  font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
@@ -31,7 +29,7 @@
 @font-face {
   font-family: Manrope;
   src: url("/fonts/Manrope-Bold.ttf") format("truetype");
-  font-weight: 700; // Bold weight
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -39,14 +37,17 @@
 * {
   padding: 0;
   margin: 0;
-  font-family: Manrope, sans-serif;
   text-rendering: optimizelegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-body {
-  background-color: var(--surface-1);
+// Form controls don't inherit the body font by default
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 ::-webkit-scrollbar {
@@ -55,19 +56,20 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #f2f2f2;
+  background-color: var(--mat-sys-surface-container);
   border-radius: 20px;
   border: 6px solid transparent;
   background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #cfd0d1;
+  background-color: var(--mat-sys-outline-variant);
   border-radius: 20px;
   border: 6px solid transparent;
   background-clip: content-box;
 }
 
 :focus-visible {
-  outline: 1px solid var(--deep-slate-gray);
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: 2px;
 }

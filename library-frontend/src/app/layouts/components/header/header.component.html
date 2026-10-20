@@ -1,4 +1,24 @@
 <nav>
   <p class="title" translate>Angular Boiler Plate V18</p>
-  <app-language-selector />
+  <div class="actions">
+    <button
+      (click)="theme.toggle()"
+      [attr.aria-label]="
+        (theme.colorScheme() === 'dark' ? 'Light theme' : 'Dark theme')
+          | translate
+      "
+      [matTooltip]="
+        (theme.colorScheme() === 'dark' ? 'Light theme' : 'Dark theme')
+          | translate
+      "
+      mat-icon-button
+      name="toggleTheme"
+      type="button"
+    >
+      <mat-icon>{{
+        theme.colorScheme() === "dark" ? "light_mode" : "dark_mode"
+      }}</mat-icon>
+    </button>
+    <app-language-selector />
+  </div>
 </nav>

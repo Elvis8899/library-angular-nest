@@ -21,6 +21,8 @@ export const ptBR: AllTranslations = {
   Rentals: "Empréstimos",
   Library: "Biblioteca",
   "Toggle menu": "Mostrar ou esconder o menu",
+  "Dark theme": "Tema escuro",
+  "Light theme": "Tema claro",
   "Book created successfully": "Livro criado com sucesso",
   "Book returned successfully": "Livro devolvido com sucesso",
   "Book rented successfully": "Livro alugado com sucesso",

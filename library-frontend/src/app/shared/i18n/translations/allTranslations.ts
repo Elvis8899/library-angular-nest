@@ -24,6 +24,8 @@ type keys =
   | "Rentals"
   | "Library"
   | "Toggle menu"
+  | "Dark theme"
+  | "Light theme"
   | "Book created successfully"
   | "Book returned successfully"
   | "Book rented successfully"

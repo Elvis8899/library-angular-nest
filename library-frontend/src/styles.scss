@@ -1,18 +1,14 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
-@use "@angular/material" as mat;
-
 /*
  * Entry point of global application style.
  * Component-specific style should not go here and be included directly as part of the components.
  */
+@use "@angular/material" as mat;
 @use "@ngxpert/hot-toast/src/styles/styles";
-
-// Sanitize.css
 @use "sanitize.css/sanitize.css";
+
+// Teal and orange palettes, generated from the brand colors with
+// `ng generate @angular/material:theme-color`
+@use "theme/themeColors";
 
 // Theme variables
 @use "theme/variables";
@@ -20,9 +16,6 @@
 // Base and layout styles
 @use "theme/base";
 @use "theme/layout";
-
-// 3rd party libraries
-@use "bootstrap/scss/bootstrap-grid";
 
 // Mixins
 @use "theme/mixins";
@@ -36,42 +29,41 @@
 // theme customization
 @use "theme/theme";
 
-html,
-body {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-}
-
 html {
+  height: 100%;
+
+  // Follows the system setting until the user picks one with the header's
+  // toggle, which sets the scheme on <html> (ThemeService)
+  color-scheme: light dark;
+
+  // Defines the --mat-sys-* variables. Components use them instead of
+  // fixed colors, so they work in both schemes.
   @include mat.theme(
     (
       color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
+        primary: themeColors.$primary-palette,
+        tertiary: themeColors.$tertiary-palette,
       ),
-      typography: Roboto,
+      typography: (
+        plain-family: Manrope,
+        brand-family: Manrope,
+        bold-weight: 700,
+        medium-weight: 600,
+        regular-weight: 400,
+      ),
       density: 0,
     )
   );
+
+  @media (prefers-contrast: more) {
+    @include themeColors.high-contrast-overrides(color-scheme);
+  }
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
-  color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
+  height: 100%;
+  margin: 0;
   background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
-  margin: 0;
 }

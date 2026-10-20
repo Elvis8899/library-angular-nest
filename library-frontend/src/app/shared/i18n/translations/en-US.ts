@@ -21,6 +21,8 @@ export const enUS: AllTranslations = {
   Rentals: "Rentals",
   Library: "Library",
   "Toggle menu": "Toggle menu",
+  "Dark theme": "Dark theme",
+  "Light theme": "Light theme",
   "Book created successfully": "Book created successfully",
   "Book returned successfully": "Book returned successfully",
   "Book rented successfully": "Book rented successfully",
