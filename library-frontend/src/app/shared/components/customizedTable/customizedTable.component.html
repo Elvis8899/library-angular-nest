@@ -8,13 +8,10 @@
 
   <ng-content></ng-content>
   <table mat-table [dataSource]="data" class="table">
-    <tr
-      mat-header-row
-      *matHeaderRowDef="data.displayedColumns; sticky: true"
-    ></tr>
-    <tr mat-row *matRowDef="let row; columns: data.displayedColumns"></tr>
+    <tr mat-header-row *matHeaderRowDef="shownColumns(); sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: shownColumns()"></tr>
     <tr *matNoDataRow class="no-data-row">
-      <td [attr.colspan]="data.displayedColumns.length" class="no-data">
+      <td [attr.colspan]="shownColumns().length" class="no-data">
         @if ((data.loading$ | async) !== true) {
           {{ "No results" | translate }}
         }

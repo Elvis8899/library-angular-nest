@@ -3,7 +3,8 @@
   flex-direction: column;
   box-sizing: border-box;
   width: 248px;
-  height: 100vh;
+  // The visible height on phones, without the browser's bars
+  height: 100dvh;
   padding: 30px 18px;
   overflow: hidden auto;
   scrollbar-width: none;
@@ -133,5 +134,25 @@
 
   .collapsed & {
     display: none;
+  }
+}
+
+// Small screens: the sidebar is the layout's slide-in menu, always expanded,
+// so the collapse button goes away
+@media (width < 768px) {
+  .toggle {
+    display: none;
+  }
+
+  .sidebar.collapsed {
+    width: 248px;
+  }
+
+  .collapsed .brand-name {
+    opacity: 1;
+  }
+
+  .collapsed .menu-label {
+    display: inline;
   }
 }

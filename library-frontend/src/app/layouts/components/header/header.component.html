@@ -1,4 +1,17 @@
 <nav>
+  <!-- Small screens only: the sidebar is a menu there -->
+  <button
+    (click)="menuToggle.emit()"
+    [attr.aria-expanded]="menuOpen()"
+    [attr.aria-label]="(menuOpen() ? 'Close menu' : 'Open menu') | translate"
+    aria-controls="side-nav"
+    class="menu-button"
+    mat-icon-button
+    name="toggleMenu"
+    type="button"
+  >
+    <mat-icon>{{ menuOpen() ? "close" : "menu" }}</mat-icon>
+  </button>
   <div class="user">
     <span aria-hidden="true" class="avatar">{{ initials() }}</span>
     <span class="user-text">

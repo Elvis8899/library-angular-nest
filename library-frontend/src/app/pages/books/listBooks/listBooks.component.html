@@ -31,7 +31,11 @@
       />
     </mat-form-field>
 
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-form-field
+      appearance="outline"
+      class="filter-field"
+      subscriptSizing="dynamic"
+    >
       <mat-label>{{ "Created on" | translate }}</mat-label>
       <input
         (dateChange)="data.queryBy({ createdAt: $event.value })"
@@ -43,7 +47,11 @@
       <mat-datepicker #picker />
     </mat-form-field>
 
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-form-field
+      appearance="outline"
+      class="filter-field"
+      subscriptSizing="dynamic"
+    >
       <mat-label>{{ "Order by" | translate }}</mat-label>
       <mat-select
         (selectionChange)="data.sortBy({ property: $event.value })"
@@ -79,7 +87,7 @@
     </mat-button-toggle-group>
   </div>
 
-  <app-customized-table [data]="data">
+  <app-customized-table [columns]="columns()" [data]="data">
     <ng-container matColumnDef="book">
       <th *matHeaderCellDef mat-header-cell>{{ "Book" | translate }}</th>
       <td *matCellDef="let book" mat-cell>
@@ -90,7 +98,17 @@
             alt=""
             class="cover"
           />
-          <span class="book-name">{{ book.name }}</span>
+          <span class="book-text">
+            <span class="book-name">{{ book.name }}</span>
+            @if (isSmallScreen()) {
+              <span class="secondary">{{
+                book.price | currency: "BRL" : "symbol" : undefined : locale()
+              }}</span>
+              <ng-container
+                *ngTemplateOutlet="availability; context: { $implicit: book }"
+              />
+            }
+          </span>
         </div>
       </td>
     </ng-container>
@@ -109,15 +127,9 @@
         {{ "Availability" | translate }}
       </th>
       <td *matCellDef="let book" mat-cell>
-        @if (book.bookItems.length === 0) {
-          <span class="chip">{{ "No copies" | translate }}</span>
-        } @else if (isBookAvailable(book)) {
-          <span class="chip chip-success">
-            {{ availabilityKey | translate: availabilityParams(book) }}
-          </span>
-        } @else {
-          <span class="chip">{{ "All rented" | translate }}</span>
-        }
+        <ng-container
+          *ngTemplateOutlet="availability; context: { $implicit: book }"
+        />
       </td>
     </ng-container>
 
@@ -138,28 +150,71 @@
             <mat-icon>bookmark_add</mat-icon>
           </button>
           @if (isAdmin()) {
-            <button
-              (click)="addBookItem(book)"
-              [attr.aria-label]="'Add a copy' | translate"
-              [matTooltip]="'Add a copy' | translate"
-              mat-icon-button
-              name="addBook"
-            >
-              <mat-icon>library_add</mat-icon>
-            </button>
-            <button
-              (click)="removeBookItem(book)"
-              [attr.aria-label]="'Remove a copy' | translate"
-              [disabled]="!isBookAvailable(book)"
-              [matTooltip]="'Remove a copy' | translate"
-              mat-icon-button
-              name="removeBook"
-            >
-              <mat-icon>remove_circle_outline</mat-icon>
-            </button>
+            @if (isSmallScreen()) {
+              <!-- The copy actions in a menu, so the row fits a phone -->
+              <button
+                [attr.aria-label]="'More actions' | translate"
+                [matMenuTriggerFor]="copyMenu"
+                mat-icon-button
+                name="moreActions"
+              >
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #copyMenu>
+                <button
+                  (click)="addBookItem(book)"
+                  mat-menu-item
+                  name="addBook"
+                >
+                  <mat-icon>library_add</mat-icon>
+                  {{ "Add a copy" | translate }}
+                </button>
+                <button
+                  (click)="removeBookItem(book)"
+                  [disabled]="!isBookAvailable(book)"
+                  mat-menu-item
+                  name="removeBook"
+                >
+                  <mat-icon>remove_circle_outline</mat-icon>
+                  {{ "Remove a copy" | translate }}
+                </button>
+              </mat-menu>
+            } @else {
+              <button
+                (click)="addBookItem(book)"
+                [attr.aria-label]="'Add a copy' | translate"
+                [matTooltip]="'Add a copy' | translate"
+                mat-icon-button
+                name="addBook"
+              >
+                <mat-icon>library_add</mat-icon>
+              </button>
+              <button
+                (click)="removeBookItem(book)"
+                [attr.aria-label]="'Remove a copy' | translate"
+                [disabled]="!isBookAvailable(book)"
+                [matTooltip]="'Remove a copy' | translate"
+                mat-icon-button
+                name="removeBook"
+              >
+                <mat-icon>remove_circle_outline</mat-icon>
+              </button>
+            }
           }
         </div>
       </td>
     </ng-container>
   </app-customized-table>
 </section>
+
+<ng-template #availability let-book>
+  @if (book.bookItems.length === 0) {
+    <span class="chip">{{ "No copies" | translate }}</span>
+  } @else if (isBookAvailable(book)) {
+    <span class="chip chip-success">
+      {{ availabilityKey | translate: availabilityParams(book) }}
+    </span>
+  } @else {
+    <span class="chip">{{ "All rented" | translate }}</span>
+  }
+</ng-template>

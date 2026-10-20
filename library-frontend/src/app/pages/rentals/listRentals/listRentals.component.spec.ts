@@ -1,3 +1,4 @@
+import { BreakpointObserver, BreakpointState } from "@angular/cdk/layout";
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -17,7 +18,7 @@ import { MockComponent } from "@app/shared/utils/test/mockComponent";
 import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
-import { of, throwError } from "rxjs";
+import { BehaviorSubject, of, throwError } from "rxjs";
 
 Logger.level = 0;
 
@@ -63,6 +64,8 @@ describe("ListRentalsComponent", () => {
     returnBook: vi.fn(() => of({})),
   };
   const confirmDialogMock = { confirm: vi.fn(() => of(true)) };
+  // A new one per test, so components from earlier tests don't hold it
+  let breakpoints: BehaviorSubject<BreakpointState>;
   let isAdmin = true;
   const credentialsServiceMock = { isAdmin: () => isAdmin };
   const createComponent = createComponentFactory({
@@ -75,6 +78,10 @@ describe("ListRentalsComponent", () => {
     providers: [
       { provide: RentalService, useValue: rentalServiceMock },
       { provide: ConfirmDialog, useValue: confirmDialogMock },
+      {
+        provide: BreakpointObserver,
+        useFactory: () => ({ observe: () => breakpoints }),
+      },
       { provide: CredentialsService, useValue: credentialsServiceMock },
       provideHttpClientTesting(),
     ],
@@ -89,6 +96,10 @@ describe("ListRentalsComponent", () => {
 
   beforeEach(() => {
     isAdmin = true;
+    breakpoints = new BehaviorSubject<BreakpointState>({
+      matches: false,
+      breakpoints: {},
+    });
     rentalServiceMock.getPaginatedBookRentals.mockClear();
     rentalServiceMock.returnBook.mockClear();
     confirmDialogMock.confirm.mockClear();
@@ -111,18 +122,34 @@ describe("ListRentalsComponent", () => {
     // Assert
     expect(spectator.query("h1")).toContainText("Rentals");
     expect(rows()).toHaveLength(2);
-    expect(headers()).toContain("Client");
-    expect(rows()[0]).toContainText("Ana Souza");
+    expect(headers()).toEqual([
+      "Book",
+      "Rented on",
+      "Due on",
+      "Fine",
+      "Actions",
+    ]);
+    expect(rows()[0].querySelector(".client")).toHaveText("Ana Souza");
   });
 
-  it("Should hide the client column from clients, who see only theirs", () => {
+  it("Should leave out the client for clients, who see only theirs", () => {
     // Arrange
     isAdmin = false;
     // Act
     create();
     // Assert
-    expect(headers()).not.toContain("Client");
-    expect(rows()[0]).not.toContainText("Ana Souza");
+    expect(rows()[0].querySelector(".client")).toBeNull();
+  });
+
+  it("Should show the fine under the due date on small screens", () => {
+    // Arrange
+    breakpoints.next({ matches: true, breakpoints: {} });
+    // Act
+    create();
+    // Assert
+    expect(headers()).toEqual(["Book", "Due on", "Actions"]);
+    expect(rows()[0].querySelector(".due-date .fine")).toHaveText("R$16.00");
+    expect(rows()[1].querySelector(".due-date .fine")).toBeNull();
   });
 
   it("Should mark overdue rentals and show their fine", () => {

@@ -1,5 +1,15 @@
+.user-name,
+.user-email {
+  display: block;
+}
+
 .user-name {
   font: var(--mat-sys-title-small);
+}
+
+.user-email {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .document {

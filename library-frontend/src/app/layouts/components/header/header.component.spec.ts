@@ -61,6 +61,27 @@ describe("HeaderComponent", () => {
     expect(spectator.query(".avatar")).toHaveText("");
   });
 
+  it("Should ask to open and close the menu", () => {
+    // Arrange
+    create("Ana", false);
+    const toggled = vi.fn();
+    spectator.output("menuToggle").subscribe(toggled);
+    const button = () => spectator.query("button[name='toggleMenu']");
+    // Assert
+    expect(button()).toHaveAttribute("aria-expanded", "false");
+    expect(button()).toHaveAttribute("aria-label", "Abrir menu");
+    // Act
+    spectator.click("button[name='toggleMenu']");
+    // Assert
+    expect(toggled).toHaveBeenCalledTimes(1);
+    // Act: the layout opens it
+    spectator.setInput("menuOpen", true);
+    // Assert
+    expect(button()).toHaveAttribute("aria-expanded", "true");
+    expect(button()).toHaveAttribute("aria-label", "Fechar menu");
+    expect(button()?.querySelector("mat-icon")).toHaveText("close");
+  });
+
   it("Should show the theme toggle and the language selector", () => {
     // Act
     create("Ana", false);

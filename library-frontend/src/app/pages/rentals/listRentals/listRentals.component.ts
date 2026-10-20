@@ -1,5 +1,10 @@
-import { CurrencyPipe, DatePipe, formatCurrency } from "@angular/common";
-import { Component, inject, LOCALE_ID, OnInit } from "@angular/core";
+import {
+  CurrencyPipe,
+  DatePipe,
+  formatCurrency,
+  NgTemplateOutlet,
+} from "@angular/common";
+import { Component, computed, inject, LOCALE_ID, OnInit } from "@angular/core";
 import { MatIconButton } from "@angular/material/button";
 import { MatIcon } from "@angular/material/icon";
 import { MatTableModule } from "@angular/material/table";
@@ -12,6 +17,7 @@ import { RentalService } from "@app/services/rental.http.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
+import { injectIsSmallScreen } from "@app/shared/helpers/smallScreen";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
 import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
@@ -27,6 +33,7 @@ const log = new Logger("ListRentalsComponent");
   imports: [
     CurrencyPipe,
     DatePipe,
+    NgTemplateOutlet,
     MatIconButton,
     MatIcon,
     MatTableModule,
@@ -40,20 +47,27 @@ export class ListRentalsComponent implements OnInit {
   data!: PaginatedDataSource<BookRentalEntity, object>;
 
   readonly locale = injectCurrentLocale();
+  readonly isSmallScreen = injectIsSmallScreen();
+  // Small screens leave out when the book was rented, and show the fine
+  // under the due date
+  readonly columns = computed(() =>
+    this.isSmallScreen()
+      ? ["book", "dueDate", "actions"]
+      : ["book", "rentedOn", "dueDate", "fine", "actions"]
+  );
+  // Clients only see their own rentals, so only admins see who rented
+  readonly showClient = inject(CredentialsService).isAdmin();
   // Keys with placeholders read safer here than inside {{ }}
   readonly fineDetailsKey =
     "{{fixed}} + {{perDay}} per day × {{days}} days late";
 
   private readonly _defaultLocale = inject(LOCALE_ID);
   private readonly _rentalService = inject(RentalService);
-  private readonly _credentialsService = inject(CredentialsService);
   private readonly _confirmDialog = inject(ConfirmDialog);
   private readonly _toast = inject(HotToastService);
   private readonly _translate = inject(TranslateService);
 
   ngOnInit() {
-    // Clients only see their own rentals, so the client column is for admins
-    const clientColumn = this._credentialsService.isAdmin() ? ["client"] : [];
     this.data = new PaginatedDataSource<BookRentalEntity, object>(
       (r) => this._rentalService.getPaginatedBookRentals(r),
       {
@@ -63,14 +77,7 @@ export class ListRentalsComponent implements OnInit {
           property: "createdAt",
           order: "desc",
         },
-        displayedColumns: [
-          "book",
-          ...clientColumn,
-          "rentedOn",
-          "dueDate",
-          "fine",
-          "actions",
-        ],
+        displayedColumns: ["book", "rentedOn", "dueDate", "fine", "actions"],
       }
     );
   }

@@ -1,5 +1,5 @@
-import { CurrencyPipe } from "@angular/common";
-import { Component, effect, inject, OnInit } from "@angular/core";
+import { CurrencyPipe, NgTemplateOutlet } from "@angular/common";
+import { Component, computed, effect, inject, OnInit } from "@angular/core";
 import { MatButton, MatIconButton } from "@angular/material/button";
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
 import { DateAdapter, MatNativeDateModule } from "@angular/material/core";
@@ -7,6 +7,7 @@ import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIcon } from "@angular/material/icon";
 import { MatInput } from "@angular/material/input";
+import { MatMenuModule } from "@angular/material/menu";
 import { MatSelectModule } from "@angular/material/select";
 import { MatTableModule } from "@angular/material/table";
 import { MatTooltip } from "@angular/material/tooltip";
@@ -27,6 +28,7 @@ import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dial
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { TypedDialog } from "@app/shared/components/dialog/typedDialog";
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
+import { injectIsSmallScreen } from "@app/shared/helpers/smallScreen";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
 import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
@@ -42,6 +44,7 @@ export const noCoverImage = "images/no-image.png";
   styleUrl: "./listBooks.component.scss",
   imports: [
     CurrencyPipe,
+    NgTemplateOutlet,
     MatButton,
     MatIconButton,
     MatButtonToggleModule,
@@ -50,6 +53,7 @@ export const noCoverImage = "images/no-image.png";
     MatFormFieldModule,
     MatIcon,
     MatInput,
+    MatMenuModule,
     MatSelectModule,
     MatTableModule,
     MatTooltip,
@@ -63,6 +67,13 @@ export class ListBooksComponent implements OnInit {
 
   readonly dialog = inject(TypedDialog);
   readonly locale = injectCurrentLocale();
+  readonly isSmallScreen = injectIsSmallScreen();
+  // Small screens show the price and availability under the book's name
+  readonly columns = computed(() =>
+    this.isSmallScreen()
+      ? ["book", "actions"]
+      : ["book", "price", "availability", "actions"]
+  );
   readonly noCoverImage = noCoverImage;
   // A key with placeholders reads safer here than inside {{ }}
   readonly availabilityKey = "{{available}} of {{total}} available";

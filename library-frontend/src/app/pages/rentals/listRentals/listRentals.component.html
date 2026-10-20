@@ -1,17 +1,15 @@
 <section class="main-container">
   <app-page-header subtitle="Books not returned yet" title="Rentals" />
 
-  <app-customized-table [data]="data">
+  <app-customized-table [columns]="columns()" [data]="data">
     <ng-container matColumnDef="book">
       <th *matHeaderCellDef mat-header-cell>{{ "Book" | translate }}</th>
-      <td *matCellDef="let rental" class="book-name" mat-cell>
-        {{ rental.bookName }}
+      <td *matCellDef="let rental" mat-cell>
+        <span class="book-name">{{ rental.bookName }}</span>
+        @if (showClient) {
+          <span class="client">{{ rental.userName }}</span>
+        }
       </td>
-    </ng-container>
-
-    <ng-container matColumnDef="client">
-      <th *matHeaderCellDef mat-header-cell>{{ "Client" | translate }}</th>
-      <td *matCellDef="let rental" mat-cell>{{ rental.userName }}</td>
     </ng-container>
 
     <ng-container matColumnDef="rentedOn">
@@ -31,6 +29,11 @@
               <mat-icon class="chip-icon">schedule</mat-icon>
               {{ "Overdue" | translate }}
             </span>
+            @if (isSmallScreen()) {
+              <ng-container
+                *ngTemplateOutlet="fine; context: { $implicit: rental }"
+              />
+            }
           }
         </span>
       </td>
@@ -41,20 +44,9 @@
         {{ "Fine" | translate }}
       </th>
       <td *matCellDef="let rental" class="numeric" mat-cell>
-        @if (rental.fines.overdue) {
-          <span
-            [matTooltip]="fineDetailsKey | translate: fineDetailsParams(rental)"
-            class="fine"
-            tabindex="0"
-          >
-            {{
-              rental.fines.total
-                | currency: "BRL" : "symbol" : undefined : locale()
-            }}
-          </span>
-        } @else {
-          <span class="no-fine">—</span>
-        }
+        <ng-container
+          *ngTemplateOutlet="fine; context: { $implicit: rental }"
+        />
       </td>
     </ng-container>
 
@@ -78,3 +70,19 @@
     </ng-container>
   </app-customized-table>
 </section>
+
+<ng-template #fine let-rental>
+  @if (rental.fines.overdue) {
+    <span
+      [matTooltip]="fineDetailsKey | translate: fineDetailsParams(rental)"
+      class="fine"
+      tabindex="0"
+    >
+      {{
+        rental.fines.total | currency: "BRL" : "symbol" : undefined : locale()
+      }}
+    </span>
+  } @else {
+    <span class="no-fine">—</span>
+  }
+</ng-template>

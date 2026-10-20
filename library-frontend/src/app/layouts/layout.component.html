@@ -1,16 +1,17 @@
-<div
-  [ngClass]="{ overlay: isSidebarActive$ | async }"
-  class="shell layout-wrapper"
->
-  <aside class="side-nav">
-    <app-sidebar></app-sidebar>
+<div [class.menu-open]="menuOpen()" class="shell layout-wrapper">
+  <aside class="side-nav" id="side-nav">
+    <app-sidebar />
   </aside>
+  <!-- Only shown on small screens, behind the open menu -->
+  @if (menuOpen()) {
+    <div (click)="closeMenu()" aria-hidden="true" class="scrim"></div>
+  }
   <main>
     <header class="main-header">
-      <app-header></app-header>
+      <app-header (menuToggle)="toggleMenu()" [menuOpen]="menuOpen()" />
     </header>
     <div class="content">
-      <router-outlet></router-outlet>
+      <router-outlet />
     </div>
   </main>
 </div>

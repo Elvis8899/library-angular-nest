@@ -1,5 +1,15 @@
+.book-name,
+.client {
+  display: block;
+}
+
 .book-name {
   font: var(--mat-sys-title-small);
+}
+
+.client {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .due-date {

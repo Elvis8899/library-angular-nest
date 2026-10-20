@@ -1,5 +1,5 @@
 import { DatePipe } from "@angular/common";
-import { Component, inject, OnInit } from "@angular/core";
+import { Component, computed, inject, OnInit } from "@angular/core";
 import { MatButton } from "@angular/material/button";
 import { MatIcon } from "@angular/material/icon";
 import { MatTableModule } from "@angular/material/table";
@@ -11,6 +11,7 @@ import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
+import { injectIsSmallScreen } from "@app/shared/helpers/smallScreen";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
 import { TranslatePipe } from "@ngx-translate/core";
 
@@ -34,6 +35,13 @@ export class ListUsersComponent implements OnInit {
   data!: PaginatedDataSource<UserEntity, object>;
 
   readonly locale = injectCurrentLocale();
+  readonly isSmallScreen = injectIsSmallScreen();
+  // Small screens leave out the document and the creation date
+  readonly columns = computed(() =>
+    this.isSmallScreen()
+      ? ["name", "role"]
+      : ["name", "role", "cpf", "createdAt"]
+  );
   readonly ROLE = ROLE;
 
   private readonly _userService = inject(UserService);
@@ -49,7 +57,7 @@ export class ListUsersComponent implements OnInit {
           property: "createdAt",
           order: "desc",
         },
-        displayedColumns: ["name", "role", "email", "cpf", "createdAt"],
+        displayedColumns: ["name", "role", "cpf", "createdAt"],
       }
     );
   }

@@ -1,3 +1,4 @@
+import { BreakpointObserver, BreakpointState } from "@angular/cdk/layout";
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -35,7 +36,7 @@ import {
 } from "@ngneat/spectator/vitest";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
-import { of, throwError } from "rxjs";
+import { BehaviorSubject, of, throwError } from "rxjs";
 
 Logger.level = 0;
 
@@ -98,6 +99,8 @@ describe("ListBooksComponent", () => {
     })),
   };
   const confirmDialogMock = { confirm: vi.fn(() => of(true)) };
+  // A new one per test, so components from earlier tests don't hold it
+  let breakpoints: BehaviorSubject<BreakpointState>;
   const createComponent = createComponentFactory({
     component: ListBooksComponent,
     imports: [RouterModule.forRoot([]), TranslateModule.forRoot()],
@@ -106,6 +109,10 @@ describe("ListBooksComponent", () => {
       { provide: BookService, useValue: bookServiceMock },
       { provide: MatDialog, useValue: matDialogMock },
       { provide: ConfirmDialog, useValue: confirmDialogMock },
+      {
+        provide: BreakpointObserver,
+        useFactory: () => ({ observe: () => breakpoints }),
+      },
     ],
     mocks: [
       HotToastService,
@@ -117,6 +124,10 @@ describe("ListBooksComponent", () => {
   });
 
   beforeEach(() => {
+    breakpoints = new BehaviorSubject<BreakpointState>({
+      matches: false,
+      breakpoints: {},
+    });
     spectator = createComponent();
     httpMock = spectator.inject(HttpTestingController);
     rentalService = spectator.inject(RentalService);
@@ -145,6 +156,20 @@ describe("ListBooksComponent", () => {
   it("Should show the price in reais", () => {
     // Assert: the default locale until a language is set
     expect(rows()[0].querySelector("td.numeric")).toHaveText("R$100.00");
+  });
+
+  it("Should show the price and availability under the name on small screens", () => {
+    // Act
+    breakpoints.next({ matches: true, breakpoints: {} });
+    spectator.detectChanges();
+    // Assert
+    expect(
+      spectator.queryAll("th").map((th) => th.textContent?.trim())
+    ).toEqual(["Book", "Actions"]);
+    expect(rows()[0].querySelector(".secondary")).toHaveText("R$100.00");
+    expect(rows()[0].querySelector(".book-text .chip")).toHaveClass(
+      "chip-success"
+    );
   });
 
   it("Should show the availability", () => {
@@ -406,6 +431,34 @@ describe("ListBooksComponent", () => {
       // Assert
       expect(toastService.error).toHaveBeenCalledWith("Add error");
       expect(toastService.error).toHaveBeenCalledWith("Remove error");
+    });
+
+    it("Should put the copy actions in a menu on small screens", () => {
+      // Arrange
+      breakpoints.next({ matches: true, breakpoints: {} });
+      spectator.detectChanges();
+      // Assert
+      expect(spectator.query("button[name='addBook']")).toBeNull();
+      // Act
+      spectator.click("button[name='moreActions']");
+      spectator.inject(ApplicationRef).tick();
+      spectator.click(
+        spectator.query("button[name='addBook']", { root: true })!
+      );
+      // Assert
+      expect(bookServiceMock.addBookItem).toHaveBeenCalledExactlyOnceWith({
+        bookId: "1",
+      });
+      // Act
+      spectator.click("button[name='moreActions']");
+      spectator.inject(ApplicationRef).tick();
+      spectator.click(
+        spectator.query("button[name='removeBook']", { root: true })!
+      );
+      // Assert
+      expect(bookServiceMock.deleteBookItem).toHaveBeenCalledExactlyOnceWith(
+        "1"
+      );
     });
 
     it("Should not remove a copy when none is available", () => {

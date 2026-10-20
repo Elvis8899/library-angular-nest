@@ -1,3 +1,4 @@
+import { BreakpointObserver, BreakpointState } from "@angular/cdk/layout";
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -15,7 +16,7 @@ import {
   Spectator,
 } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
-import { of, throwError } from "rxjs";
+import { BehaviorSubject, of, throwError } from "rxjs";
 
 Logger.level = 0;
 
@@ -26,7 +27,7 @@ describe("ListUsersComponent", () => {
     {
       id: "1",
       name: "test",
-      email: "test",
+      email: "test@example.com",
       cpf: "test",
       role: ROLE.ADMIN,
       password: "test",
@@ -38,6 +39,8 @@ describe("ListUsersComponent", () => {
   userServiceMock.getPaginatedUsers.mockReturnValue(
     of({ data: users, count: 1, limit: 10, page: 0 })
   );
+  // A new one per test, so components from earlier tests don't hold it
+  let breakpoints: BehaviorSubject<BreakpointState>;
   const createComponent = createComponentFactory({
     component: ListUsersComponent,
     imports: [
@@ -46,6 +49,10 @@ describe("ListUsersComponent", () => {
     ],
     providers: [
       { provide: UserService, useValue: userServiceMock },
+      {
+        provide: BreakpointObserver,
+        useFactory: () => ({ observe: () => breakpoints }),
+      },
       provideHttpClientTesting(),
     ],
   });
@@ -53,6 +60,10 @@ describe("ListUsersComponent", () => {
   const returnError = throwError(() => new Error("test error"));
 
   beforeEach(() => {
+    breakpoints = new BehaviorSubject<BreakpointState>({
+      matches: false,
+      breakpoints: {},
+    });
     userServiceMock.getPaginatedUsers.mockClear();
     spectator = createComponent();
     httpMock = spectator.inject(HttpTestingController);
@@ -67,6 +78,25 @@ describe("ListUsersComponent", () => {
     // Assert
     expect(spectator.query("h1")).toHaveText("Users List");
     expect(spectator.queryAll("tr.mat-mdc-row")).toHaveLength(1);
+  });
+
+  const headers = () =>
+    spectator
+      .queryAll("th.mat-mdc-header-cell")
+      .map((header) => header.textContent?.trim());
+
+  it("Should show the email under the name", () => {
+    // Assert
+    expect(headers()).toEqual(["Name", "Role", "CPF or CNPJ", "Created on"]);
+    expect(spectator.query(".user-email")).toHaveText("test@example.com");
+  });
+
+  it("Should show only the name and role on small screens", () => {
+    // Act
+    breakpoints.next({ matches: true, breakpoints: {} });
+    spectator.detectChanges();
+    // Assert
+    expect(headers()).toEqual(["Name", "Role"]);
   });
 
   it("Should show the role as a chip, and a dash for a missing document", () => {

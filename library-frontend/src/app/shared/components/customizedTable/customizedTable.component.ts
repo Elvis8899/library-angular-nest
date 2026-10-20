@@ -2,7 +2,9 @@ import { AsyncPipe } from "@angular/common";
 import {
   AfterContentInit,
   Component,
+  computed,
   ContentChildren,
+  input,
   Input,
   QueryList,
   ViewChild,
@@ -31,6 +33,12 @@ import { TranslatePipe } from "@ngx-translate/core";
 })
 export class CustomizedTableComponent<T, Q> implements AfterContentInit {
   @Input() data!: PaginatedDataSource<T, Q>;
+  // The columns to show, when they change with the screen size; defaults to
+  // the data source's displayedColumns
+  readonly columns = input<string[]>();
+  readonly shownColumns = computed(
+    () => this.columns() ?? this.data.displayedColumns
+  );
   // this is where the magic happens:
   @ViewChild(MatTable, { static: true }) table?: MatTable<T>;
   @ContentChildren(MatColumnDef) columnDefs!: QueryList<MatColumnDef>;

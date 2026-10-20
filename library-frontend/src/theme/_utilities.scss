@@ -54,3 +54,11 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+// Narrower cell padding on small screens, so more columns fit
+@media (width < 768px) {
+  .mat-mdc-table .mat-mdc-cell,
+  .mat-mdc-table .mat-mdc-header-cell {
+    padding: 0 var(--space-2);
+  }
+}
