@@ -6,11 +6,9 @@ import { Router, RouterModule } from "@angular/router";
 import { AddBooksComponent } from "@app/pages/books/addBook/addBook.component";
 import { BookService } from "@app/services/book.http.service";
 import { Logger } from "@app/services/logger.service";
-import { ptBR } from "@app/shared/i18n/translations/pt-BR";
-import { LanguagesEnum } from "@app/shared/i18n/translations/translationKey";
+import { NotificationService } from "@app/services/notification.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { HotToastService } from "@ngxpert/hot-toast";
+import { TranslateModule } from "@ngx-translate/core";
 import {
   createComponentFactory,
   Spectator,
@@ -31,7 +29,7 @@ describe("AddBooksComponent", () => {
       RouterModule.forRoot([{ path: "books/list", component: MockComponent }]),
       TranslateModule.forRoot(),
     ],
-    mocks: [BookService, HotToastService],
+    mocks: [BookService, NotificationService],
     providers: [provideHttpClientTesting()],
   });
 
@@ -65,7 +63,7 @@ describe("AddBooksComponent", () => {
   it("Should add the book and go back to the list", () => {
     // Arrange
     const navigateSpy = vi.spyOn(spectator.inject(Router), "navigate");
-    const toastService = spectator.inject(HotToastService);
+    const notifications = spectator.inject(NotificationService);
     fillIn("Dom Casmurro", "39.9", "https://example.com/cover.jpg");
     // Act
     spectator.click("button[name='save']");
@@ -75,7 +73,9 @@ describe("AddBooksComponent", () => {
       image: "https://example.com/cover.jpg",
       price: 39.9,
     });
-    expect(toastService.success).toHaveBeenCalledTimes(1);
+    expect(notifications.success).toHaveBeenCalledExactlyOnceWith(
+      "books.created"
+    );
     expect(navigateSpy).toHaveBeenCalledWith(["/books/list"]);
     expect(spectator.component.saving()).toBe(false);
   });
@@ -93,24 +93,9 @@ describe("AddBooksComponent", () => {
     });
   });
 
-  it("Should show the success toast in the current language", () => {
-    // Arrange
-    const translate = spectator.inject(TranslateService);
-    translate.setTranslation(LanguagesEnum.PT_BR, ptBR);
-    translate.use(LanguagesEnum.PT_BR);
-    const toastService = spectator.inject(HotToastService);
-    fillIn("Dom Casmurro", "100");
-    // Act
-    spectator.click("button[name='save']");
-    // Assert
-    expect(toastService.success).toHaveBeenCalledWith(
-      "Livro criado com sucesso"
-    );
-  });
-
   it("Should show the error when adding fails", () => {
     // Arrange
-    const toastService = spectator.inject(HotToastService);
+    const notifications = spectator.inject(NotificationService);
     bookServiceMock.addBook.mockReturnValueOnce(
       throwError(() => new Error("Erro"))
     );
@@ -118,7 +103,7 @@ describe("AddBooksComponent", () => {
     // Act
     spectator.click("button[name='save']");
     // Assert
-    expect(toastService.error).toHaveBeenCalledExactlyOnceWith("Erro");
+    expect(notifications.errorMessage).toHaveBeenCalledExactlyOnceWith("Erro");
     expect(spectator.component.saving()).toBe(false);
   });
 

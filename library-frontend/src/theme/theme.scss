@@ -13,3 +13,15 @@
     )
   );
 }
+
+// Notifications (NotificationService): successes in the default inverse
+// colors, errors in the error colors
+.notification-error {
+  @include mat.snack-bar-overrides(
+    (
+      container-color: var(--mat-sys-error-container),
+      supporting-text-color: var(--mat-sys-on-error-container),
+      button-color: var(--mat-sys-error),
+    )
+  );
+}

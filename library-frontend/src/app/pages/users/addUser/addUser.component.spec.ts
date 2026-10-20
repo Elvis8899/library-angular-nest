@@ -6,10 +6,10 @@ import { Router, RouterModule } from "@angular/router";
 import { ROLE } from "@app/models/credentials.entity";
 import { AddUsersComponent } from "@app/pages/users/addUser/addUser.component";
 import { Logger } from "@app/services/logger.service";
+import { NotificationService } from "@app/services/notification.service";
 import { UserService } from "@app/services/user.http.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
 import { TranslateModule } from "@ngx-translate/core";
-import { HotToastService } from "@ngxpert/hot-toast";
 import {
   createComponentFactory,
   Spectator,
@@ -31,7 +31,7 @@ describe("AddUsersComponent", () => {
       RouterModule.forRoot([{ path: "users/list", component: MockComponent }]),
       TranslateModule.forRoot(),
     ],
-    mocks: [HotToastService, UserService],
+    mocks: [NotificationService, UserService],
     providers: [provideHttpClientTesting()],
   });
 
@@ -70,7 +70,7 @@ describe("AddUsersComponent", () => {
   it("Should add the user as a client and go back to the list", () => {
     // Arrange
     const navigateSpy = vi.spyOn(spectator.inject(Router), "navigate");
-    const toastService = spectator.inject(HotToastService);
+    const notifications = spectator.inject(NotificationService);
     fillIn();
     // Act
     spectator.click("button[name='save']");
@@ -82,7 +82,7 @@ describe("AddUsersComponent", () => {
       password: "senha123",
       role: ROLE.CLIENT,
     });
-    expect(toastService.success).toHaveBeenCalledTimes(1);
+    expect(notifications.success).toHaveBeenCalledTimes(1);
     expect(navigateSpy).toHaveBeenCalledWith(["/users/list"]);
   });
 
@@ -97,7 +97,7 @@ describe("AddUsersComponent", () => {
 
   it("Should show the error when adding fails", () => {
     // Arrange
-    const toastService = spectator.inject(HotToastService);
+    const notifications = spectator.inject(NotificationService);
     userServiceMock.addUser.mockReturnValueOnce(
       throwError(() => new Error("Email já cadastrado"))
     );
@@ -105,7 +105,7 @@ describe("AddUsersComponent", () => {
     // Act
     spectator.click("button[name='save']");
     // Assert
-    expect(toastService.error).toHaveBeenCalledExactlyOnceWith(
+    expect(notifications.errorMessage).toHaveBeenCalledExactlyOnceWith(
       "Email já cadastrado"
     );
     expect(spectator.component.saving()).toBe(false);

@@ -30,6 +30,7 @@ export const enUS: Translations = {
     actions: "Actions",
     book: "Book",
     cancel: "Cancel",
+    close: "Close",
     confirm: "Confirm",
     createdOn: "Created on",
     email: "Email",

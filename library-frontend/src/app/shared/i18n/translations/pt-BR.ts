@@ -30,6 +30,7 @@ export const ptBR = {
     actions: "Ações",
     book: "Livro",
     cancel: "Cancelar",
+    close: "Fechar",
     confirm: "Confirmar",
     createdOn: "Criado em",
     email: "Email",

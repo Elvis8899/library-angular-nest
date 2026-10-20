@@ -191,7 +191,9 @@ describe("Update alert", () => {
     versionUpdates.next(versionReady);
     spectator.inject(ApplicationRef).tick();
     // Assert: the real snackbar, in the overlay
-    const snackBar = document.querySelector("mat-snack-bar-container");
+    // The newest one: other specs' snackbars may still be animating out
+    const all = document.querySelectorAll("mat-snack-bar-container");
+    const snackBar = all.item(all.length - 1);
     expect(snackBar?.textContent).toContain("Uma nova versão está disponível.");
     expect(snackBar?.querySelector("button")?.textContent).toContain(
       "Atualizar"

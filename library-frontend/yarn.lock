@@ -1393,13 +1393,6 @@
     "@napi-rs/nice-win32-ia32-msvc" "1.1.1"
     "@napi-rs/nice-win32-x64-msvc" "1.1.1"
 
-"@ngneat/overview@8.1.0":
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/@ngneat/overview/-/overview-8.1.0.tgz#4493772c5dd8af1612ae6a6945d0795f7ddfd491"
-  integrity sha512-AX1Q8g7gH8S571TIYVGQ/qORF6MkbPR0RvlYu9OoRg/awOmJWKUO5s6+w9hKlAHt9CTPwXgoNwh3gRXAJAF+Mg==
-  dependencies:
-    tslib "^2.0.0"
-
 "@ngx-rocket/ascii-logo@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@ngx-rocket/ascii-logo/-/ascii-logo-1.1.0.tgz#dfd955150e3e99e224b59d5f4273e44125d03e98"
@@ -1425,20 +1418,6 @@
   dependencies:
     tslib "^2.3.0"
 
-"@ngx-translate/http-loader@17.0.0":
-  version "17.0.0"
-  resolved "https://registry.yarnpkg.com/@ngx-translate/http-loader/-/http-loader-17.0.0.tgz#6ab727e780189a9a5e80059c758dc95de93608ea"
-  integrity sha512-hgS8sa0ARjH9ll3PhkLTufeVXNI2DNR2uFKDhBgq13siUXzzVr/a31M6zgecrtwbA34iaBV01hsTMbMS8V7iIw==
-  dependencies:
-    tslib "^2.3.0"
-
-"@ngxpert/hot-toast@6.1.0":
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/@ngxpert/hot-toast/-/hot-toast-6.1.0.tgz#397b9146a73a097aba3890e01ebfecb2f02d3ac8"
-  integrity sha512-eD0kYsoi7/lkdxnHuBfdAM0NeInMAjWQHHJgKlkInGn60tmcGjFGWow7l/ZPOdZEjKq4ARhDsA7yDrXMG4J+UQ==
-  dependencies:
-    tslib "^2.3.0"
-
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
@@ -1460,7 +1439,7 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@openng/spectator@1.0.2":
+"@openng/spectator@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@openng/spectator/-/spectator-1.0.2.tgz#359edc16b44aa1d9664f42fc5bebf4ac1d457d0f"
   integrity sha512-mpAuogyQFiJVmbXaYjtgDLDN8Xx8R6DJGoCM8+Y9xM4d8sjSHv+ow5mby7k78jyB5H1XeAGSyKK7/OadUqBz9A==
@@ -5175,7 +5154,7 @@ ts-node@^10.9.2:
     v8-compile-cache-lib "^3.0.1"
     yn "3.1.1"
 
-tslib@^2.0.0, tslib@^2.1.0, tslib@^2.3.0:
+tslib@^2.1.0, tslib@^2.3.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.7.0.tgz#d9b40c5c40ab59e8738f297df3087bf1a2690c01"
   integrity sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==

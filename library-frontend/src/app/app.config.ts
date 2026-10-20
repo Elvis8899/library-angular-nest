@@ -33,7 +33,6 @@ import { authHttpInterceptor } from "@app/shared/interceptors/authHttp.intercept
 import { errorHandlerInterceptor } from "@app/shared/interceptors/errorHandler.interceptor";
 import { environment } from "@env/environment";
 import { TranslateModule } from "@ngx-translate/core";
-import { provideHotToastConfig } from "@ngxpert/hot-toast";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -61,14 +60,6 @@ export const appConfig: ApplicationConfig = {
       withPreloading(PreloadAllModules)
     ),
 
-    // provideHotToastConfig is required for HotToastModule by ngneat
-    provideHotToastConfig({
-      reverseOrder: true,
-      dismissible: true,
-      autoClose: true,
-      position: "top-right",
-      theme: "snackbar",
-    }),
     provideAppInitializer(() => {
       inject(I18nService);
       // Applies a stored light or dark choice before the first page renders

@@ -7,10 +7,9 @@ import { MatProgressSpinner } from "@angular/material/progress-spinner";
 import { Router, RouterLink } from "@angular/router";
 import { BookService } from "@app/services/book.http.service";
 import { Logger } from "@app/services/logger.service";
+import { NotificationService } from "@app/services/notification.service";
 import { FormCardComponent } from "@app/shared/components/formCard/formCard.component";
-import { t } from "@app/shared/i18n/translations/translationKey";
-import { TranslatePipe, TranslateService } from "@ngx-translate/core";
-import { HotToastService } from "@ngxpert/hot-toast";
+import { TranslatePipe } from "@ngx-translate/core";
 import { finalize } from "rxjs";
 
 const log = new Logger("AddBookComponent");
@@ -34,8 +33,7 @@ const noImage = "images/no-image.png";
 })
 export class AddBooksComponent {
   private readonly _fb = inject(FormBuilder);
-  private readonly _toast = inject(HotToastService);
-  private readonly _translate = inject(TranslateService);
+  private readonly _notify = inject(NotificationService);
   private readonly _bookService = inject(BookService);
   private readonly _router = inject(Router);
 
@@ -81,11 +79,11 @@ export class AddBooksComponent {
       .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
         next: () => {
-          this._toast.success(this._translate.instant(t("books.created")));
+          this._notify.success("books.created");
           this._router.navigate(["/books/list"]);
         },
         error: (error: Error) => {
-          this._toast.error(error?.message);
+          this._notify.errorMessage(error?.message);
           log.error(error);
         },
       });

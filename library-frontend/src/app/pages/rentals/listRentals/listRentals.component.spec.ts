@@ -11,12 +11,12 @@ import {
 import { ListRentalsComponent } from "@app/pages/rentals/listRentals/listRentals.component";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
+import { NotificationService } from "@app/services/notification.service";
 import { RentalService } from "@app/services/rental.http.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { HotToastService } from "@ngxpert/hot-toast";
 import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 import { BehaviorSubject, of, throwError } from "rxjs";
 
@@ -24,7 +24,7 @@ Logger.level = 0;
 
 describe("ListRentalsComponent", () => {
   let spectator: Spectator<ListRentalsComponent>;
-  let toastService: HotToastService;
+  let notifications: NotificationService;
   let httpMock: HttpTestingController;
   const rental = (
     id: string,
@@ -74,7 +74,7 @@ describe("ListRentalsComponent", () => {
       RouterModule.forRoot([{ path: "login", component: MockComponent }]),
       TranslateModule.forRoot(),
     ],
-    mocks: [HotToastService],
+    mocks: [NotificationService],
     providers: [
       { provide: RentalService, useValue: rentalServiceMock },
       { provide: ConfirmDialog, useValue: confirmDialogMock },
@@ -90,7 +90,7 @@ describe("ListRentalsComponent", () => {
   function create() {
     spectator = createComponent();
     httpMock = spectator.inject(HttpTestingController);
-    toastService = spectator.inject(HotToastService);
+    notifications = spectator.inject(NotificationService);
     spectator.detectChanges();
   }
 
@@ -207,7 +207,7 @@ describe("ListRentalsComponent", () => {
       expect.objectContaining({ messageParams: { book: "Dom Casmurro" } })
     );
     expect(rentalServiceMock.returnBook).toHaveBeenCalledExactlyOnceWith("1");
-    expect(toastService.success).toHaveBeenCalledTimes(1);
+    expect(notifications.success).toHaveBeenCalledTimes(1);
     expect(rentalServiceMock.getPaginatedBookRentals).toHaveBeenCalledTimes(2);
   });
 
@@ -230,6 +230,8 @@ describe("ListRentalsComponent", () => {
     // Act
     spectator.click("button[name='returnBook']");
     // Assert
-    expect(toastService.error).toHaveBeenCalledExactlyOnceWith("test error");
+    expect(notifications.errorMessage).toHaveBeenCalledExactlyOnceWith(
+      "test error"
+    );
   });
 });

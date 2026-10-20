@@ -25,11 +25,11 @@ import {
 import { BookService } from "@app/services/book.http.service";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
+import { NotificationService } from "@app/services/notification.service";
 import { RentalService } from "@app/services/rental.http.service";
 import { UserService } from "@app/services/user.http.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { HotToastService } from "@ngxpert/hot-toast";
 import {
   createComponentFactory,
   createSpyObject,
@@ -115,7 +115,7 @@ describe("ListBooksComponent", () => {
       },
     ],
     mocks: [
-      HotToastService,
+      NotificationService,
       UserService,
       RentalService,
       CredentialsService,
@@ -292,11 +292,13 @@ describe("ListBooksComponent", () => {
 
   it("Should tell when there is no copy to rent", () => {
     // Arrange
-    const toastService = spectator.inject(HotToastService);
+    const notifications = spectator.inject(NotificationService);
     // Act
     spectator.component.openRentBookDialog(books[1]);
     // Assert
-    expect(toastService.error).toHaveBeenCalledTimes(1);
+    expect(notifications.error).toHaveBeenCalledExactlyOnceWith(
+      "rentals.rent.noneAvailable"
+    );
     expect(rentalService.rentBook).not.toHaveBeenCalled();
   });
 
@@ -320,7 +322,7 @@ describe("ListBooksComponent", () => {
         bookItemId: "1",
         userId: "client-id",
       });
-      expect(spectator.inject(HotToastService).success).toHaveBeenCalled();
+      expect(spectator.inject(NotificationService).success).toHaveBeenCalled();
     });
 
     it("Should not rent when the confirmation is cancelled", () => {
@@ -334,14 +336,16 @@ describe("ListBooksComponent", () => {
 
     it("Should show the error when renting fails", () => {
       // Arrange
-      const toastService = spectator.inject(HotToastService);
+      const notifications = spectator.inject(NotificationService);
       rentalService.rentBook.mockReturnValue(
         throwError(() => new Error("Error"))
       );
       // Act
       spectator.click("button[name='rentBook']");
       // Assert
-      expect(toastService.error).toHaveBeenCalledExactlyOnceWith("Error");
+      expect(notifications.errorMessage).toHaveBeenCalledExactlyOnceWith(
+        "Error"
+      );
     });
 
     it("Should not have admin buttons", () => {
@@ -395,7 +399,7 @@ describe("ListBooksComponent", () => {
       expect(bookServiceMock.addBookItem).toHaveBeenCalledExactlyOnceWith({
         bookId: "1",
       });
-      expect(spectator.inject(HotToastService).success).toHaveBeenCalled();
+      expect(spectator.inject(NotificationService).success).toHaveBeenCalled();
     });
 
     it("Should remove an available copy after confirming", () => {
@@ -408,7 +412,7 @@ describe("ListBooksComponent", () => {
       expect(bookServiceMock.deleteBookItem).toHaveBeenCalledExactlyOnceWith(
         "1"
       );
-      expect(spectator.inject(HotToastService).success).toHaveBeenCalled();
+      expect(spectator.inject(NotificationService).success).toHaveBeenCalled();
     });
 
     it("Should not remove a copy when the confirmation is cancelled", () => {
@@ -422,7 +426,7 @@ describe("ListBooksComponent", () => {
 
     it("Should show the error when adding or removing a copy fails", () => {
       // Arrange
-      const toastService = spectator.inject(HotToastService);
+      const notifications = spectator.inject(NotificationService);
       bookServiceMock.addBookItem.mockReturnValueOnce(
         throwError(() => new Error("Add error"))
       );
@@ -433,8 +437,8 @@ describe("ListBooksComponent", () => {
       spectator.click("button[name='addBook']");
       spectator.click("button[name='removeBook']");
       // Assert
-      expect(toastService.error).toHaveBeenCalledWith("Add error");
-      expect(toastService.error).toHaveBeenCalledWith("Remove error");
+      expect(notifications.errorMessage).toHaveBeenCalledWith("Add error");
+      expect(notifications.errorMessage).toHaveBeenCalledWith("Remove error");
     });
 
     it("Should put the copy actions in a menu on small screens", () => {
@@ -467,13 +471,15 @@ describe("ListBooksComponent", () => {
 
     it("Should not remove a copy when none is available", () => {
       // Arrange
-      const toastService = spectator.inject(HotToastService);
+      const notifications = spectator.inject(NotificationService);
       // Assert
       expect(spectator.queryLast("button[name='removeBook']")).toBeDisabled();
       // Act
       spectator.component.removeBookItem(books[1]);
       // Assert
-      expect(toastService.error).toHaveBeenCalledTimes(1);
+      expect(notifications.error).toHaveBeenCalledExactlyOnceWith(
+        "books.copies.noneToRemove"
+      );
       expect(confirmDialogMock.confirm).not.toHaveBeenCalled();
       expect(bookServiceMock.deleteBookItem).not.toHaveBeenCalled();
     });

@@ -5,9 +5,7 @@ This app has third-party dependencies (both production and development). These d
 ## Highlighted dependencies
 
 - [@angular/material](https://material.angular.dev): Material 3 components and theming.
-- [@ngxpert/hot-toast](https://www.npmjs.com/package/@ngxpert/hot-toast): Toast notifications for Angular.
 - [@ngx-translate/core](https://www.npmjs.com/package/@ngx-translate/core): Internationalization (i18n) library for Angular applications.
-- [@ngx-translate/http-loader](https://www.npmjs.com/package/@ngx-translate/http-loader): A library to load translations from HTTP requests.
 - [sanitize.css](https://github.com/csstools/sanitize.css): A modern CSS reset.
 
 ## Dev Dependencies

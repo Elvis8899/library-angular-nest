@@ -13,15 +13,14 @@ import { BookRentalEntity } from "@app/models/bookRental.entity";
 import { PaginatedDataSource } from "@app/models/utils/paginatedDataSource.entity";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
+import { NotificationService } from "@app/services/notification.service";
 import { RentalService } from "@app/services/rental.http.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
 import { injectIsSmallScreen } from "@app/shared/helpers/smallScreen";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
-import { t } from "@app/shared/i18n/translations/translationKey";
-import { TranslatePipe, TranslateService } from "@ngx-translate/core";
-import { HotToastService } from "@ngxpert/hot-toast";
+import { TranslatePipe } from "@ngx-translate/core";
 import { filter } from "rxjs";
 
 const log = new Logger("ListRentalsComponent");
@@ -62,8 +61,7 @@ export class ListRentalsComponent implements OnInit {
   private readonly _defaultLocale = inject(LOCALE_ID);
   private readonly _rentalService = inject(RentalService);
   private readonly _confirmDialog = inject(ConfirmDialog);
-  private readonly _toast = inject(HotToastService);
-  private readonly _translate = inject(TranslateService);
+  private readonly _notify = inject(NotificationService);
 
   ngOnInit() {
     this.data = new PaginatedDataSource<BookRentalEntity, object>(
@@ -106,13 +104,11 @@ export class ListRentalsComponent implements OnInit {
       .subscribe(() =>
         this._rentalService.returnBook(rental.id).subscribe({
           next: () => {
-            this._toast.success(
-              this._translate.instant(t("rentals.return.done"))
-            );
+            this._notify.success("rentals.return.done");
             this.refresh();
           },
           error: (error: Error) => {
-            this._toast.error(error?.message);
+            this._notify.errorMessage(error?.message);
             log.error(error);
           },
         })

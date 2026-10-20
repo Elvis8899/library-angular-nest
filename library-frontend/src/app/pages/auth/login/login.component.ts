@@ -10,10 +10,10 @@ import { MatProgressSpinner } from "@angular/material/progress-spinner";
 import { ActivatedRoute, Router } from "@angular/router";
 import { defaultRolePage } from "@app/models/credentials.entity";
 import { AuthenticationService } from "@app/services/authentication.service";
+import { NotificationService } from "@app/services/notification.service";
 import { ThemeToggleComponent } from "@app/shared/components/themeToggle/themeToggle.component";
 import { LanguageSelectorComponent } from "@app/shared/i18n/languageSelector/languageSelector.component";
 import { TranslatePipe } from "@ngx-translate/core";
-import { HotToastService } from "@ngxpert/hot-toast";
 import { finalize } from "rxjs";
 
 @Component({
@@ -39,7 +39,7 @@ export class LoginComponent {
   private readonly _route = inject(ActivatedRoute);
   private readonly _fb = inject(FormBuilder);
   private readonly _authService = inject(AuthenticationService);
-  private readonly _toast = inject(HotToastService);
+  private readonly _notify = inject(NotificationService);
   private readonly _destroyRef = inject(DestroyRef);
 
   // The API only requires a password, so no length rule here
@@ -78,7 +78,7 @@ export class LoginComponent {
           );
         },
         error: (error) => {
-          this._toast.error(error?.error?.message || error?.message);
+          this._notify.errorMessage(error?.error?.message || error?.message);
         },
       });
   }

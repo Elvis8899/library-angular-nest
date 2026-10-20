@@ -7,9 +7,9 @@ import { Credentials, ROLE } from "@app/models/credentials.entity";
 import { LoginComponent } from "@app/pages/auth/login/login.component";
 import { AuthenticationService } from "@app/services/authentication.service";
 import { Logger } from "@app/services/logger.service";
+import { NotificationService } from "@app/services/notification.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
 import { TranslateModule } from "@ngx-translate/core";
-import { HotToastService } from "@ngxpert/hot-toast";
 import {
   createComponentFactory,
   createSpyObject,
@@ -51,7 +51,7 @@ describe("LoginComponent", () => {
       provideHttpClientTesting(),
       { provide: AuthenticationService, useValue: authenticationServiceMock },
     ],
-    mocks: [HotToastService],
+    mocks: [NotificationService],
   });
 
   beforeEach(() => {
@@ -98,7 +98,7 @@ describe("LoginComponent", () => {
   it("If user inputs incorrect credentials, should give message", () => {
     // Arrange
     fillIn("admin@admin.com", "password");
-    const toastService = spectator.inject(HotToastService);
+    const notifications = spectator.inject(NotificationService);
     authenticationServiceMock.login.mockReturnValueOnce(
       throwError(() => new Error("message"))
     );
@@ -106,21 +106,25 @@ describe("LoginComponent", () => {
     spectator.click("button[name='login']");
     // Assert
     expect(authenticationServiceMock.login).toHaveBeenCalledTimes(1);
-    expect(toastService.error).toHaveBeenCalledExactlyOnceWith("message");
+    expect(notifications.errorMessage).toHaveBeenCalledExactlyOnceWith(
+      "message"
+    );
     expect(spectator.component.loading()).toBe(false);
   });
 
   it("Should show the API's message when there is one", () => {
     // Arrange
     fillIn("admin@admin.com", "password");
-    const toastService = spectator.inject(HotToastService);
+    const notifications = spectator.inject(NotificationService);
     authenticationServiceMock.login.mockReturnValueOnce(
       throwError(() => ({ error: { message: "Credenciais inválidas" } }))
     );
     // Act
     spectator.click("button[name='login']");
     // Assert
-    expect(toastService.error).toHaveBeenCalledWith("Credenciais inválidas");
+    expect(notifications.errorMessage).toHaveBeenCalledWith(
+      "Credenciais inválidas"
+    );
   });
 
   it("Should show the errors and not login when submitted empty", () => {

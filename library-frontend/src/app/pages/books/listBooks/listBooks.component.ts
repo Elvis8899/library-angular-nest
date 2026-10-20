@@ -23,6 +23,7 @@ import { ChooseUserDialogComponent } from "@app/pages/books/listBooks/chooseUser
 import { BookService } from "@app/services/book.http.service";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
+import { NotificationService } from "@app/services/notification.service";
 import { RentalService } from "@app/services/rental.http.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
@@ -30,9 +31,7 @@ import { TypedDialog } from "@app/shared/components/dialog/typedDialog";
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
 import { injectIsSmallScreen } from "@app/shared/helpers/smallScreen";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
-import { t } from "@app/shared/i18n/translations/translationKey";
-import { TranslatePipe, TranslateService } from "@ngx-translate/core";
-import { HotToastService } from "@ngxpert/hot-toast";
+import { TranslatePipe } from "@ngx-translate/core";
 import { filter } from "rxjs";
 
 const log = new Logger("ListBooksComponent");
@@ -82,8 +81,7 @@ export class ListBooksComponent implements OnInit {
   private readonly _router = inject(Router);
   private readonly _credentialsService = inject(CredentialsService);
   private readonly _confirmDialog = inject(ConfirmDialog);
-  private readonly _toast = inject(HotToastService);
-  private readonly _translate = inject(TranslateService);
+  private readonly _notify = inject(NotificationService);
 
   constructor() {
     // The date filter's picker shows dates in the selected language
@@ -112,9 +110,7 @@ export class ListBooksComponent implements OnInit {
   openRentBookDialog(book: BookEntity) {
     const bookItem = this._availableItem(book);
     if (!bookItem) {
-      this._toast.error(
-        this._translate.instant(t("rentals.rent.noneAvailable"))
-      );
+      this._notify.error("rentals.rent.noneAvailable");
       return;
     }
     const bookItemId = bookItem.id;
@@ -186,7 +182,7 @@ export class ListBooksComponent implements OnInit {
   rentBook(book: BookRentEntity) {
     this._rentalService.rentBook(book).subscribe({
       next: () => {
-        this._toast.success(this._translate.instant(t("rentals.rent.done")));
+        this._notify.success("rentals.rent.done");
         this.refresh();
       },
       error: this.defaultErrorHandler,
@@ -196,7 +192,7 @@ export class ListBooksComponent implements OnInit {
   addBookItem(book: BookEntity) {
     this._bookService.addBookItem({ bookId: book.id }).subscribe({
       next: () => {
-        this._toast.success(this._translate.instant(t("books.copies.added")));
+        this._notify.success("books.copies.added");
         this.refresh();
       },
       error: this.defaultErrorHandler,
@@ -206,9 +202,7 @@ export class ListBooksComponent implements OnInit {
   removeBookItem(book: BookEntity) {
     const bookItem = this._availableItem(book);
     if (!bookItem) {
-      this._toast.error(
-        this._translate.instant(t("books.copies.noneToRemove"))
-      );
+      this._notify.error("books.copies.noneToRemove");
       return;
     }
     this._confirmDialog
@@ -223,9 +217,7 @@ export class ListBooksComponent implements OnInit {
       .subscribe(() =>
         this._bookService.deleteBookItem(bookItem.id).subscribe({
           next: () => {
-            this._toast.success(
-              this._translate.instant(t("books.copies.removed"))
-            );
+            this._notify.success("books.copies.removed");
             this.refresh();
           },
           error: this.defaultErrorHandler,
@@ -235,7 +227,7 @@ export class ListBooksComponent implements OnInit {
 
   // An arrow function, so `this` is still the component when RxJS calls it
   readonly defaultErrorHandler = (error: Error) => {
-    this._toast.error(error?.message);
+    this._notify.errorMessage(error?.message);
     log.error(error);
   };
 

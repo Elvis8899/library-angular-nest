@@ -8,12 +8,11 @@ import { MatProgressSpinner } from "@angular/material/progress-spinner";
 import { Router, RouterLink } from "@angular/router";
 import { ROLE } from "@app/models/credentials.entity";
 import { Logger } from "@app/services/logger.service";
+import { NotificationService } from "@app/services/notification.service";
 import { UserService } from "@app/services/user.http.service";
 import { FormCardComponent } from "@app/shared/components/formCard/formCard.component";
-import { t } from "@app/shared/i18n/translations/translationKey";
 import { FormValidatorUtility } from "@app/shared/utils/formValidators.utility";
-import { TranslatePipe, TranslateService } from "@ngx-translate/core";
-import { HotToastService } from "@ngxpert/hot-toast";
+import { TranslatePipe } from "@ngx-translate/core";
 import { finalize } from "rxjs";
 
 const log = new Logger("AddUsersComponent");
@@ -38,8 +37,7 @@ export class AddUsersComponent {
   private readonly _userService = inject(UserService);
   private readonly _router = inject(Router);
   private readonly _fb = inject(FormBuilder);
-  private readonly _toast = inject(HotToastService);
-  private readonly _translate = inject(TranslateService);
+  private readonly _notify = inject(NotificationService);
 
   // Clients need a CPF or CNPJ with valid check digits, as the API checks
   addUserForm = this._fb.nonNullable.group({
@@ -68,11 +66,11 @@ export class AddUsersComponent {
       .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
         next: () => {
-          this._toast.success(this._translate.instant(t("users.created")));
+          this._notify.success("users.created");
           this._router.navigate(["/users/list"]);
         },
         error: (error: Error) => {
-          this._toast.error(error?.message);
+          this._notify.errorMessage(error?.message);
           log.error(error);
         },
       });

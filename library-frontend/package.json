@@ -34,10 +34,7 @@
     "@angular/platform-browser-dynamic": "^22.2.2",
     "@angular/router": "^22.2.2",
     "@angular/service-worker": "^22.2.2",
-    "@ngneat/overview": "8.1.0",
     "@ngx-translate/core": "17.0.0",
-    "@ngx-translate/http-loader": "17.0.0",
-    "@ngxpert/hot-toast": "6.1.0",
     "rxjs": "^7.8.2",
     "sanitize.css": "^13.0.0",
     "tslib": "^2.8.1"
