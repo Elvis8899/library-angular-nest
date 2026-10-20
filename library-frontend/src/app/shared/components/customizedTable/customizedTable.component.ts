@@ -1,53 +1,33 @@
 import { AsyncPipe } from "@angular/common";
 import {
   AfterContentInit,
-  ChangeDetectionStrategy,
   Component,
   ContentChildren,
   Input,
   QueryList,
   ViewChild,
 } from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
-import { MatButtonToggleModule } from "@angular/material/button-toggle";
-import { MatNativeDateModule } from "@angular/material/core";
-import { MatDatepickerModule } from "@angular/material/datepicker";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatIconModule } from "@angular/material/icon";
-import { MatInputModule } from "@angular/material/input";
 import { MatPaginatorModule, PageEvent } from "@angular/material/paginator";
-import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { MatSelectModule } from "@angular/material/select";
+import { MatProgressBarModule } from "@angular/material/progress-bar";
 import {
   MatColumnDef,
   MatTable,
   MatTableModule,
 } from "@angular/material/table";
 import { PaginatedDataSource } from "@app/models/utils/paginatedDataSource.entity";
-import { TranslateModule } from "@ngx-translate/core";
+import { TranslatePipe } from "@ngx-translate/core";
 
 @Component({
   selector: "app-customized-table",
   templateUrl: "./customizedTable.component.html",
   styleUrl: "./customizedTable.component.scss",
   imports: [
-    MatFormFieldModule,
-    MatInputModule,
-    FormsModule,
-    MatButtonModule,
-    TranslateModule,
     AsyncPipe,
-    MatTableModule,
-    MatProgressSpinnerModule,
-    MatIconModule,
     MatPaginatorModule,
-    MatSelectModule,
-    MatButtonToggleModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
+    MatProgressBarModule,
+    MatTableModule,
+    TranslatePipe,
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomizedTableComponent<T, Q> implements AfterContentInit {
   @Input() data!: PaginatedDataSource<T, Q>;

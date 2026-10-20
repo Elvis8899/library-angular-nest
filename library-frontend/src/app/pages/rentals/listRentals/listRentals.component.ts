@@ -6,6 +6,7 @@ import { PaginatedDataSource } from "@app/models/utils/paginatedDataSource.entit
 import { Logger } from "@app/services/logger.service";
 import { RentalService } from "@app/services/rental.http.service";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
+import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
 import { DateTimeUtility } from "@app/shared/utils/dateTime.utility";
 import { TranslateDirective, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
@@ -16,7 +17,12 @@ const log = new Logger("ListRentalsComponent");
   selector: "app-list",
   templateUrl: "./listRentals.component.html",
   styleUrl: "./listRentals.component.scss",
-  imports: [TranslateDirective, CustomizedTableComponent, MatTableModule],
+  imports: [
+    TranslateDirective,
+    CustomizedTableComponent,
+    MatTableModule,
+    PageHeaderComponent,
+  ],
 })
 export class ListRentalsComponent implements OnInit {
   data!: PaginatedDataSource<BookRentalEntity, object>;

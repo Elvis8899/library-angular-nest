@@ -1,12 +1,25 @@
 <div class="table-wrapper">
-  @if (data.loading$ | async) {
-    <mat-spinner diameter="32" />
-  }
+  <!-- Always takes its height, so showing it doesn't move the table -->
+  <mat-progress-bar
+    [class.hidden]="(data.loading$ | async) !== true"
+    class="loading"
+    mode="indeterminate"
+  />
 
   <ng-content></ng-content>
-  <table mat-table [dataSource]="data" class="mat-elevation-z1 table">
-    <tr mat-header-row *matHeaderRowDef="data.displayedColumns"></tr>
+  <table mat-table [dataSource]="data" class="table">
+    <tr
+      mat-header-row
+      *matHeaderRowDef="data.displayedColumns; sticky: true"
+    ></tr>
     <tr mat-row *matRowDef="let row; columns: data.displayedColumns"></tr>
+    <tr *matNoDataRow class="no-data-row">
+      <td [attr.colspan]="data.displayedColumns.length" class="no-data">
+        @if ((data.loading$ | async) !== true) {
+          {{ "No results" | translate }}
+        }
+      </td>
+    </tr>
   </table>
   @if (data.page$ | async; as page) {
     <mat-paginator

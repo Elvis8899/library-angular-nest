@@ -1,7 +1,50 @@
+@use "@angular/material" as mat;
+
 .table-wrapper {
-  margin-top: 20px;
+  margin-top: var(--space-3);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--mat-sys-corner-medium);
+  background-color: var(--mat-sys-surface-container-lowest);
+  overflow: clip;
+
+  @include mat.table-overrides(
+    (
+      background-color: var(--mat-sys-surface-container-lowest),
+      header-headline-color: var(--mat-sys-on-surface-variant),
+    )
+  );
+  @include mat.paginator-overrides(
+    (
+      container-background-color: var(--mat-sys-surface-container-lowest),
+    )
+  );
+}
+
+.loading {
+  height: 4px;
+  margin-bottom: -4px;
+  position: relative;
+  z-index: 2;
+
+  &.hidden {
+    visibility: hidden;
+  }
+}
+
+.table {
+  width: 100%;
 }
 
 .mat-mdc-header-row {
   background-color: var(--mat-sys-surface-container-low);
+}
+
+.mat-mdc-row:hover {
+  background-color: var(--mat-sys-surface-container);
+}
+
+.no-data {
+  padding: var(--space-5) var(--space-3);
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
 }

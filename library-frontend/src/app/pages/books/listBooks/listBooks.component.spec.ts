@@ -126,9 +126,9 @@ describe("ListBooksComponent", () => {
     httpMock.verify();
   });
 
-  it("should have subtitle", () => {
+  it("should have a title", () => {
     // Assert
-    expect(spectator.query("h2")).toContainText("Books List");
+    expect(spectator.query("h1")).toContainText("Books List");
     expect(spectator.queryAll("tr").length).toBe(3);
     //spectator.selectOption
   });

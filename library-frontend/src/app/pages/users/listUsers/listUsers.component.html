@@ -1,10 +1,16 @@
 <section class="main-container">
-  <div class="flex-title">
-    <h2 translate>Users List</h2>
-    <button class="" (click)="goToAddUser()" type="submit" translate>
-      {{ "Create User" }}
+  <app-page-header title="Users List">
+    <button
+      (click)="goToAddUser()"
+      matButton="filled"
+      name="createUser"
+      pageActions
+      type="button"
+    >
+      <mat-icon>add</mat-icon>
+      {{ "Create User" | translate }}
     </button>
-  </div>
+  </app-page-header>
 
   <app-customized-table [data]="data">
     <ng-container matColumnDef="name">

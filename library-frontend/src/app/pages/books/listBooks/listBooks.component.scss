@@ -1,9 +1,5 @@
-.flex-title {
-  display: flex;
-  justify-content: space-between;
-}
-
-button {
+// The table's plain action buttons, until they become Material buttons
+td button {
   min-width: 10%;
   padding: 10px;
   border: none;

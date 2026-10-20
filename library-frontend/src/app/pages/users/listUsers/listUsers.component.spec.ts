@@ -96,7 +96,7 @@ describe("ListUsersComponent", () => {
 
   it('button click should call "goToAddUser"', () => {
     const userClickedSpy = vi.spyOn(spectator.component, "goToAddUser");
-    spectator.click("button");
+    spectator.click("button[name='createUser']");
     expect(userClickedSpy).toHaveBeenCalled();
   });
 });

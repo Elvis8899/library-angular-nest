@@ -1,0 +1,18 @@
+<h2 mat-dialog-title>{{ options.title | translate }}</h2>
+<mat-dialog-content>
+  {{ options.message | translate: options.messageParams }}
+</mat-dialog-content>
+<!-- Cancel comes first, so it has the initial focus -->
+<mat-dialog-actions align="end">
+  <button [mat-dialog-close]="false" matButton name="cancelDialog">
+    {{ "Cancel" | translate }}
+  </button>
+  <button
+    [class.destructive]="options.destructive"
+    [mat-dialog-close]="true"
+    matButton="filled"
+    name="confirmDialog"
+  >
+    {{ options.confirmLabel ?? "Confirm" | translate }}
+  </button>
+</mat-dialog-actions>

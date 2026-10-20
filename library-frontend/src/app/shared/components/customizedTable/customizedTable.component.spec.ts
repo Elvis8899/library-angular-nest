@@ -8,6 +8,7 @@ import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
 import { Logger } from "@app/services/logger.service";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { createHostFactory, SpectatorHost } from "@ngneat/spectator/vitest";
+import { TranslateModule } from "@ngx-translate/core";
 import { Observable, of } from "rxjs";
 
 const log = new Logger("CustomizedTableComponent");
@@ -50,7 +51,7 @@ describe("CustomizedTableComponent", () => {
   let spectator: SpectatorHost<CustomizedTableComponent<T, Q>>;
   const createHost = createHostFactory({
     component: CustomizedTableComponent,
-    imports: [MatTableModule],
+    imports: [MatTableModule, TranslateModule.forRoot()],
     detectChanges: false,
   });
 
@@ -100,10 +101,23 @@ describe("CustomizedTableComponent", () => {
     expect(spectator.queryLast("tr")).toContainText("Item 2");
   });
 
-  it("Should show loading", () => {
+  it("Should show the progress bar only while loading", () => {
+    expect(spectator.query("mat-progress-bar")).toHaveClass("hidden");
     spectator.component.data["loading"].next(true);
     spectator.detectChanges();
-    expect(spectator.query(".mat-mdc-progress-spinner")).toBeTruthy();
+    expect(spectator.query("mat-progress-bar")).not.toHaveClass("hidden");
+  });
+
+  it("Should show the empty state when there are no rows", () => {
+    // Act
+    spectator.component.data.data$.next([]);
+    spectator.detectChanges();
+    // Assert
+    expect(spectator.query(".no-data")).toHaveText("No results");
+    // Not while loading, when the rows may still come
+    spectator.component.data["loading"].next(true);
+    spectator.detectChanges();
+    expect(spectator.query(".no-data")).toHaveText("");
   });
 
   it("Change paginationSize should show all items", () => {
@@ -114,7 +128,7 @@ describe("CustomizedTableComponent", () => {
     expect(spectator.queryAll("tr").length).toBe(4);
   });
 
-  it("Should show loading", () => {
+  it("Should hide the paginator without a page", () => {
     spectator.component.data["page$"].next(null as unknown as Page<T>);
     spectator.detectChanges();
     expect(spectator.query(".mat-mdc-paginator-navigation-next")).toBeFalsy();

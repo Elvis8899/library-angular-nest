@@ -8,15 +8,18 @@ Everything from that review is done (2026-10-13).
 
 The screens barely use Angular Material, which is already installed and themed with `mat.theme()` in `styles.scss`. They use plain `<button>`s and `<input>`s with about 570 lines of hand-written component SCSS, and some text is hardcoded in Portuguese or English. Rebuild them with Material components and improve how they look at the same time. Estimate: 2 to 3 days.
 
-- [ ] **Theme and shared pieces** (first, since the screens build on them)
+- [x] **Theme and shared pieces** (first, since the screens build on them)
   - [x] Choose a palette for `mat.theme()` based on the existing teal (`--light-teal`, `--dark-teal`) and drop the leftover ngx-rocket colour variables in `theme/_variables.scss` that the new theme replaces. Components use Material's system tokens (`--mat-sys-*`) instead of custom colours.
     - Done 2026-10-20: teal primary and orange tertiary generated into `theme/_themeColors.scss`, with high-contrast overrides. The page stylesheets only had their colours swapped for tokens; they're replaced when each screen is rebuilt.
   - [x] Dark mode: `color-scheme: light dark` in the theme, plus a toggle in the header next to the language selector, remembered in localStorage.
   - [x] Typography and spacing: Manrope through `mat.theme()` typography, a small spacing scale (4/8/16/24/32), and the same page padding on every screen.
-  - [ ] A page header component (title, optional subtitle, action buttons on the right) used by every page.
-  - [ ] A form-card layout (a centred `mat-card` with a title, fields, and Cancel and Save buttons) for the add-book and add-user forms.
-  - [ ] `customizedTable`: an empty state ("Nenhum resultado"), a progress bar instead of the spinner that pushes the table down, row hover, and a sticky header.
-  - [ ] A confirmation dialog based on `TypedDialog` for destructive actions (removing a book copy, returning a book).
+  - [x] A page header component (title, optional subtitle, action buttons on the right) used by every page.
+    - Done 2026-10-20: `app-page-header`, used by the three lists. Put a conditional action inside `<ng-container pageActions>`: an `@if` block isn't projected into the slot by itself.
+  - [x] A form-card layout (a centred `mat-card` with a title, fields, and Cancel and Save buttons) for the add-book and add-user forms.
+    - Done 2026-10-20: `app-form-card`; the forms start using it in their own item below.
+  - [x] `customizedTable`: an empty state ("Nenhum resultado"), a progress bar instead of the spinner that pushes the table down, row hover, and a sticky header.
+  - [x] A confirmation dialog based on `TypedDialog` for destructive actions (removing a book copy, returning a book).
+    - Done 2026-10-20: `ConfirmDialog.confirm(data)` emits true only on confirm. Wired into the book and rental lists in their own items below.
 - [ ] **Login**: a `mat-card` with `mat-form-field`s, `mat-error` messages, a password visibility toggle, and a spinner on the button while logging in. Use the app name or logo above the card.
 - [ ] **Book list**
   - [ ] Actions become icon buttons with tooltips (rent, add copy, remove copy). Remove the permanently disabled "deletar" button, or implement deleting.

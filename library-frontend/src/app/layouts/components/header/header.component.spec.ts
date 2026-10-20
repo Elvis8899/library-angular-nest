@@ -8,7 +8,8 @@ import { TranslateModule } from "@ngx-translate/core";
 
 Logger.level = 0;
 
-// The language selector loads pt-BR, the default language
+// The language selector loads the default language, pt-BR, unless another
+// spec left a language in localStorage (cleared before each test)
 describe("HeaderComponent", () => {
   let spectator: Spectator<HeaderComponent>;
   const colorScheme = signal<ColorScheme>("light");
@@ -25,6 +26,7 @@ describe("HeaderComponent", () => {
   });
 
   beforeEach(() => {
+    localStorage.removeItem("language");
     colorScheme.set("light");
     themeServiceMock.toggle.mockClear();
     spectator = createComponent();

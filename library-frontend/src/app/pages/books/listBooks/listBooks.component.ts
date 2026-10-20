@@ -30,6 +30,7 @@ import { Logger } from "@app/services/logger.service";
 import { RentalService } from "@app/services/rental.http.service";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { TypedDialog } from "@app/shared/components/dialog/typedDialog";
+import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 
@@ -52,6 +53,7 @@ const log = new Logger("ListBooksComponent");
     MatDatepickerModule,
     MatNativeDateModule,
     CustomizedTableComponent,
+    PageHeaderComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

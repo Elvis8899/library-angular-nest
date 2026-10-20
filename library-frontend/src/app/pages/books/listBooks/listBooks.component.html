@@ -1,20 +1,19 @@
 <section class="main-container">
-  <div class="flex-title">
-    <h2 translate>Books List</h2>
-    <div>
+  <app-page-header title="Books List">
+    <ng-container pageActions>
       @if (isAdmin()) {
         <button
-          class=""
           (click)="goToAddBook()"
-          type="submit"
-          translate
+          matButton="filled"
           name="createBook"
+          type="button"
         >
-          {{ "Create Book" }}
+          <mat-icon>add</mat-icon>
+          {{ "Create Book" | translate }}
         </button>
       }
-    </div>
-  </div>
+    </ng-container>
+  </app-page-header>
 
   <div>
     <div class="toolbar">

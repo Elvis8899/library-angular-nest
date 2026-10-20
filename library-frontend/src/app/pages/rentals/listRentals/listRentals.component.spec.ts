@@ -87,9 +87,9 @@ describe("ListRentalsComponent", () => {
   afterEach(() => {
     httpMock.verify();
   });
-  it("should have subtitle", () => {
+  it("should have a title", () => {
     // Assert
-    expect(spectator.query("h2")).toContainText("Rentals");
+    expect(spectator.query("h1")).toContainText("Rentals");
     expect(spectator.queryAll("tr").length).toBe(3);
     expect(toastService.info).toBeCalledTimes(0);
   });
