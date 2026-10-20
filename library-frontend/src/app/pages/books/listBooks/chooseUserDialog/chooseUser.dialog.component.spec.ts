@@ -7,7 +7,7 @@ import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
 import { ChooseUserDialogComponent } from "@app/pages/books/listBooks/chooseUserDialog/chooseUser.dialog.component";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
-import { TranslateModule } from "@ngx-translate/core";
+import { provideTranslateService } from "@ngx-translate/core";
 import {
   createComponentFactory,
   createSpyObject,
@@ -39,8 +39,8 @@ describe("ChooseUserDialogComponent", () => {
 
   const createComponent = createComponentFactory({
     component: ChooseUserDialogComponent,
-    imports: [TranslateModule.forRoot()],
     providers: [
+      provideTranslateService(),
       provideHttpClientTesting(),
       { provide: UserService, useValue: userServiceMock },
       {

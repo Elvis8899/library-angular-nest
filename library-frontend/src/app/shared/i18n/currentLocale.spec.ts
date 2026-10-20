@@ -1,6 +1,6 @@
 import { formatCurrency, formatDate } from "@angular/common";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import {
   createInjectionContextFactory,
   SpectatorInjectionContext,
@@ -9,7 +9,7 @@ import {
 describe("injectCurrentLocale", () => {
   let spectator: SpectatorInjectionContext;
   const createInjectionContext = createInjectionContextFactory({
-    imports: [TranslateModule.forRoot()],
+    providers: [provideTranslateService()],
   });
 
   beforeEach(() => (spectator = createInjectionContext()));

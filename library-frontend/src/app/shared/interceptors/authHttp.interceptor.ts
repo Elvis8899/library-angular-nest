@@ -6,6 +6,7 @@ import {
 } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { CredentialsService } from "@app/services/credentials.service";
+import { environment } from "@env/environment";
 import { TranslateService } from "@ngx-translate/core";
 import { finalize, Observable, Subject, takeUntil } from "rxjs";
 
@@ -23,7 +24,9 @@ export const authHttpInterceptor: HttpInterceptorFn = (
 
   const { accessToken } = _credentialsService.credentials || {};
 
-  const currentLang = _translateService.getCurrentLang().substring(0, 2);
+  const currentLang = (
+    _translateService.getCurrentLang() ?? environment.defaultLanguage
+  ).substring(0, 2);
 
   const newHeaders: Record<string, string> = {
     "Accept-Language": currentLang,

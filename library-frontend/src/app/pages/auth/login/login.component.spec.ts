@@ -9,7 +9,7 @@ import { AuthenticationService } from "@app/services/authentication.service";
 import { Logger } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { TranslateModule } from "@ngx-translate/core";
+import { provideTranslateService } from "@ngx-translate/core";
 import {
   createComponentFactory,
   createSpyObject,
@@ -45,9 +45,9 @@ describe("LoginComponent", () => {
         { path: "books", component: MockComponent },
         { path: "users/list", component: MockComponent },
       ]),
-      TranslateModule.forRoot(),
     ],
     providers: [
+      provideTranslateService(),
       provideHttpClientTesting(),
       { provide: AuthenticationService, useValue: authenticationServiceMock },
     ],

@@ -4,7 +4,7 @@ import { LayoutComponent } from "@app/layouts/layout.component";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { TranslateModule } from "@ngx-translate/core";
+import { provideTranslateService } from "@ngx-translate/core";
 import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 
 Logger.level = 0;
@@ -13,8 +13,8 @@ describe("LayoutComponent", () => {
   let spectator: Spectator<LayoutComponent>;
   const createComponent = createComponentFactory({
     component: LayoutComponent,
-    imports: [TranslateModule.forRoot()],
     providers: [
+      provideTranslateService(),
       provideRouter([{ path: "books", component: MockComponent }]),
       {
         provide: CredentialsService,

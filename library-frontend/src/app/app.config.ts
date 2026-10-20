@@ -6,7 +6,6 @@ import {
 import {
   ApplicationConfig,
   enableProdMode,
-  importProvidersFrom,
   inject,
   provideAppInitializer,
   provideZonelessChangeDetection,
@@ -32,13 +31,12 @@ import { TranslatedPaginatorIntl } from "@app/shared/i18n/translatedPaginatorInt
 import { authHttpInterceptor } from "@app/shared/interceptors/authHttp.interceptor";
 import { errorHandlerInterceptor } from "@app/shared/interceptors/errorHandler.interceptor";
 import { environment } from "@env/environment";
-import { TranslateModule } from "@ngx-translate/core";
+import { provideTranslateService } from "@ngx-translate/core";
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
-    // import providers from other modules (e.g. TranslateModule, ShellModule), which follow the older pattern to import modules
-    importProvidersFrom(TranslateModule.forRoot()),
+    provideTranslateService(),
     // provideServiceWorker is required for Angular's service workers
     provideServiceWorker("ngsw-worker.js", {
       enabled: environment.production,

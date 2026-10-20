@@ -1,7 +1,7 @@
 import { signal } from "@angular/core";
 import { ColorScheme, ThemeService } from "@app/services/theme.service";
 import { ThemeToggleComponent } from "@app/shared/components/themeToggle/themeToggle.component";
-import { TranslateModule } from "@ngx-translate/core";
+import { provideTranslateService } from "@ngx-translate/core";
 import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 
 describe("ThemeToggleComponent", () => {
@@ -15,8 +15,10 @@ describe("ThemeToggleComponent", () => {
   };
   const createComponent = createComponentFactory({
     component: ThemeToggleComponent,
-    imports: [TranslateModule.forRoot()],
-    providers: [{ provide: ThemeService, useValue: themeServiceMock }],
+    providers: [
+      provideTranslateService(),
+      { provide: ThemeService, useValue: themeServiceMock },
+    ],
   });
 
   beforeEach(() => {

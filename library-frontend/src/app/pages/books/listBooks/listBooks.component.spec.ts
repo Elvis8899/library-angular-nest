@@ -29,7 +29,7 @@ import { NotificationService } from "@app/services/notification.service";
 import { RentalService } from "@app/services/rental.http.service";
 import { UserService } from "@app/services/user.http.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import {
   createComponentFactory,
   createSpyObject,
@@ -103,8 +103,9 @@ describe("ListBooksComponent", () => {
   let breakpoints: BehaviorSubject<BreakpointState>;
   const createComponent = createComponentFactory({
     component: ListBooksComponent,
-    imports: [RouterModule.forRoot([]), TranslateModule.forRoot()],
+    imports: [RouterModule.forRoot([])],
     providers: [
+      provideTranslateService(),
       provideHttpClientTesting(),
       { provide: BookService, useValue: bookServiceMock },
       { provide: MatDialog, useValue: matDialogMock },

@@ -1,7 +1,7 @@
 import { TranslatedPaginatorIntl } from "@app/shared/i18n/translatedPaginatorIntl.service";
 import { enUS } from "@app/shared/i18n/translations/en-US";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import {
   createServiceFactory,
   SpectatorService,
@@ -11,8 +11,8 @@ describe("TranslatedPaginatorIntl", () => {
   let spectator: SpectatorService<TranslatedPaginatorIntl>;
   let translate: TranslateService;
   const createService = createServiceFactory({
+    providers: [provideTranslateService()],
     service: TranslatedPaginatorIntl,
-    imports: [TranslateModule.forRoot()],
   });
 
   beforeEach(() => {

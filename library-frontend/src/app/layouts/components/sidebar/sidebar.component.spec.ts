@@ -4,7 +4,7 @@ import { ROLE } from "@app/models/credentials.entity";
 import { CredentialsService } from "@app/services/credentials.service";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 
 describe("SidebarComponent", () => {
@@ -17,8 +17,8 @@ describe("SidebarComponent", () => {
 
   const createComponent = createComponentFactory({
     component: SidebarComponent,
-    imports: [TranslateModule.forRoot()],
     providers: [
+      provideTranslateService(),
       provideRouter([
         { path: "books", component: MockComponent },
         { path: "rentals", component: MockComponent },

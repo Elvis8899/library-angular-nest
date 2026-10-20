@@ -1,12 +1,12 @@
 import { FormCardComponent } from "@app/shared/components/formCard/formCard.component";
-import { TranslateModule } from "@ngx-translate/core";
+import { provideTranslateService } from "@ngx-translate/core";
 import { createHostFactory, SpectatorHost } from "@openng/spectator/vitest";
 
 describe("FormCardComponent", () => {
   let spectator: SpectatorHost<FormCardComponent>;
   const createHost = createHostFactory({
+    providers: [provideTranslateService()],
     component: FormCardComponent,
-    imports: [TranslateModule.forRoot()],
   });
 
   it("Should place the fields in the content and the buttons in the actions", () => {

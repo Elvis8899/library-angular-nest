@@ -10,7 +10,7 @@ import { ListUsersComponent } from "@app/pages/users/listUsers/listUsers.compone
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { TranslateModule } from "@ngx-translate/core";
+import { provideTranslateService } from "@ngx-translate/core";
 import {
   createComponentFactory,
   createSpyObject,
@@ -45,9 +45,9 @@ describe("ListUsersComponent", () => {
     component: ListUsersComponent,
     imports: [
       RouterModule.forRoot([{ path: "users/add", component: MockComponent }]),
-      TranslateModule.forRoot(),
     ],
     providers: [
+      provideTranslateService(),
       { provide: UserService, useValue: userServiceMock },
       {
         provide: BreakpointObserver,

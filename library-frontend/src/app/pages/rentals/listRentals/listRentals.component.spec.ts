@@ -16,7 +16,7 @@ import { RentalService } from "@app/services/rental.http.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 import { BehaviorSubject, of, throwError } from "rxjs";
 
@@ -72,10 +72,10 @@ describe("ListRentalsComponent", () => {
     component: ListRentalsComponent,
     imports: [
       RouterModule.forRoot([{ path: "login", component: MockComponent }]),
-      TranslateModule.forRoot(),
     ],
     mocks: [NotificationService],
     providers: [
+      provideTranslateService(),
       { provide: RentalService, useValue: rentalServiceMock },
       { provide: ConfirmDialog, useValue: confirmDialogMock },
       {

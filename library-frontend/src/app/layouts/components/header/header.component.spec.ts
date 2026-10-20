@@ -2,7 +2,7 @@ import { RouterModule } from "@angular/router";
 import { HeaderComponent } from "@app/layouts/components/header/header.component";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
-import { TranslateModule } from "@ngx-translate/core";
+import { provideTranslateService } from "@ngx-translate/core";
 import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 
 Logger.level = 0;
@@ -21,8 +21,9 @@ describe("HeaderComponent", () => {
   };
   const createComponent = createComponentFactory({
     component: HeaderComponent,
-    imports: [RouterModule.forRoot([]), TranslateModule.forRoot()],
+    imports: [RouterModule.forRoot([])],
     providers: [
+      provideTranslateService(),
       { provide: CredentialsService, useValue: credentialsServiceMock },
     ],
     detectChanges: false,

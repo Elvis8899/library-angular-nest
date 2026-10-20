@@ -1,12 +1,12 @@
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
-import { TranslateModule } from "@ngx-translate/core";
+import { provideTranslateService } from "@ngx-translate/core";
 import { createHostFactory, SpectatorHost } from "@openng/spectator/vitest";
 
 describe("PageHeaderComponent", () => {
   let spectator: SpectatorHost<PageHeaderComponent>;
   const createHost = createHostFactory({
+    providers: [provideTranslateService()],
     component: PageHeaderComponent,
-    imports: [TranslateModule.forRoot()],
   });
 
   it("Should show the title and the projected actions", () => {

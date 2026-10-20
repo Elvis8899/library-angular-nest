@@ -4,7 +4,7 @@ import { Logger } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { AppUpdateService } from "@app/services/update.service";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import {
   createServiceFactory,
   createSpyObject,
@@ -38,8 +38,10 @@ describe("Update Service", () => {
 
   const createService = createServiceFactory({
     service: AppUpdateService,
-    imports: [TranslateModule.forRoot()],
-    providers: [{ provide: SwUpdate, useFactory: () => swSpy }],
+    providers: [
+      provideTranslateService(),
+      { provide: SwUpdate, useFactory: () => swSpy },
+    ],
     mocks: [NotificationService],
   });
 
@@ -145,8 +147,10 @@ describe("Update alert", () => {
   const swSpy = createSpyObject(SwUpdate, { isEnabled: false, versionUpdates });
   const createService = createServiceFactory({
     service: AppUpdateService,
-    imports: [TranslateModule.forRoot()],
-    providers: [{ provide: SwUpdate, useValue: swSpy }],
+    providers: [
+      provideTranslateService(),
+      { provide: SwUpdate, useValue: swSpy },
+    ],
   });
 
   it("Should offer the update in the current language, and reload on its action", async () => {

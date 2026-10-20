@@ -8,7 +8,7 @@ import { BookService } from "@app/services/book.http.service";
 import { Logger } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { TranslateModule } from "@ngx-translate/core";
+import { provideTranslateService } from "@ngx-translate/core";
 import {
   createComponentFactory,
   Spectator,
@@ -27,10 +27,9 @@ describe("AddBooksComponent", () => {
     component: AddBooksComponent,
     imports: [
       RouterModule.forRoot([{ path: "books/list", component: MockComponent }]),
-      TranslateModule.forRoot(),
     ],
     mocks: [BookService, NotificationService],
-    providers: [provideHttpClientTesting()],
+    providers: [provideTranslateService(), provideHttpClientTesting()],
   });
 
   beforeEach(() => {

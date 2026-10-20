@@ -3,7 +3,7 @@ import { LogoutComponent } from "@app/pages/auth/logout/logout.component";
 import { AuthenticationService } from "@app/services/authentication.service";
 import { Logger } from "@app/services/logger.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { TranslateModule } from "@ngx-translate/core";
+import { provideTranslateService } from "@ngx-translate/core";
 import {
   createComponentFactory,
   createSpyObject,
@@ -20,9 +20,11 @@ describe("LogoutComponent", () => {
     component: LogoutComponent,
     imports: [
       RouterModule.forRoot([{ path: "login", component: MockComponent }]),
-      TranslateModule.forRoot(),
     ],
-    providers: [{ provide: AuthenticationService, useValue: authServiceMock }],
+    providers: [
+      provideTranslateService(),
+      { provide: AuthenticationService, useValue: authServiceMock },
+    ],
     detectChanges: false,
   });
 

@@ -6,7 +6,7 @@ import {
 } from "@app/shared/components/confirmDialog/confirm.dialog.component";
 import { TypedDialog } from "@app/shared/components/dialog/typedDialog";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import {
   createComponentFactory,
   createServiceFactory,
@@ -21,8 +21,8 @@ describe("ConfirmDialogComponent", () => {
   let data: ConfirmDialogData;
   const createComponent = createComponentFactory({
     component: ConfirmDialogComponent,
-    imports: [TranslateModule.forRoot()],
     providers: [
+      provideTranslateService(),
       { provide: MatDialogRef, useValue: dialogRef },
       { provide: MAT_DIALOG_DATA, useFactory: () => data },
     ],

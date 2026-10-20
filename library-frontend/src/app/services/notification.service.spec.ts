@@ -2,7 +2,7 @@ import { ApplicationRef } from "@angular/core";
 import { MatSnackBar, MatSnackBarDismiss } from "@angular/material/snack-bar";
 import { NotificationService } from "@app/services/notification.service";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import {
   createServiceFactory,
   SpectatorService,
@@ -12,8 +12,8 @@ import { firstValueFrom, Subject } from "rxjs";
 describe("NotificationService", () => {
   let spectator: SpectatorService<NotificationService>;
   const createService = createServiceFactory({
+    providers: [provideTranslateService()],
     service: NotificationService,
-    imports: [TranslateModule.forRoot()],
   });
 
   beforeEach(() => {
@@ -147,8 +147,10 @@ describe("NotificationService persistent messages", () => {
   let snackBar: FakeSnackBar;
   const createService = createServiceFactory({
     service: NotificationService,
-    imports: [TranslateModule.forRoot()],
-    providers: [{ provide: MatSnackBar, useFactory: () => snackBar }],
+    providers: [
+      provideTranslateService(),
+      { provide: MatSnackBar, useFactory: () => snackBar },
+    ],
   });
 
   beforeEach(() => {

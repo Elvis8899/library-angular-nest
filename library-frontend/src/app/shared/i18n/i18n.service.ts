@@ -76,7 +76,7 @@ export class I18nService {
    * @return The current language code.
    */
   get language(): string {
-    return this._translateService.getCurrentLang();
+    return this._translateService.getCurrentLang() ?? this.defaultLanguage;
   }
 
   /**

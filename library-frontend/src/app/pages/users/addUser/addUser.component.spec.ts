@@ -9,7 +9,7 @@ import { Logger } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { UserService } from "@app/services/user.http.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { TranslateModule } from "@ngx-translate/core";
+import { provideTranslateService } from "@ngx-translate/core";
 import {
   createComponentFactory,
   Spectator,
@@ -29,10 +29,9 @@ describe("AddUsersComponent", () => {
     component: AddUsersComponent,
     imports: [
       RouterModule.forRoot([{ path: "users/list", component: MockComponent }]),
-      TranslateModule.forRoot(),
     ],
     mocks: [NotificationService, UserService],
-    providers: [provideHttpClientTesting()],
+    providers: [provideTranslateService(), provideHttpClientTesting()],
   });
 
   beforeEach(() => {

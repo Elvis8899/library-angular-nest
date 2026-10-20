@@ -7,7 +7,7 @@ import {
 import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
 import { Logger } from "@app/services/logger.service";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
-import { TranslateModule } from "@ngx-translate/core";
+import { provideTranslateService } from "@ngx-translate/core";
 import { createHostFactory, SpectatorHost } from "@openng/spectator/vitest";
 import { Observable, of } from "rxjs";
 
@@ -50,8 +50,9 @@ class MockService {
 describe("CustomizedTableComponent", () => {
   let spectator: SpectatorHost<CustomizedTableComponent<T, Q>>;
   const createHost = createHostFactory({
+    providers: [provideTranslateService()],
     component: CustomizedTableComponent,
-    imports: [MatTableModule, TranslateModule.forRoot()],
+    imports: [MatTableModule],
     detectChanges: false,
   });
 
