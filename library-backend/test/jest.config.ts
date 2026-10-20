@@ -27,7 +27,6 @@ const config: Config = {
     "^@rental/(.*)$": "<rootDir>/src/modules/rental/$1",
     "^@db/(.*)$": "<rootDir>/prisma/$1",
   },
-  transformIgnorePatterns: ["node_modules/(?!(uuid|content-disposition)/)"],
   coverageReporters: ["json", "text-summary", "lcov", "clover", "json-summary"],
 };
 export default config;

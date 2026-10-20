@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Library management system (book lending) for a Brazilian audience: UI text, API docs (Swagger tags/summaries) and error messages are in Portuguese. Two independent apps, each with its own `package.json`, `yarn.lock` (Yarn 1) and `node_modules`; there is no root workspace.
 
-- `library-backend/` — NestJS 11 on Fastify, Prisma + PostgreSQL, Zod, fp-ts, JWT auth.
+- `library-backend/` — NestJS 12 on Fastify, Prisma + PostgreSQL, Zod, fp-ts, JWT auth.
 - `library-frontend/` — Angular 22 (standalone components), Angular Material, ngx-translate (pt-BR, en-US), Vitest via `@angular/build:unit-test`.
 
 Both use TypeScript 6.0. TypeScript 7 isn't supported by Angular, typescript-eslint or ts-jest yet.
@@ -40,7 +40,7 @@ yarn migrate:check            # fails if schema.prisma differs from the migrated
 yarn seed                     # prisma db seed; skips a database that already has users or books
 ```
 
-The app refuses to start unless `JWT_SECRET_KEY` and `JWT_REFRESH_SECRET` are set and at least 32 characters long (`src/modules/auth/auth.config.ts`). `.env.test` contains test values. `make dockerDev` (from the repo root) starts the dev stack behind nginx on `localhost:3000`: the frontend dev server at `/`, the API at `/v1` and `/swagger`, plus Postgres, pgAdmin, Prometheus and Grafana. The dev Docker entrypoint copies `.env.example` to `.env.dev`. The dev `app` and `frontend` containers run as uid/gid 1000 so files it writes to the mounted source folder aren't root-owned; set `HOST_UID`/`HOST_GID` if yours differ.
+The app refuses to start unless `JWT_SECRET_KEY` and `JWT_REFRESH_SECRET` are set and at least 32 characters long (`src/modules/auth/auth.config.ts`). `.env.test` contains test values. It also sets `NODE_OPTIONS=--experimental-vm-modules`, which lets Jest `require()` the ESM-only packages (NestJS 12, uuid); the built app needs no flag, since Node 24 loads them natively. `make dockerDev` (from the repo root) starts the dev stack behind nginx on `localhost:3000`: the frontend dev server at `/`, the API at `/v1` and `/swagger`, plus Postgres, pgAdmin, Prometheus and Grafana. The dev Docker entrypoint copies `.env.example` to `.env.dev`. The dev `app` and `frontend` containers run as uid/gid 1000 so files it writes to the mounted source folder aren't root-owned; set `HOST_UID`/`HOST_GID` if yours differ.
 
 ### Frontend (`cd library-frontend`, Node 24)
 
