@@ -2,7 +2,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
-import { TestBed } from "@angular/core/testing";
+import { ApplicationRef } from "@angular/core";
 import {
   MatButtonToggle,
   MatButtonToggleChange,
@@ -190,7 +190,7 @@ describe("ListBooksComponent", () => {
     // Act
     spectator.inject(TranslateService).use("pt-BR");
     // Effects run on the application's tick
-    TestBed.tick();
+    spectator.inject(ApplicationRef).tick();
     // Assert
     expect(setLocaleSpy).toHaveBeenCalledWith("pt-BR");
   });

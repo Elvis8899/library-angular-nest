@@ -1,9 +1,12 @@
-import { TestBed } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
 import { ROLE } from "@app/models/credentials.entity";
 import { routes } from "@app/pages/pages.routes";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
+import {
+  createServiceFactory,
+  SpectatorService,
+} from "@ngneat/spectator/vitest";
 
 Logger.level = 0;
 
@@ -11,7 +14,7 @@ Logger.level = 0;
 // themselves are never created
 describe("Routes", () => {
   let role: ROLE | null;
-  let router: Router;
+  let spectator: SpectatorService<Router>;
 
   const credentialsServiceMock = {
     isAuthenticated: () => role !== null,
@@ -23,20 +26,21 @@ describe("Routes", () => {
 
   // Guards redirect by starting a new navigation, so wait for the last one
   const navigate = async (url: string) => {
+    const router = spectator.service;
     await router.navigateByUrl(url);
     await vi.waitFor(() => expect(router.getCurrentNavigation()).toBeNull());
     return router.url;
   };
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [
-        provideRouter(routes),
-        { provide: CredentialsService, useValue: credentialsServiceMock },
-      ],
-    });
-    router = TestBed.inject(Router);
+  const createService = createServiceFactory({
+    service: Router,
+    providers: [
+      provideRouter(routes),
+      { provide: CredentialsService, useValue: credentialsServiceMock },
+    ],
   });
+
+  beforeEach(() => (spectator = createService()));
 
   describe("When logged out", () => {
     beforeEach(() => {
