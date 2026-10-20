@@ -1,10 +1,8 @@
 import { ApplicationRef, inject, Injectable } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { SwUpdate, VersionEvent } from "@angular/service-worker";
 import { Logger } from "@app/services/logger.service";
-import { t } from "@app/shared/i18n/translations/translationKey";
-import { TranslateService } from "@ngx-translate/core";
+import { NotificationService } from "@app/services/notification.service";
 import { concat, interval } from "rxjs";
 import { first } from "rxjs/operators";
 
@@ -16,12 +14,11 @@ service worker and displaying update alerts to the user. */
   providedIn: "root",
 })
 export class AppUpdateService {
-  private _isUpdateAlertShown = false;
+  private _isUpdateOffered = false;
 
   appRef = inject(ApplicationRef);
   private readonly _swUpdate = inject(SwUpdate);
-  private readonly _snackBar = inject(MatSnackBar);
-  private readonly _translate = inject(TranslateService);
+  private readonly _notifications = inject(NotificationService);
 
   constructor() {
     log.info("Update service is running...");
@@ -52,7 +49,7 @@ export class AppUpdateService {
   async updateCheck() {
     try {
       log.info("Checking for app updates...");
-      this._isUpdateAlertShown = false;
+      this._isUpdateOffered = false;
       const updateFound = await this._swUpdate.checkForUpdate();
       log.info(
         updateFound
@@ -82,22 +79,18 @@ export class AppUpdateService {
     }
   }
 
-  // A snackbar with a reload action; it stays until the user reloads, so an
-  // update is never applied in the middle of their work
+  // Stays until the user reloads, so an update is never applied in the
+  // middle of their work, and returns after any other message
   private _showAppUpdateAlert() {
-    if (this._isUpdateAlertShown) {
+    if (this._isUpdateOffered) {
       return;
     }
-    this._isUpdateAlertShown = true;
-    const snackBarRef = this._snackBar.open(
-      this._translate.instant(t("update.available")),
-      this._translate.instant(t("update.reload"))
-    );
-    snackBarRef.afterDismissed().subscribe(({ dismissedByAction }) => {
-      this._isUpdateAlertShown = false;
-      if (!dismissedByAction) return;
-      this._swUpdate.activateUpdate().then(() => this.reloadPage());
-    });
+    this._isUpdateOffered = true;
+    this._notifications
+      .persistent("update.available", "update.reload")
+      .subscribe(() =>
+        this._swUpdate.activateUpdate().then(() => this.reloadPage())
+      );
   }
 
   // Separate so tests can stub it: jsdom can't reload or spy on location

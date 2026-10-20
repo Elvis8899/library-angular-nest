@@ -1,7 +1,7 @@
 import { ApplicationRef } from "@angular/core";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { SwUpdate, VersionEvent } from "@angular/service-worker";
 import { Logger } from "@app/services/logger.service";
+import { NotificationService } from "@app/services/notification.service";
 import { AppUpdateService } from "@app/services/update.service";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
@@ -34,13 +34,13 @@ describe("Update Service", () => {
   let spectator: SpectatorService<AppUpdateService>;
   let swSpy: SpyObject<SwUpdate>;
   let versionUpdates: Subject<VersionEvent>;
-  let snackBarDismissed: Subject<{ dismissedByAction: boolean }>;
+  let reloadPicked: Subject<void>;
 
   const createService = createServiceFactory({
     service: AppUpdateService,
     imports: [TranslateModule.forRoot()],
     providers: [{ provide: SwUpdate, useFactory: () => swSpy }],
-    mocks: [MatSnackBar],
+    mocks: [NotificationService],
   });
 
   const setup = (isEnabled = true) => {
@@ -50,12 +50,10 @@ describe("Update Service", () => {
     swSpy.activateUpdate.mockResolvedValue(true);
     spectator = createService();
 
-    snackBarDismissed = new Subject();
-    const snackBar = spectator.inject(MatSnackBar);
-    snackBar.open.mockReturnValue({
-      afterDismissed: () => snackBarDismissed,
-    } as unknown as ReturnType<MatSnackBar["open"]>);
-    return snackBar;
+    reloadPicked = new Subject();
+    const notifications = spectator.inject(NotificationService);
+    notifications.persistent.mockReturnValue(reloadPicked);
+    return notifications;
   };
 
   describe("Checking for updates", () => {
@@ -90,50 +88,39 @@ describe("Update Service", () => {
 
   describe("Version events", () => {
     it("Should not show the update alert while a new version is downloading", () => {
-      const snackBar = setup();
+      const notifications = setup();
 
       versionUpdates.next(versionDetected);
 
-      expect(snackBar.open).not.toHaveBeenCalled();
+      expect(notifications.persistent).not.toHaveBeenCalled();
     });
 
     it("Should not show the update alert when the installation failed", () => {
-      const snackBar = setup();
+      const notifications = setup();
 
       versionUpdates.next(installationFailed);
 
-      expect(snackBar.open).not.toHaveBeenCalled();
+      expect(notifications.persistent).not.toHaveBeenCalled();
     });
 
     it("Should show the update alert when a new version is ready", () => {
-      const snackBar = setup();
+      const notifications = setup();
 
       versionUpdates.next(versionReady);
 
-      // The keys: no translations are loaded here
-      expect(snackBar.open).toHaveBeenCalledExactlyOnceWith(
+      expect(notifications.persistent).toHaveBeenCalledExactlyOnceWith(
         "update.available",
         "update.reload"
       );
     });
 
-    it("Should show the update alert only once while it is open", () => {
-      const snackBar = setup();
+    it("Should offer the update only once", () => {
+      const notifications = setup();
 
       versionUpdates.next(versionReady);
       versionUpdates.next(versionReady);
 
-      expect(snackBar.open).toHaveBeenCalledOnce();
-    });
-
-    it("Should show the update alert again after it was closed", () => {
-      const snackBar = setup();
-
-      versionUpdates.next(versionReady);
-      snackBarDismissed.next({ dismissedByAction: false });
-      versionUpdates.next(versionReady);
-
-      expect(snackBar.open).toHaveBeenCalledTimes(2);
+      expect(notifications.persistent).toHaveBeenCalledOnce();
     });
   });
 
@@ -145,25 +132,10 @@ describe("Update Service", () => {
         .mockImplementation(() => undefined);
       versionUpdates.next(versionReady);
 
-      snackBarDismissed.next({ dismissedByAction: true });
+      reloadPicked.next();
       await vi.waitFor(() => expect(reloadSpy).toHaveBeenCalledOnce());
 
       expect(swSpy.activateUpdate).toHaveBeenCalledOnce();
-    });
-
-    it("Should not update when the alert goes away without the action", async () => {
-      setup();
-      const reloadSpy = vi
-        .spyOn(spectator.service, "reloadPage")
-        .mockImplementation(() => undefined);
-      versionUpdates.next(versionReady);
-
-      // Dismissed some other way than its action
-      snackBarDismissed.next({ dismissedByAction: false });
-      await Promise.resolve();
-
-      expect(swSpy.activateUpdate).not.toHaveBeenCalled();
-      expect(reloadSpy).not.toHaveBeenCalled();
     });
   });
 });

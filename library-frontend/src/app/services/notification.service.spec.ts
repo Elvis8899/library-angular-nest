@@ -1,5 +1,5 @@
 import { ApplicationRef } from "@angular/core";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { MatSnackBar, MatSnackBarDismiss } from "@angular/material/snack-bar";
 import { NotificationService } from "@app/services/notification.service";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
@@ -7,7 +7,7 @@ import {
   createServiceFactory,
   SpectatorService,
 } from "@openng/spectator/vitest";
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, Subject } from "rxjs";
 
 describe("NotificationService", () => {
   let spectator: SpectatorService<NotificationService>;
@@ -72,5 +72,167 @@ describe("NotificationService", () => {
     (snackBar()?.querySelector("button") as HTMLButtonElement).click();
     // Assert
     expect(await dismissed).toEqual({ dismissedByAction: true });
+  });
+
+  it("Should bring a persistent message back after an error is closed", async () => {
+    // Arrange
+    spectator.service.persistent("update.available", "update.reload");
+    spectator.service.errorMessage("Erro");
+    expect(snackBar()?.textContent).toContain("Erro");
+    // Act
+    (snackBar()?.querySelector("button") as HTMLButtonElement).click();
+    // Assert
+    await vi.waitFor(() =>
+      expect(snackBar()?.textContent).toContain(
+        "Uma nova versão está disponível."
+      )
+    );
+  });
+});
+
+// A snackbar that behaves like Material's for this: opening one dismisses the
+// one showing (here at once; Material after its exit animation)
+class FakeSnackBarRef {
+  private readonly _dismissed = new Subject<MatSnackBarDismiss>();
+  private readonly _action = new Subject<void>();
+
+  constructor(
+    readonly message: string,
+    readonly action?: string
+  ) {}
+
+  afterDismissed() {
+    return this._dismissed.asObservable();
+  }
+
+  onAction() {
+    return this._action.asObservable();
+  }
+
+  dismiss(dismissedByAction = false) {
+    this._dismissed.next({ dismissedByAction });
+    this._dismissed.complete();
+  }
+
+  pickAction() {
+    this._action.next();
+    this._action.complete();
+    this.dismiss(true);
+  }
+}
+
+class FakeSnackBar {
+  readonly opened: FakeSnackBarRef[] = [];
+  current: FakeSnackBarRef | null = null;
+
+  open(message: string, action?: string) {
+    const previous = this.current;
+    const ref = new FakeSnackBarRef(message, action);
+    this.current = ref;
+    this.opened.push(ref);
+    previous?.dismiss();
+    return ref;
+  }
+
+  // Closes the one showing, like its duration running out
+  closeCurrent() {
+    const ref = this.current;
+    this.current = null;
+    ref?.dismiss();
+  }
+}
+
+describe("NotificationService persistent messages", () => {
+  let spectator: SpectatorService<NotificationService>;
+  let snackBar: FakeSnackBar;
+  const createService = createServiceFactory({
+    service: NotificationService,
+    imports: [TranslateModule.forRoot()],
+    providers: [{ provide: MatSnackBar, useFactory: () => snackBar }],
+  });
+
+  beforeEach(() => {
+    snackBar = new FakeSnackBar();
+    spectator = createService();
+  });
+
+  // Without translations, messages are their keys
+  const showing = () => snackBar.current?.message;
+
+  it("Should show at once, and emit when its action is picked", () => {
+    // Arrange
+    const picked = vi.fn();
+    // Act
+    spectator.service
+      .persistent("update.available", "update.reload")
+      .subscribe(picked);
+    // Assert
+    expect(showing()).toBe("update.available");
+    expect(snackBar.current?.action).toBe("update.reload");
+    // Act
+    snackBar.current?.pickAction();
+    snackBar.current = null;
+    // Assert
+    expect(picked).toHaveBeenCalledTimes(1);
+    expect(snackBar.opened).toHaveLength(1);
+  });
+
+  it("Should return after another message closes", () => {
+    // Arrange
+    spectator.service.persistent("update.available", "update.reload");
+    // Act
+    spectator.service.errorMessage("Erro");
+    // Assert
+    expect(showing()).toBe("Erro");
+    // Act
+    snackBar.closeCurrent();
+    // Assert
+    expect(showing()).toBe("update.available");
+  });
+
+  it("Should return only after the last of several messages", () => {
+    // Arrange
+    spectator.service.persistent("update.available", "update.reload");
+    // Act
+    spectator.service.success("books.created");
+    spectator.service.errorMessage("Erro");
+    // Assert
+    expect(showing()).toBe("Erro");
+    // Act
+    snackBar.closeCurrent();
+    // Assert
+    expect(showing()).toBe("update.available");
+    expect(snackBar.opened.map((ref) => ref.message)).toEqual([
+      "update.available",
+      "books.created",
+      "Erro",
+      "update.available",
+    ]);
+  });
+
+  it("Should wait for a message already showing", () => {
+    // Arrange
+    spectator.service.errorMessage("Erro");
+    // Act
+    spectator.service.persistent("update.available", "update.reload");
+    // Assert
+    expect(showing()).toBe("Erro");
+    // Act
+    snackBar.closeCurrent();
+    // Assert
+    expect(showing()).toBe("update.available");
+  });
+
+  it("Should not return once its action was picked", () => {
+    // Arrange
+    spectator.service.persistent("update.available", "update.reload");
+    snackBar.current?.pickAction();
+    snackBar.current = null;
+    // Act
+    spectator.service.success("books.created");
+    snackBar.closeCurrent();
+    // Assert
+    expect(showing()).toBeUndefined();
+    expect(snackBar.opened).toHaveLength(2);
   });
 });
