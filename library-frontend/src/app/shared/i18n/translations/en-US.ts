@@ -1,7 +1,7 @@
 import { AllTranslations } from "@app/shared/i18n/translations/allTranslations";
 
 export const enUS: AllTranslations = {
-  APP_NAME: "Angular v18 Boiler Plate",
+  APP_NAME: "Library",
   LANGUAGE: "English",
   "Hello World": "Hello World",
   Home: "Home",
@@ -27,6 +27,14 @@ export const enUS: AllTranslations = {
   "No results": "No results",
   Cancel: "Cancel",
   Confirm: "Confirm",
+  Email: "Email",
+  "Sign in with your email and password":
+    "Sign in with your email and password",
+  "Email is required": "Email is required",
+  "Enter a valid email": "Enter a valid email",
+  "Password is required": "Password is required",
+  "Show password": "Show password",
+  "Hide password": "Hide password",
   "Book created successfully": "Book created successfully",
   "Book returned successfully": "Book returned successfully",
   "Book rented successfully": "Book rented successfully",

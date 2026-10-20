@@ -20,7 +20,8 @@ The screens barely use Angular Material, which is already installed and themed w
   - [x] `customizedTable`: an empty state ("Nenhum resultado"), a progress bar instead of the spinner that pushes the table down, row hover, and a sticky header.
   - [x] A confirmation dialog based on `TypedDialog` for destructive actions (removing a book copy, returning a book).
     - Done 2026-10-20: `ConfirmDialog.confirm(data)` emits true only on confirm. Wired into the book and rental lists in their own items below.
-- [ ] **Login**: a `mat-card` with `mat-form-field`s, `mat-error` messages, a password visibility toggle, and a spinner on the button while logging in. Use the app name or logo above the card.
+- [x] **Login**: a `mat-card` with `mat-form-field`s, `mat-error` messages, a password visibility toggle, and a spinner on the button while logging in. Use the app name or logo above the card.
+  - Done 2026-10-20, plus the theme toggle next to the language selector (now a shared `app-theme-toggle`). The password no longer needs 4 characters: the API only requires one. Inside a `mat-form-field`, use one `mat-error` and pick its message inside it, since an `@if` chain isn't projected into the error slot.
 - [ ] **Book list**
   - [ ] Actions become icon buttons with tooltips (rent, add copy, remove copy). Remove the permanently disabled "deletar" button, or implement deleting.
   - [ ] Availability shown as a chip (green when copies are available, grey when none are), and the cover as a fixed-size rounded thumbnail with a placeholder when the image fails to load.

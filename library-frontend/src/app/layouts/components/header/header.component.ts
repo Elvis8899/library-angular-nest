@@ -1,11 +1,8 @@
-import { Component, inject } from "@angular/core";
-import { MatIconButton } from "@angular/material/button";
-import { MatIcon } from "@angular/material/icon";
-import { MatTooltip } from "@angular/material/tooltip";
-import { ThemeService } from "@app/services/theme.service";
+import { Component } from "@angular/core";
+import { ThemeToggleComponent } from "@app/shared/components/themeToggle/themeToggle.component";
 import { LanguageSelectorComponent } from "@app/shared/i18n/languageSelector/languageSelector.component";
 import { UntilDestroy } from "@ngneat/until-destroy";
-import { TranslateDirective, TranslatePipe } from "@ngx-translate/core";
+import { TranslateDirective } from "@ngx-translate/core";
 
 @UntilDestroy()
 @Component({
@@ -14,13 +11,8 @@ import { TranslateDirective, TranslatePipe } from "@ngx-translate/core";
   styleUrls: ["./header.component.scss"],
   imports: [
     TranslateDirective,
-    TranslatePipe,
     LanguageSelectorComponent,
-    MatIconButton,
-    MatIcon,
-    MatTooltip,
+    ThemeToggleComponent,
   ],
 })
-export class HeaderComponent {
-  readonly theme = inject(ThemeService);
-}
+export class HeaderComponent {}

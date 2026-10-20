@@ -1,14 +1,20 @@
-import { Component, inject } from "@angular/core";
-
+import { Component, inject, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
+import { MatButton, MatIconButton } from "@angular/material/button";
+import { MatCardModule } from "@angular/material/card";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatIcon } from "@angular/material/icon";
+import { MatInput } from "@angular/material/input";
+import { MatProgressSpinner } from "@angular/material/progress-spinner";
 import { ActivatedRoute, Router } from "@angular/router";
 import { defaultRolePage } from "@app/models/credentials.entity";
 import { AuthenticationService } from "@app/services/authentication.service";
+import { ThemeToggleComponent } from "@app/shared/components/themeToggle/themeToggle.component";
 import { LanguageSelectorComponent } from "@app/shared/i18n/languageSelector/languageSelector.component";
-import { environment } from "@env/environment";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
-import { TranslateDirective, TranslatePipe } from "@ngx-translate/core";
+import { TranslatePipe } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
+import { finalize } from "rxjs";
 
 @UntilDestroy()
 @Component({
@@ -16,42 +22,55 @@ import { HotToastService } from "@ngxpert/hot-toast";
   templateUrl: "./login.component.html",
   styleUrls: ["./login.component.scss"],
   imports: [
-    TranslateDirective,
     ReactiveFormsModule,
+    MatButton,
+    MatIconButton,
+    MatCardModule,
+    MatFormFieldModule,
+    MatIcon,
+    MatInput,
+    MatProgressSpinner,
     LanguageSelectorComponent,
+    ThemeToggleComponent,
     TranslatePipe,
   ],
 })
 export class LoginComponent {
-  version: string | null = environment.version;
-
   private readonly _router = inject(Router);
   private readonly _route = inject(ActivatedRoute);
   private readonly _fb = inject(FormBuilder);
   private readonly _authService = inject(AuthenticationService);
-
-  loginForm = this._fb.group({
-    email: [
-      "",
-      [Validators.email, Validators.required, Validators.minLength(4)],
-    ],
-    password: ["", [Validators.required, Validators.minLength(4)]],
-  });
-
   private readonly _toast = inject(HotToastService);
 
+  // The API only requires a password, so no length rule here
+  loginForm = this._fb.nonNullable.group({
+    email: ["", [Validators.required, Validators.email]],
+    password: ["", Validators.required],
+  });
+
+  readonly loading = signal(false);
+  readonly passwordVisible = signal(false);
+
+  togglePasswordVisibility() {
+    this.passwordVisible.update((visible) => !visible);
+  }
+
   login() {
-    // Here You can call the login method from the AuthenticationService directly and pass the required parameters.
-    // setting credentials and other logic will be handled in the AuthenticationService.
+    if (this.loginForm.invalid) {
+      // Shows the fields' errors
+      this.loginForm.markAllAsTouched();
+      return;
+    }
+    if (this.loading()) return;
+    this.loading.set(true);
     this._authService
-      .login({
-        email: this.loginForm.value.email as string,
-        password: this.loginForm.value.password as string,
-      })
-      .pipe(untilDestroyed(this))
+      .login(this.loginForm.getRawValue())
+      .pipe(
+        finalize(() => this.loading.set(false)),
+        untilDestroyed(this)
+      )
       .subscribe({
         next: (credentials) => {
-          // Navigate to the home page or any other page after successful login.
           const route = defaultRolePage(credentials.user?.role);
           this._router.navigate(
             [this._route.snapshot.queryParams["redirect"] || route],

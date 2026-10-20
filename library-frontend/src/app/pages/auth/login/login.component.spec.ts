@@ -2,7 +2,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
-import { RouterModule } from "@angular/router";
+import { Router, RouterModule } from "@angular/router";
 import { Credentials, ROLE } from "@app/models/credentials.entity";
 import { LoginComponent } from "@app/pages/auth/login/login.component";
 import { AuthenticationService } from "@app/services/authentication.service";
@@ -15,11 +15,13 @@ import {
 } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
-import { of, throwError } from "rxjs";
+import { of, Subject, throwError } from "rxjs";
 
 Logger.level = 0;
 
-describe("LanguageSelectorComponent", () => {
+// The language selector loads the default language, pt-BR, unless another
+// spec left a language in localStorage (cleared before each test)
+describe("LoginComponent", () => {
   let spectator: Spectator<LoginComponent>;
   let httpMock: HttpTestingController;
   const credential: Credentials = {
@@ -53,6 +55,7 @@ describe("LanguageSelectorComponent", () => {
   });
 
   beforeEach(() => {
+    localStorage.removeItem("language");
     spectator = createComponent();
     httpMock = spectator.inject(HttpTestingController);
     authenticationServiceMock.login.mockClear();
@@ -64,46 +67,119 @@ describe("LanguageSelectorComponent", () => {
   afterEach(() => {
     httpMock.verify();
   });
-  it("should have Login subtitle", () => {
+  function fillIn(email: string, password: string) {
+    spectator.typeInElement(email, inputs.email);
+    spectator.typeInElement(password, inputs.password);
+  }
+
+  it("Should have a title", () => {
     // Assert
-    expect(spectator.query("h2")).toContainText("Login");
+    expect(spectator.query("h1")).toHaveText("Login");
   });
 
-  it("If user inputs correct credentials, should login", () => {
-    spectator.typeInElement("admin@admin.com", inputs.email);
-    spectator.typeInElement("password", inputs.password);
-    spectator.detectChanges();
-    expect(spectator.query("button")).not.toBeDisabled();
-    spectator.click("button");
-    expect(authenticationServiceMock.login).toHaveBeenCalledTimes(1);
+  it("If user inputs correct credentials, should login and open the role's page", () => {
+    // Arrange
+    const router = spectator.inject(Router);
+    const navigateSpy = vi.spyOn(router, "navigate");
+    fillIn("admin@admin.com", "p");
+    // Act
+    spectator.click("button[name='login']");
+    // Assert
+    expect(authenticationServiceMock.login).toHaveBeenCalledExactlyOnceWith({
+      email: "admin@admin.com",
+      password: "p",
+    });
+    expect(navigateSpy).toHaveBeenCalledWith(["/users/list"], {
+      replaceUrl: true,
+    });
+    expect(spectator.component.loading()).toBe(false);
   });
 
   it("If user inputs incorrect credentials, should give message", () => {
-    spectator.typeInElement("admin@admin.com", inputs.email);
-    spectator.typeInElement("password", inputs.password);
+    // Arrange
+    fillIn("admin@admin.com", "password");
     const toastService = spectator.inject(HotToastService);
     authenticationServiceMock.login.mockReturnValueOnce(
       throwError(() => new Error("message"))
     );
-
-    spectator.detectChanges();
-    expect(spectator.query("button")).not.toBeDisabled();
-    spectator.click("button");
+    // Act
+    spectator.click("button[name='login']");
+    // Assert
     expect(authenticationServiceMock.login).toHaveBeenCalledTimes(1);
-    expect(toastService.error).toBeCalledTimes(1);
+    expect(toastService.error).toHaveBeenCalledExactlyOnceWith("message");
+    expect(spectator.component.loading()).toBe(false);
   });
 
-  it("Should show error messages if inputs are invalid", () => {
-    spectator.typeInElement("not an email", inputs.email);
-    spectator.typeInElement("p", inputs.password);
-
-    inputs.email.focus();
-    spectator.detectChanges();
-
-    expect(spectator.query("button")).toBeDisabled();
-    expect(spectator.query(".input-field")).toHaveText("Email is required");
-    expect(spectator.queryLast(".input-field")).toHaveText(
-      "Password is required"
+  it("Should show the API's message when there is one", () => {
+    // Arrange
+    fillIn("admin@admin.com", "password");
+    const toastService = spectator.inject(HotToastService);
+    authenticationServiceMock.login.mockReturnValueOnce(
+      throwError(() => ({ error: { message: "Credenciais inválidas" } }))
     );
+    // Act
+    spectator.click("button[name='login']");
+    // Assert
+    expect(toastService.error).toHaveBeenCalledWith("Credenciais inválidas");
+  });
+
+  it("Should show the errors and not login when submitted empty", () => {
+    // Act
+    spectator.click("button[name='login']");
+    // Assert
+    expect(authenticationServiceMock.login).not.toHaveBeenCalled();
+    const errors = spectator.queryAll("mat-error");
+    expect(errors[0]).toHaveText("Informe o email");
+    expect(errors[1]).toHaveText("Informe a senha");
+  });
+
+  it("Should ask for a valid email", () => {
+    // Arrange
+    fillIn("not an email", "password");
+    // Act
+    spectator.click("button[name='login']");
+    // Assert
+    expect(authenticationServiceMock.login).not.toHaveBeenCalled();
+    expect(spectator.query("mat-error")).toHaveText("Informe um email válido");
+  });
+
+  it("Should show and hide the password", () => {
+    // Assert
+    expect(inputs.password).toHaveAttribute("type", "password");
+    // Act
+    spectator.click("button[name='togglePassword']");
+    // Assert
+    expect(inputs.password).toHaveAttribute("type", "text");
+    expect(spectator.query("button[name='togglePassword']")).toHaveAttribute(
+      "aria-label",
+      "Esconder senha"
+    );
+    // Act
+    spectator.click("button[name='togglePassword']");
+    // Assert
+    expect(inputs.password).toHaveAttribute("type", "password");
+  });
+
+  it("Should show a spinner and ignore new submits while logging in", () => {
+    // Arrange
+    const response = new Subject<Credentials>();
+    authenticationServiceMock.login.mockReturnValueOnce(response);
+    fillIn("admin@admin.com", "password");
+    // Act
+    spectator.click("button[name='login']");
+    // Assert
+    expect(spectator.query("button[name='login']")).toBeDisabled();
+    expect(spectator.query("mat-progress-spinner")).toBeTruthy();
+    // Act: Enter in a field submits the form even with the button disabled
+    spectator.component.login();
+    // Assert
+    expect(authenticationServiceMock.login).toHaveBeenCalledTimes(1);
+    // Act
+    response.next(credential);
+    response.complete();
+    spectator.detectChanges();
+    // Assert
+    expect(spectator.query("button[name='login']")).not.toBeDisabled();
+    expect(spectator.query("mat-progress-spinner")).toBeNull();
   });
 });

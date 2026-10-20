@@ -3,24 +3,25 @@
  * All global classes and theme styles for html elements and classes should be defined here.
  */
 
-// Plain inputs, until the forms move to mat-form-field
-label {
+// Plain inputs, until the forms move to mat-form-field. :where() keeps
+// these rules at zero specificity, so Material's own field styles win.
+:where(label) {
   display: block;
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-label-large);
 }
 
-input[type="text"],
-input[type="email"],
-input[type="tel"],
-input[type="number"],
-input[type="password"],
-input[type="date"],
-input[type="search"],
-input[type="file"],
-input[type="url"],
-input[type="time"],
-textarea {
+:where(input[type="text"]),
+:where(input[type="email"]),
+:where(input[type="tel"]),
+:where(input[type="number"]),
+:where(input[type="password"]),
+:where(input[type="date"]),
+:where(input[type="search"]),
+:where(input[type="file"]),
+:where(input[type="url"]),
+:where(input[type="time"]),
+:where(textarea) {
   width: 100%;
   padding: var(--space-2) var(--space-3);
   color: var(--mat-sys-on-surface);
@@ -31,17 +32,17 @@ textarea {
   border-radius: var(--mat-sys-corner-small);
 }
 
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="tel"]:focus,
-input[type="number"]:focus,
-input[type="password"]:focus,
-input[type="date"]:focus,
-input[type="search"]:focus,
-input[type="file"]:focus,
-input[type="url"]:focus,
-input[type="time"]:focus,
-textarea:focus {
+:where(input[type="text"]):focus,
+:where(input[type="email"]):focus,
+:where(input[type="tel"]):focus,
+:where(input[type="number"]):focus,
+:where(input[type="password"]):focus,
+:where(input[type="date"]):focus,
+:where(input[type="search"]):focus,
+:where(input[type="file"]):focus,
+:where(input[type="url"]):focus,
+:where(input[type="time"]):focus,
+:where(textarea):focus {
   border-color: var(--mat-sys-primary);
   outline: none;
 }
@@ -52,11 +53,11 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-input[type="number"] {
+:where(input[type="number"]) {
   appearance: textfield;
 }
 
-textarea {
+:where(textarea) {
   overflow: hidden scroll;
   max-height: 200px;
 }
