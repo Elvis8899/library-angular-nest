@@ -38,8 +38,7 @@ export const permissionGuard: CanActivateFn & CanActivateChildFn = (
 
   // Check permissions
   const requiredPermissions = route.data?.["permissions"] as
-    | PERMISSIONS[]
-    | undefined;
+    PERMISSIONS[] | undefined;
   if (!credentialsService.hasPermission(requiredPermissions)) {
     return handleUnauthorized(router);
   }

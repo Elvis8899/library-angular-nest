@@ -39,9 +39,7 @@ export class FakeBookInfoRepository
     const order = Ord.fromCompare<BookInfo>(
       (a, b) =>
         (direction * byField(a, b) || compareBy((book) => book.id)(a, b)) as
-          | -1
-          | 0
-          | 1,
+          -1 | 0 | 1,
     );
     return this.pageOf(
       (book) =>

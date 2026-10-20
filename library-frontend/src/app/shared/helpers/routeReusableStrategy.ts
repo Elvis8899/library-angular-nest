@@ -38,7 +38,7 @@ export class RouteReusableStrategy extends RouteReuseStrategy {
       future.routeConfig === curr.routeConfig ||
       Boolean(
         future.routeConfig?.component &&
-          future.routeConfig?.component === curr.routeConfig?.component
+        future.routeConfig?.component === curr.routeConfig?.component
       )
     );
   }

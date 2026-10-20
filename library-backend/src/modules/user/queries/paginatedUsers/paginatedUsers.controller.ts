@@ -37,10 +37,9 @@ export class PaginatedUserController {
     @Query() queryParams: PaginatedQueryRequestDto,
   ): Promise<PaginatedUserResponseDto> {
     return this.queryBus
-      .execute<
-        PaginatedUsersQuery,
-        Paginated<User>
-      >(new PaginatedUsersQuery(queryParams))
+      .execute<PaginatedUsersQuery, Paginated<User>>(
+        new PaginatedUsersQuery(queryParams),
+      )
       .then(
         (result) =>
           new PaginatedUserResponseDto({

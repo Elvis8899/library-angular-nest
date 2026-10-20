@@ -11,10 +11,7 @@ import { AppController } from "@src/app.controller";
 import { UserModule } from "@user/user.module";
 
 type NestModuleImport =
-  | Type
-  | DynamicModule
-  | Promise<DynamicModule>
-  | ForwardReference;
+  Type | DynamicModule | Promise<DynamicModule> | ForwardReference;
 // SubModule used by the server
 const appModules: NestModuleImport[] = [
   CqrsModule,

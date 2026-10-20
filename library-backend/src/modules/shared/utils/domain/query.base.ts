@@ -36,9 +36,11 @@ export const PageRequestSchema = z
     page: pageNumber(0),
     limit: pageNumber(DEFAULT_PAGE_SIZE),
   })
-  .transform(
-    ({ page, limit }): PageWindow => ({ page, limit, offset: page * limit }),
-  );
+  .transform(({ page, limit }): PageWindow => ({
+    page,
+    limit,
+    offset: page * limit,
+  }));
 
 /** Schema for a page of results whose rows match `row`. */
 export const paginatedSchema = <Row extends z.ZodType>(row: Row) =>

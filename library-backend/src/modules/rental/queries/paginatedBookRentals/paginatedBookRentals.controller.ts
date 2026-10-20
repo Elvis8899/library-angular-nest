@@ -49,10 +49,9 @@ export class PaginatedBookRentalsController {
     const userId = user.role === UserRoleEnum.Admin ? undefined : user.sub;
     const status = RentalStatusEnum.Rented;
     return this.queryBus
-      .execute<
-        PaginatedBookRentalsQuery,
-        Paginated<BookRentalDetails>
-      >(new PaginatedBookRentalsQuery(queryParams, status, userId))
+      .execute<PaginatedBookRentalsQuery, Paginated<BookRentalDetails>>(
+        new PaginatedBookRentalsQuery(queryParams, status, userId),
+      )
       .then((result) => new PaginatedBookRentalResponseDto(result));
   }
 }
