@@ -11,6 +11,7 @@ import {
   provideAppInitializer,
   provideZonelessChangeDetection,
 } from "@angular/core";
+import { MatPaginatorIntl } from "@angular/material/paginator";
 import {
   PreloadAllModules,
   provideRouter,
@@ -27,6 +28,7 @@ import { ThemeService } from "@app/services/theme.service";
 import { AppUpdateService } from "@app/services/update.service";
 import { RouteReusableStrategy } from "@app/shared/helpers/routeReusableStrategy";
 import { I18nService } from "@app/shared/i18n/i18n.service";
+import { TranslatedPaginatorIntl } from "@app/shared/i18n/translatedPaginatorIntl.service";
 import { authHttpInterceptor } from "@app/shared/interceptors/authHttp.interceptor";
 import { errorHandlerInterceptor } from "@app/shared/interceptors/errorHandler.interceptor";
 import { environment } from "@env/environment";
@@ -83,6 +85,8 @@ export const appConfig: ApplicationConfig = {
       withXhr(),
       withInterceptors([authHttpInterceptor, errorHandlerInterceptor])
     ),
+    // The paginators' labels in the selected language
+    { provide: MatPaginatorIntl, useClass: TranslatedPaginatorIntl },
     {
       provide: RouteReuseStrategy,
       useClass: RouteReusableStrategy,

@@ -1,5 +1,13 @@
 <nav>
-  <p class="title" translate>Angular Boiler Plate V18</p>
+  <div class="user">
+    <span aria-hidden="true" class="avatar">{{ initials() }}</span>
+    <span class="user-text">
+      <span class="user-name">{{ userName() }}</span>
+      <span class="user-role">{{
+        (isAdmin() ? "Admin" : "Client") | translate
+      }}</span>
+    </span>
+  </div>
   <div class="actions">
     <app-theme-toggle />
     <app-language-selector />
