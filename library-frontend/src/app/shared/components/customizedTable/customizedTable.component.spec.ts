@@ -113,7 +113,7 @@ describe("CustomizedTableComponent", () => {
     spectator.component.data().data$.next([]);
     spectator.detectChanges();
     // Assert
-    expect(spectator.query(".no-data")).toHaveText("No results");
+    expect(spectator.query(".no-data")).toHaveText("common.noResults");
     // Not while loading, when the rows may still come
     spectator.component.data()["loading"].next(true);
     spectator.detectChanges();

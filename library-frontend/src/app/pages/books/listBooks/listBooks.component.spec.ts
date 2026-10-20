@@ -149,7 +149,7 @@ describe("ListBooksComponent", () => {
 
   it("Should have a title and a row per book", () => {
     // Assert
-    expect(spectator.query("h1")).toContainText("Books List");
+    expect(spectator.query("h1")).toContainText("books.list.title");
     expect(rows()).toHaveLength(2);
   });
 
@@ -165,7 +165,7 @@ describe("ListBooksComponent", () => {
     // Assert
     expect(
       spectator.queryAll("th").map((th) => th.textContent?.trim())
-    ).toEqual(["Book", "Actions"]);
+    ).toEqual(["common.book", "common.actions"]);
     expect(rows()[0].querySelector(".secondary")).toHaveText("R$100.00");
     expect(rows()[0].querySelector(".book-text .chip")).toHaveClass(
       "chip-success"
@@ -175,7 +175,9 @@ describe("ListBooksComponent", () => {
   it("Should show the availability", () => {
     // Assert
     expect(rows()[0].querySelector(".chip")).toHaveClass("chip-success");
-    expect(rows()[1].querySelector(".chip")).toHaveText("All rented");
+    expect(rows()[1].querySelector(".chip")).toHaveText(
+      "books.availability.allRented"
+    );
   });
 
   it("Should show a book without copies", () => {
@@ -183,7 +185,9 @@ describe("ListBooksComponent", () => {
     spectator.component.data.data$.next([{ ...books[0], bookItems: [] }]);
     spectator.detectChanges();
     // Assert
-    expect(rows()[0].querySelector(".chip")).toHaveText("No copies");
+    expect(rows()[0].querySelector(".chip")).toHaveText(
+      "books.availability.none"
+    );
   });
 
   it("Should show the cover, or the placeholder without one", () => {

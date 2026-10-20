@@ -9,23 +9,23 @@
       <span class="brand-icon">
         <mat-icon>local_library</mat-icon>
       </span>
-      <span class="brand-name">{{ "APP_NAME" | translate }}</span>
+      <span class="brand-name">{{ "app.name" | translate }}</span>
     </div>
 
     <mat-card appearance="outlined" class="login-card">
       <mat-card-header>
         <mat-card-title>
-          <h1 class="title">{{ "Login" | translate }}</h1>
+          <h1 class="title">{{ "auth.login.title" | translate }}</h1>
         </mat-card-title>
         <mat-card-subtitle>
-          {{ "Sign in with your email and password" | translate }}
+          {{ "auth.login.subtitle" | translate }}
         </mat-card-subtitle>
       </mat-card-header>
 
       <mat-card-content>
         <form (ngSubmit)="login()" [formGroup]="loginForm" class="fields">
           <mat-form-field appearance="outline" hideRequiredMarker>
-            <mat-label>{{ "Email" | translate }}</mat-label>
+            <mat-label>{{ "common.email" | translate }}</mat-label>
             <mat-icon matPrefix>mail</mat-icon>
             <input
               autocomplete="username"
@@ -37,15 +37,15 @@
             <!-- One mat-error: an @if chain isn't projected into its slot -->
             <mat-error>
               @if (loginForm.controls.email.hasError("required")) {
-                {{ "Email is required" | translate }}
+                {{ "validation.email.required" | translate }}
               } @else {
-                {{ "Enter a valid email" | translate }}
+                {{ "validation.email.invalid" | translate }}
               }
             </mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" hideRequiredMarker>
-            <mat-label>{{ "Password" | translate }}</mat-label>
+            <mat-label>{{ "common.password" | translate }}</mat-label>
             <mat-icon matPrefix>lock</mat-icon>
             <input
               [type]="passwordVisible() ? 'text' : 'password'"
@@ -57,8 +57,10 @@
             <button
               (click)="togglePasswordVisibility()"
               [attr.aria-label]="
-                (passwordVisible() ? 'Hide password' : 'Show password')
-                  | translate
+                (passwordVisible()
+                  ? 'auth.password.hide'
+                  : 'auth.password.show'
+                ) | translate
               "
               [attr.aria-pressed]="passwordVisible()"
               mat-icon-button
@@ -70,7 +72,9 @@
                 passwordVisible() ? "visibility_off" : "visibility"
               }}</mat-icon>
             </button>
-            <mat-error>{{ "Password is required" | translate }}</mat-error>
+            <mat-error>{{
+              "validation.password.required" | translate
+            }}</mat-error>
           </mat-form-field>
 
           <button
@@ -83,7 +87,7 @@
             @if (loading()) {
               <mat-progress-spinner diameter="20" mode="indeterminate" />
             } @else {
-              {{ "Login" | translate }}
+              {{ "auth.login.title" | translate }}
             }
           </button>
         </form>

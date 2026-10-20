@@ -1,9 +1,12 @@
 <section class="main-container">
-  <app-page-header subtitle="Books not returned yet" title="Rentals" />
+  <app-page-header
+    subtitle="rentals.list.subtitle"
+    title="rentals.list.title"
+  />
 
   <app-customized-table [columns]="columns()" [data]="data">
     <ng-container matColumnDef="book">
-      <th *matHeaderCellDef mat-header-cell>{{ "Book" | translate }}</th>
+      <th *matHeaderCellDef mat-header-cell>{{ "common.book" | translate }}</th>
       <td *matCellDef="let rental" mat-cell>
         <span class="book-name">{{ rental.bookName }}</span>
         @if (showClient) {
@@ -13,21 +16,25 @@
     </ng-container>
 
     <ng-container matColumnDef="rentedOn">
-      <th *matHeaderCellDef mat-header-cell>{{ "Rented on" | translate }}</th>
+      <th *matHeaderCellDef mat-header-cell>
+        {{ "rentals.list.rentedOn" | translate }}
+      </th>
       <td *matCellDef="let rental" mat-cell>
         {{ rental.createdAt | date: "shortDate" : undefined : locale() }}
       </td>
     </ng-container>
 
     <ng-container matColumnDef="dueDate">
-      <th *matHeaderCellDef mat-header-cell>{{ "Due on" | translate }}</th>
+      <th *matHeaderCellDef mat-header-cell>
+        {{ "rentals.list.dueOn" | translate }}
+      </th>
       <td *matCellDef="let rental" mat-cell>
         <span class="due-date">
           {{ rental.overdueDate | date: "shortDate" : undefined : locale() }}
           @if (rental.fines.overdue) {
             <span class="chip chip-error">
               <mat-icon class="chip-icon">schedule</mat-icon>
-              {{ "Overdue" | translate }}
+              {{ "rentals.list.overdue" | translate }}
             </span>
             @if (isSmallScreen()) {
               <ng-container
@@ -41,7 +48,7 @@
 
     <ng-container matColumnDef="fine">
       <th *matHeaderCellDef class="numeric" mat-header-cell>
-        {{ "Fine" | translate }}
+        {{ "rentals.fine.title" | translate }}
       </th>
       <td *matCellDef="let rental" class="numeric" mat-cell>
         <ng-container
@@ -52,14 +59,14 @@
 
     <ng-container matColumnDef="actions">
       <th *matHeaderCellDef mat-header-cell>
-        <span class="visually-hidden">{{ "Actions" | translate }}</span>
+        <span class="visually-hidden">{{ "common.actions" | translate }}</span>
       </th>
       <td *matCellDef="let rental" mat-cell>
         <div class="table-actions">
           <button
             (click)="returnBook(rental)"
-            [attr.aria-label]="'Return book' | translate"
-            [matTooltip]="'Return book' | translate"
+            [attr.aria-label]="'rentals.return.title' | translate"
+            [matTooltip]="'rentals.return.title' | translate"
             mat-icon-button
             name="returnBook"
           >
@@ -74,7 +81,9 @@
 <ng-template #fine let-rental>
   @if (rental.fines.overdue) {
     <span
-      [matTooltip]="fineDetailsKey | translate: fineDetailsParams(rental)"
+      [matTooltip]="
+        'rentals.fine.details' | translate: fineDetailsParams(rental)
+      "
       class="fine"
       tabindex="0"
     >

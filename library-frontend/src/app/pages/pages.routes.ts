@@ -6,6 +6,7 @@ import {
   authenticationGuard,
 } from "@app/shared/guard/authentication.guard";
 import { permissionGuard } from "@app/shared/guard/permission.guard";
+import { t } from "@app/shared/i18n/translations/translationKey";
 
 export const routes: Routes = [
   { path: "", redirectTo: "/login", pathMatch: "full" },
@@ -13,13 +14,13 @@ export const routes: Routes = [
     path: "login",
     canActivate: [alreadyLoggedCheckGuard],
     component: LoginComponent,
-    data: { title: "Login" },
+    data: { title: t("auth.login.title") },
   },
   {
     path: "logout",
     loadComponent: () =>
       import("./auth/logout/logout.component").then((m) => m.LogoutComponent),
-    data: { title: "Logout" },
+    data: { title: t("nav.logout") },
   },
 
   {

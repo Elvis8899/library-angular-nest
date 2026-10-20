@@ -1,14 +1,31 @@
-import { ConflictException, NotFoundException } from "@nestjs/common";
+import {
+  ConflictException,
+  HttpStatus,
+  NotFoundException,
+} from "@nestjs/common";
+import { errorBody } from "@shared/utils/domain/shared.erros";
 
 export class UserCPFAlreadyExistsException extends ConflictException {
   constructor() {
-    super("O CPF informado já está sendo utilizado por outro usuário.");
+    super(
+      errorBody(
+        HttpStatus.CONFLICT,
+        "user.cpfTaken",
+        "O CPF informado já está sendo utilizado por outro usuário.",
+      ),
+    );
   }
 }
 
 export class UserNotFoundException extends NotFoundException {
   constructor() {
-    super("Usuário não encontrado.");
+    super(
+      errorBody(
+        HttpStatus.NOT_FOUND,
+        "user.notFound",
+        "Usuário não encontrado.",
+      ),
+    );
   }
 }
 
@@ -19,7 +36,13 @@ export const userNotFoundException = () => new UserNotFoundException();
 
 export class UserEmailAlreadyExistsException extends ConflictException {
   constructor() {
-    super("O Email informado já está sendo utilizado por outro usuário.");
+    super(
+      errorBody(
+        HttpStatus.CONFLICT,
+        "user.emailTaken",
+        "O Email informado já está sendo utilizado por outro usuário.",
+      ),
+    );
   }
 }
 

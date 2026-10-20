@@ -5,6 +5,7 @@ import {
   ConfirmDialogData,
 } from "@app/shared/components/confirmDialog/confirm.dialog.component";
 import { TypedDialog } from "@app/shared/components/dialog/typedDialog";
+import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import {
   createComponentFactory,
   createServiceFactory,
@@ -35,9 +36,7 @@ describe("ConfirmDialogComponent", () => {
   function create(options: ConfirmDialogData) {
     data = options;
     spectator = createComponent();
-    spectator.inject(TranslateService).setTranslation("pt-BR", {
-      "Remove {{name}}?": "Remover {{name}}?",
-    });
+    spectator.inject(TranslateService).setTranslation("pt-BR", ptBR);
     spectator.inject(TranslateService).use("pt-BR");
     spectator.detectChanges();
   }
@@ -45,17 +44,17 @@ describe("ConfirmDialogComponent", () => {
   it("Should show the title, the message with its params and the default label", () => {
     // Act
     create({
-      title: "Remove copy",
-      message: "Remove {{name}}?",
-      messageParams: { name: "Dom Casmurro" },
+      title: "rentals.return.title",
+      message: "rentals.return.confirm",
+      messageParams: { book: "Dom Casmurro" },
     });
     // Assert
-    expect(spectator.query("h2")).toHaveText("Remove copy");
+    expect(spectator.query("h2")).toHaveText("Devolver livro");
     expect(spectator.query("mat-dialog-content")).toHaveText(
-      "Remover Dom Casmurro?"
+      "Devolver Dom Casmurro?"
     );
     expect(spectator.query("button[name='confirmDialog']")).toHaveText(
-      "Confirm"
+      "Confirmar"
     );
     expect(spectator.query("button[name='confirmDialog']")).not.toHaveClass(
       "destructive"
@@ -65,14 +64,14 @@ describe("ConfirmDialogComponent", () => {
   it("Should use the given label and the destructive style", () => {
     // Act
     create({
-      title: "Return book",
-      message: "Return?",
-      confirmLabel: "Return",
+      title: "books.copies.remove",
+      message: "books.copies.removeConfirm",
+      confirmLabel: "common.remove",
       destructive: true,
     });
     // Assert
     expect(spectator.query("button[name='confirmDialog']")).toHaveText(
-      "Return"
+      "Remover"
     );
     expect(spectator.query("button[name='confirmDialog']")).toHaveClass(
       "destructive"
@@ -81,7 +80,10 @@ describe("ConfirmDialogComponent", () => {
 
   it("Should close with true on confirm and false on cancel", () => {
     // Arrange
-    create({ title: "Title", message: "Message" });
+    create({
+      title: "rentals.return.title",
+      message: "rentals.return.confirm",
+    });
     // Act
     spectator.click("button[name='confirmDialog']");
     spectator.click("button[name='cancelDialog']");
@@ -105,7 +107,10 @@ describe("ConfirmDialog", () => {
   it("Should open the dialog with the data", () => {
     // Arrange
     afterClosed.mockReturnValue(of(true));
-    const data = { title: "Title", message: "Message" };
+    const data = {
+      title: "rentals.return.title",
+      message: "rentals.return.confirm",
+    } as const;
     // Act
     spectator.service.confirm(data).subscribe();
     // Assert
@@ -126,7 +131,10 @@ describe("ConfirmDialog", () => {
     const emitted = vi.fn();
     // Act
     spectator.service
-      .confirm({ title: "Title", message: "Message" })
+      .confirm({
+        title: "rentals.return.title",
+        message: "rentals.return.confirm",
+      } as const)
       .subscribe(emitted);
     // Assert
     expect(emitted).toHaveBeenCalledWith(expected);

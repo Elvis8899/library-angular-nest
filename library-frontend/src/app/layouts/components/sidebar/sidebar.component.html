@@ -2,7 +2,7 @@
   <button
     (click)="toggle()"
     [attr.aria-expanded]="expanded()"
-    [attr.aria-label]="'Toggle menu' | translate"
+    [attr.aria-label]="'nav.toggleMenu' | translate"
     class="toggle"
     type="button"
   >
@@ -13,7 +13,7 @@
     <span aria-hidden="true" class="brand-logo">
       <mat-icon>local_library</mat-icon>
     </span>
-    <span class="brand-name">{{ "Library" | translate }}</span>
+    <span class="brand-name">{{ "app.name" | translate }}</span>
   </a>
 
   <ul class="menu">

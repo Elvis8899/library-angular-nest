@@ -8,6 +8,7 @@ import { Router, RouterLink } from "@angular/router";
 import { BookService } from "@app/services/book.http.service";
 import { Logger } from "@app/services/logger.service";
 import { FormCardComponent } from "@app/shared/components/formCard/formCard.component";
+import { t } from "@app/shared/i18n/translations/translationKey";
 import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { finalize } from "rxjs";
@@ -80,9 +81,7 @@ export class AddBooksComponent {
       .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
         next: () => {
-          this._toast.success(
-            this._translate.instant("Book created successfully")
-          );
+          this._toast.success(this._translate.instant(t("books.created")));
           this._router.navigate(["/books/list"]);
         },
         error: (error: Error) => {

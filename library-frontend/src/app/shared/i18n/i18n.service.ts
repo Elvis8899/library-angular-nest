@@ -5,9 +5,10 @@ import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { Logger } from "@app/services/logger.service";
 import { enUS, ptBR } from "@app/shared/i18n/translations";
 import {
-  AllTranslations,
   LanguagesEnum,
-} from "@app/shared/i18n/translations/allTranslations";
+  t,
+  Translations,
+} from "@app/shared/i18n/translations/translationKey";
 import { environment } from "@env/environment";
 import { TranslateService } from "@ngx-translate/core";
 import { filter, merge } from "rxjs";
@@ -38,7 +39,7 @@ export class I18nService {
         this._document.documentElement.lang = event.lang;
       });
     // Embed languages to avoid extra HTTP requests
-    const translations: [LanguagesEnum, AllTranslations][] = [
+    const translations: [LanguagesEnum, Translations][] = [
       [LanguagesEnum.PT_BR, ptBR],
       [LanguagesEnum.EN_US, enUS],
     ];
@@ -131,7 +132,7 @@ export class I18nService {
   getNextTitle(translator: (v: string) => string = (v) => v): string {
     const titles = this.getTitle(this._router.routerState.root);
 
-    let title = translator("Home");
+    let title = translator(t("app.home"));
 
     if (titles.length) {
       const translatedTitles = titles.map(translator);

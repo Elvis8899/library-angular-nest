@@ -120,14 +120,14 @@ describe("ListRentalsComponent", () => {
     // Act
     create();
     // Assert
-    expect(spectator.query("h1")).toContainText("Rentals");
+    expect(spectator.query("h1")).toContainText("rentals.list.title");
     expect(rows()).toHaveLength(2);
     expect(headers()).toEqual([
-      "Book",
-      "Rented on",
-      "Due on",
-      "Fine",
-      "Actions",
+      "common.book",
+      "rentals.list.rentedOn",
+      "rentals.list.dueOn",
+      "rentals.fine.title",
+      "common.actions",
     ]);
     expect(rows()[0].querySelector(".client")).toHaveText("Ana Souza");
   });
@@ -147,7 +147,11 @@ describe("ListRentalsComponent", () => {
     // Act
     create();
     // Assert
-    expect(headers()).toEqual(["Book", "Due on", "Actions"]);
+    expect(headers()).toEqual([
+      "common.book",
+      "rentals.list.dueOn",
+      "common.actions",
+    ]);
     expect(rows()[0].querySelector(".due-date .fine")).toHaveText("R$16.00");
     expect(rows()[1].querySelector(".due-date .fine")).toBeNull();
   });
@@ -156,7 +160,9 @@ describe("ListRentalsComponent", () => {
     // Act
     create();
     // Assert
-    expect(rows()[0].querySelector(".chip-error")).toHaveText("Overdue");
+    expect(rows()[0].querySelector(".chip-error")).toHaveText(
+      "rentals.list.overdue"
+    );
     expect(rows()[0].querySelector(".fine")).toHaveText("R$16.00");
     expect(rows()[1].querySelector(".chip-error")).toBeNull();
     expect(rows()[1].querySelector(".no-fine")).toHaveText("—");

@@ -1,4 +1,5 @@
 import { Component, input } from "@angular/core";
+import { TranslationKey } from "@app/shared/i18n/translations/translationKey";
 import { TranslatePipe } from "@ngx-translate/core";
 
 /**
@@ -12,7 +13,6 @@ import { TranslatePipe } from "@ngx-translate/core";
   imports: [TranslatePipe],
 })
 export class PageHeaderComponent {
-  // Translation keys
-  readonly title = input.required<string>();
-  readonly subtitle = input<string>();
+  readonly title = input.required<TranslationKey>();
+  readonly subtitle = input<TranslationKey>();
 }

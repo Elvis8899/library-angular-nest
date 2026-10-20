@@ -37,7 +37,12 @@ describe("SidebarComponent", () => {
     });
 
     it("Should list every page, with logout last", () => {
-      expect(labels()).toEqual(["Users", "Books", "Rentals", "Logout"]);
+      expect(labels()).toEqual([
+        "nav.users",
+        "nav.books",
+        "nav.rentals",
+        "nav.logout",
+      ]);
     });
 
     it("Should link each item to its page", () => {
@@ -57,7 +62,7 @@ describe("SidebarComponent", () => {
     });
 
     it("Should hide the admin pages", () => {
-      expect(labels()).toEqual(["Books", "Rentals", "Logout"]);
+      expect(labels()).toEqual(["nav.books", "nav.rentals", "nav.logout"]);
     });
 
     it("Should highlight the current page, wherever navigation started", async () => {
@@ -82,7 +87,10 @@ describe("SidebarComponent", () => {
       expect(nav()).toHaveClass("collapsed");
       expect(toggle()).toHaveAttribute("aria-expanded", "false");
       // Only icons are shown, so the title names the page
-      expect(spectator.query("a.menu-link")).toHaveAttribute("title", "Books");
+      expect(spectator.query("a.menu-link")).toHaveAttribute(
+        "title",
+        "nav.books"
+      );
 
       spectator.click("button.toggle");
 

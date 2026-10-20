@@ -12,12 +12,12 @@ describe("PageHeaderComponent", () => {
   it("Should show the title and the projected actions", () => {
     // Act
     spectator = createHost(
-      `<app-page-header title="Books List">
+      `<app-page-header title="books.list.title">
         <button pageActions name="create">Create</button>
       </app-page-header>`
     );
     // Assert
-    expect(spectator.query("h1")).toHaveText("Books List");
+    expect(spectator.query("h1")).toHaveText("books.list.title");
     expect(spectator.query(".subtitle")).toBeNull();
     expect(spectator.query(".actions button[name='create']")).toBeTruthy();
   });
@@ -25,9 +25,9 @@ describe("PageHeaderComponent", () => {
   it("Should show the subtitle when given", () => {
     // Act
     spectator = createHost(
-      `<app-page-header title="Books List" subtitle="Rentals" />`
+      `<app-page-header title="books.list.title" subtitle="nav.rentals" />`
     );
     // Assert
-    expect(spectator.query(".subtitle")).toHaveText("Rentals");
+    expect(spectator.query(".subtitle")).toHaveText("nav.rentals");
   });
 });

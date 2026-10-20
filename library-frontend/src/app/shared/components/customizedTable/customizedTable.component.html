@@ -13,7 +13,7 @@
     <tr *matNoDataRow class="no-data-row">
       <td [attr.colspan]="shownColumns().length" class="no-data">
         @if (!loading()) {
-          {{ "No results" | translate }}
+          {{ "common.noResults" | translate }}
         }
       </td>
     </tr>

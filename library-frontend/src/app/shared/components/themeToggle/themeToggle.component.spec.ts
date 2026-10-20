@@ -29,7 +29,7 @@ describe("ThemeToggleComponent", () => {
     // Assert
     expect(spectator.query("button")).toHaveAttribute(
       "aria-label",
-      "Dark theme"
+      "theme.dark"
     );
     expect(spectator.query("mat-icon")).toHaveText("dark_mode");
   });
@@ -41,7 +41,7 @@ describe("ThemeToggleComponent", () => {
     expect(themeServiceMock.toggle).toHaveBeenCalledTimes(1);
     expect(spectator.query("button")).toHaveAttribute(
       "aria-label",
-      "Light theme"
+      "theme.light"
     );
     expect(spectator.query("mat-icon")).toHaveText("light_mode");
   });

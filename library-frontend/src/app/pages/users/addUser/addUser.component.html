@@ -1,13 +1,13 @@
 <form (ngSubmit)="onSubmit()" [formGroup]="addUserForm">
-  <app-form-card subtitle="New users are clients" title="Create User">
+  <app-form-card subtitle="users.form.subtitle" title="users.create">
     <mat-form-field appearance="outline" hideRequiredMarker>
-      <mat-label>{{ "Name" | translate }}</mat-label>
+      <mat-label>{{ "common.name" | translate }}</mat-label>
       <input autocomplete="off" formControlName="name" matInput name="name" />
-      <mat-error>{{ "Name is required" | translate }}</mat-error>
+      <mat-error>{{ "validation.name.required" | translate }}</mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" hideRequiredMarker>
-      <mat-label>{{ "Email" | translate }}</mat-label>
+      <mat-label>{{ "common.email" | translate }}</mat-label>
       <input
         autocomplete="off"
         formControlName="email"
@@ -18,28 +18,28 @@
       <!-- One mat-error: an @if chain isn't projected into its slot -->
       <mat-error>
         @if (addUserForm.controls.email.hasError("required")) {
-          {{ "Email is required" | translate }}
+          {{ "validation.email.required" | translate }}
         } @else {
-          {{ "Enter a valid email" | translate }}
+          {{ "validation.email.invalid" | translate }}
         }
       </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" hideRequiredMarker>
-      <mat-label>{{ "CPF or CNPJ" | translate }}</mat-label>
+      <mat-label>{{ "users.document.label" | translate }}</mat-label>
       <input autocomplete="off" formControlName="cpf" matInput name="cpf" />
-      <mat-hint>{{ "With or without punctuation" | translate }}</mat-hint>
+      <mat-hint>{{ "users.document.hint" | translate }}</mat-hint>
       <mat-error>
         @if (addUserForm.controls.cpf.hasError("required")) {
-          {{ "CPF or CNPJ is required" | translate }}
+          {{ "users.document.required" | translate }}
         } @else {
-          {{ "Invalid CPF or CNPJ" | translate }}
+          {{ "users.document.invalid" | translate }}
         }
       </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" hideRequiredMarker>
-      <mat-label>{{ "Password" | translate }}</mat-label>
+      <mat-label>{{ "common.password" | translate }}</mat-label>
       <input
         [type]="passwordVisible() ? 'text' : 'password'"
         autocomplete="new-password"
@@ -50,7 +50,8 @@
       <button
         (click)="togglePasswordVisibility()"
         [attr.aria-label]="
-          (passwordVisible() ? 'Hide password' : 'Show password') | translate
+          (passwordVisible() ? 'auth.password.hide' : 'auth.password.show')
+            | translate
         "
         [attr.aria-pressed]="passwordVisible()"
         mat-icon-button
@@ -62,12 +63,12 @@
           passwordVisible() ? "visibility_off" : "visibility"
         }}</mat-icon>
       </button>
-      <mat-hint>{{ "At least 4 characters" | translate }}</mat-hint>
-      <mat-error>{{ "At least 4 characters" | translate }}</mat-error>
+      <mat-hint>{{ "users.form.passwordHint" | translate }}</mat-hint>
+      <mat-error>{{ "users.form.passwordHint" | translate }}</mat-error>
     </mat-form-field>
 
     <a formActions matButton name="cancel" routerLink="/users/list">
-      {{ "Cancel" | translate }}
+      {{ "common.cancel" | translate }}
     </a>
     <button
       [disabled]="saving()"
@@ -79,7 +80,7 @@
       @if (saving()) {
         <mat-progress-spinner diameter="20" mode="indeterminate" />
       } @else {
-        {{ "Save" | translate }}
+        {{ "common.save" | translate }}
       }
     </button>
   </app-form-card>

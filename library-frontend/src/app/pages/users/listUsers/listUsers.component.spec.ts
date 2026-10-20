@@ -76,7 +76,7 @@ describe("ListUsersComponent", () => {
 
   it("Should list the users", () => {
     // Assert
-    expect(spectator.query("h1")).toHaveText("Users List");
+    expect(spectator.query("h1")).toHaveText("users.list.title");
     expect(spectator.queryAll("tr.mat-mdc-row")).toHaveLength(1);
   });
 
@@ -87,7 +87,12 @@ describe("ListUsersComponent", () => {
 
   it("Should show the email under the name", () => {
     // Assert
-    expect(headers()).toEqual(["Name", "Role", "CPF or CNPJ", "Created on"]);
+    expect(headers()).toEqual([
+      "common.name",
+      "users.list.role",
+      "users.document.label",
+      "common.createdOn",
+    ]);
     expect(spectator.query(".user-email")).toHaveText("test@example.com");
   });
 
@@ -96,7 +101,7 @@ describe("ListUsersComponent", () => {
     breakpoints.next({ matches: true, breakpoints: {} });
     spectator.detectChanges();
     // Assert
-    expect(headers()).toEqual(["Name", "Role"]);
+    expect(headers()).toEqual(["common.name", "users.list.role"]);
   });
 
   it("Should show the role as a chip, and a dash for a missing document", () => {
@@ -108,8 +113,8 @@ describe("ListUsersComponent", () => {
     spectator.detectChanges();
     // Assert
     const rows = spectator.queryAll("tr.mat-mdc-row");
-    expect(rows[0].querySelector(".chip")).toHaveText("Admin");
-    expect(rows[1].querySelector(".chip")).toHaveText("Client");
+    expect(rows[0].querySelector(".chip")).toHaveText("roles.admin");
+    expect(rows[1].querySelector(".chip")).toHaveText("roles.client");
     expect(rows[1].querySelector("td.document")).toHaveText("—");
   });
   it("should call getPaginatedUsers on init", () => {

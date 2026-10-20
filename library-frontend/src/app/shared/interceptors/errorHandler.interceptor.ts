@@ -10,6 +10,8 @@ import { Router } from "@angular/router";
 import { AuthenticationService } from "@app/services/authentication.service";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
+import { t } from "@app/shared/i18n/translations/translationKey";
+import { TranslateService } from "@ngx-translate/core";
 import { Observable, throwError } from "rxjs";
 import { catchError, switchMap } from "rxjs/operators";
 
@@ -26,6 +28,7 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (
   const _credentialsService = inject(CredentialsService);
   const _authenticationService = inject(AuthenticationService);
   const _router = inject(Router);
+  const _translate = inject(TranslateService);
 
   const handleError = (errorResponse: HttpErrorResponse) => {
     const status = errorResponse.status;
@@ -35,7 +38,13 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (
     }
     let error = errorResponse.error;
     if (!error || !("message" in error)) {
-      error = new Error("Something bad happened; please try again later.");
+      error = new Error(_translate.instant(t("errors.unknown")));
+    } else if (typeof error.code === "string") {
+      // The API's errors carry a code (user.cpfTaken); show its translation,
+      // or the API's message when there's none
+      const key = `errors.${error.code}`;
+      const translated = _translate.instant(key);
+      if (translated !== key) error = { ...error, message: translated };
     }
     log.error("Request error", error, request.urlWithParams, request.method);
     return throwError(() => error);

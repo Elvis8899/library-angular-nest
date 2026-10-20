@@ -1,5 +1,5 @@
 <section class="main-container">
-  <app-page-header title="Books List">
+  <app-page-header title="books.list.title">
     <ng-container pageActions>
       @if (isAdmin()) {
         <button
@@ -9,7 +9,7 @@
           type="button"
         >
           <mat-icon>add</mat-icon>
-          {{ "Create Book" | translate }}
+          {{ "books.create" | translate }}
         </button>
       }
     </ng-container>
@@ -21,7 +21,7 @@
       class="search-field"
       subscriptSizing="dynamic"
     >
-      <mat-label>{{ "Search by name" | translate }}</mat-label>
+      <mat-label>{{ "books.list.search" | translate }}</mat-label>
       <mat-icon matPrefix>search</mat-icon>
       <input
         #searchInput
@@ -36,7 +36,7 @@
       class="filter-field"
       subscriptSizing="dynamic"
     >
-      <mat-label>{{ "Created on" | translate }}</mat-label>
+      <mat-label>{{ "common.createdOn" | translate }}</mat-label>
       <input
         (dateChange)="data.queryBy({ createdAt: $event.value })"
         [matDatepicker]="picker"
@@ -52,34 +52,34 @@
       class="filter-field"
       subscriptSizing="dynamic"
     >
-      <mat-label>{{ "Order by" | translate }}</mat-label>
+      <mat-label>{{ "books.list.orderBy" | translate }}</mat-label>
       <mat-select
         (selectionChange)="data.sortBy({ property: $event.value })"
         value="createdAt"
       >
-        <mat-option value="name">{{ "Name" | translate }}</mat-option>
+        <mat-option value="name">{{ "common.name" | translate }}</mat-option>
         <mat-option value="createdAt">{{
-          "Creation date" | translate
+          "books.list.creationDate" | translate
         }}</mat-option>
       </mat-select>
     </mat-form-field>
 
     <mat-button-toggle-group
       (change)="data.sortBy({ order: $event.value })"
-      [attr.aria-label]="'Sort order' | translate"
+      [attr.aria-label]="'books.list.sortOrder' | translate"
       hideSingleSelectionIndicator
       value="desc"
     >
       <mat-button-toggle
-        [aria-label]="'Ascending' | translate"
-        [matTooltip]="'Ascending' | translate"
+        [aria-label]="'books.list.ascending' | translate"
+        [matTooltip]="'books.list.ascending' | translate"
         value="asc"
       >
         <mat-icon>arrow_upward</mat-icon>
       </mat-button-toggle>
       <mat-button-toggle
-        [aria-label]="'Descending' | translate"
-        [matTooltip]="'Descending' | translate"
+        [aria-label]="'books.list.descending' | translate"
+        [matTooltip]="'books.list.descending' | translate"
         value="desc"
       >
         <mat-icon>arrow_downward</mat-icon>
@@ -89,7 +89,7 @@
 
   <app-customized-table [columns]="columns()" [data]="data">
     <ng-container matColumnDef="book">
-      <th *matHeaderCellDef mat-header-cell>{{ "Book" | translate }}</th>
+      <th *matHeaderCellDef mat-header-cell>{{ "common.book" | translate }}</th>
       <td *matCellDef="let book" mat-cell>
         <div class="book-cell">
           <img
@@ -115,7 +115,7 @@
 
     <ng-container matColumnDef="price">
       <th *matHeaderCellDef class="numeric" mat-header-cell>
-        {{ "Price" | translate }}
+        {{ "books.price" | translate }}
       </th>
       <td *matCellDef="let book" class="numeric" mat-cell>
         {{ book.price | currency: "BRL" : "symbol" : undefined : locale() }}
@@ -124,7 +124,7 @@
 
     <ng-container matColumnDef="availability">
       <th *matHeaderCellDef mat-header-cell>
-        {{ "Availability" | translate }}
+        {{ "books.availability.title" | translate }}
       </th>
       <td *matCellDef="let book" mat-cell>
         <ng-container
@@ -135,15 +135,15 @@
 
     <ng-container matColumnDef="actions">
       <th *matHeaderCellDef class="actions-header" mat-header-cell>
-        <span class="visually-hidden">{{ "Actions" | translate }}</span>
+        <span class="visually-hidden">{{ "common.actions" | translate }}</span>
       </th>
       <td *matCellDef="let book" mat-cell>
         <div class="table-actions">
           <button
             (click)="openRentBookDialog(book)"
-            [attr.aria-label]="'Rent' | translate"
+            [attr.aria-label]="'rentals.rent.action' | translate"
             [disabled]="!isBookAvailable(book)"
-            [matTooltip]="'Rent' | translate"
+            [matTooltip]="'rentals.rent.action' | translate"
             mat-icon-button
             name="rentBook"
           >
@@ -153,7 +153,7 @@
             @if (isSmallScreen()) {
               <!-- The copy actions in a menu, so the row fits a phone -->
               <button
-                [attr.aria-label]="'More actions' | translate"
+                [attr.aria-label]="'common.moreActions' | translate"
                 [matMenuTriggerFor]="copyMenu"
                 mat-icon-button
                 name="moreActions"
@@ -167,7 +167,7 @@
                   name="addBook"
                 >
                   <mat-icon>library_add</mat-icon>
-                  {{ "Add a copy" | translate }}
+                  {{ "books.copies.add" | translate }}
                 </button>
                 <button
                   (click)="removeBookItem(book)"
@@ -176,14 +176,14 @@
                   name="removeBook"
                 >
                   <mat-icon>remove_circle_outline</mat-icon>
-                  {{ "Remove a copy" | translate }}
+                  {{ "books.copies.remove" | translate }}
                 </button>
               </mat-menu>
             } @else {
               <button
                 (click)="addBookItem(book)"
-                [attr.aria-label]="'Add a copy' | translate"
-                [matTooltip]="'Add a copy' | translate"
+                [attr.aria-label]="'books.copies.add' | translate"
+                [matTooltip]="'books.copies.add' | translate"
                 mat-icon-button
                 name="addBook"
               >
@@ -191,9 +191,9 @@
               </button>
               <button
                 (click)="removeBookItem(book)"
-                [attr.aria-label]="'Remove a copy' | translate"
+                [attr.aria-label]="'books.copies.remove' | translate"
                 [disabled]="!isBookAvailable(book)"
-                [matTooltip]="'Remove a copy' | translate"
+                [matTooltip]="'books.copies.remove' | translate"
                 mat-icon-button
                 name="removeBook"
               >
@@ -209,12 +209,12 @@
 
 <ng-template #availability let-book>
   @if (book.bookItems.length === 0) {
-    <span class="chip">{{ "No copies" | translate }}</span>
+    <span class="chip">{{ "books.availability.none" | translate }}</span>
   } @else if (isBookAvailable(book)) {
     <span class="chip chip-success">
-      {{ availabilityKey | translate: availabilityParams(book) }}
+      {{ "books.availability.count" | translate: availabilityParams(book) }}
     </span>
   } @else {
-    <span class="chip">{{ "All rented" | translate }}</span>
+    <span class="chip">{{ "books.availability.allRented" | translate }}</span>
   }
 </ng-template>

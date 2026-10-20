@@ -10,6 +10,7 @@ import { ROLE } from "@app/models/credentials.entity";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
 import { FormCardComponent } from "@app/shared/components/formCard/formCard.component";
+import { t } from "@app/shared/i18n/translations/translationKey";
 import { FormValidatorUtility } from "@app/shared/utils/formValidators.utility";
 import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
@@ -67,9 +68,7 @@ export class AddUsersComponent {
       .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
         next: () => {
-          this._toast.success(
-            this._translate.instant("User created successfully")
-          );
+          this._toast.success(this._translate.instant(t("users.created")));
           this._router.navigate(["/users/list"]);
         },
         error: (error: Error) => {

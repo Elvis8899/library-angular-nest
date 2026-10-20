@@ -16,7 +16,7 @@ export class ThemeToggleComponent {
 
   // Describes what a click does: switch to the other scheme
   readonly label = computed(() =>
-    this.theme.colorScheme() === "dark" ? "Light theme" : "Dark theme"
+    this.theme.colorScheme() === "dark" ? "theme.light" : "theme.dark"
   );
   readonly icon = computed(() =>
     this.theme.colorScheme() === "dark" ? "light_mode" : "dark_mode"

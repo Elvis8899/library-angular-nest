@@ -1,7 +1,7 @@
-<h2 mat-dialog-title>{{ "Rent book" | translate }}</h2>
+<h2 mat-dialog-title>{{ "rentals.rent.title" | translate }}</h2>
 <mat-dialog-content>
   <p class="intro">
-    {{ "Choose the client renting {{book}}" | translate: { book: bookName } }}
+    {{ "rentals.rent.chooseClient" | translate: { book: bookName } }}
   </p>
 
   <!-- Always takes its height, so showing it doesn't move the field -->
@@ -16,7 +16,7 @@
     class="client-field"
     subscriptSizing="dynamic"
   >
-    <mat-label>{{ "Client" | translate }}</mat-label>
+    <mat-label>{{ "rentals.rent.client" | translate }}</mat-label>
     <mat-icon matPrefix>search</mat-icon>
     <input
       (input)="onSearch($event)"
@@ -39,7 +39,7 @@
       } @empty {
         @if (!loading()) {
           <mat-option class="no-clients" disabled>
-            {{ "No clients found" | translate }}
+            {{ "rentals.rent.noClients" | translate }}
           </mat-option>
         }
       }
@@ -48,7 +48,7 @@
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button [mat-dialog-close]="undefined" matButton name="cancelDialog">
-    {{ "Cancel" | translate }}
+    {{ "common.cancel" | translate }}
   </button>
   <button
     [disabled]="!selectedClient()"
@@ -56,6 +56,6 @@
     matButton="filled"
     name="confirmDialog"
   >
-    {{ "Rent" | translate }}
+    {{ "rentals.rent.action" | translate }}
   </button>
 </mat-dialog-actions>

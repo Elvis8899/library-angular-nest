@@ -1,8 +1,19 @@
-import { ConflictException, NotFoundException } from "@nestjs/common";
+import {
+  ConflictException,
+  HttpStatus,
+  NotFoundException,
+} from "@nestjs/common";
+import { errorBody } from "@shared/utils/domain/shared.erros";
 
 export class BookRentalNotFoundException extends NotFoundException {
   constructor() {
-    super("Empréstimo não encontrado.");
+    super(
+      errorBody(
+        HttpStatus.NOT_FOUND,
+        "rental.notFound",
+        "Empréstimo não encontrado.",
+      ),
+    );
   }
 }
 
@@ -11,7 +22,13 @@ export const bookRentalNotFoundException = () =>
 
 export class BookRentalFinishedException extends NotFoundException {
   constructor() {
-    super("Empréstimo finalizado.");
+    super(
+      errorBody(
+        HttpStatus.NOT_FOUND,
+        "rental.finished",
+        "Empréstimo finalizado.",
+      ),
+    );
   }
 }
 
@@ -20,7 +37,13 @@ export const bookRentalFinishedException = () =>
 
 export class BookRentalNotAvailableException extends ConflictException {
   constructor() {
-    super("Livro indisponível.");
+    super(
+      errorBody(
+        HttpStatus.CONFLICT,
+        "rental.unavailable",
+        "Livro indisponível.",
+      ),
+    );
   }
 }
 

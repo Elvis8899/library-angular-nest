@@ -19,6 +19,7 @@ import { CustomizedTableComponent } from "@app/shared/components/customizedTable
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
 import { injectIsSmallScreen } from "@app/shared/helpers/smallScreen";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
+import { t } from "@app/shared/i18n/translations/translationKey";
 import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { filter } from "rxjs";
@@ -57,9 +58,6 @@ export class ListRentalsComponent implements OnInit {
   );
   // Clients only see their own rentals, so only admins see who rented
   readonly showClient = inject(CredentialsService).isAdmin();
-  // Keys with placeholders read safer here than inside {{ }}
-  readonly fineDetailsKey =
-    "{{fixed}} + {{perDay}} per day × {{days}} days late";
 
   private readonly _defaultLocale = inject(LOCALE_ID);
   private readonly _rentalService = inject(RentalService);
@@ -99,17 +97,17 @@ export class ListRentalsComponent implements OnInit {
   returnBook(rental: BookRentalEntity) {
     this._confirmDialog
       .confirm({
-        title: "Return book",
-        message: "Return {{book}}?",
+        title: "rentals.return.title",
+        message: "rentals.return.confirm",
         messageParams: { book: rental.bookName },
-        confirmLabel: "Return",
+        confirmLabel: "rentals.return.action",
       })
       .pipe(filter(Boolean))
       .subscribe(() =>
         this._rentalService.returnBook(rental.id).subscribe({
           next: () => {
             this._toast.success(
-              this._translate.instant("Book returned successfully")
+              this._translate.instant(t("rentals.return.done"))
             );
             this.refresh();
           },

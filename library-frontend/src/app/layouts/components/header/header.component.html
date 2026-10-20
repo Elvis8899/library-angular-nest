@@ -3,7 +3,9 @@
   <button
     (click)="menuToggle.emit()"
     [attr.aria-expanded]="menuOpen()"
-    [attr.aria-label]="(menuOpen() ? 'Close menu' : 'Open menu') | translate"
+    [attr.aria-label]="
+      (menuOpen() ? 'nav.closeMenu' : 'nav.openMenu') | translate
+    "
     aria-controls="side-nav"
     class="menu-button"
     mat-icon-button
@@ -17,7 +19,7 @@
     <span class="user-text">
       <span class="user-name">{{ userName() }}</span>
       <span class="user-role">{{
-        (isAdmin() ? "Admin" : "Client") | translate
+        (isAdmin() ? "roles.admin" : "roles.client") | translate
       }}</span>
     </span>
   </div>

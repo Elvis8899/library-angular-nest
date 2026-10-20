@@ -11,16 +11,6 @@ The theme, login, forms, dialogs and lists are rebuilt with Angular Material (br
 - [ ] **API: search and role filter on `GET /v1/users`**. The choose-user dialog loads the largest page (1000 users) and searches it in the browser, so with more clients than that some can't be picked.
 - [ ] **API: deleting a book erases its rentals**. `DELETE /v1/bookInfos/:id` has no checks, and the schema cascades from the book to its copies and from each copy to its rentals (`onDelete: Cascade`), so deleting a book with rented copies silently erases active rentals; removing a copy (`DELETE /v1/bookInfos/item/:id`, available copies only) erases that copy's past rentals. The book list has no delete button until the API refuses books with rented copies and keeps rental history (for example `onDelete: Restrict` or soft deletes).
 
-## Typed translations (2026-10-20)
-
-ngx-translate stays; how it's used changes. Today each string is written three times (the key union in `allTranslations.ts`, `pt-BR.ts`, and `en-US.ts`, whose values repeat the keys), nothing checks a key where it's used (a typo shows the raw key), keys are English sentences (rewording renames them everywhere, and `{{…}}` placeholders in a key clash with Angular's interpolation), unused keys pile up (`LANGUAGE`, `Username`, `Dashboard` on 2026-10-20), and the API's error messages reach the toasts in Portuguese whatever the language. Estimate: about half a day, plus the API part.
-
-- [ ] **Short, structured keys with pt-BR as the source**: `books.list.title`, `common.cancel`, `errors.document.invalid`. `TranslationKey` is derived from `pt-BR.ts`, and `en-US.ts` is typed `Record<TranslationKey, string>`, so a missing or extra key fails the build; `allTranslations.ts`'s union goes away.
-- [ ] **Typed keys in code**: a `t(key: TranslationKey)` helper that returns the key, for keys passed from TypeScript (the confirmation dialog's title and message, toasts, menu items), so they're checked too.
-- [ ] **A spec that checks the templates**: it collects the keys used with `| translate` and fails on keys that don't exist and on keys nothing uses.
-- [ ] **Placeholder keys back in templates**: with short keys, `{{ "books.availability.count" | translate: … }}` no longer clashes with interpolation, so `availabilityKey` and `fineDetailsKey` can leave the components.
-- [ ] **API errors by code**: the API adds a code to its errors (`document.invalid`, `user.emailTaken`), and the frontend translates the code, falling back to the message. Needs the backend's error factories (`domain/*.errors.ts`) to carry the codes.
-
 ## Demo on GitHub Pages (2026-10-20)
 
 A demo of the frontend on GitHub Pages, with no backend: a fake backend inside the app answers the API calls. The frontend never reads the tokens, so fake ones work. Estimate: about a day.

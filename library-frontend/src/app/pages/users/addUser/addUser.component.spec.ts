@@ -64,7 +64,7 @@ describe("AddUsersComponent", () => {
 
   it("Should have a title", () => {
     // Assert
-    expect(spectator.query("h1")).toHaveText("Create User");
+    expect(spectator.query("h1")).toHaveText("users.create");
   });
 
   it("Should add the user as a client and go back to the list", () => {
@@ -117,10 +117,10 @@ describe("AddUsersComponent", () => {
     // Assert
     expect(userServiceMock.addUser).not.toHaveBeenCalled();
     expect(errorTexts()).toEqual([
-      "Name is required",
-      "Email is required",
-      "CPF or CNPJ is required",
-      "At least 4 characters",
+      "validation.name.required",
+      "validation.email.required",
+      "users.document.required",
+      "users.form.passwordHint",
     ]);
   });
 
@@ -135,9 +135,9 @@ describe("AddUsersComponent", () => {
     // Assert
     expect(userServiceMock.addUser).not.toHaveBeenCalled();
     expect(errorTexts()).toEqual([
-      "Enter a valid email",
-      "Invalid CPF or CNPJ",
-      "At least 4 characters",
+      "validation.email.invalid",
+      "users.document.invalid",
+      "users.form.passwordHint",
     ]);
   });
 
@@ -148,7 +148,7 @@ describe("AddUsersComponent", () => {
     expect(inputs.password).toHaveAttribute("type", "text");
     expect(spectator.query("button[name='togglePassword']")).toHaveAttribute(
       "aria-label",
-      "Hide password"
+      "auth.password.hide"
     );
     // Act
     spectator.click("button[name='togglePassword']");

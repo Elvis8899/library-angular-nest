@@ -1,5 +1,5 @@
 <section class="main-container">
-  <app-page-header title="Users List">
+  <app-page-header title="users.list.title">
     <button
       (click)="goToAddUser()"
       matButton="filled"
@@ -8,13 +8,13 @@
       type="button"
     >
       <mat-icon>add</mat-icon>
-      {{ "Create User" | translate }}
+      {{ "users.create" | translate }}
     </button>
   </app-page-header>
 
   <app-customized-table [columns]="columns()" [data]="data">
     <ng-container matColumnDef="name">
-      <th *matHeaderCellDef mat-header-cell>{{ "Name" | translate }}</th>
+      <th *matHeaderCellDef mat-header-cell>{{ "common.name" | translate }}</th>
       <td *matCellDef="let user" mat-cell>
         <span class="user-name">{{ user.name }}</span>
         <span class="user-email">{{ user.email }}</span>
@@ -22,18 +22,24 @@
     </ng-container>
 
     <ng-container matColumnDef="role">
-      <th *matHeaderCellDef mat-header-cell>{{ "Role" | translate }}</th>
+      <th *matHeaderCellDef mat-header-cell>
+        {{ "users.list.role" | translate }}
+      </th>
       <td *matCellDef="let user" mat-cell>
         @if (user.role === ROLE.ADMIN) {
-          <span class="chip chip-accent">{{ "Admin" | translate }}</span>
+          <span class="chip chip-accent">{{ "roles.admin" | translate }}</span>
         } @else {
-          <span class="chip chip-success">{{ "Client" | translate }}</span>
+          <span class="chip chip-success">{{
+            "roles.client" | translate
+          }}</span>
         }
       </td>
     </ng-container>
 
     <ng-container matColumnDef="cpf">
-      <th *matHeaderCellDef mat-header-cell>{{ "CPF or CNPJ" | translate }}</th>
+      <th *matHeaderCellDef mat-header-cell>
+        {{ "users.document.label" | translate }}
+      </th>
       <td *matCellDef="let user" class="document" mat-cell>
         <!-- Admins may have none -->
         {{ user.cpf || "—" }}
@@ -41,7 +47,9 @@
     </ng-container>
 
     <ng-container matColumnDef="createdAt">
-      <th *matHeaderCellDef mat-header-cell>{{ "Created on" | translate }}</th>
+      <th *matHeaderCellDef mat-header-cell>
+        {{ "common.createdOn" | translate }}
+      </th>
       <td *matCellDef="let user" mat-cell>
         {{ user.createdAt | date: "shortDate" : undefined : locale() }}
       </td>

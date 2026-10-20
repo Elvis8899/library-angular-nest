@@ -10,15 +10,16 @@ import {
   StronglyTypedDialog,
   TypedDialog,
 } from "@app/shared/components/dialog/typedDialog";
+import { TranslationKey } from "@app/shared/i18n/translations/translationKey";
 import { TranslatePipe } from "@ngx-translate/core";
 import { map, Observable } from "rxjs";
 
 export interface ConfirmDialogData {
-  // Translation keys; messageParams fills the message's placeholders
-  title: string;
-  message: string;
+  // messageParams fills the message's placeholders
+  title: TranslationKey;
+  message: TranslationKey;
   messageParams?: Record<string, unknown>;
-  confirmLabel?: string;
+  confirmLabel?: TranslationKey;
   // Shows the confirm button in the error color, for actions that remove or
   // end something
   destructive?: boolean;

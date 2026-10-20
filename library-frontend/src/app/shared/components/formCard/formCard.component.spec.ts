@@ -13,14 +13,14 @@ describe("FormCardComponent", () => {
     // Act
     spectator = createHost(
       `<form>
-        <app-form-card title="Create Book">
+        <app-form-card title="books.create">
           <input name="name" />
           <button formActions name="save" type="submit">Save</button>
         </app-form-card>
       </form>`
     );
     // Assert
-    expect(spectator.query("h1")).toHaveText("Create Book");
+    expect(spectator.query("h1")).toHaveText("books.create");
     expect(spectator.query("mat-card-subtitle")).toBeNull();
     expect(spectator.query(".fields input[name='name']")).toBeTruthy();
     // Still inside the <form>, so it submits it
@@ -32,9 +32,9 @@ describe("FormCardComponent", () => {
   it("Should show the subtitle when given", () => {
     // Act
     spectator = createHost(
-      `<app-form-card title="Create Book" subtitle="Rentals" />`
+      `<app-form-card title="books.create" subtitle="nav.rentals" />`
     );
     // Assert
-    expect(spectator.query("mat-card-subtitle")).toHaveText("Rentals");
+    expect(spectator.query("mat-card-subtitle")).toHaveText("nav.rentals");
   });
 });

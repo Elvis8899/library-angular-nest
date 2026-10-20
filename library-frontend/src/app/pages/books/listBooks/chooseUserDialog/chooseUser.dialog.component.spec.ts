@@ -88,7 +88,9 @@ describe("ChooseUserDialogComponent", () => {
       limit: 1000,
     });
     expect(spectator.component.clients().map((u) => u.id)).toEqual(["1", "2"]);
-    expect(spectator.query(".intro")).toContainText("Choose the client");
+    expect(spectator.query(".intro")).toContainText(
+      "rentals.rent.chooseClient"
+    );
     expect(spectator.query("mat-progress-bar")).toHaveClass("hidden");
   });
 
@@ -133,7 +135,7 @@ describe("ChooseUserDialogComponent", () => {
     // Act
     search("nobody");
     // Assert
-    expect(optionTexts()).toEqual(["No clients found"]);
+    expect(optionTexts()).toEqual(["rentals.rent.noClients"]);
   });
 
   it("Should rent only after a client is picked, closing with their id", () => {

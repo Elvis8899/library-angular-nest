@@ -30,6 +30,7 @@ import { TypedDialog } from "@app/shared/components/dialog/typedDialog";
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
 import { injectIsSmallScreen } from "@app/shared/helpers/smallScreen";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
+import { t } from "@app/shared/i18n/translations/translationKey";
 import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { filter } from "rxjs";
@@ -75,8 +76,6 @@ export class ListBooksComponent implements OnInit {
       : ["book", "price", "availability", "actions"]
   );
   readonly noCoverImage = noCoverImage;
-  // A key with placeholders reads safer here than inside {{ }}
-  readonly availabilityKey = "{{available}} of {{total}} available";
 
   private readonly _bookService = inject(BookService);
   private readonly _rentalService = inject(RentalService);
@@ -113,7 +112,9 @@ export class ListBooksComponent implements OnInit {
   openRentBookDialog(book: BookEntity) {
     const bookItem = this._availableItem(book);
     if (!bookItem) {
-      this._toast.error(this._translate.instant("No books available to rent"));
+      this._toast.error(
+        this._translate.instant(t("rentals.rent.noneAvailable"))
+      );
       return;
     }
     const bookItemId = bookItem.id;
@@ -121,10 +122,10 @@ export class ListBooksComponent implements OnInit {
       // Clients rent for themselves; a fine applies once it's overdue
       this._confirmDialog
         .confirm({
-          title: "Rent book",
-          message: "Rent {{book}}?",
+          title: "rentals.rent.title",
+          message: "rentals.rent.confirm",
           messageParams: { book: book.name },
-          confirmLabel: "Rent",
+          confirmLabel: "rentals.rent.action",
         })
         .pipe(filter(Boolean))
         .subscribe(() =>
@@ -185,9 +186,7 @@ export class ListBooksComponent implements OnInit {
   rentBook(book: BookRentEntity) {
     this._rentalService.rentBook(book).subscribe({
       next: () => {
-        this._toast.success(
-          this._translate.instant("Book rented successfully")
-        );
+        this._toast.success(this._translate.instant(t("rentals.rent.done")));
         this.refresh();
       },
       error: this.defaultErrorHandler,
@@ -197,7 +196,7 @@ export class ListBooksComponent implements OnInit {
   addBookItem(book: BookEntity) {
     this._bookService.addBookItem({ bookId: book.id }).subscribe({
       next: () => {
-        this._toast.success(this._translate.instant("Copy added"));
+        this._toast.success(this._translate.instant(t("books.copies.added")));
         this.refresh();
       },
       error: this.defaultErrorHandler,
@@ -208,23 +207,25 @@ export class ListBooksComponent implements OnInit {
     const bookItem = this._availableItem(book);
     if (!bookItem) {
       this._toast.error(
-        this._translate.instant("No books available to remove")
+        this._translate.instant(t("books.copies.noneToRemove"))
       );
       return;
     }
     this._confirmDialog
       .confirm({
-        title: "Remove a copy",
-        message: "Remove a copy of {{book}}? Its past rentals go with it.",
+        title: "books.copies.remove",
+        message: "books.copies.removeConfirm",
         messageParams: { book: book.name },
-        confirmLabel: "Remove",
+        confirmLabel: "common.remove",
         destructive: true,
       })
       .pipe(filter(Boolean))
       .subscribe(() =>
         this._bookService.deleteBookItem(bookItem.id).subscribe({
           next: () => {
-            this._toast.success(this._translate.instant("Copy removed"));
+            this._toast.success(
+              this._translate.instant(t("books.copies.removed"))
+            );
             this.refresh();
           },
           error: this.defaultErrorHandler,

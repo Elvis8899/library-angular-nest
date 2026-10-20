@@ -1,6 +1,7 @@
 import { Routes } from "@angular/router";
 import { ROLE } from "@app/models/credentials.entity";
 import { ListBooksComponent } from "@app/pages/books/listBooks/listBooks.component";
+import { t } from "@app/shared/i18n/translations/translationKey";
 
 export const routes: Routes = [
   {
@@ -11,12 +12,12 @@ export const routes: Routes = [
   {
     path: "list",
     component: ListBooksComponent,
-    data: { title: "Books List" },
+    data: { title: t("books.list.title") },
   },
   {
     path: "add",
     loadComponent: () =>
       import("./addBook/addBook.component").then((m) => m.AddBooksComponent),
-    data: { title: "Add Book", roles: [ROLE.ADMIN] },
+    data: { title: t("books.create"), roles: [ROLE.ADMIN] },
   },
 ];

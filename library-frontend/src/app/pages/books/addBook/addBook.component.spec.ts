@@ -6,8 +6,8 @@ import { Router, RouterModule } from "@angular/router";
 import { AddBooksComponent } from "@app/pages/books/addBook/addBook.component";
 import { BookService } from "@app/services/book.http.service";
 import { Logger } from "@app/services/logger.service";
-import { LanguagesEnum } from "@app/shared/i18n/translations/allTranslations";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
+import { LanguagesEnum } from "@app/shared/i18n/translations/translationKey";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
 import {
   createComponentFactory,
@@ -59,7 +59,7 @@ describe("AddBooksComponent", () => {
 
   it("Should have a title", () => {
     // Assert
-    expect(spectator.query("h1")).toHaveText("Create Book");
+    expect(spectator.query("h1")).toHaveText("books.create");
   });
 
   it("Should add the book and go back to the list", () => {
@@ -129,8 +129,8 @@ describe("AddBooksComponent", () => {
     expect(bookServiceMock.addBook).not.toHaveBeenCalled();
     const errors = spectator.queryAll("mat-error");
     expect(errors.map((error) => error.textContent?.trim())).toEqual([
-      "Name is required",
-      "Enter a price of 0 or more",
+      "validation.name.required",
+      "books.form.priceInvalid",
     ]);
   });
 
@@ -143,10 +143,7 @@ describe("AddBooksComponent", () => {
     expect(bookServiceMock.addBook).not.toHaveBeenCalled();
     expect(
       spectator.queryAll("mat-error").map((e) => e.textContent?.trim())
-    ).toEqual([
-      "Enter a price of 0 or more",
-      "Enter a URL starting with http:// or https://",
-    ]);
+    ).toEqual(["books.form.priceInvalid", "books.form.coverInvalid"]);
   });
 
   it("Should preview the cover and fall back when it doesn't load", () => {

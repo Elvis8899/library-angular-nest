@@ -42,6 +42,10 @@ describe("ErrorHandlerInterceptor", () => {
     httpClient = spectator.inject(HttpClient);
     const translateService = spectator.inject(TranslateService);
     translateService.getCurrentLang.mockReturnValue("pt-BR");
+    // A missing translation returns its key, as ngx-translate does
+    translateService.instant.mockImplementation((...args: unknown[]) =>
+      args[0] === "errors.user.cpfTaken" ? "CPF já usado" : args[0]
+    );
     httpClient.get("/test").subscribe({
       error: (error) => {
         expect(error?.message).toBe("error");
@@ -74,9 +78,7 @@ describe("ErrorHandlerInterceptor", () => {
     let check = false;
     httpClient.get("/test2").subscribe({
       error: (error) => {
-        expect(error?.message).toBe(
-          "Something bad happened; please try again later."
-        );
+        expect(error?.message).toBe("errors.unknown");
         check = true;
       },
     });
@@ -85,6 +87,27 @@ describe("ErrorHandlerInterceptor", () => {
     req.flush("", { status: 500, statusText: "error" });
     // Assert
     expect(check).toBe(true);
+  });
+
+  it.each([
+    ["translated when there's a translation", "user.cpfTaken", "CPF já usado"],
+    ["the API's when there's none", "user.unknownCode", "Mensagem da API"],
+  ])("Should show an API error's message %s", (_, code, message) => {
+    let received: { message?: string; code?: string } | undefined;
+    httpClient
+      .get("/test3")
+      .subscribe({ error: (error) => (received = error) });
+    httpMock.expectOne("/test").flush("");
+    // Act
+    httpMock
+      .expectOne("/test3")
+      .flush(
+        { statusCode: 409, message: "Mensagem da API", code },
+        { status: 409, statusText: "Conflict" }
+      );
+    // Assert
+    expect(received?.message).toBe(message);
+    expect(received?.code).toBe(code);
   });
 
   it("Should logout on status 401 or 403", () => {
