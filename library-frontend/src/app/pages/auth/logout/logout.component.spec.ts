@@ -1,8 +1,4 @@
-import {
-  HttpTestingController,
-  provideHttpClientTesting,
-} from "@angular/common/http/testing";
-import { RouterModule } from "@angular/router";
+import { Router, RouterModule } from "@angular/router";
 import { LogoutComponent } from "@app/pages/auth/logout/logout.component";
 import { AuthenticationService } from "@app/services/authentication.service";
 import { Logger } from "@app/services/logger.service";
@@ -13,14 +9,12 @@ import {
   Spectator,
 } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
-import { of, throwError } from "rxjs";
+import { of, Subject, throwError } from "rxjs";
 
 Logger.level = 0;
 
-describe("LanguageSelectorComponent", () => {
+describe("LogoutComponent", () => {
   const authServiceMock = createSpyObject(AuthenticationService);
-  authServiceMock.logout.mockReturnValue(of(true));
-  let httpMock: HttpTestingController;
   let spectator: Spectator<LogoutComponent>;
   const createComponent = createComponentFactory({
     component: LogoutComponent,
@@ -28,34 +22,50 @@ describe("LanguageSelectorComponent", () => {
       RouterModule.forRoot([{ path: "login", component: MockComponent }]),
       TranslateModule.forRoot(),
     ],
-    providers: [
-      provideHttpClientTesting(),
-      { provide: AuthenticationService, useValue: authServiceMock },
-    ],
+    providers: [{ provide: AuthenticationService, useValue: authServiceMock }],
+    detectChanges: false,
   });
 
-  afterEach(() => {
-    httpMock.verify();
-    authServiceMock.logout.mockClear();
-  });
-
-  it("Should be created", () => {
+  function create() {
     spectator = createComponent();
-    httpMock = spectator.inject(HttpTestingController);
-    // Assert
-    expect(spectator.query("p")).toContainText("Logged Out!");
+    const navigateSpy = vi.spyOn(spectator.inject(Router), "navigate");
+    spectator.detectChanges();
+    return navigateSpy;
+  }
+
+  beforeEach(() => {
+    authServiceMock.logout.mockReset();
+    authServiceMock.logout.mockReturnValue(of(true));
   });
 
-  it("If error on logout, should log error", () => {
-    authServiceMock.logout.mockReturnValueOnce(
-      throwError(() => new Error("test error"))
-    );
-    spectator = createComponent();
-    httpMock = spectator.inject(HttpTestingController);
+  it("Should show a spinner while logging out", () => {
     // Arrange
-
+    authServiceMock.logout.mockReturnValue(new Subject<boolean>());
     // Act
+    const navigateSpy = create();
+    // Assert
+    expect(spectator.query("mat-progress-spinner")).toBeTruthy();
+    expect(spectator.query("p")).toHaveText("auth.logout.inProgress");
+    expect(spectator.query("main")).toHaveAttribute("role", "status");
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  it("Should go to the login page once logged out", () => {
+    // Act
+    const navigateSpy = create();
     // Assert
     expect(authServiceMock.logout).toHaveBeenCalledTimes(1);
+    expect(navigateSpy).toHaveBeenCalledWith(["/login"]);
+  });
+
+  it("Should go to the login page even if logging out fails", () => {
+    // Arrange
+    authServiceMock.logout.mockReturnValue(
+      throwError(() => new Error("test error"))
+    );
+    // Act
+    const navigateSpy = create();
+    // Assert
+    expect(navigateSpy).toHaveBeenCalledWith(["/login"]);
   });
 });

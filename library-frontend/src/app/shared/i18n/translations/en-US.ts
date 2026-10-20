@@ -54,6 +54,9 @@ export const enUS: Translations = {
     },
   },
   auth: {
+    logout: {
+      inProgress: "Logging out…",
+    },
     login: {
       title: "Login",
       subtitle: "Sign in with your email and password",

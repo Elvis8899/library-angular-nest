@@ -54,6 +54,9 @@ export const ptBR = {
     },
   },
   auth: {
+    logout: {
+      inProgress: "Saindo…",
+    },
     login: {
       title: "Login",
       subtitle: "Entre com seu email e senha",

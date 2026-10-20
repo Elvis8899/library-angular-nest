@@ -16,31 +16,33 @@
     <span class="brand-name">{{ "app.name" | translate }}</span>
   </a>
 
-  <ul class="menu">
+  <mat-nav-list class="menu">
     @for (item of items; track item.route) {
-      <li>
-        <ng-container *ngTemplateOutlet="link; context: { $implicit: item }" />
-      </li>
+      <ng-container *ngTemplateOutlet="link; context: { $implicit: item }" />
     }
-  </ul>
+  </mat-nav-list>
 
-  <ul class="menu menu-end">
-    <li>
-      <ng-container
-        *ngTemplateOutlet="link; context: { $implicit: logoutItem }"
-      />
-    </li>
-  </ul>
+  <!-- Logout, kept at the bottom below a divider -->
+  <mat-nav-list class="menu menu-end">
+    <ng-container
+      *ngTemplateOutlet="link; context: { $implicit: logoutItem }"
+    />
+  </mat-nav-list>
 </nav>
 
 <ng-template #link let-item>
   <a
-    [routerLink]="item.route"
+    #active="routerLinkActive"
+    [activated]="active.isActive"
     [attr.title]="expanded() ? null : (item.title | translate)"
+    [routerLink]="item.route"
     class="menu-link"
+    mat-list-item
     routerLinkActive="active"
   >
-    <mat-icon class="menu-icon">{{ item.icon }}</mat-icon>
-    <span class="menu-label">{{ item.title | translate }}</span>
+    <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+    <span class="menu-label" matListItemTitle>{{
+      item.title | translate
+    }}</span>
   </a>
 </ng-template>

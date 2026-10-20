@@ -1,3 +1,5 @@
+@use "@angular/material" as mat;
+
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -86,12 +88,32 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
-  margin: 0;
   padding: 0;
-  list-style: none;
+
+  // Material's nav list, in the dark panel's colors. Text contrast on the
+  // light scheme's panel: 7.5:1, and white on the active background 8.2:1
+  // (WCAG AA asks for 4.5:1)
+  @include mat.list-overrides(
+    (
+      list-item-label-text-color: var(--sidebar-text),
+      list-item-leading-icon-color: var(--sidebar-text),
+      list-item-hover-label-text-color: var(--sidebar-text-active),
+      list-item-hover-leading-icon-color: var(--sidebar-text-active),
+      list-item-focus-label-text-color: var(--sidebar-text-active),
+      list-item-hover-state-layer-color: #fff,
+      list-item-focus-state-layer-color: #fff,
+      list-item-label-text-size: 14px,
+      list-item-label-text-weight: 600,
+      list-item-container-shape: 9px,
+      list-item-one-line-container-height: 44px,
+      list-item-leading-icon-start-space: 10px,
+      list-item-leading-icon-end-space: 14px,
+      active-indicator-color: rgb(255 255 255 / 10%),
+      active-indicator-shape: 9px,
+    )
+  );
 }
 
-// Logout, kept at the bottom below a divider
 .menu-end {
   margin-top: auto;
   padding-top: 15px;
@@ -104,41 +126,26 @@
     top / 100% 1px no-repeat;
 }
 
-// Text contrast on the light scheme's panel: 7.5:1, and white on the
-// active background 8.2:1 (WCAG AA asks for 4.5:1)
-.menu-link {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 10px;
-  overflow: hidden;
-  border-radius: 9px;
-  color: var(--sidebar-text);
-  font-size: 14px;
-  font-weight: 600;
-  white-space: nowrap;
-  text-decoration: none;
-
-  &:hover {
-    background-color: rgb(255 255 255 / 6%);
-  }
-
-  // The bar marks the current page without relying on color alone
-  &.active {
-    color: var(--sidebar-text-active);
-    background-color: rgb(255 255 255 / 10%);
-    box-shadow: inset 3px 0 0 var(--sidebar-accent);
-  }
+// Material only lightens a focused item, which is hard to tell from the
+// current page on the dark panel
+.menu-link:focus-visible {
+  outline: 2px solid var(--sidebar-accent);
+  outline-offset: -2px;
 }
 
-.menu-icon {
-  flex-shrink: 0;
+// The bar marks the current page without relying on color alone
+.menu-link.active {
+  box-shadow: inset 3px 0 0 var(--sidebar-accent);
+
+  @include mat.list-overrides(
+    (
+      list-item-label-text-color: var(--sidebar-text-active),
+      list-item-leading-icon-color: var(--sidebar-text-active),
+    )
+  );
 }
 
 .menu-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-
   .collapsed & {
     display: none;
   }
