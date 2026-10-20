@@ -17,7 +17,6 @@ What's left to bring the frontend from about 8/10 to 9 (compared with order-matc
 
 - [ ] **Language selector**: it's still the boilerplate's dropdown ("Lang: BR"), with `tabindex="1"`/`"2"` and click and keyup handlers on `div`s and `li`s, so it isn't fully keyboard- or screen-reader-friendly. Make it a `mat-menu` (button with a `translate` icon and the current language's name, items "Português"/"English"), on the login page and in the header.
 - [ ] **Credentials as signals**: `CredentialsService` keeps the user in a plain field. The header reads the user's name when it renders, so a login in another tab (the `storage` event already refreshes the service) shows the old name until something re-renders it. Keep the credentials in a signal, so whatever reads them updates.
-- [ ] **One style of code**: the new code uses signals, `input()` and `takeUntilDestroyed`; older code still uses RxJS subjects, `@Input()` and `@UntilDestroy()` (`PaginatedDataSource`, `customizedTable`, `i18n.service`, `languageSelector`, `login`). Move them over when they're next touched, or in one pass.
 - [ ] **Boilerplate leftovers**:
   - The sidebar's logo is `images/placeholder.png` (a generic avatar); use the login page's book icon (`local_library` on the primary container).
   - `index.html`'s `<title>` is "NewAngularBoilerplate": `I18nService.setTitle` replaces it once the app runs, but it shows while loading and in link previews. Use "Biblioteca", also for `name` and `short_name` in `public/manifest.webmanifest` (now "library-frontend", shown when the app is installed).

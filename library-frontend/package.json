@@ -35,7 +35,6 @@
     "@angular/router": "^22.2.2",
     "@angular/service-worker": "^22.2.2",
     "@ngneat/overview": "8.1.0",
-    "@ngneat/until-destroy": "^10.0.0",
     "@ngx-translate/core": "17.0.0",
     "@ngx-translate/http-loader": "17.0.0",
     "@ngxpert/hot-toast": "6.1.0",

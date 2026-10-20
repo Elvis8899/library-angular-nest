@@ -1,25 +1,21 @@
-import { AsyncPipe, NgClass } from "@angular/common";
-import { Component, ElementRef, inject, Input } from "@angular/core";
+import { NgClass } from "@angular/common";
+import { Component, ElementRef, inject, input, signal } from "@angular/core";
 import { I18nService } from "@app/shared/i18n/i18n.service";
-import { BehaviorSubject, Observable } from "rxjs";
 
 @Component({
   selector: "app-language-selector",
   templateUrl: "./languageSelector.component.html",
   styleUrls: ["./languageSelector.component.scss"],
-  imports: [NgClass, AsyncPipe],
+  imports: [NgClass],
   host: {
     "(window:click)": "onClickOutside($event)",
   },
 })
 export class LanguageSelectorComponent {
-  @Input() inNavbar = true;
-  @Input() openAbove = false;
+  readonly inNavbar = input(true);
+  readonly openAbove = input(false);
 
-  isDropdownOpen = new BehaviorSubject<boolean>(false);
-  isDropdownOpen$ = this.isDropdownOpen.asObservable();
-
-  protected readonly open = open;
+  readonly isDropdownOpen = signal(false);
 
   private readonly _i18nService = inject(I18nService);
   private readonly _eRef = inject(ElementRef);
@@ -30,8 +26,8 @@ export class LanguageSelectorComponent {
     return part;
   }
 
-  get languages$(): Observable<string[]> {
-    return this._i18nService.supportedLanguages.asObservable();
+  get languages(): string[] {
+    return this._i18nService.supportedLanguages();
   }
 
   /**
@@ -42,17 +38,17 @@ export class LanguageSelectorComponent {
     const element = this._eRef?.nativeElement as HTMLElement | undefined;
     const inside = element?.contains(event.target as Node);
     if (!inside) {
-      this.isDropdownOpen.next(false);
+      this.isDropdownOpen.set(false);
     }
   }
 
   toggleDropdown() {
-    this.isDropdownOpen.next(!this.isDropdownOpen.getValue());
+    this.isDropdownOpen.update((open) => !open);
   }
 
   setLanguage(language: string) {
     this._i18nService.setLanguage(language);
-    this.isDropdownOpen.next(false);
+    this.isDropdownOpen.set(false);
   }
 
   getLanguageCode(language: string): string {

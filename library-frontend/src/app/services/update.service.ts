@@ -1,7 +1,7 @@
 import { ApplicationRef, Component, inject, Injectable } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { SwUpdate, VersionEvent } from "@angular/service-worker";
 import { Logger } from "@app/services/logger.service";
-import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { HotToastRef, HotToastService } from "@ngxpert/hot-toast";
 import { concat, interval } from "rxjs";
 import { first } from "rxjs/operators";
@@ -10,7 +10,6 @@ const log = new Logger("AppUpdateService");
 
 /* The `AppUpdateService` is responsible for checking for app updates using a
 service worker and displaying update alerts to the user. */
-@UntilDestroy()
 @Injectable({
   providedIn: "root",
 })
@@ -35,19 +34,15 @@ export class AppUpdateService {
       const everyNHoursOnceAppIsStable$ = concat(
         appIsStable$,
         everyNHours$
-      ).pipe(untilDestroyed(this));
+      ).pipe(takeUntilDestroyed());
 
       everyNHoursOnceAppIsStable$.subscribe(this.updateCheck.bind(this));
     } else {
       log.info("No service worker allow");
     }
 
-    this.subscribeForUpdates();
-  }
-
-  subscribeForUpdates(): void {
     this._swUpdate?.versionUpdates
-      ?.pipe(untilDestroyed(this))
+      ?.pipe(takeUntilDestroyed())
       .subscribe(this.onVersionEvent.bind(this));
   }
 
@@ -108,7 +103,6 @@ export class AppUpdateService {
 }
 
 // App Update Notification Component
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: "app-update-component",
   template: `

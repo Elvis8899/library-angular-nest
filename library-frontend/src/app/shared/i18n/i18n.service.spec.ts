@@ -18,6 +18,10 @@ class MockTranslateService {
   currentLang = "";
   onLangChange = new Subject();
 
+  getCurrentLang() {
+    return this.currentLang;
+  }
+
   instant: (key: string) => string = vi.fn((key) => key);
 
   setTranslation = noop;
@@ -216,25 +220,12 @@ describe("I18nService", () => {
     });
   });
 
-  describe("on  destroy", () => {
-    it("should clean up", () => {
-      // Arrange
-      spectator.service.init(defaultLanguage, supportedLanguages);
-
-      // Act
-      spectator.service.destroy();
-      // Assert
-      expect(spectator.service.langChangeSubscription.closed).toBe(true);
-    });
-
-    it("should clean up and not throw error if called twice", () => {
-      // Arrange
-      spectator.service.init(defaultLanguage, supportedLanguages);
-      // Act
-      spectator.service.destroy();
-      spectator.service.destroy();
-      // Assert
-      expect(spectator.service.langChangeSubscription.closed).toBe(true);
-    });
+  it("Should remember the selected language", () => {
+    // Arrange
+    spectator.service.init(defaultLanguage, supportedLanguages);
+    // Act
+    spectator.service.setLanguage("fr-FR");
+    // Assert
+    expect(localStorage.getItem("language")).toBe("fr-FR");
   });
 });

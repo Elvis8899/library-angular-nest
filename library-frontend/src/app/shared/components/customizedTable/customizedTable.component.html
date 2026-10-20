@@ -1,29 +1,29 @@
 <div class="table-wrapper">
   <!-- Always takes its height, so showing it doesn't move the table -->
   <mat-progress-bar
-    [class.hidden]="(data.loading$ | async) !== true"
+    [class.hidden]="!loading()"
     class="loading"
     mode="indeterminate"
   />
 
   <ng-content></ng-content>
-  <table mat-table [dataSource]="data" class="table">
+  <table mat-table [dataSource]="data()" class="table">
     <tr mat-header-row *matHeaderRowDef="shownColumns(); sticky: true"></tr>
     <tr mat-row *matRowDef="let row; columns: shownColumns()"></tr>
     <tr *matNoDataRow class="no-data-row">
       <td [attr.colspan]="shownColumns().length" class="no-data">
-        @if ((data.loading$ | async) !== true) {
+        @if (!loading()) {
           {{ "No results" | translate }}
         }
       </td>
     </tr>
   </table>
-  @if (data.page$ | async; as page) {
+  @if (page(); as page) {
     <mat-paginator
       [length]="page.count"
       [pageSize]="page.limit"
       [pageIndex]="page.page"
-      [pageSizeOptions]="data.pageSizeOptions"
+      [pageSizeOptions]="data().pageSizeOptions"
       (page)="handlePageEvent($event)"
     >
     </mat-paginator>

@@ -103,19 +103,19 @@ describe("CustomizedTableComponent", () => {
 
   it("Should show the progress bar only while loading", () => {
     expect(spectator.query("mat-progress-bar")).toHaveClass("hidden");
-    spectator.component.data["loading"].next(true);
+    spectator.component.data()["loading"].next(true);
     spectator.detectChanges();
     expect(spectator.query("mat-progress-bar")).not.toHaveClass("hidden");
   });
 
   it("Should show the empty state when there are no rows", () => {
     // Act
-    spectator.component.data.data$.next([]);
+    spectator.component.data().data$.next([]);
     spectator.detectChanges();
     // Assert
     expect(spectator.query(".no-data")).toHaveText("No results");
     // Not while loading, when the rows may still come
-    spectator.component.data["loading"].next(true);
+    spectator.component.data()["loading"].next(true);
     spectator.detectChanges();
     expect(spectator.query(".no-data")).toHaveText("");
   });
@@ -129,7 +129,7 @@ describe("CustomizedTableComponent", () => {
   });
 
   it("Should hide the paginator without a page", () => {
-    spectator.component.data["page$"].next(null as unknown as Page<T>);
+    spectator.component.data()["page$"].next(null as unknown as Page<T>);
     spectator.detectChanges();
     expect(spectator.query(".mat-mdc-paginator-navigation-next")).toBeFalsy();
   });

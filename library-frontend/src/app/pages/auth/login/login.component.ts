@@ -1,4 +1,5 @@
-import { Component, inject, signal } from "@angular/core";
+import { Component, DestroyRef, inject, signal } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { MatButton, MatIconButton } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
@@ -11,12 +12,10 @@ import { defaultRolePage } from "@app/models/credentials.entity";
 import { AuthenticationService } from "@app/services/authentication.service";
 import { ThemeToggleComponent } from "@app/shared/components/themeToggle/themeToggle.component";
 import { LanguageSelectorComponent } from "@app/shared/i18n/languageSelector/languageSelector.component";
-import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { TranslatePipe } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
 import { finalize } from "rxjs";
 
-@UntilDestroy()
 @Component({
   selector: "app-login",
   templateUrl: "./login.component.html",
@@ -41,6 +40,7 @@ export class LoginComponent {
   private readonly _fb = inject(FormBuilder);
   private readonly _authService = inject(AuthenticationService);
   private readonly _toast = inject(HotToastService);
+  private readonly _destroyRef = inject(DestroyRef);
 
   // The API only requires a password, so no length rule here
   loginForm = this._fb.nonNullable.group({
@@ -67,7 +67,7 @@ export class LoginComponent {
       .login(this.loginForm.getRawValue())
       .pipe(
         finalize(() => this.loading.set(false)),
-        untilDestroyed(this)
+        takeUntilDestroyed(this._destroyRef)
       )
       .subscribe({
         next: (credentials) => {
