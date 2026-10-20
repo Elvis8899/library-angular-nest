@@ -7,7 +7,6 @@ import {
 } from "@nestjs/platform-fastify";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { envConfig } from "@shared/utils/config/environment.config";
-import { contentParser } from "fastify-file-interceptor";
 import { Logger } from "nestjs-pino";
 
 // Shared by main.ts and the e2e tests, so the tests run the app with the
@@ -45,7 +44,6 @@ export const configureApp = async (
   SwaggerModule.setup("swagger", app, document);
 
   await app.register(fastifyRequestContext);
-  await app.register(contentParser);
   await app.register(helmet, {
     contentSecurityPolicy: false,
   });
