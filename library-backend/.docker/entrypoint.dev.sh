@@ -6,8 +6,9 @@ if [ ! -f '.env.dev' ]; then
 fi
 
 yarn
+# Prisma 7 generates the client only when asked, not on install or migrate
+yarn generate
 yarn migrate:init
-# Prisma only seeds when migrate creates or resets the database; this fills
-# an existing empty one too, and skips a database that has data
+# Prisma 7 never seeds on migrate; the seed skips a database that has data
 yarn seed
 yarn start:dev

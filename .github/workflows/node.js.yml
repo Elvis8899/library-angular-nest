@@ -49,6 +49,7 @@ jobs:
         working-directory: library-backend
         run: |
           yarn && CI=true
+          yarn generate
           yarn test:migrate
           # Fails when schema.prisma has changes no migration creates
           yarn migrate:check

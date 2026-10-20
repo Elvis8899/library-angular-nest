@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@db/generated/client";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 
 export const bookSeed: Prisma.BookInfoCreateInput[] = [

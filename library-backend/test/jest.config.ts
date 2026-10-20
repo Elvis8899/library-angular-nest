@@ -13,6 +13,7 @@ const config: Config = {
   },
   coveragePathIgnorePatterns: [
     "^<rootDir>/node_modules/",
+    "^<rootDir>/prisma/generated/",
     "^<rootDir>/src/configs",
     // "^<rootDir>/.*.dto.ts$",
   ],

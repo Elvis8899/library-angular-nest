@@ -1,6 +1,6 @@
 import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
+import { Prisma } from "@db/generated/client";
 import { HttpException, Injectable } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
 import {
   BookRentalFindAllQuery,
   BookRentalRepository,

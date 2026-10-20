@@ -1,7 +1,8 @@
 import { hashPassword } from "@auth/util/signTokenParams";
+import { PrismaClient } from "@db/generated/client";
 import { bookSeed } from "@db/seed/book.seed";
 import { userSeed } from "@db/seed/user.seed";
-import { PrismaClient } from "@prisma/client";
+import { createPrismaAdapter } from "@shared/prisma/adapter/prisma.service";
 import { formatDocument } from "@user/domain/valueObject/document";
 
 /**
@@ -44,7 +45,7 @@ export async function seed(
 // Run by `yarn seed` (prisma db seed), not when a test imports seed()
 /* istanbul ignore next */
 if (require.main === module) {
-  const prisma = new PrismaClient();
+  const prisma = new PrismaClient({ adapter: createPrismaAdapter() });
   seed(prisma)
     .then(() => prisma.$disconnect())
     .catch(async (e: unknown) => {

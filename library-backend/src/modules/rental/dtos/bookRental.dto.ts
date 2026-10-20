@@ -1,5 +1,5 @@
+import { RentalStatus } from "@db/generated/client";
 import { ApiProperty, OmitType } from "@nestjs/swagger";
-import { RentalStatus } from "@prisma/client";
 import { BaseEntityDto } from "@shared/utils/dtos/baseEntity.dto";
 import { PaginatedResponseDto } from "@shared/utils/dtos/paginated.response.base";
 import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginatedQuery.request.dto";

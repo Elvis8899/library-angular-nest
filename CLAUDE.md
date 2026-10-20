@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Library management system (book lending) for a Brazilian audience: UI text, API docs (Swagger tags/summaries) and error messages are in Portuguese. Two independent apps, each with its own `package.json`, `yarn.lock` (Yarn 1) and `node_modules`; there is no root workspace.
 
-- `library-backend/` — NestJS 12 on Fastify, Prisma + PostgreSQL, Zod, fp-ts, JWT auth.
+- `library-backend/` — NestJS 12 on Fastify, Prisma 7 + PostgreSQL, Zod, fp-ts, JWT auth.
 - `library-frontend/` — Angular 22 (standalone components), Angular Material, ngx-translate (pt-BR, en-US), Vitest via `@angular/build:unit-test`.
 
 Both use TypeScript 6.0. TypeScript 7 isn't supported by Angular, typescript-eslint or ts-jest yet.
@@ -38,6 +38,7 @@ npx env-cmd -f .env.test jest --config ./test/jest.config.ts -t "test name" <fil
 yarn migrate                  # prisma migrate dev (new migration)
 yarn migrate:check            # fails if schema.prisma differs from the migrated test database (CI runs it)
 yarn seed                     # prisma db seed; skips a database that already has users or books
+yarn generate                 # prisma generate; Prisma 7 doesn't on install or migrate, so run it after either
 ```
 
 The app refuses to start unless `JWT_SECRET_KEY` and `JWT_REFRESH_SECRET` are set and at least 32 characters long (`src/modules/auth/auth.config.ts`). `.env.test` contains test values. It also sets `NODE_OPTIONS=--experimental-vm-modules`, which lets Jest `require()` the ESM-only packages (NestJS 12, uuid); the built app needs no flag, since Node 24 loads them natively. `make dockerDev` (from the repo root) starts the dev stack behind nginx on `localhost:3000`: the frontend dev server at `/`, the API at `/v1` and `/swagger`, plus Postgres, pgAdmin, Prometheus and Grafana. The dev Docker entrypoint copies `.env.example` to `.env.dev`. The dev `app` and `frontend` containers run as uid/gid 1000 so files it writes to the mounted source folder aren't root-owned; set `HOST_UID`/`HOST_GID` if yours differ.
@@ -101,6 +102,7 @@ Errors are Nest `HttpException` subclasses created by small factory functions in
 
 ### Database migrations
 
+- Prisma's configuration is `prisma.config.ts`: the datasource URL and the seed command. It loads `.env` itself, without overriding variables that are already set (env-cmd, Docker Compose `env_file`). The client is generated into `prisma/generated/` (gitignored, excluded from coverage) and imported as `@db/generated/client`, not `@prisma/client`. `PrismaService` and the seed connect through the `pg` driver adapter (`createPrismaAdapter`).
 - Schema changes go through `yarn migrate` (`prisma migrate dev`), which writes a migration under `prisma/migrations/`. Production applies them with `make dockerMigrate` (`prisma migrate deploy`).
 - Data changes that SQL can express belong in the same migration: create it with `yarn migrate --create-only --name <name>` and add the `UPDATE`/`INSERT` after the schema changes in its `migration.sql`. It then runs once, in order, in a transaction, and in every environment (dev container, test database, CI). Prefer a column `DEFAULT` when it fills existing rows, as `add_user_token_version` does.
 - There is no separate post-migration script, because one would run on every deploy rather than once. If a data change ever needs app code, add one script per change with a table recording which have run, and run the pending ones after `migrate deploy`. For changes that must not break the running app, expand first (add and backfill the new column), switch the code over, then drop the old column in a later migration.

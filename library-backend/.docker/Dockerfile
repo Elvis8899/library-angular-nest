@@ -10,7 +10,7 @@ RUN apt-get update -y \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
-# Compile with every dependency, then generate the Prisma client
+# Generate the Prisma client into prisma/generated, then compile it with the app into dist/
 FROM base AS builder
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
@@ -21,11 +21,10 @@ RUN npx prisma generate && yarn build
 FROM builder AS migrate
 ENTRYPOINT ["yarn", "migrate:deploy"]
 
-# Runtime dependencies only, plus the generated Prisma client
+# Runtime dependencies only, plus the Prisma CLI
 FROM base AS prod-deps
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --production=true && yarn cache clean
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 
 FROM base AS runtime

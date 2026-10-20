@@ -17,15 +17,16 @@
     "test:e2e": "env-cmd -f .env.test jest --config ./test/jest-e2e.config.ts --runInBand",
     "test:inte": "env-cmd -f .env.test jest --config ./test/jest-integration.config.ts --runInBand",
     "test:unit": "env-cmd -f .env.test jest --config ./test/jest-unit.config.ts",
-    "test:docker:up": "docker compose -f ../.docker/docker-compose-dev.yml up postgres -d && sleep 5 && env-cmd -f .env.test yarn migrate:reset --force",
+    "test:docker:up": "docker compose -f ../.docker/docker-compose-dev.yml up postgres -d && sleep 5 && env-cmd -f .env.test yarn migrate:reset --force && env-cmd -f .env.test yarn seed",
     "test:migrate": "env-cmd -f .env.test yarn migrate:deploy",
-    "migrate:check": "env-cmd -f .env.test prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code",
+    "migrate:check": "env-cmd -f .env.test prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code",
     "migrate": "prisma migrate dev",
     "migrate:init": "prisma migrate dev --name init",
     "migrate:reset": "prisma migrate reset",
     "migrate:deploy": "prisma migrate deploy",
     "seed": "prisma db seed",
-    "docker:dev": "docker compose --file ../.docker/docker-compose-dev.yml up --build -d"
+    "docker:dev": "docker compose --file ../.docker/docker-compose-dev.yml up --build -d",
+    "generate": "prisma generate"
   },
   "dependencies": {
     "@fastify/helmet": "^13.2.0",
@@ -40,8 +41,10 @@
     "@nestjs/platform-fastify": "^12.2.0",
     "@nestjs/swagger": "^12.0.2",
     "@nestjs/throttler": "^6.7.1",
-    "@prisma/client": "^6.19.3",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
     "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
     "env-var": "^7.5.0",
     "fp-ts": "^2.16.11",
     "nestjs-pino": "^5.3.1",
@@ -73,15 +76,12 @@
     "prettier": "^3.9.10",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-prisma": "^5.0.0",
-    "prisma": "^6.19.3",
+    "prisma": "^7.10.1",
     "supertest": "^7.3.1",
     "ts-jest": "^29.4.15",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "8.72.0"
-  },
-  "prisma": {
-    "seed": "ts-node -r tsconfig-paths/register --transpile-only prisma/seed.ts"
   }
 }

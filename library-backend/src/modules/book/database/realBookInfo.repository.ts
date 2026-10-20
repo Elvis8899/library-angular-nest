@@ -4,8 +4,8 @@ import {
 } from "@book/database/bookInfo.repository.port";
 import { BookInfo } from "@book/domain/bookInfo.entity";
 import { BookItem } from "@book/domain/valueObject/bookItem.entity";
+import { Prisma } from "@db/generated/client";
 import { Injectable } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { E, FPF, O, TE } from "@shared/utils/application/monads";
 import { noop } from "@shared/utils/application/noop";

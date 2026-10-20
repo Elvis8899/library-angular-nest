@@ -1,5 +1,5 @@
+import { Prisma } from "@db/generated/client";
 import { Injectable } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { FPF, O, TE } from "@shared/utils/application/monads";
 import { noop } from "@shared/utils/application/noop";
