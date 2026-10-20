@@ -165,6 +165,10 @@ export const enUS: Translations = {
       emailTaken: "This email is already used by another user.",
     },
   },
+  update: {
+    available: "A new version is available.",
+    reload: "Reload",
+  },
   paginator: {
     itemsPerPage: "Items per page",
     nextPage: "Next page",

@@ -1,17 +1,16 @@
+import { ApplicationRef } from "@angular/core";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { SwUpdate, VersionEvent } from "@angular/service-worker";
 import { Logger } from "@app/services/logger.service";
+import { AppUpdateService } from "@app/services/update.service";
+import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import {
-  AppUpdateService,
-  UpdateComponent,
-} from "@app/services/update.service";
-import {
-  createComponentFactory,
   createServiceFactory,
   createSpyObject,
   SpectatorService,
   SpyObject,
 } from "@ngneat/spectator/vitest";
-import { HotToastRef, HotToastService } from "@ngxpert/hot-toast";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { Subject } from "rxjs";
 
 Logger.level = 0;
@@ -35,12 +34,13 @@ describe("Update Service", () => {
   let spectator: SpectatorService<AppUpdateService>;
   let swSpy: SpyObject<SwUpdate>;
   let versionUpdates: Subject<VersionEvent>;
-  let toastClosed: Subject<{ dismissedByAction: boolean }>;
+  let snackBarDismissed: Subject<{ dismissedByAction: boolean }>;
 
   const createService = createServiceFactory({
     service: AppUpdateService,
+    imports: [TranslateModule.forRoot()],
     providers: [{ provide: SwUpdate, useFactory: () => swSpy }],
-    mocks: [HotToastService],
+    mocks: [MatSnackBar],
   });
 
   const setup = (isEnabled = true) => {
@@ -50,12 +50,12 @@ describe("Update Service", () => {
     swSpy.activateUpdate.mockResolvedValue(true);
     spectator = createService();
 
-    toastClosed = new Subject();
-    const toastService = spectator.inject(HotToastService);
-    toastService.show.mockReturnValue({
-      afterClosed: toastClosed,
-    } as unknown as ReturnType<HotToastService["show"]>);
-    return toastService;
+    snackBarDismissed = new Subject();
+    const snackBar = spectator.inject(MatSnackBar);
+    snackBar.open.mockReturnValue({
+      afterDismissed: () => snackBarDismissed,
+    } as unknown as ReturnType<MatSnackBar["open"]>);
+    return snackBar;
   };
 
   describe("Checking for updates", () => {
@@ -89,76 +89,77 @@ describe("Update Service", () => {
   });
 
   describe("Version events", () => {
-    it("Should not show the toast while a new version is downloading", () => {
-      const toastService = setup();
+    it("Should not show the update alert while a new version is downloading", () => {
+      const snackBar = setup();
 
       versionUpdates.next(versionDetected);
 
-      expect(toastService.show).not.toHaveBeenCalled();
+      expect(snackBar.open).not.toHaveBeenCalled();
     });
 
-    it("Should not show the toast when the installation failed", () => {
-      const toastService = setup();
+    it("Should not show the update alert when the installation failed", () => {
+      const snackBar = setup();
 
       versionUpdates.next(installationFailed);
 
-      expect(toastService.show).not.toHaveBeenCalled();
+      expect(snackBar.open).not.toHaveBeenCalled();
     });
 
-    it("Should show the update toast when a new version is ready", () => {
-      const toastService = setup();
+    it("Should show the update alert when a new version is ready", () => {
+      const snackBar = setup();
 
       versionUpdates.next(versionReady);
 
-      expect(toastService.show).toHaveBeenCalledOnce();
-      expect(toastService.show).toHaveBeenCalledWith(UpdateComponent, {
-        autoClose: false,
-        dismissible: false,
-      });
+      // The keys: no translations are loaded here
+      expect(snackBar.open).toHaveBeenCalledExactlyOnceWith(
+        "update.available",
+        "update.reload"
+      );
     });
 
-    it("Should show the toast only once while it is open", () => {
-      const toastService = setup();
+    it("Should show the update alert only once while it is open", () => {
+      const snackBar = setup();
 
       versionUpdates.next(versionReady);
       versionUpdates.next(versionReady);
 
-      expect(toastService.show).toHaveBeenCalledOnce();
+      expect(snackBar.open).toHaveBeenCalledOnce();
     });
 
-    it("Should show the toast again after it was closed", () => {
-      const toastService = setup();
+    it("Should show the update alert again after it was closed", () => {
+      const snackBar = setup();
 
       versionUpdates.next(versionReady);
-      toastClosed.next({ dismissedByAction: true });
+      snackBarDismissed.next({ dismissedByAction: false });
       versionUpdates.next(versionReady);
 
-      expect(toastService.show).toHaveBeenCalledTimes(2);
+      expect(snackBar.open).toHaveBeenCalledTimes(2);
     });
   });
 
-  describe("Closing the toast", () => {
-    it("Should activate the update and reload when the user accepts", async () => {
+  describe("Dismissing the update alert", () => {
+    it("Should activate the update and reload when the user picks Reload", async () => {
       setup();
       const reloadSpy = vi
         .spyOn(spectator.service, "reloadPage")
         .mockImplementation(() => undefined);
       versionUpdates.next(versionReady);
 
-      toastClosed.next({ dismissedByAction: false });
+      snackBarDismissed.next({ dismissedByAction: true });
       await vi.waitFor(() => expect(reloadSpy).toHaveBeenCalledOnce());
 
       expect(swSpy.activateUpdate).toHaveBeenCalledOnce();
     });
 
-    it("Should not update when the user closes the toast", async () => {
+    it("Should not update when the alert goes away without the action", async () => {
       setup();
       const reloadSpy = vi
         .spyOn(spectator.service, "reloadPage")
         .mockImplementation(() => undefined);
       versionUpdates.next(versionReady);
 
-      toastClosed.next({ dismissedByAction: true });
+      // Dismissed some other way than its action
+      snackBarDismissed.next({ dismissedByAction: false });
       await Promise.resolve();
 
       expect(swSpy.activateUpdate).not.toHaveBeenCalled();
@@ -167,50 +168,38 @@ describe("Update Service", () => {
   });
 });
 
-describe("Update Component", () => {
-  const toastRef = { close: vi.fn() };
-  const createComponent = createComponentFactory({
-    component: UpdateComponent,
-    providers: [{ provide: HotToastRef, useValue: toastRef }],
+describe("Update alert", () => {
+  const versionUpdates = new Subject<VersionEvent>();
+  const swSpy = createSpyObject(SwUpdate, { isEnabled: false, versionUpdates });
+  const createService = createServiceFactory({
+    service: AppUpdateService,
+    imports: [TranslateModule.forRoot()],
+    providers: [{ provide: SwUpdate, useValue: swSpy }],
   });
 
-  beforeEach(() => {
-    toastRef.close.mockClear();
-  });
-
-  it("Should ask for the update when clicking the update link", () => {
-    const spectator = createComponent();
-
-    spectator.click(spectator.queryAll("a")[0]);
-
-    expect(toastRef.close).toHaveBeenCalledWith({ dismissedByAction: false });
-  });
-
-  it("Should ask for the update when pressing enter on the update link", () => {
-    const spectator = createComponent();
-
-    spectator
-      .queryAll("a")[0]
-      .dispatchEvent(new KeyboardEvent("keyup", { key: "Enter" }));
-
-    expect(toastRef.close).toHaveBeenCalledWith({ dismissedByAction: false });
-  });
-
-  it("Should only close the toast when clicking close", () => {
-    const spectator = createComponent();
-
-    spectator.click(spectator.queryAll("a")[1]);
-
-    expect(toastRef.close).toHaveBeenCalledWith({ dismissedByAction: true });
-  });
-
-  it("Should only close the toast when pressing enter on close", () => {
-    const spectator = createComponent();
-
-    spectator
-      .queryAll("a")[1]
-      .dispatchEvent(new KeyboardEvent("keyup", { key: "Enter" }));
-
-    expect(toastRef.close).toHaveBeenCalledWith({ dismissedByAction: true });
+  it("Should offer the update in the current language, and reload on its action", async () => {
+    // Arrange
+    swSpy.activateUpdate.mockResolvedValue(true);
+    const spectator = createService();
+    const translate = spectator.inject(TranslateService);
+    translate.setTranslation("pt-BR", ptBR);
+    translate.use("pt-BR");
+    const reloadSpy = vi
+      .spyOn(spectator.service, "reloadPage")
+      .mockImplementation(() => undefined);
+    // Act
+    versionUpdates.next(versionReady);
+    spectator.inject(ApplicationRef).tick();
+    // Assert: the real snackbar, in the overlay
+    const snackBar = document.querySelector("mat-snack-bar-container");
+    expect(snackBar?.textContent).toContain("Uma nova versão está disponível.");
+    expect(snackBar?.querySelector("button")?.textContent).toContain(
+      "Atualizar"
+    );
+    // Act
+    (snackBar?.querySelector("button") as HTMLButtonElement).click();
+    // Assert
+    await vi.waitFor(() => expect(reloadSpy).toHaveBeenCalledOnce());
+    expect(swSpy.activateUpdate).toHaveBeenCalledOnce();
   });
 });

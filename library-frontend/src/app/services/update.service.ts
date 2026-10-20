@@ -1,8 +1,10 @@
-import { ApplicationRef, Component, inject, Injectable } from "@angular/core";
+import { ApplicationRef, inject, Injectable } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { SwUpdate, VersionEvent } from "@angular/service-worker";
 import { Logger } from "@app/services/logger.service";
-import { HotToastRef, HotToastService } from "@ngxpert/hot-toast";
+import { t } from "@app/shared/i18n/translations/translationKey";
+import { TranslateService } from "@ngx-translate/core";
 import { concat, interval } from "rxjs";
 import { first } from "rxjs/operators";
 
@@ -14,11 +16,12 @@ service worker and displaying update alerts to the user. */
   providedIn: "root",
 })
 export class AppUpdateService {
-  private _isUpdateToastShown = false;
+  private _isUpdateAlertShown = false;
 
   appRef = inject(ApplicationRef);
   private readonly _swUpdate = inject(SwUpdate);
-  private readonly _toastService = inject(HotToastService);
+  private readonly _snackBar = inject(MatSnackBar);
+  private readonly _translate = inject(TranslateService);
 
   constructor() {
     log.info("Update service is running...");
@@ -49,7 +52,7 @@ export class AppUpdateService {
   async updateCheck() {
     try {
       log.info("Checking for app updates...");
-      this._isUpdateToastShown = false;
+      this._isUpdateAlertShown = false;
       const updateFound = await this._swUpdate.checkForUpdate();
       log.info(
         updateFound
@@ -79,18 +82,20 @@ export class AppUpdateService {
     }
   }
 
+  // A snackbar with a reload action; it stays until the user reloads, so an
+  // update is never applied in the middle of their work
   private _showAppUpdateAlert() {
-    if (this._isUpdateToastShown) {
+    if (this._isUpdateAlertShown) {
       return;
     }
-    this._isUpdateToastShown = true;
-    const toastRef = this._toastService.show(UpdateComponent, {
-      autoClose: false,
-      dismissible: false,
-    });
-    toastRef.afterClosed.subscribe(({ dismissedByAction }) => {
-      this._isUpdateToastShown = false;
-      if (dismissedByAction) return;
+    this._isUpdateAlertShown = true;
+    const snackBarRef = this._snackBar.open(
+      this._translate.instant(t("update.available")),
+      this._translate.instant(t("update.reload"))
+    );
+    snackBarRef.afterDismissed().subscribe(({ dismissedByAction }) => {
+      this._isUpdateAlertShown = false;
+      if (!dismissedByAction) return;
       this._swUpdate.activateUpdate().then(() => this.reloadPage());
     });
   }
@@ -100,30 +105,4 @@ export class AppUpdateService {
   reloadPage(): void {
     document.location.reload();
   }
-}
-
-// App Update Notification Component
-@Component({
-  selector: "app-update-component",
-  template: `
-    New Version is Available.
-    <a
-      style="color: #E9380BFF"
-      (click)="toastRef.close({ dismissedByAction: false })"
-      (keyup.enter)="toastRef.close({ dismissedByAction: false })"
-      tabindex="0"
-      >Please Click to Update</a
-    >
-    or
-    <a
-      style="color: #E9380BFF"
-      (click)="toastRef.close({ dismissedByAction: true })"
-      (keyup.enter)="toastRef.close({ dismissedByAction: true })"
-      tabindex="1"
-      >Close</a
-    >
-  `,
-})
-export class UpdateComponent {
-  public toastRef = inject(HotToastRef);
 }

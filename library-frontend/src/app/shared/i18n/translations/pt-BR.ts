@@ -168,6 +168,10 @@ export const ptBR = {
       emailTaken: "O email informado já está sendo usado por outro usuário.",
     },
   },
+  update: {
+    available: "Uma nova versão está disponível.",
+    reload: "Atualizar",
+  },
   paginator: {
     itemsPerPage: "Itens por página",
     nextPage: "Próxima página",
