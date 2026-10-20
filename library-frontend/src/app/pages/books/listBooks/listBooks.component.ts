@@ -57,7 +57,6 @@ const log = new Logger("ListBooksComponent");
 })
 export class ListBooksComponent implements OnInit {
   users: UserEntity[] = [];
-  isLoading = true;
 
   data!: PaginatedDataSource<BookEntity, BookQuery>;
 
@@ -150,13 +149,11 @@ export class ListBooksComponent implements OnInit {
     });
   }
   addBookItem(book: BookEntity) {
-    this.isLoading = true;
     this._bookService.addBookItem({ bookId: book.id }).subscribe({
       next: () => {
         this.refresh();
       },
       error: this.defaultErrorHandler,
-      complete: () => (this.isLoading = false),
     });
   }
   removeBookItem(book: BookEntity) {
@@ -177,10 +174,11 @@ export class ListBooksComponent implements OnInit {
     });
   }
 
-  defaultErrorHandler(error: Error) {
+  // An arrow function, so `this` is still the component when RxJS calls it
+  readonly defaultErrorHandler = (error: Error) => {
     this._toast.error(error?.message);
     log.error(error);
-  }
+  };
   isAdmin() {
     return this._credentialsService.isAdmin();
   }

@@ -29,7 +29,7 @@ import {
 } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
-import { of } from "rxjs";
+import { of, throwError } from "rxjs";
 
 Logger.level = 0;
 
@@ -192,13 +192,6 @@ describe("ListBooksComponent", () => {
     expect(sortBySpy).toHaveBeenCalledWith({ order: "asc" });
   });
 
-  it("Should show error message on errors", () => {
-    const toastService = spectator.inject(HotToastService);
-    spectator.component.defaultErrorHandler(new Error("Error"));
-    expect(toastService.error).toHaveBeenCalledTimes(1);
-    expect(toastService.error).toHaveBeenCalledWith("Error");
-  });
-
   describe("When client", () => {
     beforeEach(() => {
       const authService = spectator.inject(CredentialsService);
@@ -215,6 +208,18 @@ describe("ListBooksComponent", () => {
       // Assert
       spectator.click("button[name='rentBook']");
       spectator.detectChanges();
+    });
+
+    it("Should show the error when renting fails", () => {
+      // Arrange
+      const toastService = spectator.inject(HotToastService);
+      rentalService.rentBook.mockReturnValue(
+        throwError(() => new Error("Error"))
+      );
+      // Act
+      spectator.click("button[name='rentBook']");
+      // Assert
+      expect(toastService.error).toHaveBeenCalledExactlyOnceWith("Error");
     });
 
     it("Should not have admin buttons", () => {
@@ -285,6 +290,23 @@ describe("ListBooksComponent", () => {
       // Assert
       spectator.click("button[name='removeBook']");
       expect(bookServiceMock.deleteBookItem).toHaveBeenCalledTimes(1);
+    });
+
+    it("Should show the error when adding or removing a bookItem fails", () => {
+      // Arrange
+      const toastService = spectator.inject(HotToastService);
+      bookServiceMock.addBookItem.mockReturnValueOnce(
+        throwError(() => new Error("Add error"))
+      );
+      bookServiceMock.deleteBookItem.mockReturnValueOnce(
+        throwError(() => new Error("Remove error"))
+      );
+      // Act
+      spectator.click("button[name='addBook']");
+      spectator.click("button[name='removeBook']");
+      // Assert
+      expect(toastService.error).toHaveBeenCalledWith("Add error");
+      expect(toastService.error).toHaveBeenCalledWith("Remove error");
     });
 
     it("Should not remove bookItem if none available", () => {
