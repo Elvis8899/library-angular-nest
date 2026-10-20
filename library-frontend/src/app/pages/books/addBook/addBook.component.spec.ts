@@ -9,13 +9,13 @@ import { Logger } from "@app/services/logger.service";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import { LanguagesEnum } from "@app/shared/i18n/translations/translationKey";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { HotToastService } from "@ngxpert/hot-toast";
 import {
   createComponentFactory,
   Spectator,
   SpyObject,
-} from "@ngneat/spectator/vitest";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { HotToastService } from "@ngxpert/hot-toast";
+} from "@openng/spectator/vitest";
 import { of, Subject, throwError } from "rxjs";
 
 Logger.level = 0;

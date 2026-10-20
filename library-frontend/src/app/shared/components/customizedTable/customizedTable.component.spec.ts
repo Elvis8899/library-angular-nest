@@ -7,8 +7,8 @@ import {
 import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
 import { Logger } from "@app/services/logger.service";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
-import { createHostFactory, SpectatorHost } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
+import { createHostFactory, SpectatorHost } from "@openng/spectator/vitest";
 import { Observable, of } from "rxjs";
 
 const log = new Logger("CustomizedTableComponent");

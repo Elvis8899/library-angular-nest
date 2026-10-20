@@ -4,7 +4,7 @@ import { CredentialsService } from "@app/services/credentials.service";
 import {
   createServiceFactory,
   SpectatorService,
-} from "@ngneat/spectator/vitest";
+} from "@openng/spectator/vitest";
 
 describe("AuthService", () => {
   const credential: Credentials = {

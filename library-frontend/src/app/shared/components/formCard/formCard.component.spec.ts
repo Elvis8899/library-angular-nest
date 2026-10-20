@@ -1,6 +1,6 @@
 import { FormCardComponent } from "@app/shared/components/formCard/formCard.component";
-import { createHostFactory, SpectatorHost } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
+import { createHostFactory, SpectatorHost } from "@openng/spectator/vitest";
 
 describe("FormCardComponent", () => {
   let spectator: SpectatorHost<FormCardComponent>;

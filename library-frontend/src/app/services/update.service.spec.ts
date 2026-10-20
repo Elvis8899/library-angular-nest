@@ -4,13 +4,13 @@ import { SwUpdate, VersionEvent } from "@angular/service-worker";
 import { Logger } from "@app/services/logger.service";
 import { AppUpdateService } from "@app/services/update.service";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import {
   createServiceFactory,
   createSpyObject,
   SpectatorService,
   SpyObject,
-} from "@ngneat/spectator/vitest";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+} from "@openng/spectator/vitest";
 import { Subject } from "rxjs";
 
 Logger.level = 0;

@@ -305,11 +305,11 @@
     picocolors "^1.0.0"
 
 "@babel/code-frame@^7.10.4":
-  version "7.28.6"
-  resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.28.6.tgz#72499312ec58b1e2245ba4a4f550c132be4982f7"
-  integrity sha512-JYgintcMjRiCvS8mMECzaEn+m3PfoQiyqukOMCCVQtoJGYJw8j/8LBJEiqkHLkfwCcs74E3pbAUFNg7d9VNJ+Q==
+  version "7.29.7"
+  resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.29.7.tgz#f2fbbfea87c44a21590ec515b778b2c26d8866e7"
+  integrity sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==
   dependencies:
-    "@babel/helper-validator-identifier" "^7.28.5"
+    "@babel/helper-validator-identifier" "^7.29.7"
     js-tokens "^4.0.0"
     picocolors "^1.1.1"
 
@@ -418,6 +418,11 @@
   resolved "https://registry.yarnpkg.com/@babel/helper-validator-identifier/-/helper-validator-identifier-7.28.5.tgz#010b6938fab7cb7df74aa2bbc06aa503b8fe5fb4"
   integrity sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==
 
+"@babel/helper-validator-identifier@^7.29.7":
+  version "7.29.7"
+  resolved "https://registry.yarnpkg.com/@babel/helper-validator-identifier/-/helper-validator-identifier-7.29.7.tgz#bd87084ced0c796ec46bda492de6e83d29e89fc2"
+  integrity sha512-qehxGkRj55h/ff8EMaJ+cYhyaKlHIxqYDn682wQD7RNp9UujOQsHog2uS0r2vzr4pW+sXf90NeeayjcNaX3fFg==
+
 "@babel/helper-validator-identifier@^8.0.6":
   version "8.0.6"
   resolved "https://registry.yarnpkg.com/@babel/helper-validator-identifier/-/helper-validator-identifier-8.0.6.tgz#fda51b4365505595779b51ea1ae0899ad9d76866"
@@ -461,9 +466,9 @@
     "@babel/types" "^8.0.6"
 
 "@babel/runtime@^7.12.5":
-  version "7.28.6"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.28.6.tgz#d267a43cb1836dc4d182cce93ae75ba954ef6d2b"
-  integrity sha512-05WQkdpL9COIMz4LjTxGpPNCdlpyimKppYNoJ5Di5EUObifl8t4tuLuUBBZEpoLYOmfvIWrsp9fCl0HoPRVTdA==
+  version "7.29.10"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.29.10.tgz#fe9920782f7ee34029165ac6f272984917a1641b"
+  integrity sha512-NpugTzbKgGrNe45Ui32cN8vCFFMxVtP/9rtfwv0nP5FRDAjvYBxJcLVpYA9mr1jxP6cnIT7x9LUzuDTbWYYNRA==
 
 "@babel/template@^8.0.0":
   version "8.0.0"
@@ -1395,15 +1400,6 @@
   dependencies:
     tslib "^2.0.0"
 
-"@ngneat/spectator@^22.1.0":
-  version "22.1.0"
-  resolved "https://registry.yarnpkg.com/@ngneat/spectator/-/spectator-22.1.0.tgz#ebe53e8844f3eb1278e076aac30630d4d13c1ac1"
-  integrity sha512-5UxMxiSp8LeWCdAtMktd2NVPJhbm88nBbNoOlmBty7b4paHAFwEhr7NNSdNlnFH2ZF/iAE5fLqzkUAgCGSGmDA==
-  dependencies:
-    "@testing-library/dom" "^10.4.1"
-    jquery "^3.7.1"
-    tslib "^2.6.2"
-
 "@ngx-rocket/ascii-logo@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@ngx-rocket/ascii-logo/-/ascii-logo-1.1.0.tgz#dfd955150e3e99e224b59d5f4273e44125d03e98"
@@ -1463,6 +1459,15 @@
   dependencies:
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
+
+"@openng/spectator@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@openng/spectator/-/spectator-1.0.2.tgz#359edc16b44aa1d9664f42fc5bebf4ac1d457d0f"
+  integrity sha512-mpAuogyQFiJVmbXaYjtgDLDN8Xx8R6DJGoCM8+Y9xM4d8sjSHv+ow5mby7k78jyB5H1XeAGSyKK7/OadUqBz9A==
+  dependencies:
+    "@testing-library/dom" "^10.4.1"
+    jquery "^3.7.1"
+    tslib "^2.6.2"
 
 "@oxc-parser/binding-android-arm-eabi@0.150.0":
   version "0.150.0"
@@ -2053,9 +2058,9 @@
   integrity sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==
 
 "@testing-library/dom@^10.4.1":
-  version "10.4.1"
-  resolved "https://registry.yarnpkg.com/@testing-library/dom/-/dom-10.4.1.tgz#d444f8a889e9a46e9a3b4f3b88e0fcb3efb6cf95"
-  integrity sha512-o4PXJQidqJl82ckFaXUeoAW+XysPLauYI43Abki5hABd853iMhitooc6znOnczgbTYmEP6U6/y1ZyKAIsvMKGg==
+  version "10.4.2"
+  resolved "https://registry.yarnpkg.com/@testing-library/dom/-/dom-10.4.2.tgz#e996827c4e5e1f13589527293b4b3958de2f709f"
+  integrity sha512-yzr2S9HyAIdhz2/6qHgbs665Q7PKVcDF05vsOlHPxG1mo36gKVesdYVeDLnXgfjJ03CrKRk08knc6+E/9m8v2Q==
   dependencies:
     "@babel/code-frame" "^7.10.4"
     "@babel/runtime" "^7.12.5"

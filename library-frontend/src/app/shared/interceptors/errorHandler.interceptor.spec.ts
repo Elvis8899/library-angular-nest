@@ -13,11 +13,11 @@ import { AuthenticationService } from "@app/services/authentication.service";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
 import { errorHandlerInterceptor } from "@app/shared/interceptors/errorHandler.interceptor";
+import { TranslateService } from "@ngx-translate/core";
 import {
   createInjectionContextFactory,
   SpectatorInjectionContext,
-} from "@ngneat/spectator/vitest";
-import { TranslateService } from "@ngx-translate/core";
+} from "@openng/spectator/vitest";
 import { of, throwError } from "rxjs";
 
 Logger.level = 0;

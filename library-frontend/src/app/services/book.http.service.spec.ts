@@ -8,7 +8,7 @@ import { BookService } from "@app/services/book.http.service";
 import {
   createServiceFactory,
   SpectatorService,
-} from "@ngneat/spectator/vitest";
+} from "@openng/spectator/vitest";
 
 describe("BookService", () => {
   let spectator: SpectatorService<BookService>;

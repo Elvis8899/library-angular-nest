@@ -1,11 +1,11 @@
 import { TranslatedPaginatorIntl } from "@app/shared/i18n/translatedPaginatorIntl.service";
 import { enUS } from "@app/shared/i18n/translations/en-US";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import {
   createServiceFactory,
   SpectatorService,
-} from "@ngneat/spectator/vitest";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+} from "@openng/spectator/vitest";
 
 describe("TranslatedPaginatorIntl", () => {
   let spectator: SpectatorService<TranslatedPaginatorIntl>;

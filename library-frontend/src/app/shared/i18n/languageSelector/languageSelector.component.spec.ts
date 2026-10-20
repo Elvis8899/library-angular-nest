@@ -3,8 +3,8 @@ import { provideRouter } from "@angular/router";
 import { Logger } from "@app/services/logger.service";
 import { I18nService } from "@app/shared/i18n/i18n.service";
 import { LanguageSelectorComponent } from "@app/shared/i18n/languageSelector/languageSelector.component";
-import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 
 Logger.level = 0;
 

@@ -1,8 +1,8 @@
 import { signal } from "@angular/core";
 import { ColorScheme, ThemeService } from "@app/services/theme.service";
 import { ThemeToggleComponent } from "@app/shared/components/themeToggle/themeToggle.component";
-import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
+import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 
 describe("ThemeToggleComponent", () => {
   let spectator: Spectator<ThemeToggleComponent>;

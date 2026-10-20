@@ -1,11 +1,11 @@
 import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { Logger } from "@app/services/logger.service";
 import { I18nService } from "@app/shared/i18n/i18n.service";
+import { LangChangeEvent, TranslateService } from "@ngx-translate/core";
 import {
   createServiceFactory,
   SpectatorService,
-} from "@ngneat/spectator/vitest";
-import { LangChangeEvent, TranslateService } from "@ngx-translate/core";
+} from "@openng/spectator/vitest";
 import { noop, Subject } from "rxjs";
 import { vi, type Mock } from "vitest";
 

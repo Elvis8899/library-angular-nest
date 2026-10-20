@@ -11,7 +11,7 @@ import { RentalService } from "@app/services/rental.http.service";
 import {
   createServiceFactory,
   SpectatorService,
-} from "@ngneat/spectator/vitest";
+} from "@openng/spectator/vitest";
 
 describe("RentalService", () => {
   let spectator: SpectatorService<RentalService>;

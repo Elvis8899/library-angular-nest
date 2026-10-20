@@ -1,10 +1,10 @@
 import { formatCurrency, formatDate } from "@angular/common";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import {
   createInjectionContextFactory,
   SpectatorInjectionContext,
-} from "@ngneat/spectator/vitest";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+} from "@openng/spectator/vitest";
 
 describe("injectCurrentLocale", () => {
   let spectator: SpectatorInjectionContext;

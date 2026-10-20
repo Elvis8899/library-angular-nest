@@ -10,12 +10,12 @@ import { ListUsersComponent } from "@app/pages/users/listUsers/listUsers.compone
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
+import { TranslateModule } from "@ngx-translate/core";
 import {
   createComponentFactory,
   createSpyObject,
   Spectator,
-} from "@ngneat/spectator/vitest";
-import { TranslateModule } from "@ngx-translate/core";
+} from "@openng/spectator/vitest";
 import { BehaviorSubject, of, throwError } from "rxjs";
 
 Logger.level = 0;

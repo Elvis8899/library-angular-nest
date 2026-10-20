@@ -28,14 +28,14 @@ import { Logger } from "@app/services/logger.service";
 import { RentalService } from "@app/services/rental.http.service";
 import { UserService } from "@app/services/user.http.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { HotToastService } from "@ngxpert/hot-toast";
 import {
   createComponentFactory,
   createSpyObject,
   Spectator,
   SpyObject,
-} from "@ngneat/spectator/vitest";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { HotToastService } from "@ngxpert/hot-toast";
+} from "@openng/spectator/vitest";
 import { BehaviorSubject, of, throwError } from "rxjs";
 
 Logger.level = 0;

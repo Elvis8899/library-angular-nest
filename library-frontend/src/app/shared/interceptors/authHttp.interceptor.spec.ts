@@ -8,11 +8,11 @@ import {
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
 import { authHttpInterceptor } from "@app/shared/interceptors/authHttp.interceptor";
+import { TranslateService } from "@ngx-translate/core";
 import {
   createInjectionContextFactory,
   SpectatorInjectionContext,
-} from "@ngneat/spectator/vitest";
-import { TranslateService } from "@ngx-translate/core";
+} from "@openng/spectator/vitest";
 import { Mock } from "vitest";
 
 describe("AuthenticationHttpInterceptor", () => {

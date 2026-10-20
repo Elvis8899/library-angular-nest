@@ -4,15 +4,15 @@ This app has third-party dependencies (both production and development). These d
 
 ## Highlighted dependencies
 
-- [@ngneat/hot-toast](https://github.com/ngneat/hot-toast): Toast notifications for Angular.
-- [@ngneat/until-destroy](https://github.com/ngneat/until-destroy): Automatic cleanup of Angular subscriptions.
+- [@angular/material](https://material.angular.dev): Material 3 components and theming.
+- [@ngxpert/hot-toast](https://www.npmjs.com/package/@ngxpert/hot-toast): Toast notifications for Angular.
 - [@ngx-translate/core](https://www.npmjs.com/package/@ngx-translate/core): Internationalization (i18n) library for Angular applications.
 - [@ngx-translate/http-loader](https://www.npmjs.com/package/@ngx-translate/http-loader): A library to load translations from HTTP requests.
-- [bootstrap](https://www.npmjs.com/package/bootstrap): Popular front-end framework for responsive design.
 - [sanitize.css](https://github.com/csstools/sanitize.css): A modern CSS reset.
 
 ## Dev Dependencies
 
+- [@openng/spectator](https://github.com/openng-org/spectator): Test helpers for Angular, used through its Vitest entry point (`@openng/spectator/vitest`). The maintained fork of `@ngneat/spectator`.
 - [@eslint/js](https://www.npmjs.com/package/@eslint/js): ESLint’s official JavaScript rules.
 - [eslint](https://www.npmjs.com/package/eslint): JavaScript/TypeScript linter.
 - [eslint-config-prettier](https://github.com/prettier/eslint-config-prettier): Turns off ESLint rules that conflict with Prettier.

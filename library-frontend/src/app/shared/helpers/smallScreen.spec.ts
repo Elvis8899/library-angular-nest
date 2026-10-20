@@ -6,7 +6,7 @@ import {
 import {
   createInjectionContextFactory,
   SpectatorInjectionContext,
-} from "@ngneat/spectator/vitest";
+} from "@openng/spectator/vitest";
 import { Subject } from "rxjs";
 
 describe("injectIsSmallScreen", () => {

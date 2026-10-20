@@ -12,7 +12,7 @@ import {
 import {
   createInjectionContextFactory,
   SpectatorInjectionContext,
-} from "@ngneat/spectator/vitest";
+} from "@openng/spectator/vitest";
 
 describe("AuthenticationGuard", () => {
   let spectator: SpectatorInjectionContext;

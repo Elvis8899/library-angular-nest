@@ -9,7 +9,7 @@ import {
   createServiceFactory,
   SpectatorService,
   SpyObject,
-} from "@ngneat/spectator/vitest";
+} from "@openng/spectator/vitest";
 import { firstValueFrom, of, throwError } from "rxjs";
 
 describe("AuthService", () => {

@@ -6,13 +6,13 @@ import {
 } from "@app/shared/components/confirmDialog/confirm.dialog.component";
 import { TypedDialog } from "@app/shared/components/dialog/typedDialog";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import {
   createComponentFactory,
   createServiceFactory,
   Spectator,
   SpectatorService,
-} from "@ngneat/spectator/vitest";
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+} from "@openng/spectator/vitest";
 import { of } from "rxjs";
 
 describe("ConfirmDialogComponent", () => {

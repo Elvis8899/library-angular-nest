@@ -8,7 +8,7 @@ import { UserService } from "@app/services/user.http.service";
 import {
   createServiceFactory,
   SpectatorService,
-} from "@ngneat/spectator/vitest";
+} from "@openng/spectator/vitest";
 
 describe("UserService", () => {
   let spectator: SpectatorService<UserService>;

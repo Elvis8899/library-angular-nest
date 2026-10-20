@@ -4,8 +4,8 @@ import { ROLE } from "@app/models/credentials.entity";
 import { CredentialsService } from "@app/services/credentials.service";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 
 describe("SidebarComponent", () => {
   let spectator: Spectator<SidebarComponent>;

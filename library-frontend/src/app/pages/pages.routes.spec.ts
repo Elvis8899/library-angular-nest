@@ -6,7 +6,7 @@ import { Logger } from "@app/services/logger.service";
 import {
   createServiceFactory,
   SpectatorService,
-} from "@ngneat/spectator/vitest";
+} from "@openng/spectator/vitest";
 
 Logger.level = 0;
 

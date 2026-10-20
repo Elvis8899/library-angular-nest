@@ -2,8 +2,8 @@
 import { RouterModule } from "@angular/router";
 import { AppComponent } from "@app/app.component";
 import { Logger } from "@app/services/logger.service";
-import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
+import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 
 Logger.level = 0;
 

@@ -3,7 +3,7 @@ import { ThemeService } from "@app/services/theme.service";
 import {
   createServiceFactory,
   SpectatorService,
-} from "@ngneat/spectator/vitest";
+} from "@openng/spectator/vitest";
 
 describe("ThemeService", () => {
   let spectator: SpectatorService<ThemeService>;

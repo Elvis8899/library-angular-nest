@@ -103,7 +103,7 @@ Both files are typed as `AllTranslations`, so the build fails if a language is m
 ## Tests
 
 - Specs sit next to the file they test (`*.spec.ts`) and run on Vitest through `ng test`.
-- Use `@ngneat/spectator/vitest`:
+- Use `@openng/spectator/vitest` (the maintained fork of `@ngneat/spectator`, whose repositories were removed):
   - `createComponentFactory` for components
   - `createServiceFactory` for services
   - `createInjectionContextFactory` for guards and interceptors

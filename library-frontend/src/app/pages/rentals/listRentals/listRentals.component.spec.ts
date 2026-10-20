@@ -15,9 +15,9 @@ import { RentalService } from "@app/services/rental.http.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
+import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 import { BehaviorSubject, of, throwError } from "rxjs";
 
 Logger.level = 0;

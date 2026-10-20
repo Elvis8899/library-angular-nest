@@ -4,8 +4,8 @@ import { LayoutComponent } from "@app/layouts/layout.component";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
+import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 
 Logger.level = 0;
 

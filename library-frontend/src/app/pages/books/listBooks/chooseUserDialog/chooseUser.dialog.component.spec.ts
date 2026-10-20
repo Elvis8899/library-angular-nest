@@ -7,12 +7,12 @@ import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
 import { ChooseUserDialogComponent } from "@app/pages/books/listBooks/chooseUserDialog/chooseUser.dialog.component";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
+import { TranslateModule } from "@ngx-translate/core";
 import {
   createComponentFactory,
   createSpyObject,
   Spectator,
-} from "@ngneat/spectator/vitest";
-import { TranslateModule } from "@ngx-translate/core";
+} from "@openng/spectator/vitest";
 import { noop, of, Subject, throwError } from "rxjs";
 
 Logger.level = 0;

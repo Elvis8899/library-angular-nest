@@ -3,7 +3,7 @@ import { RouteReusableStrategy } from "@app/shared/helpers/routeReusableStrategy
 import {
   createServiceFactory,
   SpectatorService,
-} from "@ngneat/spectator/vitest";
+} from "@openng/spectator/vitest";
 
 describe("RouteReuseStrategy", () => {
   let spectator: SpectatorService<RouteReusableStrategy>;

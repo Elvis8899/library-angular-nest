@@ -1,6 +1,6 @@
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
-import { createHostFactory, SpectatorHost } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
+import { createHostFactory, SpectatorHost } from "@openng/spectator/vitest";
 
 describe("PageHeaderComponent", () => {
   let spectator: SpectatorHost<PageHeaderComponent>;

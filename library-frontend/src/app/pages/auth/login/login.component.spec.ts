@@ -8,13 +8,13 @@ import { LoginComponent } from "@app/pages/auth/login/login.component";
 import { AuthenticationService } from "@app/services/authentication.service";
 import { Logger } from "@app/services/logger.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
+import { TranslateModule } from "@ngx-translate/core";
+import { HotToastService } from "@ngxpert/hot-toast";
 import {
   createComponentFactory,
   createSpyObject,
   Spectator,
-} from "@ngneat/spectator/vitest";
-import { TranslateModule } from "@ngx-translate/core";
-import { HotToastService } from "@ngxpert/hot-toast";
+} from "@openng/spectator/vitest";
 import { of, Subject, throwError } from "rxjs";
 
 Logger.level = 0;

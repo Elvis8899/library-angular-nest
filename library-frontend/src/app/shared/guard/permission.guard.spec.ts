@@ -9,7 +9,7 @@ import { permissionGuard } from "@app/shared/guard/permission.guard";
 import {
   createInjectionContextFactory,
   SpectatorInjectionContext,
-} from "@ngneat/spectator/vitest";
+} from "@openng/spectator/vitest";
 
 describe("PermissionGuard", () => {
   let spectator: SpectatorInjectionContext;
