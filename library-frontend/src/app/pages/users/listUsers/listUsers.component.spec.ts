@@ -63,10 +63,24 @@ describe("ListUsersComponent", () => {
     httpMock.verify();
   });
 
-  it("Should create app", () => {
+  it("Should list the users", () => {
     // Assert
-    expect(spectator.query("section")).toBeTruthy();
-    expect(spectator.queryAll("tr").length).toBe(2);
+    expect(spectator.query("h1")).toHaveText("Users List");
+    expect(spectator.queryAll("tr.mat-mdc-row")).toHaveLength(1);
+  });
+
+  it("Should show the role as a chip, and a dash for a missing document", () => {
+    // Arrange
+    spectator.component.data.data$.next([
+      users[0],
+      { ...users[0], id: "2", role: ROLE.CLIENT, cpf: "" },
+    ]);
+    spectator.detectChanges();
+    // Assert
+    const rows = spectator.queryAll("tr.mat-mdc-row");
+    expect(rows[0].querySelector(".chip")).toHaveText("Admin");
+    expect(rows[1].querySelector(".chip")).toHaveText("Client");
+    expect(rows[1].querySelector("td.document")).toHaveText("—");
   });
   it("should call getPaginatedUsers on init", () => {
     // Assert

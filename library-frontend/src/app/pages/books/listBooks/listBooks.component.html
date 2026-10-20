@@ -15,98 +15,151 @@
     </ng-container>
   </app-page-header>
 
-  <div>
-    <div class="toolbar">
-      <mat-form-field class="name-form">
-        <mat-icon matPrefix>search</mat-icon>
-        <input
-          #searchInput
-          (input)="data.queryBy({ name: searchInput.value })"
-          matInput
-          placeholder="Search"
-        />
-      </mat-form-field>
-      <mat-form-field class="created-at-form">
-        <input
-          (dateChange)="data.queryBy({ createdAt: $event.value })"
-          matInput
-          [matDatepicker]="picker"
-          placeholder="Created At"
-        />
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
-      </mat-form-field>
-      <mat-form-field class="property-form">
-        <mat-label>Order by</mat-label>
-        <mat-select
-          value="createdAt"
-          (selectionChange)="data.sortBy({ property: $event.value })"
-        >
-          <mat-option value="name">name</mat-option>
-          <mat-option value="createdAt">createdAt</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-button-toggle-group
-        value="desc"
-        (change)="data.sortBy({ order: $event.value })"
+  <div class="toolbar">
+    <mat-form-field
+      appearance="outline"
+      class="search-field"
+      subscriptSizing="dynamic"
+    >
+      <mat-label>{{ "Search by name" | translate }}</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input
+        #searchInput
+        (input)="data.queryBy({ name: searchInput.value })"
+        matInput
+        name="search"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>{{ "Created on" | translate }}</mat-label>
+      <input
+        (dateChange)="data.queryBy({ createdAt: $event.value })"
+        [matDatepicker]="picker"
+        matInput
+        name="createdAt"
+      />
+      <mat-datepicker-toggle [for]="picker" matSuffix />
+      <mat-datepicker #picker />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>{{ "Order by" | translate }}</mat-label>
+      <mat-select
+        (selectionChange)="data.sortBy({ property: $event.value })"
+        value="createdAt"
       >
-        <mat-button-toggle value="asc"
-          ><mat-icon>arrow_upward</mat-icon></mat-button-toggle
-        >
-        <mat-button-toggle value="desc"
-          ><mat-icon>arrow_downward</mat-icon></mat-button-toggle
-        >
-      </mat-button-toggle-group>
-    </div>
+        <mat-option value="name">{{ "Name" | translate }}</mat-option>
+        <mat-option value="createdAt">{{
+          "Creation date" | translate
+        }}</mat-option>
+      </mat-select>
+    </mat-form-field>
 
-    <app-customized-table [data]="data">
-      <ng-container matColumnDef="image">
-        <th mat-header-cell *matHeaderCellDef>Imagem</th>
-        <td mat-cell *matCellDef="let book">
-          <img [src]="book.image" alt="{{ book.name }}" />
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef translate>Name</th>
-        <td mat-cell *matCellDef="let book">{{ book.name }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="price">
-        <th mat-header-cell *matHeaderCellDef>Preço</th>
-        <td mat-cell *matCellDef="let book">{{ book.price }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="availability">
-        <th mat-header-cell *matHeaderCellDef>Disponibilidade</th>
-        <td mat-cell *matCellDef="let book">
-          {{ bookAvailabilityRatio(book) }}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Ações</th>
-        <td mat-cell *matCellDef="let book">
-          <div style="display: flex; justify-content: space-evenly">
-            <button
-              name="rentBook"
-              [disabled]="!isBookAvailable(book)"
-              (click)="openRentBookDialog(book)"
-            >
-              emprestar
-            </button>
-            @if (isAdmin()) {
-              <button (click)="addBookItem(book)" name="addBook">
-                adicionar
-              </button>
-              <button (click)="removeBookItem(book)" name="removeBook">
-                remover
-              </button>
-              <button disabled name="deleteBook">deletar</button>
-            }
-          </div>
-        </td>
-      </ng-container>
-    </app-customized-table>
+    <mat-button-toggle-group
+      (change)="data.sortBy({ order: $event.value })"
+      [attr.aria-label]="'Sort order' | translate"
+      hideSingleSelectionIndicator
+      value="desc"
+    >
+      <mat-button-toggle
+        [aria-label]="'Ascending' | translate"
+        [matTooltip]="'Ascending' | translate"
+        value="asc"
+      >
+        <mat-icon>arrow_upward</mat-icon>
+      </mat-button-toggle>
+      <mat-button-toggle
+        [aria-label]="'Descending' | translate"
+        [matTooltip]="'Descending' | translate"
+        value="desc"
+      >
+        <mat-icon>arrow_downward</mat-icon>
+      </mat-button-toggle>
+    </mat-button-toggle-group>
   </div>
+
+  <app-customized-table [data]="data">
+    <ng-container matColumnDef="book">
+      <th *matHeaderCellDef mat-header-cell>{{ "Book" | translate }}</th>
+      <td *matCellDef="let book" mat-cell>
+        <div class="book-cell">
+          <img
+            (error)="onCoverError($event)"
+            [src]="book.image || noCoverImage"
+            alt=""
+            class="cover"
+          />
+          <span class="book-name">{{ book.name }}</span>
+        </div>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="price">
+      <th *matHeaderCellDef class="numeric" mat-header-cell>
+        {{ "Price" | translate }}
+      </th>
+      <td *matCellDef="let book" class="numeric" mat-cell>
+        {{ book.price | currency: "BRL" : "symbol" : undefined : locale() }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="availability">
+      <th *matHeaderCellDef mat-header-cell>
+        {{ "Availability" | translate }}
+      </th>
+      <td *matCellDef="let book" mat-cell>
+        @if (book.bookItems.length === 0) {
+          <span class="chip">{{ "No copies" | translate }}</span>
+        } @else if (isBookAvailable(book)) {
+          <span class="chip chip-success">
+            {{ availabilityKey | translate: availabilityParams(book) }}
+          </span>
+        } @else {
+          <span class="chip">{{ "All rented" | translate }}</span>
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th *matHeaderCellDef class="actions-header" mat-header-cell>
+        <span class="visually-hidden">{{ "Actions" | translate }}</span>
+      </th>
+      <td *matCellDef="let book" mat-cell>
+        <div class="table-actions">
+          <button
+            (click)="openRentBookDialog(book)"
+            [attr.aria-label]="'Rent' | translate"
+            [disabled]="!isBookAvailable(book)"
+            [matTooltip]="'Rent' | translate"
+            mat-icon-button
+            name="rentBook"
+          >
+            <mat-icon>bookmark_add</mat-icon>
+          </button>
+          @if (isAdmin()) {
+            <button
+              (click)="addBookItem(book)"
+              [attr.aria-label]="'Add a copy' | translate"
+              [matTooltip]="'Add a copy' | translate"
+              mat-icon-button
+              name="addBook"
+            >
+              <mat-icon>library_add</mat-icon>
+            </button>
+            <button
+              (click)="removeBookItem(book)"
+              [attr.aria-label]="'Remove a copy' | translate"
+              [disabled]="!isBookAvailable(book)"
+              [matTooltip]="'Remove a copy' | translate"
+              mat-icon-button
+              name="removeBook"
+            >
+              <mat-icon>remove_circle_outline</mat-icon>
+            </button>
+          }
+        </div>
+      </td>
+    </ng-container>
+  </app-customized-table>
 </section>

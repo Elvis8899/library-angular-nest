@@ -1,32 +1,30 @@
-// The table's plain action buttons, until they become Material buttons
-td button {
-  min-width: 10%;
-  padding: 10px;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: var(--mat-sys-surface-container-highest);
-  }
-
-  &:disabled {
-    pointer-events: none;
-    opacity: 0.5;
-    // background-color: var(--mat-sys-surface-container-highest);
-  }
-}
-
-.name-form,
-.created-at-form,
-.property-form {
-  margin-right: 8px;
-}
-
 .toolbar {
-  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.search-field {
+  flex: 1 1 240px;
+}
+
+.book-cell {
   display: flex;
   align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.cover {
+  flex-shrink: 0;
+  width: 40px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--mat-sys-corner-extra-small);
+  background-color: var(--mat-sys-surface-container);
+}
+
+.book-name {
+  font: var(--mat-sys-title-small);
 }

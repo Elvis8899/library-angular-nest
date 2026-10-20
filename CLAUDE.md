@@ -133,6 +133,8 @@ Errors are Nest `HttpException` subclasses created by small factory functions in
   - `errorHandlerInterceptor`: on a 401 it refreshes the token once and retries the request; it logs out on 403 or when the refresh fails.
 - The app is zoneless (`provideZonelessChangeDetection()` in `app.config.ts`, no zone.js). State that changes outside template events (timers, promises, subscriptions) must go through signals, the `async` pipe or `markForCheck()`, or the view won't update.
 - Components use OnPush, which is the default since Angular 22: leave `changeDetection` out. The `prefer-on-push-component-change-detection` lint rule rejects `Eager`. A component whose template reads state changed outside its own template events (router events, other services) must call `markForCheck()` or use signals or the `async` pipe; see the `NavigationEnd` handler in `sidebar.component.ts`.
+- Shared building blocks in `shared/components/`: `app-page-header` (page title and actions), `app-form-card` (form pages), `customizedTable` with `PaginatedDataSource` (lists), `ConfirmDialog.confirm()` (destructive actions) and `app-theme-toggle`. Colors come from Material's `--mat-sys-*` variables and spacing from `--space-1`…`--space-6` (`theme/_variables.scss`), so both light and dark schemes work.
+- An `@if` block isn't projected into a named content slot (`select="…"`) by itself, and the build warns (NG8011). Wrap it in an element that matches the slot (`<ng-container pageActions>`, `ngProjectAs="mat-card-subtitle"`), or, inside a `mat-form-field`, use one `mat-error` and pick its message inside it.
 - Specs use `@ngneat/spectator/vitest` (`createComponentFactory`, `createServiceFactory`, `mocks: [...]`) with `HttpTestingController`.
 
 ## CI and deployment

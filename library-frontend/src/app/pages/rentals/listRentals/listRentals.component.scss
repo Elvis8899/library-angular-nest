@@ -1,26 +1,28 @@
-.book-table-container {
-  margin: 20px;
+.book-name {
+  font: var(--mat-sys-title-small);
 }
 
-.book-table {
-  width: 100%;
-  border-collapse: collapse;
+.due-date {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
 
-  th,
-  td {
-    padding: 10px;
-    border: 1px solid var(--mat-sys-outline-variant);
-    text-align: left;
-  }
+.chip-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
 
-  th {
-    background-color: var(--mat-sys-surface-container);
-  }
+// The total has a tooltip with how it adds up
+.fine {
+  color: var(--mat-sys-error);
+  font-weight: 600;
+  text-decoration: underline dotted;
+  cursor: help;
+}
 
-  img {
-    //border-radius: 50%;
-    //width: 100px;
-    //height: 100px;
-    max-height: 200px;
-  }
+.no-fine {
+  color: var(--mat-sys-on-surface-variant);
 }

@@ -1,37 +1,80 @@
 <section class="main-container">
-  <app-page-header title="Rentals" />
+  <app-page-header subtitle="Books not returned yet" title="Rentals" />
 
-  <div class="book-table-container">
-    <app-customized-table [data]="data" class="rental-table">
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef translate>Name</th>
-        <td mat-cell *matCellDef="let rental">{{ rental.bookName }}</td>
-      </ng-container>
+  <app-customized-table [data]="data">
+    <ng-container matColumnDef="book">
+      <th *matHeaderCellDef mat-header-cell>{{ "Book" | translate }}</th>
+      <td *matCellDef="let rental" class="book-name" mat-cell>
+        {{ rental.bookName }}
+      </td>
+    </ng-container>
 
-      <ng-container matColumnDef="email">
-        <th mat-header-cell *matHeaderCellDef>Cliente</th>
-        <td mat-cell *matCellDef="let rental">{{ rental.userName }}</td>
-      </ng-container>
+    <ng-container matColumnDef="client">
+      <th *matHeaderCellDef mat-header-cell>{{ "Client" | translate }}</th>
+      <td *matCellDef="let rental" mat-cell>{{ rental.userName }}</td>
+    </ng-container>
 
-      <ng-container matColumnDef="overdueDate">
-        <th mat-header-cell *matHeaderCellDef>Data de Emprestimo / Entrega</th>
-        <td mat-cell *matCellDef="let rental">
-          {{ getDateOnly(rental.createdAt) }} -
-          {{ getDateOnly(rental.overdueDate) }}
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="charges">
-        <th mat-header-cell *matHeaderCellDef>Multas</th>
-        <td mat-cell *matCellDef="let rental">
-          {{ bookFinesText(rental) }}
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Ações</th>
-        <td mat-cell *matCellDef="let rental">
-          <button (click)="returnBook(rental)">Devolver</button>
-        </td>
-      </ng-container>
-    </app-customized-table>
-  </div>
+    <ng-container matColumnDef="rentedOn">
+      <th *matHeaderCellDef mat-header-cell>{{ "Rented on" | translate }}</th>
+      <td *matCellDef="let rental" mat-cell>
+        {{ rental.createdAt | date: "shortDate" : undefined : locale() }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="dueDate">
+      <th *matHeaderCellDef mat-header-cell>{{ "Due on" | translate }}</th>
+      <td *matCellDef="let rental" mat-cell>
+        <span class="due-date">
+          {{ rental.overdueDate | date: "shortDate" : undefined : locale() }}
+          @if (rental.fines.overdue) {
+            <span class="chip chip-error">
+              <mat-icon class="chip-icon">schedule</mat-icon>
+              {{ "Overdue" | translate }}
+            </span>
+          }
+        </span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="fine">
+      <th *matHeaderCellDef class="numeric" mat-header-cell>
+        {{ "Fine" | translate }}
+      </th>
+      <td *matCellDef="let rental" class="numeric" mat-cell>
+        @if (rental.fines.overdue) {
+          <span
+            [matTooltip]="fineDetailsKey | translate: fineDetailsParams(rental)"
+            class="fine"
+            tabindex="0"
+          >
+            {{
+              rental.fines.total
+                | currency: "BRL" : "symbol" : undefined : locale()
+            }}
+          </span>
+        } @else {
+          <span class="no-fine">—</span>
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th *matHeaderCellDef mat-header-cell>
+        <span class="visually-hidden">{{ "Actions" | translate }}</span>
+      </th>
+      <td *matCellDef="let rental" mat-cell>
+        <div class="table-actions">
+          <button
+            (click)="returnBook(rental)"
+            [attr.aria-label]="'Return book' | translate"
+            [matTooltip]="'Return book' | translate"
+            mat-icon-button
+            name="returnBook"
+          >
+            <mat-icon>assignment_return</mat-icon>
+          </button>
+        </div>
+      </td>
+    </ng-container>
+  </app-customized-table>
 </section>

@@ -6,34 +6,10 @@ Everything from that review is done (2026-10-13).
 
 ## Frontend UI with Angular Material (2026-10-20)
 
-The screens barely use Angular Material, which is already installed and themed with `mat.theme()` in `styles.scss`. They use plain `<button>`s and `<input>`s with about 570 lines of hand-written component SCSS, and some text is hardcoded in Portuguese or English. Rebuild them with Material components and improve how they look at the same time. Estimate: 2 to 3 days.
+The theme, login, forms, dialogs and lists are rebuilt with Angular Material (branch `frontend-material-ui`). What's left, plus two API problems found on the way:
 
-- [x] **Theme and shared pieces** (first, since the screens build on them)
-  - [x] Choose a palette for `mat.theme()` based on the existing teal (`--light-teal`, `--dark-teal`) and drop the leftover ngx-rocket colour variables in `theme/_variables.scss` that the new theme replaces. Components use Material's system tokens (`--mat-sys-*`) instead of custom colours.
-    - Done 2026-10-20: teal primary and orange tertiary generated into `theme/_themeColors.scss`, with high-contrast overrides. The page stylesheets only had their colours swapped for tokens; they're replaced when each screen is rebuilt.
-  - [x] Dark mode: `color-scheme: light dark` in the theme, plus a toggle in the header next to the language selector, remembered in localStorage.
-  - [x] Typography and spacing: Manrope through `mat.theme()` typography, a small spacing scale (4/8/16/24/32), and the same page padding on every screen.
-  - [x] A page header component (title, optional subtitle, action buttons on the right) used by every page.
-    - Done 2026-10-20: `app-page-header`, used by the three lists. Put a conditional action inside `<ng-container pageActions>`: an `@if` block isn't projected into the slot by itself.
-  - [x] A form-card layout (a centred `mat-card` with a title, fields, and Cancel and Save buttons) for the add-book and add-user forms.
-    - Done 2026-10-20: `app-form-card`; the forms start using it in their own item below.
-  - [x] `customizedTable`: an empty state ("Nenhum resultado"), a progress bar instead of the spinner that pushes the table down, row hover, and a sticky header.
-  - [x] A confirmation dialog based on `TypedDialog` for destructive actions (removing a book copy, returning a book).
-    - Done 2026-10-20: `ConfirmDialog.confirm(data)` emits true only on confirm. Wired into the book and rental lists in their own items below.
-- [x] **Login**: a `mat-card` with `mat-form-field`s, `mat-error` messages, a password visibility toggle, and a spinner on the button while logging in. Use the app name or logo above the card.
-  - Done 2026-10-20, plus the theme toggle next to the language selector (now a shared `app-theme-toggle`). The password no longer needs 4 characters: the API only requires one. Inside a `mat-form-field`, use one `mat-error` and pick its message inside it, since an `@if` chain isn't projected into the error slot.
-- [ ] **Book list**
-  - [ ] Actions become icon buttons with tooltips (rent, add copy, remove copy). Remove the permanently disabled "deletar" button, or implement deleting.
-  - [ ] Availability shown as a chip (green when copies are available, grey when none are), and the cover as a fixed-size rounded thumbnail with a placeholder when the image fails to load.
-  - [ ] Price through the `currency` pipe (`BRL`), not the raw number.
-  - [ ] The search, date and sort toolbar wraps on narrow screens.
-- [x] **Add book and add user**: on the form card, with `mat-form-field`, `mat-error`, a hint for the CPF format, and a Cancel button that goes back to the list. Delete the custom SCSS they no longer need.
-  - Done 2026-10-20. The rules now follow the API: a book's cover is optional (a URL, previewed), its price 0 or more; the CPF field takes a CPF or CNPJ (alphanumeric too) and checks the digits as `CheckedDocumentType` does. The global plain-input styles are gone, since every input is a Material field.
-- [ ] **Rental list**: dates through the `date` pipe instead of `getDateOnly`, overdue rentals and fines highlighted (chip or warning colour), and an icon button with confirmation for returning a book.
-- [ ] **User list**: role shown as a chip, and the same column and button style as the other lists.
-- [x] **Choose-user dialog**: `mat-dialog-title`, `mat-dialog-content` and `mat-dialog-actions`, with a search field if the user list is long.
-  - Done 2026-10-20: an autocomplete searching the clients by name or email. It used to load only the API's first page (20 users, admins included), so later clients couldn't be picked. It now loads the largest page (1000) and filters in the browser, because `GET /v1/users` has no search or role filter; with more clients than that, the API needs those filters.
-- [ ] **Layout**: the sidebar shows the active route (`routerLinkActive`), and the sidebar and header use the theme colours.
+- [ ] **Layout**: the header repeats the app name the sidebar already shows; show something useful there instead (the page title or the user's name).
 - [ ] **Responsive**: check every screen at phone width. The lists may need fewer columns or cards on small screens.
-- [ ] **Translations**: every hardcoded string (table headers, form errors, buttons such as "emprestar" and "Devolver") goes through `translate`, with entries in both `pt-BR.ts` and `en-US.ts`.
-- [ ] **Tests and checks**: update the spec selectors that rely on plain elements (`button[name='rentBook']`, plain inputs) and keep coverage at 80% or more. `yarn lint`, `yarn lint:styles`, `yarn test` and `yarn build` pass after each screen.
+- [ ] **Translations**: the paginator's labels ("Items per page", "1 – 3 of 3") are still in English; give `MatPaginatorIntl` translated labels that follow the selected language.
+- [ ] **API: search and role filter on `GET /v1/users`**. The choose-user dialog loads the largest page (1000 users) and searches it in the browser, so with more clients than that some can't be picked.
+- [ ] **API: deleting a book erases its rentals**. `DELETE /v1/bookInfos/:id` has no checks, and the schema cascades from the book to its copies and from each copy to its rentals (`onDelete: Cascade`), so deleting a book with rented copies silently erases active rentals; removing a copy (`DELETE /v1/bookInfos/item/:id`, available copies only) erases that copy's past rentals. The book list has no delete button until the API refuses books with rented copies and keeps rental history (for example `onDelete: Restrict` or soft deletes).

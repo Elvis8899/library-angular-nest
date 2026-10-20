@@ -5,7 +5,15 @@
   border: 1px solid var(--mat-sys-outline-variant);
   border-radius: var(--mat-sys-corner-medium);
   background-color: var(--mat-sys-surface-container-lowest);
+  // Clips to the rounded corners without becoming a scroll container, so the
+  // header stays sticky against the page
   overflow: clip;
+
+  // Narrow screens scroll the table sideways instead of cutting columns off;
+  // the header isn't sticky there
+  @media (width < 900px) {
+    overflow-x: auto;
+  }
 
   @include mat.table-overrides(
     (

@@ -1,3 +1,56 @@
 /*
  *  Dedicated file for custom utility classes. like margin, padding, display, etc.
  */
+
+// A small status label in a table cell: <span class="chip chip-success">.
+// The text carries the meaning; the color only reinforces it.
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--mat-sys-corner-full);
+  font: var(--mat-sys-label-medium);
+  white-space: nowrap;
+  color: var(--mat-sys-on-surface-variant);
+  background-color: var(--mat-sys-surface-container-highest);
+}
+
+.chip-success {
+  color: var(--mat-sys-on-primary-container);
+  background-color: var(--mat-sys-primary-container);
+}
+
+.chip-accent {
+  color: var(--mat-sys-on-tertiary-container);
+  background-color: var(--mat-sys-tertiary-container);
+}
+
+.chip-error {
+  color: var(--mat-sys-on-error-container);
+  background-color: var(--mat-sys-error-container);
+}
+
+// Icon buttons side by side in a table's actions column
+.table-actions {
+  display: flex;
+  gap: var(--space-1);
+  justify-content: flex-end;
+}
+
+// Numbers in a column line up on the right; the table prefix outranks
+// Material's cell alignment
+.mat-mdc-table .numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+// Read by screen readers, not shown
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
