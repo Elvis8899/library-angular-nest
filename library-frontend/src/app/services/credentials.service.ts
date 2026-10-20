@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, signal } from "@angular/core";
 import {
   Credentials,
   PERMISSIONS,
@@ -16,7 +16,9 @@ const credentialsKey = "credentials";
   providedIn: "root",
 })
 export class CredentialsService {
-  private _credentials: Credentials | null = null;
+  // A signal, so templates and computeds reading the user update when it
+  // changes, also from another tab
+  private readonly _credentials = signal<Credentials | null>(null);
   constructor() {
     this.refresh();
     // Another tab logged in, refreshed the tokens or logged out: refresh
@@ -29,8 +31,9 @@ export class CredentialsService {
   }
 
   refresh() {
-    this._credentials =
-      this.getSavedCredentials(false) || this.getSavedCredentials();
+    this._credentials.set(
+      this.getSavedCredentials(false) || this.getSavedCredentials()
+    );
   }
 
   getSavedCredentials(remember = true): Credentials | null {
@@ -43,7 +46,7 @@ export class CredentialsService {
   }
 
   clearCredentials() {
-    this._credentials = null;
+    this._credentials.set(null);
     sessionStorage.removeItem(credentialsKey);
     localStorage.removeItem(credentialsKey);
   }
@@ -53,7 +56,7 @@ export class CredentialsService {
    * @return The user credentials or null if the user is not authenticated.
    */
   get credentials(): Credentials | null {
-    return this._credentials;
+    return this._credentials();
   }
 
   /**
@@ -87,7 +90,7 @@ export class CredentialsService {
       this.clearCredentials();
       return;
     }
-    this._credentials = credentials;
+    this._credentials.set(credentials);
     const storage = remember ? localStorage : sessionStorage;
     storage.setItem(credentialsKey, JSON.stringify(credentials));
   }

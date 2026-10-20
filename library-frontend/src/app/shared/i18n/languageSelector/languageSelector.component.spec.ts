@@ -1,136 +1,80 @@
-import { RouterModule } from "@angular/router";
+import { ApplicationRef } from "@angular/core";
+import { provideRouter } from "@angular/router";
 import { Logger } from "@app/services/logger.service";
 import { I18nService } from "@app/shared/i18n/i18n.service";
 import { LanguageSelectorComponent } from "@app/shared/i18n/languageSelector/languageSelector.component";
-import { LanguagesEnum } from "@app/shared/i18n/translations/allTranslations";
 import { createComponentFactory, Spectator } from "@ngneat/spectator/vitest";
-import { TranslateModule } from "@ngx-translate/core";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 
 Logger.level = 0;
 
+// I18nService starts in the saved language, or pt-BR (cleared before each
+// test)
 describe("LanguageSelectorComponent", () => {
   let spectator: Spectator<LanguageSelectorComponent>;
   const createComponent = createComponentFactory({
     component: LanguageSelectorComponent,
-    imports: [RouterModule.forRoot([]), TranslateModule.forRoot()],
-    providers: [I18nService],
+    imports: [TranslateModule.forRoot()],
+    providers: [provideRouter([])],
+    detectChanges: false,
   });
 
-  beforeEach(() => (spectator = createComponent()));
-
-  it("should create", () => {
-    expect(spectator.query("div")).toBeTruthy();
+  beforeEach(() => {
+    localStorage.removeItem("language");
+    spectator = createComponent();
+    spectator.detectChanges();
   });
 
-  it("dropdown should be closed", () => {
-    expect(spectator.component.isDropdownOpen()).toBe(false);
+  // The menu lives in an overlay, outside the fixture's view
+  function openMenu() {
+    spectator.click("button[name='language']");
+    spectator.inject(ApplicationRef).tick();
+  }
+
+  const options = () =>
+    spectator.queryAll<HTMLButtonElement>("button[name='languageOption']", {
+      root: true,
+    });
+
+  it("Should show the current language on the button", () => {
+    // Assert
+    const button = spectator.query("button[name='language']");
+    expect(button).toContainText("PT");
+    expect(button).toHaveAttribute("aria-label", "Idioma: Português");
   });
 
-  it("should open dropdown", () => {
-    spectator.component.toggleDropdown();
-    spectator.detectChanges();
-    expect(spectator.component.isDropdownOpen()).toBe(true);
-    const dropdown = spectator.query(".open");
-    expect(dropdown).toBeTruthy();
-    expect(dropdown?.textContent).toContain(LanguagesEnum.PT_BR);
-    expect(dropdown?.textContent).toContain(LanguagesEnum.EN_US);
-  });
-
-  it("should close dropdown", () => {
-    spectator.component.toggleDropdown();
-    spectator.detectChanges();
-    expect(spectator.component.isDropdownOpen()).toBe(true);
-    spectator.component.toggleDropdown();
-    spectator.detectChanges();
-    expect(spectator.component.isDropdownOpen()).toBe(false);
-  });
-
-  it("should close dropdown on clicking outside", () => {
-    spectator.component.toggleDropdown();
-    spectator.detectChanges();
-    expect(spectator.component.isDropdownOpen()).toBe(true);
-    spectator.element?.parentElement?.click();
-    spectator.detectChanges();
-    expect(spectator.component.isDropdownOpen()).toBe(false);
-  });
-
-  it("should not close with click inside", () => {
-    // Arrange
-    spectator.component.toggleDropdown();
-    spectator.detectChanges();
+  it("Should list each language in its own language, marking the current one", () => {
     // Act
-    spectator.click("div");
+    openMenu();
+    // Assert
+    expect(
+      options().map((option) => option.textContent?.replace(/\s+/g, " ").trim())
+    ).toEqual(["check Português", "English"]);
+    expect(options()[0]).toHaveAttribute("aria-current", "true");
+    expect(options()[1]).not.toHaveAttribute("aria-current");
+    expect(options()[1]).toHaveAttribute("lang", "en-US");
+  });
+
+  it("Should switch the language", () => {
+    // Arrange
+    const setLanguageSpy = vi.spyOn(
+      spectator.inject(I18nService),
+      "setLanguage"
+    );
+    openMenu();
+    // Act
+    spectator.click(options()[1]);
     spectator.detectChanges();
     // Assert
-    expect(spectator.component.isDropdownOpen()).toBe(true);
+    expect(setLanguageSpy).toHaveBeenCalledWith("en-US");
+    expect(spectator.inject(TranslateService).getCurrentLang()).toBe("en-US");
+    expect(spectator.query("button[name='language']")).toContainText("EN");
   });
 
-  it("should set language with click", () => {
-    spectator.component.toggleDropdown();
-    spectator.detectChanges();
-    spectator.queryAll("li")[1].dispatchEvent(new Event("click"));
-    spectator.detectChanges();
-    expect(spectator.component.currentLanguage).toBe("US");
-  });
-
-  it("should set language with keyup", () => {
-    spectator.component.toggleDropdown();
-    spectator.detectChanges();
-    spectator
-      .queryLast("li")
-      ?.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter" }));
-    spectator.detectChanges();
-    expect(spectator.component.currentLanguage).toBe("US");
-  });
-
-  it("Should process empty language", () => {
-    spectator.component.setLanguage("");
-    expect(spectator.component.getLanguageCode("")).toBe("");
-  });
-
-  it("main div keyup", () => {
-    spectator
-      .query("div")
-      ?.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter" }));
-
-    spectator.detectChanges();
-    expect(spectator.component.isDropdownOpen()).toBe(false);
-  });
-
-  it("second div keyup with enter - should open", () => {
-    spectator
-      .query(".dropdown-toggle")
-      ?.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter" }));
-
-    spectator.detectChanges();
-    expect(spectator.component.isDropdownOpen()).toBe(true);
-  });
-
-  it("second div click - should open", () => {
-    spectator.click(".dropdown-toggle");
-    spectator.detectChanges();
-    expect(spectator.component.isDropdownOpen()).toBe(true);
-  });
-
-  it("should show empty dropdown", () => {
-    // Arrange
-    const i18nService = spectator.inject(I18nService);
-    i18nService.supportedLanguages.set([]);
-    // Act
-    spectator.component.toggleDropdown();
-    spectator.detectChanges();
+  it("Should fall back to the code for an unknown language", () => {
     // Assert
-    expect(spectator.queryAll("li").length).toBe(1);
-    expect(spectator.queryAll("li")[0].textContent).toBe("There are no items.");
-  });
-
-  it("Test onClickOutside with no nativeElement", () => {
-    // Arrange
-    const elementRef = spectator.debugElement;
-    vi.spyOn(elementRef, "nativeElement", "get").mockReturnValue(null);
-    // Act
-    spectator.component.onClickOutside(new Event("click"));
-    // Assert
-    expect(spectator.component.isDropdownOpen()).toBe(false);
+    expect(spectator.component.languageName("eo")).toBe("eo");
+    expect(spectator.component.languageName(undefined)).toBe("");
+    expect(spectator.component.shortName(undefined)).toBe("");
   });
 });

@@ -1,3 +1,4 @@
+import { computed } from "@angular/core";
 import { Credentials, PERMISSIONS, ROLE } from "@app/models/credentials.entity";
 import { CredentialsService } from "@app/services/credentials.service";
 import {
@@ -37,6 +38,19 @@ describe("AuthService", () => {
   it("should save credentials", () => {
     spectator.service.setCredentials(credential);
     expect(spectator.service.credentials).toEqual(credential);
+  });
+
+  it("Should update what reads the credentials when they change", () => {
+    // Arrange
+    const userName = computed(
+      () => spectator.service.credentials?.user.name ?? ""
+    );
+    expect(userName()).toBe("");
+    // Act: another tab logs in
+    localStorage.setItem("credentials", JSON.stringify(credential));
+    window.dispatchEvent(new StorageEvent("storage", { key: "credentials" }));
+    // Assert
+    expect(userName()).toBe(credential.user.name);
   });
 
   it("should load credentials saved by another tab", () => {

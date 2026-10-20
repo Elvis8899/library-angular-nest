@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from "@angular/core";
+import { DOCUMENT, inject, Injectable, signal } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
@@ -26,12 +26,17 @@ export class I18nService {
   private readonly _translateService = inject(TranslateService);
   private readonly _router = inject(Router);
   private readonly _titleService = inject(Title);
+  private readonly _document = inject(DOCUMENT);
 
   constructor() {
-    // Remembers the language for the next visit
+    // Remembers the language for the next visit, and tells the browser and
+    // screen readers which language the page is in
     this._translateService.onLangChange
       .pipe(takeUntilDestroyed())
-      .subscribe((event) => localStorage.setItem(languageKey, event.lang));
+      .subscribe((event) => {
+        localStorage.setItem(languageKey, event.lang);
+        this._document.documentElement.lang = event.lang;
+      });
     // Embed languages to avoid extra HTTP requests
     const translations: [LanguagesEnum, AllTranslations][] = [
       [LanguagesEnum.PT_BR, ptBR],

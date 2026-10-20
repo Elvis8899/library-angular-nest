@@ -91,6 +91,7 @@ export const enUS: AllTranslations = {
   "Open menu": "Open menu",
   "Close menu": "Close menu",
   "More actions": "More actions",
+  Language: "Language",
   "Items per page": "Items per page",
   "Next page": "Next page",
   "Previous page": "Previous page",

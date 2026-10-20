@@ -58,10 +58,17 @@
   text-decoration: none;
 }
 
+// The login page's book icon, smaller
 .brand-logo {
+  display: flex;
   flex-shrink: 0;
-  width: 30px;
-  height: 30px;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--mat-sys-corner-medium);
+  color: var(--mat-sys-on-primary-container);
+  background-color: var(--mat-sys-primary-container);
 }
 
 .brand-name {

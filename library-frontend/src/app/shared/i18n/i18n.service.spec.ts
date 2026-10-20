@@ -227,5 +227,6 @@ describe("I18nService", () => {
     spectator.service.setLanguage("fr-FR");
     // Assert
     expect(localStorage.getItem("language")).toBe("fr-FR");
+    expect(document.documentElement.lang).toBe("fr-FR");
   });
 });

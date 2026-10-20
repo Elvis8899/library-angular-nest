@@ -91,6 +91,7 @@ export const ptBR: AllTranslations = {
   "Open menu": "Abrir menu",
   "Close menu": "Fechar menu",
   "More actions": "Mais ações",
+  Language: "Idioma",
   "Items per page": "Itens por página",
   "Next page": "Próxima página",
   "Previous page": "Página anterior",

@@ -11,16 +11,6 @@ The theme, login, forms, dialogs and lists are rebuilt with Angular Material (br
 - [ ] **API: search and role filter on `GET /v1/users`**. The choose-user dialog loads the largest page (1000 users) and searches it in the browser, so with more clients than that some can't be picked.
 - [ ] **API: deleting a book erases its rentals**. `DELETE /v1/bookInfos/:id` has no checks, and the schema cascades from the book to its copies and from each copy to its rentals (`onDelete: Cascade`), so deleting a book with rented copies silently erases active rentals; removing a copy (`DELETE /v1/bookInfos/item/:id`, available copies only) erases that copy's past rentals. The book list has no delete button until the API refuses books with rented copies and keeps rental history (for example `onDelete: Restrict` or soft deletes).
 
-## Frontend polish (2026-10-20)
-
-What's left to bring the frontend from about 8/10 to 9 (compared with order-matching).
-
-- [ ] **Language selector**: it's still the boilerplate's dropdown ("Lang: BR"), with `tabindex="1"`/`"2"` and click and keyup handlers on `div`s and `li`s, so it isn't fully keyboard- or screen-reader-friendly. Make it a `mat-menu` (button with a `translate` icon and the current language's name, items "Português"/"English"), on the login page and in the header.
-- [ ] **Credentials as signals**: `CredentialsService` keeps the user in a plain field. The header reads the user's name when it renders, so a login in another tab (the `storage` event already refreshes the service) shows the old name until something re-renders it. Keep the credentials in a signal, so whatever reads them updates.
-- [ ] **Boilerplate leftovers**:
-  - The sidebar's logo is `images/placeholder.png` (a generic avatar); use the login page's book icon (`local_library` on the primary container).
-  - `index.html`'s `<title>` is "NewAngularBoilerplate": `I18nService.setTitle` replaces it once the app runs, but it shows while loading and in link previews. Use "Biblioteca", also for `name` and `short_name` in `public/manifest.webmanifest` (now "library-frontend", shown when the app is installed).
-
 ## Typed translations (2026-10-20)
 
 ngx-translate stays; how it's used changes. Today each string is written three times (the key union in `allTranslations.ts`, `pt-BR.ts`, and `en-US.ts`, whose values repeat the keys), nothing checks a key where it's used (a typo shows the raw key), keys are English sentences (rewording renames them everywhere, and `{{…}}` placeholders in a key clash with Angular's interpolation), unused keys pile up (`LANGUAGE`, `Username`, `Dashboard` on 2026-10-20), and the API's error messages reach the toasts in Portuguese whatever the language. Estimate: about half a day, plus the API part.

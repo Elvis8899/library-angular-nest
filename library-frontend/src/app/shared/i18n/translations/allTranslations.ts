@@ -89,6 +89,7 @@ type keys =
   | "Open menu"
   | "Close menu"
   | "More actions"
+  | "Language"
   | "Items per page"
   | "Next page"
   | "Previous page"
