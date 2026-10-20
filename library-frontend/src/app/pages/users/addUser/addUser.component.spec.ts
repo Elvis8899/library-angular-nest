@@ -2,7 +2,8 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
-import { RouterModule } from "@angular/router";
+import { Router, RouterModule } from "@angular/router";
+import { ROLE } from "@app/models/credentials.entity";
 import { AddUsersComponent } from "@app/pages/users/addUser/addUser.component";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
@@ -14,11 +15,11 @@ import {
 } from "@ngneat/spectator/vitest";
 import { TranslateModule } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
-import { of, throwError } from "rxjs";
+import { of, Subject, throwError } from "rxjs";
 
 Logger.level = 0;
 
-describe("LanguageSelectorComponent", () => {
+describe("AddUsersComponent", () => {
   let spectator: Spectator<AddUsersComponent>;
   let httpMock: HttpTestingController;
   let inputs: Record<"name" | "email" | "cpf" | "password", HTMLInputElement>;
@@ -30,13 +31,10 @@ describe("LanguageSelectorComponent", () => {
       RouterModule.forRoot([{ path: "users/list", component: MockComponent }]),
       TranslateModule.forRoot(),
     ],
-
     mocks: [HotToastService, UserService],
-    providers: [
-      provideHttpClientTesting(),
-      /// { provide: UserService, useValue: userServiceMock },
-    ],
+    providers: [provideHttpClientTesting()],
   });
+
   beforeEach(() => {
     spectator = createComponent();
     userServiceMock = spectator.inject(UserService);
@@ -49,72 +47,139 @@ describe("LanguageSelectorComponent", () => {
       password: spectator.query("input[name='password']") as HTMLInputElement,
     };
   });
+
   afterEach(() => {
     httpMock.verify();
   });
 
-  it("should have subtitle", () => {
+  function fillIn(cpf = "529.982.247-25") {
+    spectator.typeInElement("João da Silva", inputs.name);
+    spectator.typeInElement("joao@example.com", inputs.email);
+    spectator.typeInElement(cpf, inputs.cpf);
+    spectator.typeInElement("senha123", inputs.password);
+  }
+
+  const errorTexts = () =>
+    spectator.queryAll("mat-error").map((error) => error.textContent?.trim());
+
+  it("Should have a title", () => {
     // Assert
-    expect(spectator.query("h2")).toContainText("Create User");
+    expect(spectator.query("h1")).toHaveText("Create User");
   });
 
-  it("should show error if name is invalid", () => {
-    spectator.typeInElement("a", inputs.name);
-    inputs.email.focus();
-    spectator.detectChanges();
-
-    expect(spectator.query(".text-danger")).toContainText("Nome inválido");
-  });
-  it("should show error if email is invalid", () => {
-    spectator.typeInElement("a", inputs.email);
-    inputs.name.focus();
-    spectator.detectChanges();
-
-    expect(spectator.query(".text-danger")).toContainText("Email inválido");
-  });
-  it("should show error if cpf is invalid", () => {
-    spectator.typeInElement("a", inputs.cpf);
-    inputs.email.focus();
-    spectator.detectChanges();
-
-    expect(spectator.query(".text-danger")).toContainText("CPF inválido");
-  });
-  it("should show error if password is invalid", () => {
-    spectator.typeInElement("a", inputs.password);
-    inputs.email.focus();
-    spectator.detectChanges();
-
-    expect(spectator.query(".text-danger")).toContainText("Senha inválida");
-  });
-
-  it("Should add user if form is valid", () => {
-    spectator.typeInElement("João da Silva", inputs.name);
-    spectator.typeInElement("senha123", inputs.password);
-    spectator.typeInElement("sV7nI@example.com", inputs.email);
-    spectator.typeInElement("12345678901", inputs.cpf);
+  it("Should add the user as a client and go back to the list", () => {
+    // Arrange
+    const navigateSpy = vi.spyOn(spectator.inject(Router), "navigate");
     const toastService = spectator.inject(HotToastService);
-
-    spectator.detectChanges();
-    expect(spectator.query("button")).not.toBeDisabled();
-    spectator.click("button");
-
-    expect(userServiceMock.addUser).toHaveBeenCalledTimes(1);
+    fillIn();
+    // Act
+    spectator.click("button[name='save']");
+    // Assert
+    expect(userServiceMock.addUser).toHaveBeenCalledExactlyOnceWith({
+      name: "João da Silva",
+      email: "joao@example.com",
+      cpf: "529.982.247-25",
+      password: "senha123",
+      role: ROLE.CLIENT,
+    });
     expect(toastService.success).toHaveBeenCalledTimes(1);
+    expect(navigateSpy).toHaveBeenCalledWith(["/users/list"]);
   });
 
-  it("Should show error if form is valid, but addUser returns error", () => {
-    spectator.typeInElement("João da Silva", inputs.name);
-    spectator.typeInElement("senha123", inputs.password);
-    spectator.typeInElement("sV7nI@example.com", inputs.email);
-    spectator.typeInElement("12345678901", inputs.cpf);
-    const toastService = spectator.inject(HotToastService);
-
-    userServiceMock.addUser.mockReturnValueOnce(throwError(() => new Error()));
-    spectator.detectChanges();
-    expect(spectator.query("button")).not.toBeDisabled();
-    spectator.click("button");
-
+  it("Should accept an alphanumeric CNPJ", () => {
+    // Arrange
+    fillIn("12.ABC.345/01DE-35");
+    // Act
+    spectator.click("button[name='save']");
+    // Assert
     expect(userServiceMock.addUser).toHaveBeenCalledTimes(1);
-    expect(toastService.error).toHaveBeenCalledTimes(1);
+  });
+
+  it("Should show the error when adding fails", () => {
+    // Arrange
+    const toastService = spectator.inject(HotToastService);
+    userServiceMock.addUser.mockReturnValueOnce(
+      throwError(() => new Error("Email já cadastrado"))
+    );
+    fillIn();
+    // Act
+    spectator.click("button[name='save']");
+    // Assert
+    expect(toastService.error).toHaveBeenCalledExactlyOnceWith(
+      "Email já cadastrado"
+    );
+    expect(spectator.component.saving()).toBe(false);
+  });
+
+  it("Should show the errors and not save when submitted empty", () => {
+    // Act
+    spectator.click("button[name='save']");
+    // Assert
+    expect(userServiceMock.addUser).not.toHaveBeenCalled();
+    expect(errorTexts()).toEqual([
+      "Name is required",
+      "Email is required",
+      "CPF or CNPJ is required",
+      "At least 4 characters",
+    ]);
+  });
+
+  it("Should reject an invalid email, document and short password", () => {
+    // Arrange
+    spectator.typeInElement("João", inputs.name);
+    spectator.typeInElement("not an email", inputs.email);
+    spectator.typeInElement("529.982.247-26", inputs.cpf);
+    spectator.typeInElement("abc", inputs.password);
+    // Act
+    spectator.click("button[name='save']");
+    // Assert
+    expect(userServiceMock.addUser).not.toHaveBeenCalled();
+    expect(errorTexts()).toEqual([
+      "Enter a valid email",
+      "Invalid CPF or CNPJ",
+      "At least 4 characters",
+    ]);
+  });
+
+  it("Should show and hide the password", () => {
+    // Act
+    spectator.click("button[name='togglePassword']");
+    // Assert
+    expect(inputs.password).toHaveAttribute("type", "text");
+    expect(spectator.query("button[name='togglePassword']")).toHaveAttribute(
+      "aria-label",
+      "Hide password"
+    );
+    // Act
+    spectator.click("button[name='togglePassword']");
+    // Assert
+    expect(inputs.password).toHaveAttribute("type", "password");
+  });
+
+  it("Should show a spinner and ignore new submits while saving", () => {
+    // Arrange
+    const response = new Subject<void>();
+    userServiceMock.addUser.mockReturnValueOnce(response);
+    fillIn();
+    // Act
+    spectator.click("button[name='save']");
+    spectator.component.onSubmit();
+    // Assert
+    expect(userServiceMock.addUser).toHaveBeenCalledTimes(1);
+    expect(spectator.query("button[name='save']")).toBeDisabled();
+    expect(spectator.query("mat-progress-spinner")).toBeTruthy();
+    // Act
+    response.complete();
+    spectator.detectChanges();
+    // Assert
+    expect(spectator.query("button[name='save']")).not.toBeDisabled();
+  });
+
+  it("Should link Cancel to the list", () => {
+    // Assert
+    expect(spectator.query("a[name='cancel']")).toHaveAttribute(
+      "href",
+      "/users/list"
+    );
   });
 });

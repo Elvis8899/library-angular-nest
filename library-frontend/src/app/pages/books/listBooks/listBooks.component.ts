@@ -106,6 +106,7 @@ export class ListBooksComponent implements OnInit {
       data: {
         book,
       },
+      width: "440px",
     });
     dialogRef.afterClosed().subscribe((userId: string | undefined) => {
       if (userId !== undefined) {

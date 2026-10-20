@@ -3,9 +3,12 @@
     <mat-card-title>
       <h1 class="title">{{ title() | translate }}</h1>
     </mat-card-title>
-    @if (subtitle(); as subtitle) {
-      <mat-card-subtitle>{{ subtitle | translate }}</mat-card-subtitle>
-    }
+    <!-- An @if alone isn't projected into the header's subtitle slot -->
+    <ng-container ngProjectAs="mat-card-subtitle">
+      @if (subtitle(); as subtitle) {
+        <mat-card-subtitle>{{ subtitle | translate }}</mat-card-subtitle>
+      }
+    </ng-container>
   </mat-card-header>
   <mat-card-content class="fields">
     <ng-content />

@@ -9,21 +9,29 @@ describe("removeNonNumeric", () => {
     expect(res).toBe("1231202");
   });
 });
-describe("validateCPF", () => {
-  it("Should return null for a valid CPF", () => {
-    const res = FormValidatorUtility.validateCPF()(
-      new FormControl("123.123.123-12")
-    );
+describe("validateDocument", () => {
+  it.each([
+    ["a CPF", "529.982.247-25"],
+    ["a CPF without punctuation", "52998224725"],
+    ["a CPF whose check digit is 0", "123.456.704-01"],
+    ["a CNPJ", "11.222.333/0001-81"],
+    ["an alphanumeric CNPJ", "12.ABC.345/01DE-35"],
+    ["a lowercase alphanumeric CNPJ", "12abc34501de35"],
+    ["an empty value", ""],
+  ])("Should accept %s", (_, value) => {
+    const res = FormValidatorUtility.validateDocument()(new FormControl(value));
     expect(res).toBe(null);
   });
 
-  it("Should return error for an invalid CPF", () => {
-    const res = FormValidatorUtility.validateCPF()(
-      new FormControl("123.123.123-122321")
-    );
-    expect(res).toEqual({
-      custom: { message: "CPF inválido" },
-    });
+  it.each([
+    ["a wrong CPF check digit", "529.982.247-26"],
+    ["a wrong CNPJ check digit", "11.222.333/0001-82"],
+    ["repeated digits", "111.111.111-11"],
+    ["a wrong length", "123.456.789"],
+    ["letters in a CPF", "52998224A25"],
+  ])("Should reject %s", (_, value) => {
+    const res = FormValidatorUtility.validateDocument()(new FormControl(value));
+    expect(res).toEqual({ document: true });
   });
 });
 

@@ -1,63 +1,15 @@
+@use "@angular/material" as mat;
+
 /*
  * Global application theme.
  * All global classes and theme styles for html elements and classes should be defined here.
  */
 
-// Plain inputs, until the forms move to mat-form-field. :where() keeps
-// these rules at zero specificity, so Material's own field styles win.
-:where(label) {
-  display: block;
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-label-large);
-}
-
-:where(input[type="text"]),
-:where(input[type="email"]),
-:where(input[type="tel"]),
-:where(input[type="number"]),
-:where(input[type="password"]),
-:where(input[type="date"]),
-:where(input[type="search"]),
-:where(input[type="file"]),
-:where(input[type="url"]),
-:where(input[type="time"]),
-:where(textarea) {
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
-  color: var(--mat-sys-on-surface);
-  outline: none;
-  background-color: var(--mat-sys-surface-container-lowest);
-  border: 1px solid var(--mat-sys-outline-variant);
-  box-sizing: border-box;
-  border-radius: var(--mat-sys-corner-small);
-}
-
-:where(input[type="text"]):focus,
-:where(input[type="email"]):focus,
-:where(input[type="tel"]):focus,
-:where(input[type="number"]):focus,
-:where(input[type="password"]):focus,
-:where(input[type="date"]):focus,
-:where(input[type="search"]):focus,
-:where(input[type="file"]):focus,
-:where(input[type="url"]):focus,
-:where(input[type="time"]):focus,
-:where(textarea):focus {
-  border-color: var(--mat-sys-primary);
-  outline: none;
-}
-
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  appearance: none;
-  margin: 0;
-}
-
-:where(input[type="number"]) {
-  appearance: textfield;
-}
-
-:where(textarea) {
-  overflow: hidden scroll;
-  max-height: 200px;
+// A spinner shown in a filled button while it works (login, save)
+.mat-mdc-unelevated-button {
+  @include mat.progress-spinner-overrides(
+    (
+      active-indicator-color: var(--mat-sys-on-primary),
+    )
+  );
 }

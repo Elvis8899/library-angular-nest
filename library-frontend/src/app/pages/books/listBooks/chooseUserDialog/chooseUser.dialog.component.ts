@@ -1,48 +1,54 @@
-import { AsyncPipe } from "@angular/common";
-import { Component, inject, OnInit } from "@angular/core";
-import {
-  FormControl,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
+import { toSignal } from "@angular/core/rxjs-interop";
+import { FormControl, ReactiveFormsModule } from "@angular/forms";
+import { MatAutocompleteModule } from "@angular/material/autocomplete";
+import { MatButton } from "@angular/material/button";
 import {
   MatDialogActions,
   MatDialogClose,
+  MatDialogContent,
   MatDialogTitle,
 } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
-import { MatSelectModule } from "@angular/material/select";
+import { MatIcon } from "@angular/material/icon";
+import { MatInput } from "@angular/material/input";
+import { MatProgressBar } from "@angular/material/progress-bar";
 import { BookEntity } from "@app/models/book.entity";
 import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
 import { StronglyTypedDialog } from "@app/shared/components/dialog/typedDialog";
-import { BehaviorSubject } from "rxjs";
+import { TranslatePipe } from "@ngx-translate/core";
 
 const log = new Logger("ChooseUserDialogComponent");
+
+// The API's largest page. The users endpoint has no search or role filter,
+// so the clients are loaded at once and searched here.
+const allUsersPage = { page: 0, limit: 1000 };
 
 export interface ChooseUserDialogData {
   book: BookEntity;
 }
 
+/** Picks the client renting a book; closes with their id. */
 @Component({
   selector: "app-choose-user-dialog",
-  templateUrl: "chooseUser.dialog.component.html",
+  templateUrl: "./chooseUser.dialog.component.html",
+  styleUrl: "./chooseUser.dialog.component.scss",
   imports: [
-    AsyncPipe,
-    MatFormFieldModule,
-    MatInputModule,
     ReactiveFormsModule,
-    FormsModule,
-    MatButtonModule,
-    MatSelectModule,
-    MatDialogTitle,
+    MatAutocompleteModule,
+    MatButton,
     MatDialogActions,
     MatDialogClose,
+    MatDialogContent,
+    MatDialogTitle,
+    MatFormFieldModule,
+    MatIcon,
+    MatInput,
+    MatProgressBar,
+    TranslatePipe,
   ],
 })
 export class ChooseUserDialogComponent
@@ -50,26 +56,52 @@ export class ChooseUserDialogComponent
   implements OnInit
 {
   private readonly _userService = inject(UserService);
-  selectedValue!: UserEntity;
-  users$: BehaviorSubject<UserEntity[]> = new BehaviorSubject<UserEntity[]>([]);
-  selectedCar = "";
-  selectUserFormControl = new FormControl("", Validators.required);
-  bookName$ = new BehaviorSubject<string>("");
+
+  readonly bookName = this.data.book.name;
+  readonly loading = signal(true);
+  readonly clients = signal<UserEntity[]>([]);
+
+  // The picked user. With requireSelection the control doesn't take the
+  // typed text: it stays as it was while typing, and becomes null when the
+  // field is left without picking a user. The text goes to `search`.
+  readonly clientControl = new FormControl<UserEntity | null>(null);
+  readonly search = signal("");
+  readonly selectedClient = toSignal(this.clientControl.valueChanges, {
+    initialValue: this.clientControl.value,
+  });
+
+  readonly filteredClients = computed(() => {
+    const search = this.search().trim().toLowerCase();
+    return this.clients().filter(
+      (client) =>
+        client.name.toLowerCase().includes(search) ||
+        client.email.toLowerCase().includes(search)
+    );
+  });
 
   ngOnInit() {
-    this.bookName$.next(this.data.book.name);
-    this._userService.getPaginatedUsers().subscribe({
+    this._userService.getPaginatedUsers(allUsersPage).subscribe({
       next: (res) => {
-        const users = res.data.filter((u) => u.role !== ROLE.ADMIN);
-        this.users$.next(users);
+        this.clients.set(res.data.filter((u) => u.role !== ROLE.ADMIN));
+        this.loading.set(false);
       },
       error: (error) => {
         log.error(error);
-        this.onNoClick();
+        this.dialogRef.close();
       },
     });
   }
-  onNoClick(): void {
-    this.dialogRef.close();
+
+  onSearch(event: Event) {
+    this.search.set((event.target as HTMLInputElement).value);
+  }
+
+  // Shows every client again when the panel reopens on a picked one
+  onClientPicked() {
+    this.search.set("");
+  }
+
+  displayName(user: UserEntity | null): string {
+    return user?.name ?? "";
   }
 }

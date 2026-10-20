@@ -1,40 +1,83 @@
-import { Component, inject, OnInit } from "@angular/core";
+import { Component, inject, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
-import { Router } from "@angular/router";
-import { BookEntity } from "@app/models/book.entity";
+import { MatButton } from "@angular/material/button";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInput } from "@angular/material/input";
+import { MatProgressSpinner } from "@angular/material/progress-spinner";
+import { Router, RouterLink } from "@angular/router";
 import { BookService } from "@app/services/book.http.service";
 import { Logger } from "@app/services/logger.service";
-import { TranslateService } from "@ngx-translate/core";
+import { FormCardComponent } from "@app/shared/components/formCard/formCard.component";
+import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
+import { finalize } from "rxjs";
 
 const log = new Logger("AddBookComponent");
 
+const noImage = "images/no-image.png";
+
 @Component({
-  selector: "app-list",
+  selector: "app-add-book",
   templateUrl: "./addBook.component.html",
   styleUrl: "./addBook.component.scss",
-  imports: [ReactiveFormsModule],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    MatButton,
+    MatFormFieldModule,
+    MatInput,
+    MatProgressSpinner,
+    FormCardComponent,
+    TranslatePipe,
+  ],
 })
-export class AddBooksComponent implements OnInit {
+export class AddBooksComponent {
   private readonly _fb = inject(FormBuilder);
-
-  addBookForm = this._fb.group({
-    name: ["", [Validators.required, Validators.minLength(4)]],
-    image: ["", [Validators.required, Validators.minLength(4)]],
-    price: ["", [Validators.required]],
-  });
   private readonly _toast = inject(HotToastService);
   private readonly _translate = inject(TranslateService);
   private readonly _bookService = inject(BookService);
   private readonly _router = inject(Router);
 
-  ngOnInit(): void {
-    this.addBookForm.reset();
+  // As the API: a name and a price; the cover is optional
+  addBookForm = this._fb.nonNullable.group({
+    name: ["", Validators.required],
+    image: ["", Validators.pattern(/^https?:\/\/\S+$/)],
+    price: this._fb.control<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+    ]),
+  });
+
+  readonly saving = signal(false);
+  // Set when the cover's URL doesn't load
+  readonly imageFailed = signal(false);
+
+  coverPreview() {
+    const { image } = this.addBookForm.controls;
+    if (!image.value || image.invalid || this.imageFailed()) return noImage;
+    return image.value;
+  }
+
+  onImageChange() {
+    this.imageFailed.set(false);
+  }
+
+  onImageError() {
+    this.imageFailed.set(true);
   }
 
   onSubmit() {
+    if (this.addBookForm.invalid) {
+      this.addBookForm.markAllAsTouched();
+      return;
+    }
+    if (this.saving()) return;
+    this.saving.set(true);
+    const book = this.addBookForm.getRawValue();
     this._bookService
-      .addBook({ ...this.addBookForm?.value } as Partial<BookEntity>)
+      // A valid form has a price
+      .addBook({ ...book, price: Number(book.price) })
+      .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
         next: () => {
           this._toast.success(

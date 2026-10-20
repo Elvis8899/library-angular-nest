@@ -1,59 +1,66 @@
-<div class="add-book-wrapper">
-  <div class="add-book-div">
-    <form (ngSubmit)="onSubmit()" [formGroup]="addBookForm">
-      <h2>Create Book</h2>
-      <div class="form-group">
-        <label for="name">Name:</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          formControlName="name"
-          required
-        />
-        @if (
-          addBookForm.get("name")?.invalid && addBookForm.get("name")?.touched
-        ) {
-          <div class="text-danger">
-            <small>Nome inválido</small>
-          </div>
-        }
+<form (ngSubmit)="onSubmit()" [formGroup]="addBookForm">
+  <app-form-card subtitle="Fill in the book's details" title="Create Book">
+    <div class="cover-row">
+      <img
+        (error)="onImageError()"
+        [src]="coverPreview()"
+        alt=""
+        class="cover"
+      />
+      <div class="cover-fields">
+        <mat-form-field appearance="outline" hideRequiredMarker>
+          <mat-label>{{ "Name" | translate }}</mat-label>
+          <input formControlName="name" matInput name="name" />
+          <mat-error>{{ "Name is required" | translate }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" hideRequiredMarker>
+          <mat-label>{{ "Price" | translate }}</mat-label>
+          <span matTextPrefix>R$&nbsp;</span>
+          <input
+            formControlName="price"
+            matInput
+            min="0"
+            name="price"
+            step="0.01"
+            type="number"
+          />
+          <mat-error>{{ "Enter a price of 0 or more" | translate }}</mat-error>
+        </mat-form-field>
       </div>
-      <div class="form-group">
-        <label for="image">Imagem:</label>
-        <input
-          type="text"
-          id="image"
-          name="image"
-          formControlName="image"
-          required
-        />
-        @if (
-          addBookForm.get("image")?.invalid && addBookForm.get("image")?.touched
-        ) {
-          <div class="text-danger">
-            <small>Imagem inválida</small>
-          </div>
-        }
-      </div>
-      <div class="form-group">
-        <label for="price">Preço:</label>
-        <input
-          type="number"
-          id="price"
-          name="price"
-          formControlName="price"
-          required
-        />
-        @if (
-          addBookForm.get("price")?.invalid && addBookForm.get("price")?.touched
-        ) {
-          <div class="text-danger">
-            <small>Preço inválido</small>
-          </div>
-        }
-      </div>
-      <button type="submit" [disabled]="!addBookForm.valid">Create Book</button>
-    </form>
-  </div>
-</div>
+    </div>
+
+    <mat-form-field appearance="outline" hideRequiredMarker>
+      <mat-label>{{ "Cover image URL" | translate }}</mat-label>
+      <input
+        (input)="onImageChange()"
+        formControlName="image"
+        matInput
+        name="image"
+        placeholder="https://"
+        type="url"
+      />
+      <mat-hint>{{ "Optional" | translate }}</mat-hint>
+      <mat-error>{{
+        "Enter a URL starting with http:// or https://" | translate
+      }}</mat-error>
+    </mat-form-field>
+
+    <a formActions matButton name="cancel" routerLink="/books/list">
+      {{ "Cancel" | translate }}
+    </a>
+    <button
+      [disabled]="saving()"
+      formActions
+      matButton="filled"
+      name="save"
+      type="submit"
+    >
+      @if (saving()) {
+        <mat-progress-spinner diameter="20" mode="indeterminate" />
+      } @else {
+        {{ "Save" | translate }}
+      }
+    </button>
+  </app-form-card>
+</form>

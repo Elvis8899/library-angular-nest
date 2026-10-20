@@ -1,55 +1,70 @@
-import { Component, inject, OnInit } from "@angular/core";
+import { Component, inject, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
-import { Router } from "@angular/router";
+import { MatButton, MatIconButton } from "@angular/material/button";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatIcon } from "@angular/material/icon";
+import { MatInput } from "@angular/material/input";
+import { MatProgressSpinner } from "@angular/material/progress-spinner";
+import { Router, RouterLink } from "@angular/router";
 import { ROLE } from "@app/models/credentials.entity";
-import { UserEntity } from "@app/models/user.entity";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
+import { FormCardComponent } from "@app/shared/components/formCard/formCard.component";
 import { FormValidatorUtility } from "@app/shared/utils/formValidators.utility";
-import { TranslateService } from "@ngx-translate/core";
+import { TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { HotToastService } from "@ngxpert/hot-toast";
-import { noop } from "rxjs";
+import { finalize } from "rxjs";
 
 const log = new Logger("AddUsersComponent");
+
 @Component({
-  selector: "app-list",
+  selector: "app-add-user",
   templateUrl: "./addUser.component.html",
-  styleUrl: "./addUser.component.scss",
-  imports: [ReactiveFormsModule],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    MatButton,
+    MatIconButton,
+    MatFormFieldModule,
+    MatIcon,
+    MatInput,
+    MatProgressSpinner,
+    FormCardComponent,
+    TranslatePipe,
+  ],
 })
-export class AddUsersComponent implements OnInit {
-  ngOnInit = noop;
+export class AddUsersComponent {
   private readonly _userService = inject(UserService);
   private readonly _router = inject(Router);
-
   private readonly _fb = inject(FormBuilder);
-
-  addUserForm = this._fb.group({
-    name: ["", [Validators.required, Validators.minLength(4)]],
-    email: [
-      "",
-      [Validators.email, Validators.required, Validators.minLength(4)],
-    ],
-    cpf: [
-      "",
-      [
-        FormValidatorUtility.validateCPF(),
-        Validators.required,
-        Validators.minLength(4),
-      ],
-    ],
-    password: ["", [Validators.required, Validators.minLength(4)]],
-  });
-
   private readonly _toast = inject(HotToastService);
   private readonly _translate = inject(TranslateService);
 
+  // Clients need a CPF or CNPJ with valid check digits, as the API checks
+  addUserForm = this._fb.nonNullable.group({
+    name: ["", Validators.required],
+    email: ["", [Validators.required, Validators.email]],
+    cpf: ["", [Validators.required, FormValidatorUtility.validateDocument()]],
+    password: ["", [Validators.required, Validators.minLength(4)]],
+  });
+
+  readonly saving = signal(false);
+  readonly passwordVisible = signal(false);
+
+  togglePasswordVisibility() {
+    this.passwordVisible.update((visible) => !visible);
+  }
+
   onSubmit() {
+    if (this.addUserForm.invalid) {
+      this.addUserForm.markAllAsTouched();
+      return;
+    }
+    if (this.saving()) return;
+    this.saving.set(true);
     this._userService
-      .addUser({
-        ...this.addUserForm.value,
-        role: ROLE.CLIENT,
-      } as Partial<UserEntity>)
+      .addUser({ ...this.addUserForm.getRawValue(), role: ROLE.CLIENT })
+      .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
         next: () => {
           this._toast.success(

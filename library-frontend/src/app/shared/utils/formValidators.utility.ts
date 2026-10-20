@@ -1,16 +1,56 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from "@angular/forms";
 
+// CPF and CNPJ check digits, as the API checks them (CheckedDocumentType in
+// library-backend/src/modules/user/domain/valueObject/document.ts). CNPJs
+// may be alphanumeric since July 2026, so letters are kept.
+const normalizeDocument = (v: string) =>
+  v.toUpperCase().replace(/[^0-9A-Z]/g, "");
+
+// Modulo 11 check digit; characters are valued as their ASCII code - 48
+const checkDigit = (base: string, weights: number[]) => {
+  const sum = weights.reduce(
+    (acc, weight, i) => acc + (base.charCodeAt(i) - 48) * weight,
+    0
+  );
+  const rest = sum % 11;
+  return rest < 2 ? 0 : 11 - rest;
+};
+
+const hasValidCheckDigits = (
+  doc: string,
+  firstWeights: number[],
+  secondWeights: number[]
+) =>
+  checkDigit(doc, firstWeights) === Number(doc.at(-2)) &&
+  checkDigit(doc, secondWeights) === Number(doc.at(-1));
+
+const CPF_WEIGHTS = [10, 9, 8, 7, 6, 5, 4, 3, 2];
+const CNPJ_WEIGHTS = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+
+const isValidCPF = (doc: string) =>
+  /^\d{11}$/.test(doc) &&
+  !/^(\d)\1*$/.test(doc) &&
+  hasValidCheckDigits(doc, CPF_WEIGHTS, [11, ...CPF_WEIGHTS]);
+
+const isValidCNPJ = (doc: string) =>
+  /^[0-9A-Z]{12}\d{2}$/.test(doc) &&
+  !/^(\d)\1*$/.test(doc) &&
+  hasValidCheckDigits(doc, CNPJ_WEIGHTS, [6, ...CNPJ_WEIGHTS]);
+
 export class FormValidatorUtility {
   static removeNonNumeric = (v: string) => v.replace(/\D/g, "");
 
-  static validateCPF(): ValidatorFn {
-    return (control: AbstractControl): Record<string, unknown> | null => {
-      // Custom validation logic
-      if (control.value && this.removeNonNumeric(control.value).length != 11) {
-        return { custom: { message: "CPF inválido" } };
-      }
-      return null;
-    };
+  static isValidDocument = (v: string) => {
+    const doc = normalizeDocument(v);
+    return isValidCPF(doc) || isValidCNPJ(doc);
+  };
+
+  /** A CPF or CNPJ with valid check digits; empty values pass. */
+  static validateDocument(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null =>
+      control.value && !FormValidatorUtility.isValidDocument(control.value)
+        ? { document: true }
+        : null;
   }
 
   static arrayNotEmptyValidator(): ValidatorFn {

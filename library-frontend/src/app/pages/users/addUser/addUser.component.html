@@ -1,71 +1,86 @@
-<div class="add-user-wrapper">
-  <div class="add-user-div">
-    <form (ngSubmit)="onSubmit()" [formGroup]="addUserForm">
-      <h2>Create User</h2>
-      <div class="form-group">
-        <label for="name">Name:</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          formControlName="name"
-          required
-        />
-        @if (
-          addUserForm.get("name")?.invalid && addUserForm.get("name")?.touched
-        ) {
-          <div class="text-danger">
-            <small>Nome inválido</small>
-          </div>
+<form (ngSubmit)="onSubmit()" [formGroup]="addUserForm">
+  <app-form-card subtitle="New users are clients" title="Create User">
+    <mat-form-field appearance="outline" hideRequiredMarker>
+      <mat-label>{{ "Name" | translate }}</mat-label>
+      <input autocomplete="off" formControlName="name" matInput name="name" />
+      <mat-error>{{ "Name is required" | translate }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" hideRequiredMarker>
+      <mat-label>{{ "Email" | translate }}</mat-label>
+      <input
+        autocomplete="off"
+        formControlName="email"
+        matInput
+        name="email"
+        type="email"
+      />
+      <!-- One mat-error: an @if chain isn't projected into its slot -->
+      <mat-error>
+        @if (addUserForm.controls.email.hasError("required")) {
+          {{ "Email is required" | translate }}
+        } @else {
+          {{ "Enter a valid email" | translate }}
         }
-      </div>
-      <div class="form-group">
-        <label for="email">Email:</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          formControlName="email"
-          required
-        />
-        @if (
-          addUserForm.get("email")?.invalid && addUserForm.get("email")?.touched
-        ) {
-          <div class="text-danger">
-            <small>Email inválido</small>
-          </div>
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" hideRequiredMarker>
+      <mat-label>{{ "CPF or CNPJ" | translate }}</mat-label>
+      <input autocomplete="off" formControlName="cpf" matInput name="cpf" />
+      <mat-hint>{{ "With or without punctuation" | translate }}</mat-hint>
+      <mat-error>
+        @if (addUserForm.controls.cpf.hasError("required")) {
+          {{ "CPF or CNPJ is required" | translate }}
+        } @else {
+          {{ "Invalid CPF or CNPJ" | translate }}
         }
-      </div>
-      <div class="form-group">
-        <label for="cpf">CPF:</label>
-        <input type="text" id="cpf" name="cpf" formControlName="cpf" required />
-        @if (
-          addUserForm.get("cpf")?.invalid && addUserForm.get("cpf")?.touched
-        ) {
-          <div class="text-danger">
-            <small>CPF inválido</small>
-          </div>
-        }
-      </div>
-      <div class="form-group">
-        <label for="password">Password:</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          formControlName="password"
-          required
-        />
-        @if (
-          addUserForm.get("password")?.invalid &&
-          addUserForm.get("password")?.touched
-        ) {
-          <div class="text-danger">
-            <small>Senha inválida</small>
-          </div>
-        }
-      </div>
-      <button type="submit" [disabled]="!addUserForm.valid">Create User</button>
-    </form>
-  </div>
-</div>
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" hideRequiredMarker>
+      <mat-label>{{ "Password" | translate }}</mat-label>
+      <input
+        [type]="passwordVisible() ? 'text' : 'password'"
+        autocomplete="new-password"
+        formControlName="password"
+        matInput
+        name="password"
+      />
+      <button
+        (click)="togglePasswordVisibility()"
+        [attr.aria-label]="
+          (passwordVisible() ? 'Hide password' : 'Show password') | translate
+        "
+        [attr.aria-pressed]="passwordVisible()"
+        mat-icon-button
+        matSuffix
+        name="togglePassword"
+        type="button"
+      >
+        <mat-icon>{{
+          passwordVisible() ? "visibility_off" : "visibility"
+        }}</mat-icon>
+      </button>
+      <mat-hint>{{ "At least 4 characters" | translate }}</mat-hint>
+      <mat-error>{{ "At least 4 characters" | translate }}</mat-error>
+    </mat-form-field>
+
+    <a formActions matButton name="cancel" routerLink="/users/list">
+      {{ "Cancel" | translate }}
+    </a>
+    <button
+      [disabled]="saving()"
+      formActions
+      matButton="filled"
+      name="save"
+      type="submit"
+    >
+      @if (saving()) {
+        <mat-progress-spinner diameter="20" mode="indeterminate" />
+      } @else {
+        {{ "Save" | translate }}
+      }
+    </button>
+  </app-form-card>
+</form>

@@ -27,10 +27,12 @@ The screens barely use Angular Material, which is already installed and themed w
   - [ ] Availability shown as a chip (green when copies are available, grey when none are), and the cover as a fixed-size rounded thumbnail with a placeholder when the image fails to load.
   - [ ] Price through the `currency` pipe (`BRL`), not the raw number.
   - [ ] The search, date and sort toolbar wraps on narrow screens.
-- [ ] **Add book and add user**: on the form card, with `mat-form-field`, `mat-error`, a hint for the CPF format, and a Cancel button that goes back to the list. Delete the custom SCSS they no longer need.
+- [x] **Add book and add user**: on the form card, with `mat-form-field`, `mat-error`, a hint for the CPF format, and a Cancel button that goes back to the list. Delete the custom SCSS they no longer need.
+  - Done 2026-10-20. The rules now follow the API: a book's cover is optional (a URL, previewed), its price 0 or more; the CPF field takes a CPF or CNPJ (alphanumeric too) and checks the digits as `CheckedDocumentType` does. The global plain-input styles are gone, since every input is a Material field.
 - [ ] **Rental list**: dates through the `date` pipe instead of `getDateOnly`, overdue rentals and fines highlighted (chip or warning colour), and an icon button with confirmation for returning a book.
 - [ ] **User list**: role shown as a chip, and the same column and button style as the other lists.
-- [ ] **Choose-user dialog**: `mat-dialog-title`, `mat-dialog-content` and `mat-dialog-actions`, with a search field if the user list is long.
+- [x] **Choose-user dialog**: `mat-dialog-title`, `mat-dialog-content` and `mat-dialog-actions`, with a search field if the user list is long.
+  - Done 2026-10-20: an autocomplete searching the clients by name or email. It used to load only the API's first page (20 users, admins included), so later clients couldn't be picked. It now loads the largest page (1000) and filters in the browser, because `GET /v1/users` has no search or role filter; with more clients than that, the API needs those filters.
 - [ ] **Layout**: the sidebar shows the active route (`routerLinkActive`), and the sidebar and header use the theme colours.
 - [ ] **Responsive**: check every screen at phone width. The lists may need fewer columns or cards on small screens.
 - [ ] **Translations**: every hardcoded string (table headers, form errors, buttons such as "emprestar" and "Devolver") goes through `translate`, with entries in both `pt-BR.ts` and `en-US.ts`.

@@ -1,5 +1,3 @@
-@use "@angular/material" as mat;
-
 .login {
   position: relative;
   display: flex;
@@ -79,11 +77,4 @@
   width: 100%;
   height: 48px;
   margin-top: var(--space-2);
-
-  // The spinner on the filled button
-  @include mat.progress-spinner-overrides(
-    (
-      active-indicator-color: var(--mat-sys-on-primary),
-    )
-  );
 }

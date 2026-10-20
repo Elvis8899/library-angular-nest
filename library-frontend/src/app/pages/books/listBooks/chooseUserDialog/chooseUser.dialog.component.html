@@ -1,20 +1,61 @@
-<h2 mat-dialog-title>Escolher usuario para o livro {{ bookName$ | async }}</h2>
-<mat-form-field>
-  <mat-label>Cliente</mat-label>
-  <mat-select [formControl]="selectUserFormControl" name="client">
-    @for (u of users$ | async; track u) {
-      <mat-option [value]="u.id">{{ u.name }}</mat-option>
-    }
-  </mat-select>
-</mat-form-field>
-<mat-dialog-actions>
-  <button matButton (click)="onNoClick()" name="cancelDialog">Cancel</button>
-  <button
-    matButton
-    [mat-dialog-close]="selectUserFormControl.value"
-    name="confirmDialog"
-    cdkFocusInitial
+<h2 mat-dialog-title>{{ "Rent book" | translate }}</h2>
+<mat-dialog-content>
+  <p class="intro">
+    {{ "Choose the client renting {{book}}" | translate: { book: bookName } }}
+  </p>
+
+  <!-- Always takes its height, so showing it doesn't move the field -->
+  <mat-progress-bar
+    [class.hidden]="!loading()"
+    class="loading"
+    mode="indeterminate"
+  />
+
+  <mat-form-field
+    appearance="outline"
+    class="client-field"
+    subscriptSizing="dynamic"
   >
-    Ok
+    <mat-label>{{ "Client" | translate }}</mat-label>
+    <mat-icon matPrefix>search</mat-icon>
+    <input
+      (input)="onSearch($event)"
+      [formControl]="clientControl"
+      [matAutocomplete]="clientOptions"
+      matInput
+      name="client"
+    />
+    <mat-autocomplete
+      #clientOptions
+      (optionSelected)="onClientPicked()"
+      [displayWith]="displayName"
+      requireSelection
+    >
+      @for (client of filteredClients(); track client.id) {
+        <mat-option [value]="client">
+          <span class="client-name">{{ client.name }}</span>
+          <span class="client-email">{{ client.email }}</span>
+        </mat-option>
+      } @empty {
+        @if (!loading()) {
+          <mat-option class="no-clients" disabled>
+            {{ "No clients found" | translate }}
+          </mat-option>
+        }
+      }
+    </mat-autocomplete>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button [mat-dialog-close]="undefined" matButton name="cancelDialog">
+    {{ "Cancel" | translate }}
+  </button>
+  <button
+    [disabled]="!selectedClient()"
+    [mat-dialog-close]="selectedClient()?.id"
+    matButton="filled"
+    name="confirmDialog"
+  >
+    {{ "Rent" | translate }}
   </button>
 </mat-dialog-actions>
