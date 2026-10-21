@@ -1,4 +1,4 @@
-import { RequestJWTPayload } from "@modules/auth/domain/login.entity";
+import { RequestJWTPayload } from "@modules/auth/guards/authenticatedRequest";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { ExecutionContext } from "@nestjs/common";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";

@@ -4,13 +4,15 @@ import {
 } from "@modules/auth/commands/login/login.command";
 import { FakeRefreshSessionRepository } from "@modules/auth/database/fakeRefreshSession.repository";
 import { WrongAuthException } from "@modules/auth/domain/auth.errors";
-import { hashPassword } from "@modules/auth/utils/password";
 import { UserRepository } from "@modules/user/database/user.repository.port";
+import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { JwtService } from "@nestjs/jwt";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
+
+const passwordHasher = new BcryptPasswordHasher();
 
 //Adapters
 
@@ -27,7 +29,7 @@ describe("[Unit] Create User", () => {
   it("Should login user if user is valid", async () => {
     //Given a potentially valid user
     const password = "123456";
-    const hash = await hashPassword(password);
+    const hash = await passwordHasher.hash(password);
     const user = new UserBuilder().withPassword(hash);
     await executeTask(ctx.userRepository.save(user.build()));
 
@@ -43,7 +45,9 @@ describe("[Unit] Create User", () => {
   it("Should start a refresh session and remove the user's expired ones", async () => {
     //Given a user with an expired session, and another user's expired session
     const password = "123456";
-    const user = new UserBuilder().withPassword(await hashPassword(password));
+    const user = new UserBuilder().withPassword(
+      await passwordHasher.hash(password),
+    );
     await executeTask(ctx.userRepository.save(user.build()));
     const yesterday = new Date(Date.now() - 86400 * 1000);
     const otherUserId = createTestId(TableNameEnum.User, 99);
@@ -77,7 +81,7 @@ describe("[Unit] Create User", () => {
 
   it("Should not login a user if email is invalid", async () => {
     const password = "123456";
-    const hash = await hashPassword(password);
+    const hash = await passwordHasher.hash(password);
     //Given a potentially invalid name
     const user = new UserBuilder().withPassword(hash).buildCreateDTO();
     //When we create a user
@@ -92,7 +96,7 @@ describe("[Unit] Create User", () => {
   it("Should not login a user if password is invalid", async () => {
     //Given an existing user
     const password = "123456";
-    const hash = await hashPassword(password);
+    const hash = await passwordHasher.hash(password);
     const user = new UserBuilder().withPassword(hash);
     await executeTask(ctx.userRepository.save(user.build()));
 

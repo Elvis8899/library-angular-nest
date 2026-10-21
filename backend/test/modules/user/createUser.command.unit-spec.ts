@@ -1,4 +1,3 @@
-import { comparePassword } from "@modules/auth/utils/password";
 import {
   CreateUser,
   CreateUserHandler,
@@ -9,11 +8,14 @@ import {
   UserCPFAlreadyExistsException,
   UserEmailAlreadyExistsException,
 } from "@modules/user/domain/user.errors";
+import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { useHandlerModule } from "@test/util/handlerModule";
+
+const passwordHasher = new BcryptPasswordHasher();
 
 //Adapters
 
@@ -150,8 +152,8 @@ describe("[Unit] Create User", () => {
     // Then the stored password is a hash of the one given
     const [stored] = await executeTask(ctx.userRepository.findAll());
     expect(stored?.password).not.toEqual(user.password);
-    expect(await comparePassword(user.password, stored?.password ?? "")).toBe(
-      true,
-    );
+    expect(
+      await passwordHasher.matches(user.password, stored?.password ?? ""),
+    ).toBe(true);
   });
 });

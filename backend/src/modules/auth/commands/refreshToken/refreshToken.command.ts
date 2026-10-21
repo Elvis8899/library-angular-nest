@@ -3,7 +3,7 @@ import { invalidRefreshTokenException } from "@modules/auth/domain/auth.errors";
 import {
   RefreshTokenClaims,
   RefreshTokenInput,
-} from "@modules/auth/domain/login.entity";
+} from "@modules/auth/domain/credentials";
 import { AuthResponseDto } from "@modules/auth/dtos/authResponse.dto";
 import { RefreshTokenDto } from "@modules/auth/dtos/refreshToken.dto";
 import {

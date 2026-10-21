@@ -30,6 +30,9 @@ export const User = z
       .nullish()
       .transform((cpf) => cpf ?? ""),
     role: z.enum(UserRoleEnum),
+    // Auth's refresh tokens carry it, but it stays on the user: an update
+    // that changes the password, email or role (endsSessions) must revoke
+    // them in the same request, not later through an event
     tokenVersion: z.number().int().min(0).default(0),
   })
   .and(BaseDateEntity)

@@ -1,6 +1,6 @@
-import { hashPassword } from "@modules/auth/utils/password";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userCreated } from "@modules/user/domain/events/userCreated.event";
+import { PasswordHasher } from "@modules/user/domain/passwordHasher.port";
 import { NewUserInput, registerUser } from "@modules/user/domain/user.entity";
 import {
   userCPFAlreadyExistsException,
@@ -25,6 +25,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
     private readonly useCase: UseCase,
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly userRepository: UserRepository,
+    private readonly passwordHasher: PasswordHasher,
   ) {}
 
   execute(command: CreateUser): Promise<void> {
@@ -61,7 +62,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
 
         //Hash the password and build the user
         RTE.bind("password", ({ input }) =>
-          RTE.fromTask(() => hashPassword(input.password)),
+          RTE.fromTask(() => this.passwordHasher.hash(input.password)),
         ),
         RTE.map(({ id, input, password }) =>
           registerUser(id, input, password, new Date()),

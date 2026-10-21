@@ -1,5 +1,4 @@
 import { Email } from "@modules/user/domain/email";
-import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { UUID } from "@shared/uuid/uuid";
 import { z } from "zod";
 
@@ -8,21 +7,9 @@ export const LoginInput = z.object({
   password: z.string().min(1),
 });
 
-export type User = z.infer<typeof LoginInput>;
-
 export const RefreshTokenInput = z.object({
   refreshToken: z.string().min(1),
 });
-
-export type RequestJWTPayload = {
-  sub: string;
-  email: string;
-  role: UserRoleEnum;
-  iat: number;
-  exp: number;
-  aud: string;
-  iss: string;
-};
 
 // Claims of a verified refresh token that refreshing relies on
 export const RefreshTokenClaims = z.object({
@@ -33,7 +20,3 @@ export const RefreshTokenClaims = z.object({
 });
 
 export type RefreshTokenClaims = z.infer<typeof RefreshTokenClaims>;
-
-export type AuthenticatedRequest = {
-  user: RequestJWTPayload;
-};

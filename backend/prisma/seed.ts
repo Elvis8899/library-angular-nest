@@ -1,8 +1,8 @@
 import { PrismaClient } from "@db/generated/client";
 import { bookSeed } from "@db/seed/book.seed";
 import { userSeed } from "@db/seed/user.seed";
-import { hashPassword } from "@modules/auth/utils/password";
 import { formatDocument } from "@modules/user/domain/document";
+import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { createPrismaAdapter } from "@shared/prisma/prisma.service";
 
 /**
@@ -24,10 +24,11 @@ export async function seed(
   }
 
   console.log(`Start seeding ...`);
+  const passwordHasher = new BcryptPasswordHasher();
   const usersToCreate = await Promise.all(
     userSeed.map(async (user) => ({
       ...user,
-      password: await hashPassword(user.password),
+      password: await passwordHasher.hash(user.password),
       cpf: formatDocument(user.cpf || ""),
     })),
   );

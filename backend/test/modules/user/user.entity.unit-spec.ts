@@ -1,4 +1,3 @@
-import { hashPassword } from "@modules/auth/utils/password";
 import {
   changeUserDetails,
   endsSessions,
@@ -7,8 +6,11 @@ import {
   UserChangesInput,
   UserRoleEnum,
 } from "@modules/user/domain/user.entity";
+import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
+
+const passwordHasher = new BcryptPasswordHasher();
 
 describe("[Unit] User entity", () => {
   const user = new UserBuilder(1).build();
@@ -60,7 +62,7 @@ describe("[Unit] User entity", () => {
   });
 
   it("Should register a user with no sessions revoked yet", async () => {
-    const password = await hashPassword("1234");
+    const password = await passwordHasher.hash("1234");
     const input = NewUserInput.parse({ ...details, password: "1234" });
 
     expect(registerUser(user.id, input, password, now)).toEqual({
@@ -93,7 +95,7 @@ describe("[Unit] User entity", () => {
     });
 
     it("Should replace the password when a new one is given", async () => {
-      const password = await hashPassword("nova-senha");
+      const password = await passwordHasher.hash("nova-senha");
 
       expect(
         changeUserDetails(changes, O.some(password), now)(stored).password,

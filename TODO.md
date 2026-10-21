@@ -10,8 +10,6 @@ The ports, CQRS and atomic repository operations are sound; the entities are onl
 
 Most important first.
 
-- [ ] **`user` and `auth` depend on each other**: `user` imports `hashPassword` from `auth/utils`, and `auth` imports `UserRepository`. Make hashing a `PasswordHasher` port in the user domain (bcrypt implementation bound in `UserModule`), so only `auth` depends on `user`. `tokenVersion` stays on `User`, since revocation must happen in the same request; say so in a comment.
-- [ ] **Split `auth/domain/login.entity.ts`**: it exports an unused `type User` (the `LoginInput` shape), and the HTTP/JWT types `RequestJWTPayload` and `AuthenticatedRequest`, which `auth.guard.ts` also declares separately. Move the inputs and `RefreshTokenClaims` to `domain/credentials.ts`, and the request types to one `AuthenticatedRequest` next to the guards.
 - [ ] **Smaller fixes**:
   - The "a client must have a CPF" refine says "CPF ou CNPJ inválido"; give it its own message, and probably its own error code.
   - The `cpf` field holds a CPF or a CNPJ (`DocumentType`); the domain's word is "document".

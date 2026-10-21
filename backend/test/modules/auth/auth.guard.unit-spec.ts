@@ -1,5 +1,5 @@
-import { RequestJWTPayload } from "@modules/auth/domain/login.entity";
 import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { RequestJWTPayload } from "@modules/auth/guards/authenticatedRequest";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { ExecutionContext, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";

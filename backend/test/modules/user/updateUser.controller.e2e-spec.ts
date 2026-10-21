@@ -3,12 +3,14 @@ import { FPF } from "@shared/utils/application/monads";
 import { useE2eApp } from "@test/util/e2eApp";
 import { resetDatabase } from "@test/util/resetDatabase";
 
-import { comparePassword } from "@modules/auth/utils/password";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
+import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
+
+const passwordHasher = new BcryptPasswordHasher();
 let userRepository: UserRepository;
 const userBuilder = new UserBuilder();
 const originalUser = userBuilder.withName("Test").build();
@@ -63,7 +65,7 @@ describe("[e2e] PUT /v1/users/{userId}", () => {
       cpf: "111.444.777-35",
     });
     expect(
-      await comparePassword("new-password-123", stored?.password ?? ""),
+      await passwordHasher.matches("new-password-123", stored?.password ?? ""),
     ).toBe(true);
   });
 

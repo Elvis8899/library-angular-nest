@@ -1,6 +1,6 @@
 import { Roles } from "@modules/auth/decorators/roles.decorator";
-import { AuthenticatedRequest } from "@modules/auth/domain/login.entity";
 import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { AuthenticatedRequest } from "@modules/auth/guards/authenticatedRequest";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { RentBookCommand } from "@modules/rental/commands/rentBook/rentBook.command";
 import { BookRentalDto } from "@modules/rental/dtos/bookRental.dto";

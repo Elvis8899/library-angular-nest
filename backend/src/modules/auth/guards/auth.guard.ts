@@ -1,4 +1,7 @@
-import { RequestJWTPayload } from "@modules/auth/domain/login.entity";
+import {
+  AuthenticatedRequest,
+  RequestJWTPayload,
+} from "@modules/auth/guards/authenticatedRequest";
 import {
   CanActivate,
   ExecutionContext,
@@ -6,11 +9,6 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-
-type AuthenticatedRequest = {
-  headers: { authorization?: string };
-  user?: RequestJWTPayload;
-};
 
 @Injectable()
 export class AuthGuard implements CanActivate {

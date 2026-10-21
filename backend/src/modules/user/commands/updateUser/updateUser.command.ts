@@ -1,6 +1,6 @@
-import { hashPassword } from "@modules/auth/utils/password";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userUpdated } from "@modules/user/domain/events/userUpdated.event";
+import { PasswordHasher } from "@modules/user/domain/passwordHasher.port";
 import {
   changeUserDetails,
   endsSessions,
@@ -35,6 +35,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
   constructor(
     private readonly useCase: UseCase,
     private readonly userRepository: UserRepository,
+    private readonly passwordHasher: PasswordHasher,
   ) {}
 
   execute(command: UpdateUser): Promise<void> {
@@ -83,7 +84,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
             FPF.pipe(
               O.fromNullable(changes.password),
               O.traverse(T.ApplicativePar)(
-                (password) => () => hashPassword(password),
+                (password) => () => this.passwordHasher.hash(password),
               ),
             ),
           ),
