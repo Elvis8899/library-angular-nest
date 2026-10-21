@@ -37,9 +37,9 @@ jobs:
           - 5432:5432
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
@@ -56,8 +56,19 @@ jobs:
           yarn build
           yarn test:cov
 
+      # The tests never run the build output, so check that it starts
+      - name: Start the built app
+        working-directory: library-backend
+        run: |
+          npx env-cmd -f .env.test env LOG_LEVEL=info node dist/src/main.js &
+          for i in $(seq 1 30); do
+            curl -fs localhost:3000/check/status && exit 0
+            sleep 1
+          done
+          exit 1
+
       - name: Upload coverage summary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-coverage
           path: library-backend/coverage/coverage-summary.json
@@ -66,9 +77,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Use Node.js from .nvmrc
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: ./library-frontend/.nvmrc
           cache: "yarn"
@@ -84,26 +95,28 @@ jobs:
           yarn build
 
       - name: Upload coverage summary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-coverage
           path: library-frontend/coverage/library-frontend/coverage-summary.json
 
   badges:
     needs: [build, frontend]
+    # Pull requests would replace the badges with their own coverage
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Download backend coverage summary
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: backend-coverage
           path: library-backend/coverage
 
       - name: Download frontend coverage summary
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: frontend-coverage
           path: library-frontend/coverage/library-frontend
