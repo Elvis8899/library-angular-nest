@@ -19,8 +19,8 @@ beforeAll(async () => {
     providers: [RealUserRepository, PrismaService],
   }).compile();
 
-  userRepository = module.get<RealUserRepository>(RealUserRepository);
-  prismaService = module.get<PrismaService>(PrismaService);
+  userRepository = module.get(RealUserRepository);
+  prismaService = module.get(PrismaService);
 });
 
 afterAll(async () => {

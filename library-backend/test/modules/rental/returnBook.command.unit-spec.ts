@@ -16,16 +16,12 @@ import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { createHandlerModule } from "@test/util/handlerModule";
+import { useHandlerModule } from "@test/util/handlerModule";
 import { UserRepository } from "@user/database/user.repository.port";
 
 //Adapters
 
 describe("[Unit] Update BookInfo", () => {
-  let returnBookCommandHandler: ReturnBookCommandHandler;
-  let bookRentalRepository: BookRentalRepository;
-  let bookInfoRepository: BookInfoRepository;
-  let eventBookInfo: DomainEventPublisher;
   const user = new UserBuilder().build();
   const bookInfo = new BookInfoBuilder()
     .withBookItems([
@@ -38,36 +34,36 @@ describe("[Unit] Update BookInfo", () => {
     .build();
   const bookRentalBuilder = new BookRentalBuilder(0);
 
+  const ctx = useHandlerModule(
+    { providers: [ReturnBookCommandHandler] },
+    (get) => ({
+      bookInfoRepository: get(BookInfoRepository),
+      userRepository: get(UserRepository),
+      bookRentalRepository: get(BookRentalRepository),
+      returnBookCommandHandler: get(ReturnBookCommandHandler),
+      eventBookInfo: get(DomainEventPublisher),
+    }),
+  );
+
   beforeEach(async () => {
-    const moduleRef = await createHandlerModule([ReturnBookCommandHandler]);
-
-    bookInfoRepository = moduleRef.get<BookInfoRepository>(BookInfoRepository);
-    const userRepository = moduleRef.get<UserRepository>(UserRepository);
-    bookRentalRepository =
-      moduleRef.get<BookRentalRepository>(BookRentalRepository);
-    returnBookCommandHandler = moduleRef.get<ReturnBookCommandHandler>(
-      ReturnBookCommandHandler,
-    );
-    eventBookInfo = moduleRef.get<DomainEventPublisher>(DomainEventPublisher);
-
-    await executeTask(bookInfoRepository.save(bookInfo));
-    await executeTask(userRepository.save(user));
+    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await executeTask(ctx.userRepository.save(user));
     bookRentalBuilder.reset();
   });
 
   it("Should return book if data is valid", async () => {
     // Given a potentially valid book rental
     const bookRental = bookRentalBuilder.build();
-    await executeTask(bookRentalRepository.save(bookRental));
+    await executeTask(ctx.bookRentalRepository.save(bookRental));
     //When we update it
-    const resultPromise = returnBookCommandHandler.execute(
+    const resultPromise = ctx.returnBookCommandHandler.execute(
       new ReturnBookCommand(bookRentalBuilder.build().id),
     );
 
     //Then it should have suscessfully updated
     await expect(resultPromise).resolves.toEqual(undefined);
 
-    const bookRentals = await executeTask(bookRentalRepository.findAll());
+    const bookRentals = await executeTask(ctx.bookRentalRepository.findAll());
     expect(bookRentals.length).toEqual(1);
   });
 
@@ -76,9 +72,9 @@ describe("[Unit] Update BookInfo", () => {
     const bookRental = bookRentalBuilder
       .withStatus(RentalStatusEnum.Finished)
       .build();
-    await executeTask(bookRentalRepository.save(bookRental));
+    await executeTask(ctx.bookRentalRepository.save(bookRental));
     //When we update it
-    const resultPromise = returnBookCommandHandler.execute(
+    const resultPromise = ctx.returnBookCommandHandler.execute(
       new ReturnBookCommand(bookRentalBuilder.build().id),
     );
 
@@ -87,7 +83,7 @@ describe("[Unit] Update BookInfo", () => {
       BookRentalFinishedException,
     );
 
-    const bookRentals = await executeTask(bookRentalRepository.findAll());
+    const bookRentals = await executeTask(ctx.bookRentalRepository.findAll());
     expect(bookRentals.length).toEqual(1);
   });
 
@@ -96,9 +92,9 @@ describe("[Unit] Update BookInfo", () => {
     const bookRental = bookRentalBuilder
       .withStatus(RentalStatusEnum.Rented)
       .build();
-    await executeTask(bookRentalRepository.save(bookRental));
+    await executeTask(ctx.bookRentalRepository.save(bookRental));
     //When we update it
-    const resultPromise = returnBookCommandHandler.execute(
+    const resultPromise = ctx.returnBookCommandHandler.execute(
       new ReturnBookCommand(createTestId(TableNameEnum.None, 0)),
     );
 
@@ -107,19 +103,19 @@ describe("[Unit] Update BookInfo", () => {
       BookRentalNotFoundException,
     );
 
-    const bookRentals = await executeTask(bookRentalRepository.findAll());
+    const bookRentals = await executeTask(ctx.bookRentalRepository.findAll());
     expect(bookRentals.length).toEqual(1);
   });
 
   it("Should emit domain event when book is returned", async () => {
     // Given a potentially valid book rental
     const bookRental = bookRentalBuilder.build();
-    await executeTask(bookRentalRepository.save(bookRental));
+    await executeTask(ctx.bookRentalRepository.save(bookRental));
     //When we update it
 
-    const spy = jest.spyOn(eventBookInfo, "publishEvent");
+    const spy = jest.spyOn(ctx.eventBookInfo, "publishEvent");
 
-    const resultPromise = returnBookCommandHandler.execute(
+    const resultPromise = ctx.returnBookCommandHandler.execute(
       new ReturnBookCommand(bookRentalBuilder.build().id),
     );
 
@@ -132,9 +128,9 @@ describe("[Unit] Update BookInfo", () => {
 
   it("Should return book if it belongs to the given owner", async () => {
     const bookRental = bookRentalBuilder.build();
-    await executeTask(bookRentalRepository.save(bookRental));
+    await executeTask(ctx.bookRentalRepository.save(bookRental));
 
-    const resultPromise = returnBookCommandHandler.execute(
+    const resultPromise = ctx.returnBookCommandHandler.execute(
       new ReturnBookCommand(bookRental.id, bookRental.userId),
     );
 
@@ -143,16 +139,16 @@ describe("[Unit] Update BookInfo", () => {
 
   it("Should not return book that belongs to another user", async () => {
     const bookRental = bookRentalBuilder.build();
-    await executeTask(bookRentalRepository.save(bookRental));
+    await executeTask(ctx.bookRentalRepository.save(bookRental));
 
-    const resultPromise = returnBookCommandHandler.execute(
+    const resultPromise = ctx.returnBookCommandHandler.execute(
       new ReturnBookCommand(bookRental.id, createTestId(TableNameEnum.User, 5)),
     );
 
     await expect(resultPromise).rejects.toBeInstanceOf(
       BookRentalNotFoundException,
     );
-    const [stored] = await executeTask(bookRentalRepository.findAll());
+    const [stored] = await executeTask(ctx.bookRentalRepository.findAll());
     expect(stored?.rentalStatus).toBe(RentalStatusEnum.Rented);
   });
 });

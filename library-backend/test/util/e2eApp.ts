@@ -9,6 +9,7 @@ import { AppModule } from "@src/app.module";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { createTestApp } from "@test/util/createTestApp";
 import { resetDatabase } from "@test/util/resetDatabase";
+import { typedGet, TypedGet } from "@test/util/typedGet";
 import { PinoLogger } from "nestjs-pino";
 import request from "supertest";
 
@@ -25,6 +26,8 @@ export type E2eApp = {
   app: NestFastifyApplication;
   module: TestingModule;
   prisma: PrismaService;
+  /** A provider, typed from its class token: e2e.get(UserRepository) */
+  get: TypedGet;
   /** A supertest request against the app: e2e.http().get("/v1/users") */
   http: () => ReturnType<typeof request>;
 };
@@ -47,6 +50,7 @@ export const buildE2eApp = async (options: E2eOptions): Promise<E2eApp> => {
     app,
     module,
     prisma: module.get(PrismaService),
+    get: typedGet(module),
     http: () => request(app.getHttpServer()),
   };
 };

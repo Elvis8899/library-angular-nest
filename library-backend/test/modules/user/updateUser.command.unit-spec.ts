@@ -2,7 +2,7 @@ import { UnprocessableEntityException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
-import { createHandlerModule } from "@test/util/handlerModule";
+import { useHandlerModule } from "@test/util/handlerModule";
 import {
   UpdateUser,
   UpdateUserHandler,
@@ -16,26 +16,22 @@ import {
 } from "@user/domain/user.errors";
 
 //Adapters
-let userRepository: UserRepository;
-let eventUser: DomainEventPublisher;
 
 describe("[Unit] Update User", () => {
-  let updateUserHandler: UpdateUserHandler;
-
   const userBuilder = new UserBuilder(1);
   let originalUserId: string;
 
+  const ctx = useHandlerModule({ providers: [UpdateUserHandler] }, (get) => ({
+    userRepository: get(UserRepository),
+    updateUserHandler: get(UpdateUserHandler),
+    eventUser: get(DomainEventPublisher),
+  }));
+
   beforeEach(async () => {
-    const moduleRef = await createHandlerModule([UpdateUserHandler]);
-
-    userRepository = moduleRef.get<UserRepository>(UserRepository);
-    updateUserHandler = moduleRef.get<UpdateUserHandler>(UpdateUserHandler);
-    eventUser = moduleRef.get<DomainEventPublisher>(DomainEventPublisher);
-
     userBuilder.reset();
     const originalUser = userBuilder.build();
     originalUserId = originalUser.id;
-    await executeTask(userRepository.save(originalUser));
+    await executeTask(ctx.userRepository.save(originalUser));
   });
 
   it("Should update user if user is valid", async () => {
@@ -43,14 +39,14 @@ describe("[Unit] Update User", () => {
     const userDTO = userBuilder.buildCreateDTO();
 
     //When we update it
-    const resultPromise = updateUserHandler.execute(
+    const resultPromise = ctx.updateUserHandler.execute(
       new UpdateUser(userDTO, originalUserId),
     );
 
     //Then it should have suscessfully updated
     await expect(resultPromise).resolves.toEqual(undefined);
 
-    const users = await executeTask(userRepository.findAll());
+    const users = await executeTask(ctx.userRepository.findAll());
     expect(users.length).toEqual(1);
     //And revoked the user's existing refresh tokens
     expect(users[0]?.tokenVersion).toEqual(1);
@@ -62,14 +58,14 @@ describe("[Unit] Update User", () => {
 
     //When we update it without optional keys
     userDTO.cpf = "";
-    const resultPromise = updateUserHandler.execute(
+    const resultPromise = ctx.updateUserHandler.execute(
       new UpdateUser(userDTO, originalUserId),
     );
 
     //Then it should have updated the user
     await expect(resultPromise).resolves.toEqual(undefined);
 
-    const users = await executeTask(userRepository.findAll());
+    const users = await executeTask(ctx.userRepository.findAll());
     expect(users.length).toEqual(1);
   });
 
@@ -77,10 +73,12 @@ describe("[Unit] Update User", () => {
     //Given a potentially valid user
     const userDTO = userBuilder.buildCreateDTO();
 
-    const spy = jest.spyOn(eventUser, "publishEvent");
+    const spy = jest.spyOn(ctx.eventUser, "publishEvent");
 
     //When we update the user
-    await updateUserHandler.execute(new UpdateUser(userDTO, originalUserId));
+    await ctx.updateUserHandler.execute(
+      new UpdateUser(userDTO, originalUserId),
+    );
 
     //Then it should have updated the user and emitted an event
     expect(spy).toHaveBeenCalledTimes(1);
@@ -94,7 +92,7 @@ describe("[Unit] Update User", () => {
     const invalidUserId = "c017f4a9-c458-4ea7-829c-021c6a608503";
 
     //When we update the user with an id that doesn't exist
-    const resultPromise = updateUserHandler.execute(
+    const resultPromise = ctx.updateUserHandler.execute(
       new UpdateUser(userDTO, invalidUserId),
     );
 
@@ -107,7 +105,7 @@ describe("[Unit] Update User", () => {
     const userDTO = userBuilder.withName("").buildCreateDTO();
 
     //When we update the user
-    const resultPromise = updateUserHandler.execute(
+    const resultPromise = ctx.updateUserHandler.execute(
       new UpdateUser(userDTO, originalUserId),
     );
 
@@ -116,7 +114,7 @@ describe("[Unit] Update User", () => {
       UnprocessableEntityException,
     );
 
-    const users = await executeTask(userRepository.findAll());
+    const users = await executeTask(ctx.userRepository.findAll());
     expect(users.length).toEqual(1);
   });
 
@@ -126,11 +124,11 @@ describe("[Unit] Update User", () => {
     const user = new UserBuilder(2).build();
 
     const repeatCPF = user.cpf;
-    await executeTask(userRepository.save(user));
+    await executeTask(ctx.userRepository.save(user));
 
     //When we update the user to have same name
     const userDTO = userBuilder.withCPF(repeatCPF).buildCreateDTO();
-    const resultPromise = updateUserHandler.execute(
+    const resultPromise = ctx.updateUserHandler.execute(
       new UpdateUser(userDTO, user.id),
     );
 
@@ -148,11 +146,11 @@ describe("[Unit] Update User", () => {
       .withEmail("usertwo@example.com");
     const secondUser = secondUserBuilder.build();
     const repeatEmail = userBuilder.build().email;
-    await executeTask(userRepository.save(secondUser));
+    await executeTask(ctx.userRepository.save(secondUser));
 
     //When we update the user to have same name
     const userDTO = secondUserBuilder.withEmail(repeatEmail).buildCreateDTO();
-    const resultPromise = updateUserHandler.execute(
+    const resultPromise = ctx.updateUserHandler.execute(
       new UpdateUser(userDTO, secondUser.id),
     );
 

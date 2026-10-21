@@ -12,16 +12,12 @@ import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { createHandlerModule } from "@test/util/handlerModule";
+import { useHandlerModule } from "@test/util/handlerModule";
 import { UserRepository } from "@user/database/user.repository.port";
 
 //Adapters
 
 describe("[Unit] Update BookInfo", () => {
-  let rentBookCommandHandler: RentBookCommandHandler;
-  let bookRentalRepository: BookRentalRepository;
-  let bookInfoRepository: BookInfoRepository;
-  let eventBookInfo: DomainEventPublisher;
   const user = new UserBuilder().build();
   const bookInfo = new BookInfoBuilder()
     .withBookItems([
@@ -34,20 +30,20 @@ describe("[Unit] Update BookInfo", () => {
     .build();
   const bookRentalBuilder = new BookRentalBuilder(0);
 
+  const ctx = useHandlerModule(
+    { providers: [RentBookCommandHandler] },
+    (get) => ({
+      bookInfoRepository: get(BookInfoRepository),
+      userRepository: get(UserRepository),
+      bookRentalRepository: get(BookRentalRepository),
+      rentBookCommandHandler: get(RentBookCommandHandler),
+      eventBookInfo: get(DomainEventPublisher),
+    }),
+  );
+
   beforeEach(async () => {
-    const moduleRef = await createHandlerModule([RentBookCommandHandler]);
-
-    bookInfoRepository = moduleRef.get<BookInfoRepository>(BookInfoRepository);
-    const userRepository = moduleRef.get<UserRepository>(UserRepository);
-    bookRentalRepository =
-      moduleRef.get<BookRentalRepository>(BookRentalRepository);
-    rentBookCommandHandler = moduleRef.get<RentBookCommandHandler>(
-      RentBookCommandHandler,
-    );
-    eventBookInfo = moduleRef.get<DomainEventPublisher>(DomainEventPublisher);
-
-    await executeTask(bookInfoRepository.save(bookInfo));
-    await executeTask(userRepository.save(user));
+    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await executeTask(ctx.userRepository.save(user));
     bookRentalBuilder.reset();
   });
 
@@ -55,7 +51,7 @@ describe("[Unit] Update BookInfo", () => {
     // Given a potentially valid book rental
     const bookRental = bookRentalBuilder.buildCreateDTO();
     //When we update it
-    const resultPromise = rentBookCommandHandler.execute(
+    const resultPromise = ctx.rentBookCommandHandler.execute(
       new RentBookCommand({
         bookItemId: bookRental.bookItemId,
         userId: bookRental.userId,
@@ -65,7 +61,7 @@ describe("[Unit] Update BookInfo", () => {
     //Then it should have suscessfully updated
     await expect(resultPromise).resolves.toEqual(undefined);
 
-    const bookRentals = await executeTask(bookRentalRepository.findAll());
+    const bookRentals = await executeTask(ctx.bookRentalRepository.findAll());
     expect(bookRentals.length).toEqual(1);
   });
 
@@ -74,7 +70,7 @@ describe("[Unit] Update BookInfo", () => {
     const bookRental = bookRentalBuilder.buildCreateDTO();
     // and book is not available
     await executeTask(
-      bookInfoRepository.save(
+      ctx.bookInfoRepository.save(
         new BookInfoBuilder()
           .withBookItems([
             {
@@ -87,7 +83,7 @@ describe("[Unit] Update BookInfo", () => {
       ),
     );
     //When we try renting it
-    const resultPromise = rentBookCommandHandler.execute(
+    const resultPromise = ctx.rentBookCommandHandler.execute(
       new RentBookCommand({
         bookItemId: bookRental.bookItemId,
         userId: bookRental.userId,
@@ -99,7 +95,7 @@ describe("[Unit] Update BookInfo", () => {
       BookRentalNotAvailableException,
     );
 
-    const bookRentals = await executeTask(bookRentalRepository.findAll());
+    const bookRentals = await executeTask(ctx.bookRentalRepository.findAll());
     expect(bookRentals.length).toEqual(0);
   });
 
@@ -107,10 +103,10 @@ describe("[Unit] Update BookInfo", () => {
     //Given a potentially valid bookInfo
     const bookRental = bookRentalBuilder.buildCreateDTO();
 
-    const spy = jest.spyOn(eventBookInfo, "publishEvent");
+    const spy = jest.spyOn(ctx.eventBookInfo, "publishEvent");
 
     //When we update the bookInfo
-    await rentBookCommandHandler.execute(
+    await ctx.rentBookCommandHandler.execute(
       new RentBookCommand({
         bookItemId: bookRental.bookItemId,
         userId: bookRental.userId,
@@ -125,11 +121,11 @@ describe("[Unit] Update BookInfo", () => {
     // Given a book item that was rented concurrently, before its status changed
     const bookRental = bookRentalBuilder.buildCreateDTO();
     await executeTask(
-      bookRentalRepository.save(new BookRentalBuilder(1).build()),
+      ctx.bookRentalRepository.save(new BookRentalBuilder(1).build()),
     );
 
     //When we try renting it
-    const resultPromise = rentBookCommandHandler.execute(
+    const resultPromise = ctx.rentBookCommandHandler.execute(
       new RentBookCommand({
         bookItemId: bookRental.bookItemId,
         userId: bookRental.userId,
@@ -140,7 +136,7 @@ describe("[Unit] Update BookInfo", () => {
     await expect(resultPromise).rejects.toBeInstanceOf(
       BookRentalNotAvailableException,
     );
-    const bookRentals = await executeTask(bookRentalRepository.findAll());
+    const bookRentals = await executeTask(ctx.bookRentalRepository.findAll());
     expect(bookRentals.length).toEqual(1);
   });
 });

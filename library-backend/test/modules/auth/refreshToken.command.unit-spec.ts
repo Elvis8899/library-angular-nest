@@ -3,7 +3,6 @@ import {
   RefreshTokenCommandHandler,
 } from "@auth/commands/refreshToken/refreshToken.command";
 import { FakeRefreshSessionRepository } from "@auth/database/fakeRefreshSession.repository";
-import { RefreshSessionRepository } from "@auth/database/refreshSession.repository.port";
 import { InvalidRefreshTokenException } from "@auth/domain/auth.errors";
 import {
   generateTokens,
@@ -17,14 +16,10 @@ import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { createHandlerModule } from "@test/util/handlerModule";
+import { useHandlerModule } from "@test/util/handlerModule";
 import { UserRepository } from "@user/database/user.repository.port";
 
 describe("[Unit] Refresh token", () => {
-  let refreshTokenCommandHandler: RefreshTokenCommandHandler;
-  let userRepository: UserRepository;
-  let refreshSessionRepository: FakeRefreshSessionRepository;
-  let jwtService: JwtService;
   const user = new UserBuilder().build();
   const session = {
     sessionId: createTestId(TableNameEnum.RefreshSession, 1),
@@ -32,37 +27,33 @@ describe("[Unit] Refresh token", () => {
   };
 
   const refresh = (refreshToken: string) =>
-    refreshTokenCommandHandler.execute(
+    ctx.refreshTokenCommandHandler.execute(
       new RefreshTokenCommand({ refreshToken }),
     );
 
   // A logged in user: stored, with a refresh session and its token
   const login = async () => {
-    await executeTask(userRepository.save(user));
+    await executeTask(ctx.userRepository.save(user));
     await executeTask(
-      refreshSessionRepository.create({
+      ctx.refreshSessionRepository.create({
         id: session.sessionId,
         userId: user.id,
         currentJti: session.jti,
         expiresAt: refreshSessionExpiry(),
       }),
     );
-    return generateTokens(jwtService)(user, session);
+    return generateTokens(ctx.jwtService)(user, session);
   };
 
-  beforeEach(async () => {
-    const moduleRef = await createHandlerModule([
-      JwtService,
-      RefreshTokenCommandHandler,
-    ]);
-
-    userRepository = moduleRef.get<UserRepository>(UserRepository);
-    refreshSessionRepository = moduleRef.get(RefreshSessionRepository);
-    jwtService = moduleRef.get<JwtService>(JwtService);
-    refreshTokenCommandHandler = moduleRef.get<RefreshTokenCommandHandler>(
-      RefreshTokenCommandHandler,
-    );
-  });
+  const ctx = useHandlerModule(
+    { providers: [JwtService, RefreshTokenCommandHandler] },
+    (get) => ({
+      userRepository: get(UserRepository),
+      refreshSessionRepository: get(FakeRefreshSessionRepository),
+      jwtService: get(JwtService),
+      refreshTokenCommandHandler: get(RefreshTokenCommandHandler),
+    }),
+  );
 
   it("Should return new tokens for a valid refresh token", async () => {
     //Given a logged in user
@@ -75,7 +66,7 @@ describe("[Unit] Refresh token", () => {
     expect(result.accessToken).toBeTruthy();
     expect(result.refreshToken).not.toBe(refreshToken);
     expect(result.user.id).toBe(user.id);
-    const claims = await jwtService.verifyAsync<{ sid: string }>(
+    const claims = await ctx.jwtService.verifyAsync<{ sid: string }>(
       result.refreshToken,
       refreshVerifyOptions,
     );
@@ -102,7 +93,9 @@ describe("[Unit] Refresh token", () => {
     //Then it is rejected and the session ends, so the newer token stops working too
     await expect(reuse).rejects.toBeInstanceOf(InvalidRefreshTokenException);
     expect(
-      await executeTask(refreshSessionRepository.findById(session.sessionId)),
+      await executeTask(
+        ctx.refreshSessionRepository.findById(session.sessionId),
+      ),
     ).toEqual(O.none);
     await expect(refresh(rotated.refreshToken)).rejects.toBeInstanceOf(
       InvalidRefreshTokenException,
@@ -111,8 +104,11 @@ describe("[Unit] Refresh token", () => {
 
   it("Should not refresh without a session", async () => {
     //Given a refresh token whose session no longer exists
-    await executeTask(userRepository.save(user));
-    const { refreshToken } = await generateTokens(jwtService)(user, session);
+    await executeTask(ctx.userRepository.save(user));
+    const { refreshToken } = await generateTokens(ctx.jwtService)(
+      user,
+      session,
+    );
 
     await expect(refresh(refreshToken)).rejects.toBeInstanceOf(
       InvalidRefreshTokenException,
@@ -121,8 +117,8 @@ describe("[Unit] Refresh token", () => {
 
   it("Should not accept a refresh token issued without a session", async () => {
     //Given a token signed before refresh tokens were rotated
-    await executeTask(userRepository.save(user));
-    const refreshToken = await jwtService.signAsync(
+    await executeTask(ctx.userRepository.save(user));
+    const refreshToken = await ctx.jwtService.signAsync(
       { sub: user.id, ver: user.tokenVersion },
       getSignTokenParams(user.id, {}).refreshOptions,
     );
@@ -155,7 +151,7 @@ describe("[Unit] Refresh token", () => {
   it("Should not refresh if the user no longer exists", async () => {
     //Given a valid refresh token for a user that was deleted
     const { refreshToken } = await login();
-    await executeTask(userRepository.deleteById(user.id));
+    await executeTask(ctx.userRepository.deleteById(user.id));
 
     await expect(refresh(refreshToken)).rejects.toBeInstanceOf(
       InvalidRefreshTokenException,
@@ -165,7 +161,7 @@ describe("[Unit] Refresh token", () => {
   it("Should not refresh after the user's tokens were revoked", async () => {
     //Given a refresh token issued before logout
     const { refreshToken } = await login();
-    await executeTask(userRepository.incrementTokenVersion(user.id));
+    await executeTask(ctx.userRepository.incrementTokenVersion(user.id));
 
     await expect(refresh(refreshToken)).rejects.toBeInstanceOf(
       InvalidRefreshTokenException,

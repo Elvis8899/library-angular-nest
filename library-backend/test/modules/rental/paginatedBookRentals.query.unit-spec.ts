@@ -7,26 +7,18 @@ import {
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { createHandlerModule } from "@test/util/handlerModule";
+import { useHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
-let bookRentalRepository: BookRentalRepository;
 
 describe("[Unit] List Users", () => {
-  let paginatedBookRentalsQueryHandler: PaginatedBookRentalsQueryHandler;
-
-  beforeEach(async () => {
-    const moduleRef = await createHandlerModule([
-      PaginatedBookRentalsQueryHandler,
-    ]);
-
-    bookRentalRepository =
-      moduleRef.get<BookRentalRepository>(BookRentalRepository);
-    paginatedBookRentalsQueryHandler =
-      moduleRef.get<PaginatedBookRentalsQueryHandler>(
-        PaginatedBookRentalsQueryHandler,
-      );
-  });
+  const ctx = useHandlerModule(
+    { providers: [PaginatedBookRentalsQueryHandler] },
+    (get) => ({
+      bookRentalRepository: get(BookRentalRepository),
+      paginatedBookRentalsQueryHandler: get(PaginatedBookRentalsQueryHandler),
+    }),
+  );
 
   it("Should list bookItems if query is valid -no status-no user", async () => {
     //Given a valid query
@@ -44,14 +36,14 @@ describe("[Unit] List Users", () => {
     const builder = new BookRentalBuilder();
     //With bookItems in database
     const bookRental = builder.build();
-    await executeTask(bookRentalRepository.save(bookRental));
+    await executeTask(ctx.bookRentalRepository.save(bookRental));
     builder
       .withCreatedAt(bookRental.createdAt)
       .withUpdatedAt(bookRental.updatedAt)
       .withOverdueDate(bookRental.overdueDate);
 
     //When we list bookItems
-    const result = await paginatedBookRentalsQueryHandler.execute(query);
+    const result = await ctx.paginatedBookRentalsQueryHandler.execute(query);
     //Then it should show a list of bookItems
     expect(result.data.length).toBe(1);
     expect(result.data[0]).toEqual(builder.buildRentalDetails());
@@ -76,14 +68,14 @@ describe("[Unit] List Users", () => {
     const builder = new BookRentalBuilder();
     //With bookItems in database
     const bookRental = builder.build();
-    await executeTask(bookRentalRepository.save(bookRental));
+    await executeTask(ctx.bookRentalRepository.save(bookRental));
     builder
       .withCreatedAt(bookRental.createdAt)
       .withUpdatedAt(bookRental.updatedAt)
       .withOverdueDate(bookRental.overdueDate);
 
     //When we list bookItems
-    const result = await paginatedBookRentalsQueryHandler.execute(query);
+    const result = await ctx.paginatedBookRentalsQueryHandler.execute(query);
     //Then it should show a list of bookItems
     expect(result.data.length).toBe(1);
     expect(result.data[0]).toEqual(builder.buildRentalDetails());
@@ -107,10 +99,10 @@ describe("[Unit] List Users", () => {
 
     //With bookItems in database
     const bookRental = new BookRentalBuilder().build();
-    await executeTask(bookRentalRepository.save(bookRental));
+    await executeTask(ctx.bookRentalRepository.save(bookRental));
 
     //When we list bookItems
-    const result = await paginatedBookRentalsQueryHandler.execute(query);
+    const result = await ctx.paginatedBookRentalsQueryHandler.execute(query);
     //Then it should show a list of bookItems
     expect(result.data.length).toBe(0);
     expect(result.count).toBe(1);
@@ -132,7 +124,7 @@ describe("[Unit] List Users", () => {
     );
 
     //When we list bookItems
-    const result = await paginatedBookRentalsQueryHandler.execute(query);
+    const result = await ctx.paginatedBookRentalsQueryHandler.execute(query);
     //Then it should show an empty list
     expect(result.data.length).toBe(0);
     expect(result.count).toBe(0);

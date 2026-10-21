@@ -24,7 +24,7 @@ describe("AuthGuard", () => {
       ],
     }).compile();
 
-    guard = module.get<AuthGuard>(AuthGuard);
+    guard = module.get(AuthGuard);
   });
 
   it("should be defined", () => {

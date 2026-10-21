@@ -6,22 +6,18 @@ import {
 } from "@book/queries/getBookById/getBookInfoById.query";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
-import { createHandlerModule } from "@test/util/handlerModule";
+import { useHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
-let bookInfoRepository: BookInfoRepository;
 
 describe("[Unit] List BookInfos", () => {
-  let getBookInfoByIdQueryHandler: GetBookInfoByIdQueryHandler;
-
-  beforeEach(async () => {
-    const moduleRef = await createHandlerModule([GetBookInfoByIdQueryHandler]);
-
-    bookInfoRepository = moduleRef.get<BookInfoRepository>(BookInfoRepository);
-    getBookInfoByIdQueryHandler = moduleRef.get<GetBookInfoByIdQueryHandler>(
-      GetBookInfoByIdQueryHandler,
-    );
-  });
+  const ctx = useHandlerModule(
+    { providers: [GetBookInfoByIdQueryHandler] },
+    (get) => ({
+      bookInfoRepository: get(BookInfoRepository),
+      getBookInfoByIdQueryHandler: get(GetBookInfoByIdQueryHandler),
+    }),
+  );
 
   it("Should get bookInfo if he exists", async () => {
     //Given a valid query
@@ -30,10 +26,10 @@ describe("[Unit] List BookInfos", () => {
     const query = new GetBookInfoByIdQuery(bookInfo.id);
 
     //With bookInfos in database
-    await executeTask(bookInfoRepository.save(bookInfo));
+    await executeTask(ctx.bookInfoRepository.save(bookInfo));
 
     //When we get bookInfo id
-    const result = await getBookInfoByIdQueryHandler.execute(query);
+    const result = await ctx.getBookInfoByIdQueryHandler.execute(query);
     //Then it should show his data
     expect(result.id).toBe(bookInfo.id);
   });
@@ -46,10 +42,10 @@ describe("[Unit] List BookInfos", () => {
 
     //With bookInfos in database
     const bookInfo = new BookInfoBuilder(1).build();
-    await executeTask(bookInfoRepository.save(bookInfo));
+    await executeTask(ctx.bookInfoRepository.save(bookInfo));
 
     //When get bookInfo
-    const resultPromise = getBookInfoByIdQueryHandler.execute(query);
+    const resultPromise = ctx.getBookInfoByIdQueryHandler.execute(query);
     //Then it should show a list of bookInfos
 
     await expect(resultPromise).rejects.toBeInstanceOf(
@@ -64,7 +60,7 @@ describe("[Unit] List BookInfos", () => {
     const query = new GetBookInfoByIdQuery(bookInfo.id);
 
     //When we list bookInfos
-    const resultPromise = getBookInfoByIdQueryHandler.execute(query);
+    const resultPromise = ctx.getBookInfoByIdQueryHandler.execute(query);
     //Then it should throw an BookInfoNotFoundException
     await expect(resultPromise).rejects.toBeInstanceOf(
       BookInfoNotFoundException,

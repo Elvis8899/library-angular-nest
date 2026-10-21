@@ -13,7 +13,7 @@ const originalBookInfo = bookInfoBuilder.withName("Test").build();
 const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });
 
 beforeAll(() => {
-  bookInfoRepository = e2e.module.get<BookInfoRepository>(BookInfoRepository);
+  bookInfoRepository = e2e.get(BookInfoRepository);
 });
 
 beforeEach(async () => {

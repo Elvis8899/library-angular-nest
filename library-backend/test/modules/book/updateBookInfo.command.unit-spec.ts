@@ -8,31 +8,28 @@ import { UnprocessableEntityException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
-import { createHandlerModule } from "@test/util/handlerModule";
+import { useHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
-let bookInfoRepository: BookInfoRepository;
-let eventBookInfo: DomainEventPublisher;
 
 describe("[Unit] Update BookInfo", () => {
-  let updateBookInfoHandler: UpdateBookInfoHandler;
-
   const bookInfoBuilder = new BookInfoBuilder(1);
   let originalBookInfoId: string;
 
+  const ctx = useHandlerModule(
+    { providers: [UpdateBookInfoHandler] },
+    (get) => ({
+      bookInfoRepository: get(BookInfoRepository),
+      updateBookInfoHandler: get(UpdateBookInfoHandler),
+      eventBookInfo: get(DomainEventPublisher),
+    }),
+  );
+
   beforeEach(async () => {
-    const moduleRef = await createHandlerModule([UpdateBookInfoHandler]);
-
-    bookInfoRepository = moduleRef.get<BookInfoRepository>(BookInfoRepository);
-    updateBookInfoHandler = moduleRef.get<UpdateBookInfoHandler>(
-      UpdateBookInfoHandler,
-    );
-    eventBookInfo = moduleRef.get<DomainEventPublisher>(DomainEventPublisher);
-
     bookInfoBuilder.reset();
     const originalBookInfo = bookInfoBuilder.build();
     originalBookInfoId = originalBookInfo.id;
-    await executeTask(bookInfoRepository.save(originalBookInfo));
+    await executeTask(ctx.bookInfoRepository.save(originalBookInfo));
   });
 
   it("Should update bookInfo if bookInfo is valid", async () => {
@@ -40,14 +37,14 @@ describe("[Unit] Update BookInfo", () => {
     const bookInfoDTO = bookInfoBuilder.buildCreateDTO();
 
     //When we update it
-    const resultPromise = updateBookInfoHandler.execute(
+    const resultPromise = ctx.updateBookInfoHandler.execute(
       new UpdateBookInfo(bookInfoDTO, originalBookInfoId),
     );
 
     //Then it should have suscessfully updated
     await expect(resultPromise).resolves.toEqual(undefined);
 
-    const bookInfos = await executeTask(bookInfoRepository.findAll());
+    const bookInfos = await executeTask(ctx.bookInfoRepository.findAll());
     expect(bookInfos.length).toEqual(1);
   });
 
@@ -56,14 +53,14 @@ describe("[Unit] Update BookInfo", () => {
     const bookInfoDTO = bookInfoBuilder.buildCreateDTO();
 
     //When we update it without optional keys
-    const resultPromise = updateBookInfoHandler.execute(
+    const resultPromise = ctx.updateBookInfoHandler.execute(
       new UpdateBookInfo(bookInfoDTO, originalBookInfoId),
     );
 
     //Then it should have updated the bookInfo
     await expect(resultPromise).resolves.toEqual(undefined);
 
-    const bookInfos = await executeTask(bookInfoRepository.findAll());
+    const bookInfos = await executeTask(ctx.bookInfoRepository.findAll());
     expect(bookInfos.length).toEqual(1);
   });
 
@@ -71,10 +68,10 @@ describe("[Unit] Update BookInfo", () => {
     //Given a potentially valid bookInfo
     const bookInfoDTO = bookInfoBuilder.buildCreateDTO();
 
-    const spy = jest.spyOn(eventBookInfo, "publishEvent");
+    const spy = jest.spyOn(ctx.eventBookInfo, "publishEvent");
 
     //When we update the bookInfo
-    await updateBookInfoHandler.execute(
+    await ctx.updateBookInfoHandler.execute(
       new UpdateBookInfo(bookInfoDTO, originalBookInfoId),
     );
 
@@ -90,7 +87,7 @@ describe("[Unit] Update BookInfo", () => {
     const invalidBookInfoId = "c017f4a9-c458-4ea7-829c-021c6a608503";
 
     //When we update the bookInfo with an id that doesn't exist
-    const resultPromise = updateBookInfoHandler.execute(
+    const resultPromise = ctx.updateBookInfoHandler.execute(
       new UpdateBookInfo(bookInfoDTO, invalidBookInfoId),
     );
 
@@ -105,7 +102,7 @@ describe("[Unit] Update BookInfo", () => {
     const bookInfoDTO = bookInfoBuilder.withName("").buildCreateDTO();
 
     //When we update the bookInfo
-    const resultPromise = updateBookInfoHandler.execute(
+    const resultPromise = ctx.updateBookInfoHandler.execute(
       new UpdateBookInfo(bookInfoDTO, originalBookInfoId),
     );
 
@@ -114,7 +111,7 @@ describe("[Unit] Update BookInfo", () => {
       UnprocessableEntityException,
     );
 
-    const bookInfos = await executeTask(bookInfoRepository.findAll());
+    const bookInfos = await executeTask(ctx.bookInfoRepository.findAll());
     expect(bookInfos.length).toEqual(1);
   });
 });

@@ -3,44 +3,36 @@ import {
   LoginCommandHandler,
 } from "@auth/commands/login/login.command";
 import { FakeRefreshSessionRepository } from "@auth/database/fakeRefreshSession.repository";
-import { RefreshSessionRepository } from "@auth/database/refreshSession.repository.port";
 import { WrongAuthException } from "@auth/domain/auth.errors";
 import { hashPassword } from "@auth/util/signTokenParams";
 import { JwtService } from "@nestjs/jwt";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { createHandlerModule } from "@test/util/handlerModule";
+import { useHandlerModule } from "@test/util/handlerModule";
 import { UserRepository } from "@user/database/user.repository.port";
 
 //Adapters
-let userRepository: UserRepository;
-let refreshSessionRepository: FakeRefreshSessionRepository;
 
 describe("[Unit] Create User", () => {
-  let loginCommandHandler: LoginCommandHandler;
-
-  beforeEach(async () => {
-    const moduleRef = await createHandlerModule([
-      JwtService,
-      LoginCommandHandler,
-    ]);
-
-    userRepository = moduleRef.get<UserRepository>(UserRepository);
-    refreshSessionRepository = moduleRef.get(RefreshSessionRepository);
-    loginCommandHandler =
-      moduleRef.get<LoginCommandHandler>(LoginCommandHandler);
-  });
+  const ctx = useHandlerModule(
+    { providers: [JwtService, LoginCommandHandler] },
+    (get) => ({
+      userRepository: get(UserRepository),
+      refreshSessionRepository: get(FakeRefreshSessionRepository),
+      loginCommandHandler: get(LoginCommandHandler),
+    }),
+  );
 
   it("Should login user if user is valid", async () => {
     //Given a potentially valid user
     const password = "123456";
     const hash = await hashPassword(password);
     const user = new UserBuilder().withPassword(hash);
-    await executeTask(userRepository.save(user.build()));
+    await executeTask(ctx.userRepository.save(user.build()));
 
     //When we create a user
-    const result = await loginCommandHandler.execute(
+    const result = await ctx.loginCommandHandler.execute(
       new LoginCommand(user.withPassword(password).buildCreateDTO()),
     );
 
@@ -52,7 +44,7 @@ describe("[Unit] Create User", () => {
     //Given a user with an expired session, and another user's expired session
     const password = "123456";
     const user = new UserBuilder().withPassword(await hashPassword(password));
-    await executeTask(userRepository.save(user.build()));
+    await executeTask(ctx.userRepository.save(user.build()));
     const yesterday = new Date(Date.now() - 86400 * 1000);
     const otherUserId = createTestId(TableNameEnum.User, 99);
     const expired = (n: number, userId: string) => ({
@@ -62,17 +54,19 @@ describe("[Unit] Create User", () => {
       expiresAt: yesterday,
     });
     await executeTask(
-      refreshSessionRepository.create(expired(1, user.build().id)),
+      ctx.refreshSessionRepository.create(expired(1, user.build().id)),
     );
-    await executeTask(refreshSessionRepository.create(expired(2, otherUserId)));
+    await executeTask(
+      ctx.refreshSessionRepository.create(expired(2, otherUserId)),
+    );
 
     //When the user logs in
-    const result = await loginCommandHandler.execute(
+    const result = await ctx.loginCommandHandler.execute(
       new LoginCommand(user.withPassword(password).buildCreateDTO()),
     );
 
     //Then only its new session and the other user's session remain
-    const sessions = await executeTask(refreshSessionRepository.findAll());
+    const sessions = await executeTask(ctx.refreshSessionRepository.findAll());
     expect(sessions.map((s) => s.userId).sort()).toEqual(
       [result.user.id, otherUserId].sort(),
     );
@@ -87,7 +81,9 @@ describe("[Unit] Create User", () => {
     //Given a potentially invalid name
     const user = new UserBuilder().withPassword(hash).buildCreateDTO();
     //When we create a user
-    const resultPromise = loginCommandHandler.execute(new LoginCommand(user));
+    const resultPromise = ctx.loginCommandHandler.execute(
+      new LoginCommand(user),
+    );
 
     //Then it should have thrown an error and not have created a user
     await expect(resultPromise).rejects.toBeInstanceOf(WrongAuthException);
@@ -98,9 +94,9 @@ describe("[Unit] Create User", () => {
     const password = "123456";
     const hash = await hashPassword(password);
     const user = new UserBuilder().withPassword(hash);
-    await executeTask(userRepository.save(user.build()));
+    await executeTask(ctx.userRepository.save(user.build()));
 
-    const resultPromise = loginCommandHandler.execute(
+    const resultPromise = ctx.loginCommandHandler.execute(
       new LoginCommand(user.buildCreateDTO()),
     );
 

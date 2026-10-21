@@ -16,7 +16,7 @@ beforeAll(async () => {
   }).compile();
 
   refreshSessionRepository = module.get(RealRefreshSessionRepository);
-  prismaService = module.get<PrismaService>(PrismaService);
+  prismaService = module.get(PrismaService);
 });
 
 afterAll(async () => {

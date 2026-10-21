@@ -22,10 +22,8 @@ beforeAll(async () => {
     providers: [RealBookInfoRepository, PrismaService],
   }).compile();
 
-  bookInfoRepository = module.get<RealBookInfoRepository>(
-    RealBookInfoRepository,
-  );
-  prismaService = module.get<PrismaService>(PrismaService);
+  bookInfoRepository = module.get(RealBookInfoRepository);
+  prismaService = module.get(PrismaService);
 });
 
 afterAll(async () => {

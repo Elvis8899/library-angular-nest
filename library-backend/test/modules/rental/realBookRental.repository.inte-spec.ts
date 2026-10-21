@@ -34,10 +34,8 @@ beforeAll(async () => {
     ],
   }).compile();
 
-  bookRentalRepository = module.get<RealBookRentalRepository>(
-    RealBookRentalRepository,
-  );
-  prismaService = module.get<PrismaService>(PrismaService);
+  bookRentalRepository = module.get(RealBookRentalRepository);
+  prismaService = module.get(PrismaService);
 
   await resetDatabase(prismaService);
   const { bookItems, ...bookInfo } = new BookInfoBuilder().build();

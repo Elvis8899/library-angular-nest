@@ -6,25 +6,18 @@ import {
 import { UnprocessableEntityException } from "@nestjs/common";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
-import { createHandlerModule } from "@test/util/handlerModule";
+import { useHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
-let bookInfoRepository: BookInfoRepository;
 
 describe("[Unit] List BookInfos", () => {
-  let paginatedBookInfosQueryHandler: PaginatedBookInfosQueryHandler;
-
-  beforeEach(async () => {
-    const moduleRef = await createHandlerModule([
-      PaginatedBookInfosQueryHandler,
-    ]);
-
-    bookInfoRepository = moduleRef.get<BookInfoRepository>(BookInfoRepository);
-    paginatedBookInfosQueryHandler =
-      moduleRef.get<PaginatedBookInfosQueryHandler>(
-        PaginatedBookInfosQueryHandler,
-      );
-  });
+  const ctx = useHandlerModule(
+    { providers: [PaginatedBookInfosQueryHandler] },
+    (get) => ({
+      bookInfoRepository: get(BookInfoRepository),
+      paginatedBookInfosQueryHandler: get(PaginatedBookInfosQueryHandler),
+    }),
+  );
 
   it("Should list bookInfos if query is valid", async () => {
     //Given a valid query
@@ -37,10 +30,10 @@ describe("[Unit] List BookInfos", () => {
 
     //With bookInfos in database
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(bookInfoRepository.save(bookInfo));
+    await executeTask(ctx.bookInfoRepository.save(bookInfo));
 
     //When we list bookInfos
-    const result = await paginatedBookInfosQueryHandler.execute(query);
+    const result = await ctx.paginatedBookInfosQueryHandler.execute(query);
     //Then it should show a list of bookInfos
     expect(result.data.length).toBe(1);
     expect(result.data[0]).toStrictEqual(bookInfo);
@@ -60,10 +53,10 @@ describe("[Unit] List BookInfos", () => {
 
     //With bookInfos in database
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(bookInfoRepository.save(bookInfo));
+    await executeTask(ctx.bookInfoRepository.save(bookInfo));
 
     //When we list bookInfos
-    const result = await paginatedBookInfosQueryHandler.execute(query);
+    const result = await ctx.paginatedBookInfosQueryHandler.execute(query);
     //Then it should show a list of bookInfos
     expect(result.data.length).toBe(0);
     expect(result.count).toBe(1);
@@ -77,8 +70,8 @@ describe("[Unit] List BookInfos", () => {
         new BookInfoBuilder(index).withName(name).build();
       const domCasmurro = book(1, "Dom Casmurro");
       const cortico = book(2, "O Cortiço");
-      await executeTask(bookInfoRepository.save(domCasmurro));
-      await executeTask(bookInfoRepository.save(cortico));
+      await executeTask(ctx.bookInfoRepository.save(domCasmurro));
+      await executeTask(ctx.bookInfoRepository.save(cortico));
       return { domCasmurro, cortico };
     };
 
@@ -87,7 +80,7 @@ describe("[Unit] List BookInfos", () => {
       const { domCasmurro } = await saveBooks();
 
       //When we search for part of one name, in another case
-      const result = await paginatedBookInfosQueryHandler.execute(
+      const result = await ctx.paginatedBookInfosQueryHandler.execute(
         new PaginatedBookInfosQuery(
           { limit: 10, page: 0 },
           { name: "  CASMURRO " },
@@ -104,7 +97,7 @@ describe("[Unit] List BookInfos", () => {
       await saveBooks();
 
       //When we search for spaces only
-      const result = await paginatedBookInfosQueryHandler.execute(
+      const result = await ctx.paginatedBookInfosQueryHandler.execute(
         new PaginatedBookInfosQuery({ limit: 10, page: 0 }, { name: "   " }),
       );
 
@@ -114,7 +107,7 @@ describe("[Unit] List BookInfos", () => {
 
     it("Should reject a search longer than 200 characters", async () => {
       //When we search with a very long text
-      const resultPromise = paginatedBookInfosQueryHandler.execute(
+      const resultPromise = ctx.paginatedBookInfosQueryHandler.execute(
         new PaginatedBookInfosQuery(
           { limit: 10, page: 0 },
           { name: "a".repeat(201) },
@@ -139,7 +132,7 @@ describe("[Unit] List BookInfos", () => {
         after: book(4, "2026-10-14T00:00:00.000Z"),
       };
       for (const b of Object.values(books)) {
-        await executeTask(bookInfoRepository.save(b));
+        await executeTask(ctx.bookInfoRepository.save(b));
       }
       return books;
     };
@@ -149,7 +142,7 @@ describe("[Unit] List BookInfos", () => {
       const books = await saveBooksCreatedOn();
 
       //When we list that day
-      const result = await paginatedBookInfosQueryHandler.execute(
+      const result = await ctx.paginatedBookInfosQueryHandler.execute(
         new PaginatedBookInfosQuery(
           { limit: 10, page: 0 },
           {
@@ -169,7 +162,7 @@ describe("[Unit] List BookInfos", () => {
     });
 
     it("Should reject a range that ends before it starts", async () => {
-      const resultPromise = paginatedBookInfosQueryHandler.execute(
+      const resultPromise = ctx.paginatedBookInfosQueryHandler.execute(
         new PaginatedBookInfosQuery(
           { limit: 10, page: 0 },
           {
@@ -185,7 +178,7 @@ describe("[Unit] List BookInfos", () => {
     });
 
     it("Should reject a date that isn't a date", async () => {
-      const resultPromise = paginatedBookInfosQueryHandler.execute(
+      const resultPromise = ctx.paginatedBookInfosQueryHandler.execute(
         new PaginatedBookInfosQuery(
           { limit: 10, page: 0 },
           { createdFrom: "yesterday" },
@@ -213,12 +206,12 @@ describe("[Unit] List BookInfos", () => {
         book(4, "Dom Casmurro"),
       ];
       for (const b of books) {
-        await executeTask(bookInfoRepository.save(b));
+        await executeTask(ctx.bookInfoRepository.save(b));
       }
       return books.map((b) => b.id);
     };
     const list = (filters: { sortBy?: string; order?: string }) =>
-      paginatedBookInfosQueryHandler
+      ctx.paginatedBookInfosQueryHandler
         .execute(new PaginatedBookInfosQuery({ limit: 10, page: 0 }, filters))
         .then((result) => result.data.map((b) => b.id));
 
@@ -260,7 +253,7 @@ describe("[Unit] List BookInfos", () => {
       "Should reject an unknown sort %o",
       async (filters) => {
         await expect(
-          paginatedBookInfosQueryHandler.execute(
+          ctx.paginatedBookInfosQueryHandler.execute(
             new PaginatedBookInfosQuery({ limit: 10, page: 0 }, filters),
           ),
         ).rejects.toBeInstanceOf(UnprocessableEntityException);
@@ -278,7 +271,7 @@ describe("[Unit] List BookInfos", () => {
     });
 
     //When we list bookInfos
-    const result = await paginatedBookInfosQueryHandler.execute(query);
+    const result = await ctx.paginatedBookInfosQueryHandler.execute(query);
     //Then it should show an empty list
     expect(result.data.length).toBe(0);
     expect(result.count).toBe(0);

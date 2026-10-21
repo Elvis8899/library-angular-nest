@@ -10,7 +10,7 @@ let bookInfoRepository: BookInfoRepository;
 const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });
 
 beforeAll(async () => {
-  bookInfoRepository = e2e.module.get<BookInfoRepository>(BookInfoRepository);
+  bookInfoRepository = e2e.get(BookInfoRepository);
 
   const { bookItems: _, ...bookInfo } = new BookInfoBuilder()
     .withBookItems([])

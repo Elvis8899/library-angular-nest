@@ -1,7 +1,7 @@
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { createHandlerModule } from "@test/util/handlerModule";
+import { useHandlerModule } from "@test/util/handlerModule";
 import { UserRepository } from "@user/database/user.repository.port";
 import {
   PaginatedUsersQuery,
@@ -9,19 +9,15 @@ import {
 } from "@user/queries/paginatedUsers/paginatedUsers.query";
 
 //Adapters
-let userRepository: UserRepository;
 
 describe("[Unit] List Users", () => {
-  let paginatedUsersQueryHandler: PaginatedUsersQueryHandler;
-
-  beforeEach(async () => {
-    const moduleRef = await createHandlerModule([PaginatedUsersQueryHandler]);
-
-    userRepository = moduleRef.get<UserRepository>(UserRepository);
-    paginatedUsersQueryHandler = moduleRef.get<PaginatedUsersQueryHandler>(
-      PaginatedUsersQueryHandler,
-    );
-  });
+  const ctx = useHandlerModule(
+    { providers: [PaginatedUsersQueryHandler] },
+    (get) => ({
+      userRepository: get(UserRepository),
+      paginatedUsersQueryHandler: get(PaginatedUsersQueryHandler),
+    }),
+  );
 
   it("Should list users if query is valid", async () => {
     //Given a valid query
@@ -34,10 +30,10 @@ describe("[Unit] List Users", () => {
 
     //With users in database
     const user = new UserBuilder().build();
-    await executeTask(userRepository.save(user));
+    await executeTask(ctx.userRepository.save(user));
 
     //When we list users
-    const result = await paginatedUsersQueryHandler.execute(query);
+    const result = await ctx.paginatedUsersQueryHandler.execute(query);
     //Then it should show a list of users
     expect(result.data.length).toBe(1);
     expect(result.data[0]).toStrictEqual(user);
@@ -57,10 +53,10 @@ describe("[Unit] List Users", () => {
 
     //With users in database
     const user = new UserBuilder().build();
-    await executeTask(userRepository.save(user));
+    await executeTask(ctx.userRepository.save(user));
 
     //When we list users
-    const result = await paginatedUsersQueryHandler.execute(query);
+    const result = await ctx.paginatedUsersQueryHandler.execute(query);
     //Then it should show a list of users
     expect(result.data.length).toBe(0);
     expect(result.count).toBe(1);
@@ -85,11 +81,11 @@ describe("[Unit] List Users", () => {
         .build(),
     );
     for (const user of users) {
-      await executeTask(userRepository.save(user));
+      await executeTask(ctx.userRepository.save(user));
     }
 
     //When we list users
-    const result = await paginatedUsersQueryHandler.execute(query);
+    const result = await ctx.paginatedUsersQueryHandler.execute(query);
     //Then it should show only the third user
     expect(result.data).toStrictEqual([users[2]]);
     expect(result.count).toBe(3);
@@ -107,7 +103,7 @@ describe("[Unit] List Users", () => {
     });
 
     //When we list users
-    const result = await paginatedUsersQueryHandler.execute(query);
+    const result = await ctx.paginatedUsersQueryHandler.execute(query);
     //Then it should show an empty list
     expect(result.data.length).toBe(0);
     expect(result.count).toBe(0);

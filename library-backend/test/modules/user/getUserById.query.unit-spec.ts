@@ -1,6 +1,6 @@
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
-import { createHandlerModule } from "@test/util/handlerModule";
+import { useHandlerModule } from "@test/util/handlerModule";
 import { UserRepository } from "@user/database/user.repository.port";
 import { UserNotFoundException } from "@user/domain/user.errors";
 import {
@@ -9,19 +9,15 @@ import {
 } from "@user/queries/getUserById/getUserById.query";
 
 //Adapters
-let userRepository: UserRepository;
 
 describe("[Unit] List Users", () => {
-  let getUserByIdQueryHandler: GetUserByIdQueryHandler;
-
-  beforeEach(async () => {
-    const moduleRef = await createHandlerModule([GetUserByIdQueryHandler]);
-
-    userRepository = moduleRef.get<UserRepository>(UserRepository);
-    getUserByIdQueryHandler = moduleRef.get<GetUserByIdQueryHandler>(
-      GetUserByIdQueryHandler,
-    );
-  });
+  const ctx = useHandlerModule(
+    { providers: [GetUserByIdQueryHandler] },
+    (get) => ({
+      userRepository: get(UserRepository),
+      getUserByIdQueryHandler: get(GetUserByIdQueryHandler),
+    }),
+  );
 
   it("Should get user if he exists", async () => {
     //Given a valid query
@@ -30,10 +26,10 @@ describe("[Unit] List Users", () => {
     const query = new GetUserByIdQuery(user.id);
 
     //With users in database
-    await executeTask(userRepository.save(user));
+    await executeTask(ctx.userRepository.save(user));
 
     //When we get user id
-    const result = await getUserByIdQueryHandler.execute(query);
+    const result = await ctx.getUserByIdQueryHandler.execute(query);
     //Then it should show his data
     expect(result.id).toBe(user.id);
   });
@@ -44,10 +40,10 @@ describe("[Unit] List Users", () => {
 
     //With users in database
     const user = new UserBuilder(1).build();
-    await executeTask(userRepository.save(user));
+    await executeTask(ctx.userRepository.save(user));
 
     //When get user
-    const resultPromise = getUserByIdQueryHandler.execute(query);
+    const resultPromise = ctx.getUserByIdQueryHandler.execute(query);
     //Then it should show a list of users
 
     await expect(resultPromise).rejects.toBeInstanceOf(UserNotFoundException);
@@ -60,7 +56,7 @@ describe("[Unit] List Users", () => {
     const query = new GetUserByIdQuery(user.id);
 
     //When we list users
-    const resultPromise = getUserByIdQueryHandler.execute(query);
+    const resultPromise = ctx.getUserByIdQueryHandler.execute(query);
     //Then it should throw an UserNotFoundException
     await expect(resultPromise).rejects.toBeInstanceOf(UserNotFoundException);
   });

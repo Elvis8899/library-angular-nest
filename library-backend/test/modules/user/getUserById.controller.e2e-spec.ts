@@ -11,7 +11,7 @@ let userRepository: UserRepository;
 const e2e = useE2eApp({ authGuard: mockAuthGuard });
 
 beforeAll(() => {
-  userRepository = e2e.module.get<UserRepository>(UserRepository);
+  userRepository = e2e.get(UserRepository);
 });
 
 beforeEach(async () => {

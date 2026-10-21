@@ -12,37 +12,34 @@ import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/doma
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { createHandlerModule } from "@test/util/handlerModule";
+import { useHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
-let bookInfoRepository: BookInfoRepository;
-let eventModule: DomainEventPublisher;
 
 describe("[Unit] Delete BookInfo", () => {
-  let removeBookItemHandler: RemoveBookItemHandler;
-
-  beforeEach(async () => {
-    const moduleRef = await createHandlerModule([RemoveBookItemHandler]);
-
-    bookInfoRepository = moduleRef.get<BookInfoRepository>(BookInfoRepository);
-    removeBookItemHandler = moduleRef.get<RemoveBookItemHandler>(
-      RemoveBookItemHandler,
-    );
-    eventModule = moduleRef.get<DomainEventPublisher>(DomainEventPublisher);
-  });
+  const ctx = useHandlerModule(
+    { providers: [RemoveBookItemHandler] },
+    (get) => ({
+      bookInfoRepository: get(BookInfoRepository),
+      removeBookItemHandler: get(RemoveBookItemHandler),
+      eventModule: get(DomainEventPublisher),
+    }),
+  );
 
   it("Should delete bookInfo if id is valid", async () => {
     //Given a valid id
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(bookInfoRepository.save(bookInfo));
+    await executeTask(ctx.bookInfoRepository.save(bookInfo));
     const id = createTestId(TableNameEnum.BookItem, 0);
 
     //When we delete a bookInfo
-    const resultPromise = removeBookItemHandler.execute(new RemoveBookItem(id));
+    const resultPromise = ctx.removeBookItemHandler.execute(
+      new RemoveBookItem(id),
+    );
     //Then it should have deleted a bookInfo
     await expect(resultPromise).resolves.toBe(undefined);
-    const bookInfos = await executeTask(bookInfoRepository.findAll());
+    const bookInfos = await executeTask(ctx.bookInfoRepository.findAll());
     expect(bookInfos.length).toEqual(1);
     expect(bookInfos[0]?.bookItems.length).toEqual(0);
   });
@@ -59,16 +56,18 @@ describe("[Unit] Delete BookInfo", () => {
         },
       ])
       .build();
-    await executeTask(bookInfoRepository.save(bookInfo));
+    await executeTask(ctx.bookInfoRepository.save(bookInfo));
     const id = createTestId(TableNameEnum.BookItem, 0);
 
     //When we delete a bookInfo
-    const resultPromise = removeBookItemHandler.execute(new RemoveBookItem(id));
+    const resultPromise = ctx.removeBookItemHandler.execute(
+      new RemoveBookItem(id),
+    );
     //Then it should have deleted a bookInfo
     await expect(resultPromise).rejects.toBeInstanceOf(
       AvailableBookItemNotFoundException,
     );
-    const bookInfos = await executeTask(bookInfoRepository.findAll());
+    const bookInfos = await executeTask(ctx.bookInfoRepository.findAll());
     expect(bookInfos.length).toEqual(1);
     expect(bookInfos[0]?.bookItems.length).toEqual(1);
   });
@@ -77,32 +76,32 @@ describe("[Unit] Delete BookInfo", () => {
     //Given a valid id
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(bookInfoRepository.save(bookInfo));
+    await executeTask(ctx.bookInfoRepository.save(bookInfo));
     const newId = createTestId(TableNameEnum.None, 0);
 
     //When we delete a bookInfo
-    const resultPromise = removeBookItemHandler.execute(
+    const resultPromise = ctx.removeBookItemHandler.execute(
       new RemoveBookItem(newId),
     );
     //Then it should not have deleted a bookInfo
     await expect(resultPromise).rejects.toBeInstanceOf(
       BookInfoNotFoundException,
     );
-    const bookInfos = await executeTask(bookInfoRepository.findAll());
+    const bookInfos = await executeTask(ctx.bookInfoRepository.findAll());
     expect(bookInfos.length).toEqual(1);
   });
 
   it("Should emit domain event when bookInfo is deleted", async () => {
     //Given a bookInfo
 
-    const spy = jest.spyOn(eventModule, "publishEvent");
+    const spy = jest.spyOn(ctx.eventModule, "publishEvent");
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(bookInfoRepository.save(bookInfo));
+    await executeTask(ctx.bookInfoRepository.save(bookInfo));
     const id = createTestId(TableNameEnum.BookItem, 0);
 
     //When we delete a bookInfo
-    await removeBookItemHandler.execute(new RemoveBookItem(id));
+    await ctx.removeBookItemHandler.execute(new RemoveBookItem(id));
 
     //Then it should have deleted a bookInfo and emitted an event
     expect(spy).toHaveBeenCalledTimes(1);
@@ -111,14 +110,14 @@ describe("[Unit] Delete BookInfo", () => {
   it("Should not emit domain event when bookInfo is not deleted", async () => {
     //Given a bookInfo
 
-    const spy = jest.spyOn(eventModule, "publishEvent");
+    const spy = jest.spyOn(ctx.eventModule, "publishEvent");
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(bookInfoRepository.save(bookInfo));
+    await executeTask(ctx.bookInfoRepository.save(bookInfo));
 
     const newId = createTestId(TableNameEnum.None, 0);
     //When we delete a bookInfo
-    const resultPromise = removeBookItemHandler.execute(
+    const resultPromise = ctx.removeBookItemHandler.execute(
       new RemoveBookItem(newId),
     );
     await expect(resultPromise).rejects.toBeInstanceOf(
