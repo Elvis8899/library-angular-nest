@@ -1,3 +1,4 @@
+import { HttpStatus } from "@nestjs/common";
 import { FPF } from "@shared/utils/application/monads";
 import { useE2eApp } from "@test/util/e2eApp";
 import { resetDatabase } from "@test/util/resetDatabase";
@@ -33,7 +34,7 @@ describe("[e2e] PUT /v1/users/{userId}", () => {
       .http()
       .put(v1Route(originalUser.id))
       .send(userDTO);
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
   });
 
   it("Should persist every updated field", async () => {
@@ -52,7 +53,7 @@ describe("[e2e] PUT /v1/users/{userId}", () => {
       .send(userDTO);
 
     // Then all of them are stored, with the new password hashed
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     const stored = await e2e.prisma.user.findUnique({
       where: { id: originalUser.id },
     });
@@ -66,22 +67,22 @@ describe("[e2e] PUT /v1/users/{userId}", () => {
     ).toBe(true);
   });
 
-  it("Should respond 422 for invalid name", async () => {
-    const userDTO = userBuilder.withName("").buildCreateDTO();
+  it.each([
+    { invalid: "an empty name", user: () => userBuilder.withName("") },
+    {
+      invalid: "a name that isn't a string",
+      user: () => userBuilder.withName(FPF.unsafeCoerce(1)),
+    },
+    {
+      invalid: "a cpf with wrong check digits",
+      user: () => userBuilder.withCPF("12345678901"),
+    },
+  ])("Should respond 422 for $invalid", async ({ user }) => {
     const response = await e2e
       .http()
       .put(v1Route(originalUser.id))
-      .send(userDTO);
-    expect(response.status).toBe(422);
-  });
-
-  it("Should respond 422 for invalid name type", async () => {
-    const userDTO = userBuilder.withName(FPF.unsafeCoerce(1)).buildCreateDTO();
-    const response = await e2e
-      .http()
-      .put(v1Route(originalUser.id))
-      .send(userDTO);
-    expect(response.status).toBe(422);
+      .send(user().buildCreateDTO());
+    expect(response.status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
   });
 
   it("Should respond 409 for two users with same cpf", async () => {
@@ -103,6 +104,6 @@ describe("[e2e] PUT /v1/users/{userId}", () => {
       .http()
       .put(v1Route(originalUser.id))
       .send(userDTO);
-    expect(response.status).toBe(409);
+    expect(response.status).toBe(HttpStatus.CONFLICT);
   });
 });

@@ -1,3 +1,4 @@
+import { HttpStatus } from "@nestjs/common";
 import { useE2eApp } from "@test/util/e2eApp";
 import { resetDatabase } from "@test/util/resetDatabase";
 
@@ -28,14 +29,14 @@ describe("[e2e] DELETE /v1/users/:id", () => {
 
     const response = await e2e.http().delete(v1Route(user.id));
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     const userAmount = await e2e.prisma.user.count();
     expect(userAmount).toBe(0);
   });
 
   it("Should respond 422 for invalid id", async () => {
     const response = await e2e.http().delete(v1Route("fakeId"));
-    expect(response.status).toBe(422);
+    expect(response.status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
   });
 
   it("Should respond 409 for a user with an unfinished rental", async () => {
@@ -45,7 +46,7 @@ describe("[e2e] DELETE /v1/users/:id", () => {
 
     const response = await e2e.http().delete(v1Route(user.id));
 
-    expect(response.status).toBe(409);
+    expect(response.status).toBe(HttpStatus.CONFLICT);
     expect(response.body).toMatchObject({ code: "user.hasActiveRentals" });
     expect(await e2e.prisma.user.count()).toBe(1);
   });
@@ -53,6 +54,6 @@ describe("[e2e] DELETE /v1/users/:id", () => {
   it("Should respond 404 for user not found", async () => {
     const user = new UserBuilder().withName("Test").build();
     const response = await e2e.http().delete(v1Route(user.id));
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(HttpStatus.NOT_FOUND);
   });
 });

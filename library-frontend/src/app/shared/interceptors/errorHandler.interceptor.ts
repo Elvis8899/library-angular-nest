@@ -4,6 +4,7 @@ import {
   HttpHandlerFn,
   HttpInterceptorFn,
   HttpRequest,
+  HttpStatusCode,
 } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { Router } from "@angular/router";
@@ -32,7 +33,10 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (
 
   const handleError = (errorResponse: HttpErrorResponse) => {
     const status = errorResponse.status;
-    if (status === 401 || status === 403) {
+    if (
+      status === HttpStatusCode.Unauthorized ||
+      status === HttpStatusCode.Forbidden
+    ) {
       _credentialsService.setCredentials();
       _router.navigate(["/login"]);
     }
@@ -53,7 +57,7 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (
   return next(request).pipe(
     catchError((errorResponse: HttpErrorResponse) => {
       const canRefresh =
-        errorResponse.status === 401 &&
+        errorResponse.status === HttpStatusCode.Unauthorized &&
         !isAuthRequest(request) &&
         !!_credentialsService.credentials?.refreshToken;
       if (!canRefresh) {

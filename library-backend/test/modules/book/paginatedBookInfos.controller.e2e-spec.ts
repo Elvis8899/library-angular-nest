@@ -1,4 +1,5 @@
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { HttpStatus } from "@nestjs/common";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
@@ -28,7 +29,7 @@ describe("[e2e] GET /v1/bookInfos", () => {
       limit: 10,
       page: 0,
     });
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     expect(response.body?.count).toBe(1);
     expect(response.body?.data?.length).toBe(1);
   });
@@ -43,7 +44,7 @@ describe("[e2e] GET /v1/bookInfos", () => {
       .http()
       .get(v1Route)
       .query({ limit: 10, page: 0, name: "casm" });
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     expect(response.body?.count).toBe(1);
     expect(response.body?.data?.[0]?.id).toBe(domCasmurro.id);
   });
@@ -67,7 +68,7 @@ describe("[e2e] GET /v1/bookInfos", () => {
       sortBy: "name",
       order: "desc",
     });
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     const body = PageBody.parse(response.body);
     expect(body.count).toBe(2);
     expect(body.data.map((b) => b.id)).toEqual([cortico.id, iracema.id]);
@@ -75,7 +76,7 @@ describe("[e2e] GET /v1/bookInfos", () => {
 
   it("Should respond 422 to an unknown sort field", async () => {
     const response = await e2e.http().get(v1Route).query({ sortBy: "price" });
-    expect(response.status).toBe(422);
+    expect(response.status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
   });
 
   it("Should respond 200 with empty list", async () => {
@@ -83,7 +84,7 @@ describe("[e2e] GET /v1/bookInfos", () => {
       limit: 100,
       page: 1,
     });
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     expect(response.body?.count).toBe(0);
   });
 });

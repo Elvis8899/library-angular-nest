@@ -1,4 +1,5 @@
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { HttpStatus } from "@nestjs/common";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
@@ -27,7 +28,7 @@ describe("[e2e] GET /v1/bookInfos", () => {
       limit: 10,
       page: 0,
     });
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     expect(response.body?.id).toBe(bookInfo.id);
   });
 
@@ -39,6 +40,6 @@ describe("[e2e] GET /v1/bookInfos", () => {
         limit: 100,
         page: 1,
       });
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(HttpStatus.NOT_FOUND);
   });
 });

@@ -1,3 +1,4 @@
+import { HttpStatus } from "@nestjs/common";
 import { FPF } from "@shared/utils/application/monads";
 import { useE2eApp } from "@test/util/e2eApp";
 import { resetDatabase } from "@test/util/resetDatabase";
@@ -31,26 +32,21 @@ describe("[e2e] PUT /v1/bookInfos/{bookInfoId}", () => {
       .http()
       .put(v1Route(originalBookInfo.id))
       .send(bookInfoDTO);
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
   });
 
-  it("Should respond 422 for invalid name", async () => {
-    const bookInfoDTO = bookInfoBuilder.withName("").buildCreateDTO();
+  it.each([
+    { invalid: "an empty name", name: "" },
+    {
+      invalid: "a name that isn't a string",
+      name: FPF.unsafeCoerce<number, string>(1),
+    },
+  ])("Should respond 422 for $invalid", async ({ name }) => {
+    const bookInfoDTO = bookInfoBuilder.withName(name).buildCreateDTO();
     const response = await e2e
       .http()
       .put(v1Route(originalBookInfo.id))
       .send(bookInfoDTO);
-    expect(response.status).toBe(422);
-  });
-
-  it("Should respond 422 for invalid name type", async () => {
-    const bookInfoDTO = bookInfoBuilder
-      .withName(FPF.unsafeCoerce(1))
-      .buildCreateDTO();
-    const response = await e2e
-      .http()
-      .put(v1Route(originalBookInfo.id))
-      .send(bookInfoDTO);
-    expect(response.status).toBe(422);
+    expect(response.status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
   });
 });

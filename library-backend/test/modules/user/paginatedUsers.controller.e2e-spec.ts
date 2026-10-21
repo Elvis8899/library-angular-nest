@@ -1,4 +1,5 @@
 import { Prisma } from "@db/generated/client";
+import { HttpStatus } from "@nestjs/common";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
@@ -30,7 +31,7 @@ describe("[e2e] GET /v1/users", () => {
       limit: 10,
       page: 0,
     });
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     expect(response.body?.count).toBe(1);
     expect(response.body?.data?.length).toBe(1);
     expect(response.body?.data?.[0]).not.toHaveProperty("password");
@@ -43,7 +44,7 @@ describe("[e2e] GET /v1/users", () => {
       page: 0,
     });
     mockAuthGuard.reset();
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(HttpStatus.FORBIDDEN);
   });
 
   it("Should respond 500 without the database's error details", async () => {
@@ -60,9 +61,9 @@ describe("[e2e] GET /v1/users", () => {
     const response = await e2e.http().get("/v1/users");
 
     findMany.mockRestore();
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     expect(response.body).toEqual({
-      statusCode: 500,
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       error: "Internal Server Error",
       message: "Erro interno do servidor.",
       code: "unknown",
@@ -74,7 +75,7 @@ describe("[e2e] GET /v1/users", () => {
       limit: 100,
       page: 1,
     });
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     expect(response.body?.count).toBe(0);
   });
 });

@@ -1,3 +1,4 @@
+import { HttpStatus } from "@nestjs/common";
 import { FPF } from "@shared/utils/application/monads";
 import { createBook } from "@test/util/createBook";
 import { useE2eApp } from "@test/util/e2eApp";
@@ -18,11 +19,11 @@ describe("[e2e] POST /v1/bookInfos/item", () => {
     const bookItem = new BookInfoBuilder(0).buildItem();
     const response = await e2e.http().post(v1Route).send(bookItem);
 
-    expect(response.status).toBe(201);
+    expect(response.status).toBe(HttpStatus.CREATED);
   });
 
   it("Should respond 422 for invalid book item", async () => {
     const response = await e2e.http().post(v1Route).send(FPF.unsafeCoerce({}));
-    expect(response.status).toBe(422);
+    expect(response.status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
   });
 });

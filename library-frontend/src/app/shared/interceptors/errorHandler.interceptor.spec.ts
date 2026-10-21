@@ -1,5 +1,6 @@
 import {
   HttpClient,
+  HttpStatusCode,
   provideHttpClient,
   withInterceptors,
 } from "@angular/common/http";
@@ -62,14 +63,17 @@ describe("ErrorHandlerInterceptor", () => {
 
   it("Should do nothing if no error", () => {
     const req = httpMock.expectOne("/test");
-    req.flush({}, { status: 200, statusText: "ok" });
+    req.flush({}, { status: HttpStatusCode.Ok, statusText: "ok" });
     // Assert
     expect(check).toBe(false);
   });
 
   it("Should return error", () => {
     const req = httpMock.expectOne("/test");
-    req.flush(new Error("error"), { status: 500, statusText: "error" });
+    req.flush(new Error("error"), {
+      status: HttpStatusCode.InternalServerError,
+      statusText: "error",
+    });
     // Assert
     expect(check).toBe(true);
   });
@@ -84,7 +88,10 @@ describe("ErrorHandlerInterceptor", () => {
     });
     const req = httpMock.expectOne("/test2");
     httpMock.expectOne("/test").flush("");
-    req.flush("", { status: 500, statusText: "error" });
+    req.flush("", {
+      status: HttpStatusCode.InternalServerError,
+      statusText: "error",
+    });
     // Assert
     expect(check).toBe(true);
   });
@@ -99,12 +106,14 @@ describe("ErrorHandlerInterceptor", () => {
       .subscribe({ error: (error) => (received = error) });
     httpMock.expectOne("/test").flush("");
     // Act
-    httpMock
-      .expectOne("/test3")
-      .flush(
-        { statusCode: 409, message: "Mensagem da API", code },
-        { status: 409, statusText: "Conflict" }
-      );
+    httpMock.expectOne("/test3").flush(
+      {
+        statusCode: HttpStatusCode.Conflict,
+        message: "Mensagem da API",
+        code,
+      },
+      { status: HttpStatusCode.Conflict, statusText: "Conflict" }
+    );
     // Assert
     expect(received?.message).toBe(message);
     expect(received?.code).toBe(code);
@@ -112,14 +121,20 @@ describe("ErrorHandlerInterceptor", () => {
 
   it("Should logout on status 401 or 403", () => {
     const req = httpMock.expectOne("/test");
-    req.flush(new Error("error"), { status: 401, statusText: "error" });
+    req.flush(new Error("error"), {
+      status: HttpStatusCode.Unauthorized,
+      statusText: "error",
+    });
     // Assert
     expect(check).toBe(true);
     expect(spectator.inject(Router).navigate).toHaveBeenCalledWith(["/login"]);
   });
   it("Should logout on status 401 or 403", () => {
     const req = httpMock.expectOne("/test");
-    req.flush(new Error("error"), { status: 403, statusText: "error" });
+    req.flush(new Error("error"), {
+      status: HttpStatusCode.Forbidden,
+      statusText: "error",
+    });
     // Assert
     expect(check).toBe(true);
     expect(spectator.inject(Router).navigate).toHaveBeenCalledWith(["/login"]);
@@ -142,12 +157,13 @@ describe("ErrorHandlerInterceptor", () => {
         of({ ...credentials, accessToken: "new" })
       );
 
-      httpMock
-        .expectOne("/test")
-        .flush(new Error("error"), { status: 401, statusText: "error" });
+      httpMock.expectOne("/test").flush(new Error("error"), {
+        status: HttpStatusCode.Unauthorized,
+        statusText: "error",
+      });
       const retry = httpMock.expectOne("/test");
       expect(retry.request.headers.get("Authorization")).toBe("Bearer new");
-      retry.flush({}, { status: 200, statusText: "ok" });
+      retry.flush({}, { status: HttpStatusCode.Ok, statusText: "ok" });
 
       expect(authService.refresh).toHaveBeenCalledTimes(1);
       expect(check).toBe(false);
@@ -159,9 +175,10 @@ describe("ErrorHandlerInterceptor", () => {
         .inject(AuthenticationService)
         .refresh.mockReturnValue(throwError(() => new Error("expired")));
 
-      httpMock
-        .expectOne("/test")
-        .flush(new Error("error"), { status: 401, statusText: "error" });
+      httpMock.expectOne("/test").flush(new Error("error"), {
+        status: HttpStatusCode.Unauthorized,
+        statusText: "error",
+      });
 
       expect(check).toBe(true);
       expect(spectator.inject(Router).navigate).toHaveBeenCalledWith([
@@ -174,12 +191,14 @@ describe("ErrorHandlerInterceptor", () => {
         .inject(AuthenticationService)
         .refresh.mockReturnValue(of({ ...credentials, accessToken: "new" }));
 
-      httpMock
-        .expectOne("/test")
-        .flush(new Error("error"), { status: 401, statusText: "error" });
-      httpMock
-        .expectOne("/test")
-        .flush(new Error("error"), { status: 401, statusText: "error" });
+      httpMock.expectOne("/test").flush(new Error("error"), {
+        status: HttpStatusCode.Unauthorized,
+        statusText: "error",
+      });
+      httpMock.expectOne("/test").flush(new Error("error"), {
+        status: HttpStatusCode.Unauthorized,
+        statusText: "error",
+      });
 
       expect(check).toBe(true);
       expect(spectator.inject(Router).navigate).toHaveBeenCalledWith([
@@ -190,9 +209,10 @@ describe("ErrorHandlerInterceptor", () => {
     it("Should not refresh on 401 from login", () => {
       httpClient.post("/v1/login", {}).subscribe({ error: () => undefined });
       httpMock.expectOne("/test").flush({});
-      httpMock
-        .expectOne("/v1/login")
-        .flush(new Error("error"), { status: 401, statusText: "error" });
+      httpMock.expectOne("/v1/login").flush(new Error("error"), {
+        status: HttpStatusCode.Unauthorized,
+        statusText: "error",
+      });
 
       expect(
         spectator.inject(AuthenticationService).refresh

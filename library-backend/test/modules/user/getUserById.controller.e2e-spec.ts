@@ -1,3 +1,4 @@
+import { HttpStatus } from "@nestjs/common";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
@@ -29,7 +30,7 @@ describe("[e2e] GET /v1/users", () => {
       limit: 10,
       page: 0,
     });
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     expect(response.body?.id).toBe(user.id);
     expect(response.body).not.toHaveProperty("password");
   });
@@ -40,7 +41,7 @@ describe("[e2e] GET /v1/users", () => {
       .http()
       .get(v1Route("00000000-0000-0000-0001-000000000000"));
     mockAuthGuard.reset();
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(HttpStatus.FORBIDDEN);
   });
 
   it("Should respond 404 when user not found", async () => {
@@ -51,6 +52,6 @@ describe("[e2e] GET /v1/users", () => {
         limit: 100,
         page: 1,
       });
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(HttpStatus.NOT_FOUND);
   });
 });

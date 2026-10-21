@@ -1,5 +1,6 @@
 import {
   HttpClient,
+  HttpStatusCode,
   provideHttpClient,
   withInterceptors,
 } from "@angular/common/http";
@@ -85,7 +86,10 @@ describe("AuthenticationHttpInterceptor", () => {
       },
     });
     const req = httpMock.expectOne("/test");
-    req.flush({}, { status: 500, statusText: "Unknown" });
+    req.flush(
+      {},
+      { status: HttpStatusCode.InternalServerError, statusText: "Unknown" }
+    );
     expect(req.request.headers.has("Authorization")).toBeTruthy();
     expect(req.request.headers.get("Authorization")).toBe("Bearer test_token");
     expect(check).toBe(true);

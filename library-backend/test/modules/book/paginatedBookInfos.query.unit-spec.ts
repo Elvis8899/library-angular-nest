@@ -161,28 +161,21 @@ describe("[Unit] List BookInfos", () => {
       expect(result.count).toBe(2);
     });
 
-    it("Should reject a range that ends before it starts", async () => {
+    it.each([
+      {
+        invalid: "a range that ends before it starts",
+        filters: {
+          createdFrom: "2026-10-14T00:00:00.000Z",
+          createdBefore: "2026-10-13T00:00:00.000Z",
+        },
+      },
+      {
+        invalid: "a date that isn't a date",
+        filters: { createdFrom: "yesterday" },
+      },
+    ])("Should reject $invalid", async ({ filters }) => {
       const resultPromise = ctx.paginatedBookInfosQueryHandler.execute(
-        new PaginatedBookInfosQuery(
-          { limit: 10, page: 0 },
-          {
-            createdFrom: "2026-10-14T00:00:00.000Z",
-            createdBefore: "2026-10-13T00:00:00.000Z",
-          },
-        ),
-      );
-
-      await expect(resultPromise).rejects.toBeInstanceOf(
-        UnprocessableEntityException,
-      );
-    });
-
-    it("Should reject a date that isn't a date", async () => {
-      const resultPromise = ctx.paginatedBookInfosQueryHandler.execute(
-        new PaginatedBookInfosQuery(
-          { limit: 10, page: 0 },
-          { createdFrom: "yesterday" },
-        ),
+        new PaginatedBookInfosQuery({ limit: 10, page: 0 }, filters),
       );
 
       await expect(resultPromise).rejects.toBeInstanceOf(

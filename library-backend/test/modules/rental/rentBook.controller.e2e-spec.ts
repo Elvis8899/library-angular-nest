@@ -51,7 +51,7 @@ describe("[e2e] POST /v1/bookRentals/rent", () => {
     expect(response.status).toBe(HttpStatus.NOT_FOUND);
   });
 
-  it("Should respond 422 for invalid name", async () => {
+  it("Should respond 409 if the book item is already rented", async () => {
     // Given a potentially valid book rental
     const bookRental = bookRentalBuilder
       .withBookItemId(createTestId(TableNameEnum.BookItem, 1))
@@ -74,11 +74,16 @@ describe("[e2e] POST /v1/bookRentals/rent", () => {
     expect(response.status).toBe(HttpStatus.CONFLICT);
   });
 
-  it("Should respond 422 for invalid name type", async () => {
-    const bookInfo = new BookInfoBuilder(2)
-      .withName(FPF.unsafeCoerce(1))
-      .buildCreateDTO();
-    const response = await e2e.http().post(v1Route).send(bookInfo);
-    expect(response.status).toBe(422);
+  it.each([
+    { invalid: "a missing book item id", bookItemId: undefined },
+    {
+      invalid: "a book item id that isn't a string",
+      bookItemId: FPF.unsafeCoerce<number, string>(1),
+    },
+  ])("Should respond 422 for $invalid", async ({ bookItemId }) => {
+    const { userId } = bookRentalBuilder.buildCreateDTO();
+    const bookRental = { userId, bookItemId };
+    const response = await e2e.http().post(v1Route).send(bookRental);
+    expect(response.status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
   });
 });

@@ -1,3 +1,4 @@
+import { HttpStatus } from "@nestjs/common";
 import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
@@ -43,7 +44,7 @@ describe("[e2e] GET /v1/bookRentals", () => {
       limit: 10,
       page: 0,
     });
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     expect(response.body?.count).toBe(1);
     expect(response.body?.data?.length).toBe(1);
   });
@@ -64,7 +65,7 @@ describe("[e2e] GET /v1/bookRentals", () => {
       limit: 10,
       page: 0,
     });
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     expect(response.body?.count).toBe(1);
     expect(response.body?.data?.length).toBe(1);
   });
@@ -85,7 +86,7 @@ describe("[e2e] GET /v1/bookRentals", () => {
       limit: 10,
       page: 0,
     });
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     expect(response.body?.count).toBe(0);
     expect(response.body?.data?.length).toBe(0);
   });
@@ -95,7 +96,7 @@ describe("[e2e] GET /v1/bookRentals", () => {
       limit: 100,
       page: 1,
     });
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     expect(response.body?.count).toBe(0);
   });
 });
