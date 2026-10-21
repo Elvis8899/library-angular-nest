@@ -54,7 +54,7 @@ describe("[e2e] GET /v1/users", () => {
       'duplicate key value violates unique constraint "User_email_key"',
       { code: "P2002", clientVersion: "7.10.1", meta: { modelName: "User" } },
     );
-    const findMany = jest
+    const findMany = vi
       .spyOn(e2e.prisma.user, "findMany")
       .mockRejectedValueOnce(databaseError);
 

@@ -57,7 +57,7 @@ describe("[Unit] Create User", () => {
   it("Should emit domain event when user is created", async () => {
     //Given a potentially valid name
 
-    const spy = jest.spyOn(ctx.eventUser, "publishEvent");
+    const spy = vi.spyOn(ctx.eventUser, "publishEvent");
 
     const user = new UserBuilder().buildCreateDTO();
     //When we create a user

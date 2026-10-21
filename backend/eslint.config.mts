@@ -93,9 +93,8 @@ export default defineConfig(
   },
   {
     // Files and folders are named in camelCase; suffixes like .command or
-    // .unit-spec are ignored. Jest configs keep their tool-style names.
+    // .unit-spec are ignored.
     files: ["src/**/*.ts", "test/**/*.ts", "prisma/**/*.ts"],
-    ignores: ["test/jest*.config.ts"],
     plugins: { "check-file": checkFile },
     rules: {
       "check-file/filename-naming-convention": [

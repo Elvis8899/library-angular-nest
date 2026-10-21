@@ -55,7 +55,7 @@ describe("[Unit] Create BookInfo", () => {
   it("Should emit domain event when bookInfo is created", async () => {
     //Given a potentially valid name
 
-    const spy = jest.spyOn(ctx.eventBookInfo, "publishEvent");
+    const spy = vi.spyOn(ctx.eventBookInfo, "publishEvent");
 
     const bookInfo = new BookInfoBuilder().buildCreateDTO();
     //When we create a bookInfo

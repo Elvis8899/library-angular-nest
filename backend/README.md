@@ -37,13 +37,16 @@ yarn test:migrate
 | `yarn test:e2e` | `*.e2e-spec.ts`: HTTP endpoints with supertest |
 | `yarn test:cov` | All of the above. Fails below 100% coverage. This is what CI runs. |
 
-The suites run in parallel, on half the CPUs. Before they start, `test/globalSetup.ts` copies `library-test` to one database per Jest worker (`library-test-1`, `library-test-2`…), so `library-test` itself must be migrated and have no other connections. The copies are made again on every run.
+The tests run on [Vitest](https://vitest.dev) (`vitest.config.mts`), which compiles them with SWC and doesn't check their types; `yarn typecheck` does, and CI runs it.
 
-To run a single file or test, use the base Jest config. The suite configs enforce coverage thresholds, which fail on partial runs:
+The suites run in parallel, on half the CPUs. Before the integration and e2e suites start, `test/globalSetup.ts` copies `library-test` to one database per Vitest worker (`library-test-1`, `library-test-2`…), so `library-test` itself must be migrated and have no other connections. The copies are made again on every run.
+
+To run a single file or test, call Vitest without `--coverage`. The scripts check coverage thresholds, which fail on partial runs:
 
 ```bash
-npx env-cmd -f .env.test jest --config ./test/jest.config.ts test/modules/user/document.unit-spec.ts
-npx env-cmd -f .env.test jest --config ./test/jest.config.ts -t "test name" <file>
+npx env-cmd -f .env.test vitest run test/modules/user/document.unit-spec.ts
+npx env-cmd -f .env.test vitest run -t "test name" <file>
+yarn test:watch               # reruns the suites a change affects
 ```
 
 ## Code organisation

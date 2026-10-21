@@ -94,7 +94,7 @@ describe("[Unit] Delete BookInfo", () => {
   it("Should emit domain event when bookInfo is deleted", async () => {
     //Given a bookInfo
 
-    const spy = jest.spyOn(ctx.eventModule, "publishEvent");
+    const spy = vi.spyOn(ctx.eventModule, "publishEvent");
 
     const bookInfo = new BookInfoBuilder().build();
     await executeTask(ctx.bookInfoRepository.save(bookInfo));
@@ -110,7 +110,7 @@ describe("[Unit] Delete BookInfo", () => {
   it("Should not emit domain event when bookInfo is not deleted", async () => {
     //Given a bookInfo
 
-    const spy = jest.spyOn(ctx.eventModule, "publishEvent");
+    const spy = vi.spyOn(ctx.eventModule, "publishEvent");
 
     const bookInfo = new BookInfoBuilder().build();
     await executeTask(ctx.bookInfoRepository.save(bookInfo));

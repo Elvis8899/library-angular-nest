@@ -18,7 +18,7 @@ describe("AuthGuard", () => {
           provide: JwtService,
           useValue: {
             // Mock the 'verify' method (or 'sign', 'decode', etc.)
-            verifyAsync: jest.fn(() => fnToUse()),
+            verifyAsync: vi.fn(() => fnToUse()),
           },
         },
       ],
@@ -75,10 +75,10 @@ function createMockExecutionContext(request: {
     switchToHttp: () => ({
       getRequest: FPF.unsafeCoerce(() => request),
       getResponse: FPF.unsafeCoerce(() => ({})),
-      getNext: FPF.unsafeCoerce(() => jest.fn()),
+      getNext: FPF.unsafeCoerce(() => vi.fn()),
     }),
-    getHandler: FPF.unsafeCoerce(() => jest.fn()),
-    getClass: FPF.unsafeCoerce(() => jest.fn()),
+    getHandler: FPF.unsafeCoerce(() => vi.fn()),
+    getClass: FPF.unsafeCoerce(() => vi.fn()),
     getArgs: FPF.unsafeCoerce(() => []),
     getArgByIndex: FPF.unsafeCoerce(() => ({})),
     switchToRpc: () => ({

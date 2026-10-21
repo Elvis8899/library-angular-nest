@@ -73,7 +73,7 @@ describe("[Unit] Update User", () => {
     //Given a potentially valid user
     const userDTO = userBuilder.buildCreateDTO();
 
-    const spy = jest.spyOn(ctx.eventUser, "publishEvent");
+    const spy = vi.spyOn(ctx.eventUser, "publishEvent");
 
     //When we update the user
     await ctx.updateUserHandler.execute(

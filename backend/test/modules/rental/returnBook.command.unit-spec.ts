@@ -113,7 +113,7 @@ describe("[Unit] Update BookInfo", () => {
     await executeTask(ctx.bookRentalRepository.save(bookRental));
     //When we update it
 
-    const spy = jest.spyOn(ctx.eventBookInfo, "publishEvent");
+    const spy = vi.spyOn(ctx.eventBookInfo, "publishEvent");
 
     const resultPromise = ctx.returnBookCommandHandler.execute(
       new ReturnBookCommand(bookRentalBuilder.build().id),

@@ -3,7 +3,8 @@ generator client {
   provider            = "prisma-client"
   output              = "../generated"
   moduleFormat        = "cjs"
-  // Extensionless imports: Jest can't resolve "./x.js" to the generated .ts files
+  // Extensionless imports: ts-node (the seed) can't resolve "./x.js" to the
+  // generated .ts files
   importFileExtension = ""
 }
 

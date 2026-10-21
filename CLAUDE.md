@@ -11,7 +11,7 @@ Library management system (book lending) for a Brazilian audience: UI text, API 
 
 The repository is also a seed for other projects. `shared`, `auth` and `user` (backend) and `auth`, `home`, `users` (frontend pages) are the core; `book` and `rental` (`books`, `rentals` pages) are the lending example. Everything the example owns lives in its own folders; the few lines it needs in core files are marked with a `Lending example` comment, so `git grep -i "lending example"` lists them (README, "Starting a new project"). Keep that true: example code doesn't go into core files unmarked, and core code and specs don't use the example (core specs use user routes and keys). The project's name is in the places the README lists under "Rename"; the backend's is `src/app.info.ts`.
 
-Both use TypeScript 6.0. TypeScript 7 isn't supported by Angular, typescript-eslint or ts-jest yet.
+Both use TypeScript 6.0. TypeScript 7 isn't supported by Angular or typescript-eslint yet.
 
 Both apps run on Node 24 (`.nvmrc` in each); the backend Docker images and CI use it too. The frontend needs at least Node 22.22.3 or 24.15.
 
@@ -28,14 +28,16 @@ yarn test:migrate             # prisma migrate deploy against .env.test
 yarn start:dev                # watch mode, port 3000, Swagger at /swagger
 yarn build                    # output is dist/src/main.js (rootDir is the project root); run with yarn start:prod
 yarn lint
+yarn typecheck                # tsc --noEmit over src and test; the tests themselves don't check types (CI runs it)
 yarn test:unit                # *.unit-spec.ts
 yarn test:inte                # *.inte-spec.ts (real Prisma repositories)
 yarn test:e2e                 # *.e2e-spec.ts (full AppModule + supertest)
 yarn test:cov                 # everything; enforces 100% statements/branches/functions/lines (CI runs this)
 
-# Single file / single test: use the base config. The unit config enforces coverage thresholds that fail on partial runs.
-npx env-cmd -f .env.test jest --config ./test/jest.config.ts test/modules/user/document.unit-spec.ts
-npx env-cmd -f .env.test jest --config ./test/jest.config.ts -t "test name" <file>
+# Single file / single test: run Vitest without --coverage. The scripts enforce coverage thresholds that fail on partial runs.
+npx env-cmd -f .env.test vitest run test/modules/user/document.unit-spec.ts
+npx env-cmd -f .env.test vitest run -t "test name" <file>
+yarn test:watch               # watch mode
 
 yarn migrate                  # prisma migrate dev (new migration)
 yarn migrate:check            # fails if prisma/schema differs from the migrated test database (CI runs it)
@@ -43,7 +45,7 @@ yarn seed                     # prisma db seed; skips a database that already ha
 yarn generate                 # prisma generate; Prisma 7 doesn't on install or migrate, so run it after either
 ```
 
-The app refuses to start unless `JWT_SECRET_KEY` and `JWT_REFRESH_SECRET` are set and at least 32 characters long (`src/modules/auth/auth.config.ts`). `.env.test` contains test values. It also sets `NODE_OPTIONS=--experimental-vm-modules`, which lets Jest `require()` the ESM-only packages (NestJS 12, uuid); the built app needs no flag, since Node 24 loads them natively. `make dockerDev` (from the repo root) starts the dev stack behind nginx on `localhost:3000`: the frontend dev server at `/`, the API at `/v1` and `/swagger`, plus Postgres, pgAdmin, Prometheus and Grafana. The dev Docker entrypoint copies `.env.example` to `.env.dev`. The dev `app` and `frontend` containers run as uid/gid 1000 so files it writes to the mounted source folder aren't root-owned; set `HOST_UID`/`HOST_GID` if yours differ.
+The app refuses to start unless `JWT_SECRET_KEY` and `JWT_REFRESH_SECRET` are set and at least 32 characters long (`src/modules/auth/auth.config.ts`). `.env.test` contains test values. `make dockerDev` (from the repo root) starts the dev stack behind nginx on `localhost:3000`: the frontend dev server at `/`, the API at `/v1` and `/swagger`, plus Postgres, pgAdmin, Prometheus and Grafana. The dev Docker entrypoint copies `.env.example` to `.env.dev`. The dev `app` and `frontend` containers run as uid/gid 1000 so files it writes to the mounted source folder aren't root-owned; set `HOST_UID`/`HOST_GID` if yours differ.
 
 ### Frontend (`cd frontend`, Node 24)
 
@@ -63,8 +65,8 @@ npx ng test --watch=false --coverage=false --include src/app/services/authentica
 - **No relative imports** in either app (`no-restricted-imports` bans `./` and `../`). Use path aliases:
   - backend: `@src/ @test/ @shared/ @modules/ @db/` (`@modules/user/…` is `src/modules/user/`, `@shared/` is `src/modules/shared/`, `@db/` is `prisma/`)
   - frontend: `@app/ @shared/ @pages/ @env/`
-- **File and folder names are camelCase** in both apps, plus a role suffix (`createUser.command.ts`, `customizedTable.component.ts`, `bookRental.repository.port.ts`). `eslint-plugin-check-file` enforces this. The exceptions are the frontend locale files (`en-US.ts`, `pt-BR.ts`), the backend Jest configs (`test/jest-*.config.ts`) and Prisma migrations. Selectors and CSS classes stay kebab-case.
-- Backend aliases are defined in both `tsconfig.json` and `test/jest.config.ts` (`moduleNameMapper`). A new alias has to be added to both; a new module needs none, since `@modules/` covers it.
+- **File and folder names are camelCase** in both apps, plus a role suffix (`createUser.command.ts`, `customizedTable.component.ts`, `bookRental.repository.port.ts`). `eslint-plugin-check-file` enforces this. The exceptions are the frontend locale files (`en-US.ts`, `pt-BR.ts`) and Prisma migrations. Selectors and CSS classes stay kebab-case.
+- Backend aliases are defined in both `tsconfig.json` and `vitest.config.mts` (`resolve.alias`). A new alias has to be added to both; a new module needs none, since `@modules/` covers it.
 - **No `as` type assertions** in the backend (`consistent-type-assertions`; `as const` is allowed). Prefer a precise type, or parsing with Zod (the e2e tests parse response bodies with the schemas in `test/util/responseBodies.ts`). A cast that's really needed goes through `FPF.unsafeCoerce`, imported from `monads.ts` like the rest of fp-ts.
 - Prettier with organize-imports runs on format. Double quotes.
 
@@ -125,13 +127,14 @@ Errors are Nest `HttpException` subclasses created by small factory functions in
 
 ### Tests
 
+- The tests run on Vitest 5 (`vitest.config.mts`) with globals (`describe`, `it`, `expect`, `vi.fn`/`vi.spyOn`). `unplugin-swc` compiles them, because Vite's own transform doesn't emit the decorator metadata Nest's injection needs; it doesn't check types, which is `yarn typecheck`'s job. Coverage is V8, which ignores the metadata SWC generates. There are two projects: `unit` (no database) and `database` (integration and e2e suites); `test:unit`, `test:inte` and `test:e2e` pick a project and narrow `coverage.include` to the code their suites cover.
 - Test files live in `test/modules/<module>/`, named by kind: `*.unit-spec.ts` (handlers with fake repositories), `*.inte-spec.ts` (real repositories against Postgres), `*.e2e-spec.ts` (AppModule + supertest).
 - Use the builders: the core's in `test/dataBuilders/` (`UserBuilder`, `MockAuthGuardBuilder`), and each module's own next to its specs (`test/modules/book/bookInfoBuilder.ts`, `createBook.ts`, `test/modules/rental/bookRentalBuilder.ts`). Use deterministic IDs from `test/util/defaultIds.ts` (`createTestId(TableNameEnum.X, n)`).
 - Unit specs start with `const ctx = useHandlerModule({ providers: [Handler] }, (get) => ({ handler: get(Handler), users: get(UserRepository) }))` (`test/util/handlerModule.ts`), then use `ctx.handler`. It rebuilds the module before each test: every repository bound to its fake, a silent logger, real UUIDs and the event publisher; a provider passed in replaces the default for its token, and `init: true` runs `module.init()` for CQRS event handlers. `get` is typed from the token (Nest's own `get` types abstract-class tokens as `any`); `get(FakeUserRepository)` returns the same fake, for specs that inspect it.
 - E2E specs start with `const e2e = useE2eApp({ authGuard })` (`test/util/e2eApp.ts`), then use `e2e.http()`, `e2e.prisma` and the typed `e2e.get(…)`. It builds the app with the same setup as `main.ts` (`src/app.setup.ts`: helmet, Swagger, request context, `trustProxy`; `main.ts` only adds listening), empties the database first and closes the app afterwards. `beforeInit` runs before `app.init()`; `buildE2eApp`/`closeE2eApp` build extra apps, e.g. with another `trustProxy`.
 - E2E tests replace `AuthGuard` with `MockAuthGuardBuilder` (an admin by default); call `.withRole(UserRoleEnum.Client)` and then `.reset()` to test role restrictions, and `RolesGuard` stays real. `routeProtection.e2e-spec.ts` logs in for real instead.
 - `test/db/seed.inte-spec.ts` tests `prisma/seed.ts` through its exported `seed(prisma)`.
-- Suites run in parallel (`maxWorkers: "50%"`; each worker compiles the TypeScript again, so more cost more), each worker on its own database: `test/globalSetup.ts` copies the migrated `library-test` to `library-test-<worker>` (`CREATE DATABASE … TEMPLATE`) before every run, and `test/util/useWorkerDatabase.ts` (`setupFiles`) points `DATABASE_URL` at the worker's copy. The copy fails if anything else is connected to `library-test`. The unit config needs no database and skips both. `resetDatabase(prisma)` (`test/util/resetDatabase.ts`) empties every table; specs call it in `beforeEach` unless they seed once in `beforeAll` and clean only what each test adds.
+- Suites run in parallel (`maxWorkers: "50%"`; each worker loads the app again, so more gain little), each worker on its own database: `test/globalSetup.ts` copies the migrated `library-test` to `library-test-<worker>` (`CREATE DATABASE … TEMPLATE`) before every run, and `test/util/useWorkerDatabase.ts` (`setupFiles`) points `DATABASE_URL` at the worker's copy (`VITEST_POOL_ID`). The copy fails if anything else is connected to `library-test`. The `unit` project needs no database and skips both. Each file still gets fresh modules (Vitest's default isolation); the database suites fail with `isolate: false`. `resetDatabase(prisma)` (`test/util/resetDatabase.ts`) empties every table; specs call it in `beforeEach` unless they seed once in `beforeAll` and clean only what each test adds.
 
 ## Frontend architecture
 
