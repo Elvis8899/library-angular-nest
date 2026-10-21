@@ -145,3 +145,36 @@ jobs:
 
       - name: ⬆️ Push badges branch
         run: git push origin badges
+
+  # Deploys the tested commit: the server pulls it and rebuilds the stack
+  # (make dockerDeploy). Skipped until the repository's DEPLOY_HOST variable
+  # is set (README, "Deploying")
+  deploy:
+    needs: [build, frontend]
+    if: github.event_name == 'push' && vars.DEPLOY_HOST != ''
+    runs-on: ubuntu-latest
+    environment: production
+    # One deploy at a time: a newer push waits rather than interrupting a build
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+    # Building on a small instance is slow
+    timeout-minutes: 60
+    permissions: {}
+
+    steps:
+      - name: 🚀 Deploy over SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
+          TARGET: ${{ vars.DEPLOY_USER || 'ubuntu' }}@${{ vars.DEPLOY_HOST }}
+          # The clone's folder, relative to the user's home
+          DIR: ${{ vars.DEPLOY_PATH || github.event.repository.name }}
+        run: |
+          install -m 700 -d ~/.ssh
+          install -m 600 /dev/null ~/.ssh/deploy_key
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          # Pinned host keys: the connection fails rather than trust a new one
+          echo "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key -o ServerAliveInterval=30 "$TARGET" \
+            "cd '$DIR' && make dockerDeploy REF=$GITHUB_SHA"

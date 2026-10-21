@@ -1,5 +1,6 @@
 node_modules
 dist
 coverage
-.env.dev
+# Settings are passed in at runtime, never built into an image
+.env*
 prisma/generated

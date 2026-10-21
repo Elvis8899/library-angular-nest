@@ -101,13 +101,39 @@ The backend suites run in parallel: before they start, each test worker gets its
 ## CI and deployment
 
 - **GitHub Actions** (`.github/workflows/node.js.yml`) runs on every push and pull request to `main`. It builds the backend and runs its full test suite against PostgreSQL, lints (ESLint and Stylelint), tests and builds the frontend, then publishes the coverage badges above for both apps to the `badges` branch.
-- **Deployment** is manual. On the server, run these from the repo root: `make dockerMigrate` applies database migrations, and `make dockerProd` pulls the latest code and rebuilds the stack in `.docker/docker-compose.yml` (API, PostgreSQL, nginx, pgAdmin). The production image reads its configuration from `backend/.env`.
+- **Deployment** is manual, to one Linux server with Docker (a VPS such as an AWS Lightsail instance; 2 GB of RAM or more, since the images are built there). The stack in `.docker/docker-compose.yml` runs the API, PostgreSQL, pgAdmin, certbot and nginx, which serves the frontend build over HTTPS and proxies `/v1`, `/swagger` and `/pgadmin4` to the rest. Only ports 80 and 443 need to be open.
+
+### Deploying
+
+First time, on a fresh Ubuntu server (on Lightsail: an Ubuntu 24.04 instance with a static IP, and ports 80 and 443 open in its Networking tab), with the domain's DNS pointing at it:
+
+```bash
+sudo apt-get install -y git make
+ssh-keygen -t ed25519                   # for a private repository: add ~/.ssh/id_ed25519.pub as a read-only deploy key (Settings → Deploy keys)
+git clone git@github.com:<owner>/<repository>.git && cd <repository>
+make serverSetup                        # Docker, swap under 3 GB of RAM, the network, .docker/.env and .env with generated secrets
+nano .docker/.env                       # set DOMAIN, CERTBOT_EMAIL and PGADMIN_EMAIL
+make dockerCertificate                  # Let's Encrypt certificate (port 80 must be free)
+make dockerDeploy                       # migrations, then the stack
+```
+
+After that, `make dockerDeploy` deploys the latest `main` (`dockerMigrate` and `dockerProd` do each half); certbot renews the certificate by itself.
+
+To have CI deploy every push to `main` once its tests pass, give it an SSH key to the server. The `deploy` job connects and runs `make dockerDeploy` with the tested commit, so the server still builds the images; it's skipped while `DEPLOY_HOST` is unset.
+
+```bash
+# On your machine
+ssh-keygen -t ed25519 -f deploy_key -N ""      # add deploy_key.pub to the server's ~/.ssh/authorized_keys
+ssh-keyscan <server-ip>                       # the server's host keys: check them against ssh-keygen -lf /etc/ssh/ssh_host_*.pub on the server
+```
+
+Then, in the repository's Settings → Secrets and variables → Actions: the secret `DEPLOY_SSH_KEY` (the contents of `deploy_key`), and the variables `DEPLOY_HOST` (the server's IP or domain) and `DEPLOY_KNOWN_HOSTS` (the `ssh-keyscan` output), plus `DEPLOY_USER` (default `ubuntu`) and `DEPLOY_PATH` (the clone's folder relative to its home; default the repository name) when they differ. The job runs in the `production` environment, where you can require an approval before each deploy (Settings → Environments). The API's settings are in the repo root's `.env` (made from `backend/.env.example`), which Compose passes to the container when it starts, so no secret is built into an image; its `DATABASE_URL` is built from `.docker/.env` instead. PostgreSQL reads the credentials only when its volume is first created: on a server that already has the volume, change the password in the database too (`ALTER USER … PASSWORD …`).
 
 ## Project structure
 
 ```
-Makefile                   dockerDev, dockerProd, dockerMigrate
-.docker/                   compose files (dev and production), nginx, Prometheus, pgAdmin
+Makefile                   serverSetup, dockerDev, dockerProd, dockerMigrate, dockerCertificate
+.docker/                   compose files (dev and production), the production settings (.env.example), serverSetup.sh, nginx, Prometheus, pgAdmin
 backend/
   src/modules/<feature>/   commands, queries, domain, database, dtos; core: shared, auth, user; example: book, rental
   prisma/schema/           the Prisma schema, one file per module
@@ -119,6 +145,7 @@ frontend/
   src/app/pages/           lazy-loaded routes; core: auth, home, users; example: books, rentals (with their models and services)
   src/app/services/        HTTP and auth services of the core
   src/app/shared/          guards, interceptors, i18n, shared components
+  .docker/                 the production image (nginx with the build)
 ```
 
 ## Starting a new project
@@ -129,7 +156,7 @@ Copy the repository, then rename it and remove the lending example. `shared`, `a
 
 The project's name is in a few places:
 
-- `.docker/docker-compose.yml` and `docker-compose-dev.yml`: the `name:` at the top, which names the containers, networks and volumes, and `POSTGRES_DB`. On a server that already runs the stack, changing `name:` or the `library-postgres` volume key starts with a new, empty database volume; the old one stays until you remove it.
+- `.docker/docker-compose.yml` and `docker-compose-dev.yml`: the `name:` at the top, which names the containers, networks and volumes, and `POSTGRES_DB` in the dev file and in `.docker/.env.example`. On a server that already runs the stack, changing `name:` or the `library-postgres` volume key starts with a new, empty database volume; the old one stays until you remove it.
 - The database names in `backend/.env.example`, `backend/.env.test` and the CI workflow (`POSTGRES_DB: library-test`).
 - `backend/src/app.info.ts`: the name in the logs and the Swagger title.
 - The name users see: `app.name` in the frontend's `pt-BR.ts` and `en-US.ts`, the `<title>` in `src/index.html` and `public/manifest.webmanifest`.
