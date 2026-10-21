@@ -3,7 +3,7 @@ import {
   HttpStatus,
   NotFoundException,
 } from "@nestjs/common";
-import { errorBody } from "@shared/utils/domain/shared.erros";
+import { errorBody } from "@shared/utils/domain/shared.errors";
 
 export class UserCPFAlreadyExistsException extends ConflictException {
   constructor() {

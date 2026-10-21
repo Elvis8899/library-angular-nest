@@ -1,11 +1,9 @@
 import { FPF } from "@shared/utils/application/monads";
+import { createBook } from "@test/util/createBook";
 import { useE2eApp } from "@test/util/e2eApp";
 
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import {
-  BookItem,
-  BookItemStatusEnum,
-} from "@book/domain/valueObject/bookItem.entity";
+import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
 import { HttpStatus } from "@nestjs/common";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
@@ -24,14 +22,7 @@ const e2e = useE2eApp({ authGuard: authGuardMock.build() });
 beforeAll(async () => {
   bookInfoRepository = e2e.get(BookInfoRepository);
 
-  const {
-    bookItems: [bookItemRaw],
-    ...bookInfo
-  } = new BookInfoBuilder().build();
-  const { bookId: _, ...bookItem }: BookItem = FPF.unsafeCoerce(bookItemRaw);
-  await e2e.prisma.bookInfo.create({
-    data: { ...bookInfo, bookItems: { create: { ...bookItem } } },
-  });
+  await createBook(e2e.prisma);
   await e2e.prisma.user.create({
     data: new UserBuilder().build(),
   });

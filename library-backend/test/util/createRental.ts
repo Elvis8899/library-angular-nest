@@ -1,8 +1,6 @@
-import { BookItem } from "@book/domain/valueObject/bookItem.entity";
 import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
-import { FPF } from "@shared/utils/application/monads";
-import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
+import { createBook } from "@test/util/createBook";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 
 /** Stores a book with one item and a rental of it by the user. Clean up with
@@ -12,16 +10,14 @@ export const createRental = async (
   userId: string,
   rentalStatus: RentalStatusEnum,
 ): Promise<void> => {
-  const { bookItems, ...bookInfo } = new BookInfoBuilder().build();
-  const [bookItem]: [BookItem] = FPF.unsafeCoerce(bookItems);
-  await prisma.bookInfo.create({
-    data: { ...bookInfo, bookItems: { create: { id: bookItem.id } } },
-  });
+  await createBook(prisma);
+  // The builder's one copy
+  const bookItemId = createTestId(TableNameEnum.BookItem, 0);
   await prisma.bookRentalDetails.create({
     data: {
       id: createTestId(TableNameEnum.BookRentalDetails, 0),
       rentalStatus,
-      bookItemId: bookItem.id,
+      bookItemId,
       userId,
       overdueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     },

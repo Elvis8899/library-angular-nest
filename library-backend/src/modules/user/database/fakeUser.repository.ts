@@ -26,7 +26,7 @@ export class FakeUserRepository
     );
 
   findByEmail = (email: string): TE.TaskEither<Error, O.Option<User>> =>
-    this.findOne((user) => user.email === email);
+    this.findOne((user) => user.email.toLowerCase() === email.toLowerCase());
 
   incrementTokenVersion = (userId: string): TE.TaskEither<Error, void> => {
     const user = this.rows.get(userId);

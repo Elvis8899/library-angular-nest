@@ -8,6 +8,8 @@ import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
+  // Written by prisma generate; an object with only ignores applies to all
+  { ignores: ["prisma/generated/**"] },
   {
     languageOptions: {
       parserOptions: {
@@ -93,7 +95,7 @@ export default defineConfig(
   {
     // Files and folders are named in camelCase; suffixes like .command or
     // .unit-spec are ignored. Jest configs keep their tool-style names.
-    files: ["src/**/*.ts", "test/**/*.ts"],
+    files: ["src/**/*.ts", "test/**/*.ts", "prisma/**/*.ts"],
     ignores: ["test/jest*.config.ts"],
     plugins: { "check-file": checkFile },
     rules: {
@@ -104,8 +106,17 @@ export default defineConfig(
       ],
       "check-file/folder-naming-convention": [
         "error",
-        { "src/**/": "CAMEL_CASE", "test/**/": "CAMEL_CASE" },
+        {
+          "src/**/": "CAMEL_CASE",
+          "test/**/": "CAMEL_CASE",
+          "prisma/**/": "CAMEL_CASE",
+        },
       ],
     },
+  },
+  {
+    // The seed is a command-line script: it reports its progress
+    files: ["prisma/seed.ts"],
+    rules: { "no-console": "off" },
   },
 );

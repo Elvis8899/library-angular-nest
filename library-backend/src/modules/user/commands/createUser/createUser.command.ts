@@ -10,7 +10,10 @@ import { UUID } from "@shared/uuid/entities/uuid";
 import { UserRepository } from "@user/database/user.repository.port";
 import { USER_CREATED } from "@user/domain/events/userCreated.event";
 import { User } from "@user/domain/user.entity";
-import { userCPFAlreadyExistsException } from "@user/domain/user.errors";
+import {
+  userCPFAlreadyExistsException,
+  userEmailAlreadyExistsException,
+} from "@user/domain/user.errors";
 import { CheckedDocumentType } from "@user/domain/valueObject/document";
 import { CreateUserDto } from "@user/dtos/user.dto";
 import { PinoLogger } from "nestjs-pino";
@@ -74,7 +77,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
           RTE.chainW(
             FPF.flow(
               O.fromPredicate(O.isNone),
-              RTE.fromOption(userCPFAlreadyExistsException),
+              RTE.fromOption(userEmailAlreadyExistsException),
             ),
           ),
         ),

@@ -10,6 +10,10 @@ import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { resetDatabase } from "@test/util/resetDatabase";
 import { RealUserRepository } from "@user/database/realUser.repository";
 import { User, UserRoleEnum } from "@user/domain/user.entity";
+import {
+  UserCPFAlreadyExistsException,
+  UserEmailAlreadyExistsException,
+} from "@user/domain/user.errors";
 
 let prismaService: PrismaService;
 let userRepository: RealUserRepository;
@@ -190,6 +194,73 @@ describe("[Integration] User repository", () => {
     //Then he and his rental history should be deleted
     expect(await prismaService.user.count()).toBe(0);
     expect(await prismaService.bookRentalDetails.count()).toBe(0);
+  });
+
+  it("Should store an admin's empty CPF as NULL, so several admins can have none", async () => {
+    //Given two admins without a CPF
+    const admin = (index: number) =>
+      new UserBuilder(index)
+        .withEmail(`admin${String(index)}@example.com`)
+        .withRole(UserRoleEnum.Admin)
+        .withCPF("")
+        .build();
+    const first = admin(0);
+
+    //When we save both
+    await saveUser(first);
+    await saveUser(admin(1));
+
+    //Then both are stored without one, and read back with ""
+    const stored = await prismaService.user.findMany({ select: { cpf: true } });
+    expect(stored).toEqual([{ cpf: null }, { cpf: null }]);
+    const read = await executeTask(userRepository.findById(first.id));
+    expect(O.map((user: User) => user.cpf)(read)).toEqual(O.some(""));
+  });
+
+  // The commands check uniqueness first; these are writes that raced past it
+  it("Should answer 409 user.emailTaken when another user has the email", async () => {
+    await saveUser(new UserBuilder(0).withEmail("ana@example.com").build());
+
+    const result = executeTask(
+      userRepository.save(
+        new UserBuilder(1)
+          .withCPF("11144477735")
+          .withEmail("Ana@Example.com")
+          .build(),
+      ),
+    );
+
+    await expect(result).rejects.toBeInstanceOf(
+      UserEmailAlreadyExistsException,
+    );
+  });
+
+  it("Should answer 409 user.cpfTaken when another user has the CPF", async () => {
+    const cpf = new UserBuilder(0).build().cpf;
+    await saveUser(new UserBuilder(0).build());
+
+    const result = executeTask(
+      userRepository.save(
+        new UserBuilder(1).withEmail("other@example.com").withCPF(cpf).build(),
+      ),
+    );
+
+    await expect(result).rejects.toBeInstanceOf(UserCPFAlreadyExistsException);
+  });
+
+  it("Should store emails in lowercase and find them whatever the case", async () => {
+    const user = new UserBuilder(0).withEmail("Ana@Example.com").build();
+    await saveUser(user);
+
+    const stored = await prismaService.user.findUnique({
+      where: { id: user.id },
+    });
+    const found = await executeTask(
+      userRepository.findByEmail("ANA@example.COM"),
+    );
+
+    expect(stored?.email).toBe("ana@example.com");
+    expect(O.map((u: User) => u.id)(found)).toEqual(O.some(user.id));
   });
 
   it("Successfully save admin without cpf", async () => {

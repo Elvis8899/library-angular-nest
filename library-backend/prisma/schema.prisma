@@ -15,11 +15,11 @@ enum UserRoleEnum {
 }
 
 model User {
-  id           String       @unique
+  id           String       @id
   name         String
   email        String       @unique
   password     String
-  cpf          String?
+  cpf          String?      @unique
   role         UserRoleEnum
   // Incremented to revoke all refresh tokens issued to the user
   tokenVersion Int          @default(0)
@@ -47,7 +47,7 @@ model RefreshSession {
 }
 
 model BookInfo {
-  id    String @unique
+  id    String @id
   name  String
   image String
   price Int
@@ -64,7 +64,7 @@ enum BookItemStatus {
 }
 
 model BookItem {
-  id     String         @unique
+  id     String         @id
   status BookItemStatus @default(available)
 
   bookId     String
@@ -81,7 +81,7 @@ enum RentalStatus {
 }
 
 model BookRentalDetails {
-  id           String       @unique
+  id           String       @id
   rentalStatus RentalStatus
 
   bookItemId String

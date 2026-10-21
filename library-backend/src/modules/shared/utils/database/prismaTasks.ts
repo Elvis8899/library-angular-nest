@@ -1,5 +1,5 @@
 import { FPF, TE } from "@shared/utils/application/monads";
-import { unknownException } from "@shared/utils/domain/shared.erros";
+import { unknownException } from "@shared/utils/domain/shared.errors";
 
 type Query = (...args: unknown[]) => Promise<unknown>;
 type AsyncMethod = (...args: never[]) => Promise<unknown>;

@@ -27,6 +27,15 @@ describe("[e2e] POST /v1/login", () => {
     expect(response.status).toBe(HttpStatus.OK);
   });
 
+  it("Should accept the email in any case", async () => {
+    const { email, password } = new UserBuilder().build();
+    const response = await e2e
+      .http()
+      .post(v1Route)
+      .send({ email: email.toUpperCase(), password });
+    expect(response.status).toBe(HttpStatus.OK);
+  });
+
   it("Should respond 401 for invalid email or password", async () => {
     // Given a potentially valid user
     // with wrong email

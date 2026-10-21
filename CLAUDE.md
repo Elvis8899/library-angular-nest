@@ -90,7 +90,7 @@ Command and query handlers build a `ReaderTaskEither<{ logger }, Error, T>` pipe
 - `performRTE(repoFn, "description")`: wraps a repository `TaskEither` call and logs success or failure with the description.
 - Repositories return `TaskEither<Error, …>`. Lookups return `Option` and are converted with `RTE.fromOption(notFoundException)`.
 
-Errors are Nest `HttpException` subclasses created by small factory functions in `domain/*.errors.ts`. A rejected task surfaces as that HTTP status. Each builds its body with `errorBody(status, code, message)` (`shared/utils/domain/shared.erros.ts`): the `code` (`user.cpfTaken`) is what the frontend translates, so a new error needs a code, and the frontend's `errors.<code>` translations (its `translationKeys.spec.ts` fails otherwise).
+Errors are Nest `HttpException` subclasses created by small factory functions in `domain/*.errors.ts`. A rejected task surfaces as that HTTP status. Each builds its body with `errorBody(status, code, message)` (`shared/utils/domain/shared.errors.ts`): the `code` (`user.cpfTaken`) is what the frontend translates, so a new error needs a code, and the frontend's `errors.<code>` translations (its `translationKeys.spec.ts` fails otherwise).
 
 ### Domain events
 

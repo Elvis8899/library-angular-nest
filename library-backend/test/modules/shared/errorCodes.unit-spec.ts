@@ -12,7 +12,7 @@ import {
   bookRentalNotAvailableException,
   bookRentalNotFoundException,
 } from "@rental/domain/bookRental.errors";
-import { unknownException } from "@shared/utils/domain/shared.erros";
+import { unknownException } from "@shared/utils/domain/shared.errors";
 import {
   userCPFAlreadyExistsException,
   userEmailAlreadyExistsException,

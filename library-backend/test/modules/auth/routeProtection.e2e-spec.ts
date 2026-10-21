@@ -25,6 +25,7 @@ const routes: string[] = [];
 
 const admin = new UserBuilder(1)
   .withEmail("route-admin@example.com")
+  .withCPF("")
   .withRole(UserRoleEnum.Admin);
 const client = new UserBuilder(2)
   .withEmail("route-client@example.com")
@@ -33,7 +34,12 @@ const client = new UserBuilder(2)
 const saveWithHashedPassword = async (builder: UserBuilder) => {
   const user = builder.build();
   await e2e.prisma.user.create({
-    data: { ...user, password: await hashPassword(user.password) },
+    data: {
+      ...user,
+      // As RealUserRepository stores it: no CPF is NULL
+      cpf: user.cpf || null,
+      password: await hashPassword(user.password),
+    },
   });
 };
 

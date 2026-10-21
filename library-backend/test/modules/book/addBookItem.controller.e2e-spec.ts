@@ -1,4 +1,5 @@
 import { FPF } from "@shared/utils/application/monads";
+import { createBook } from "@test/util/createBook";
 import { useE2eApp } from "@test/util/e2eApp";
 
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
@@ -7,12 +8,7 @@ import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });
 
 beforeAll(async () => {
-  const { bookItems: _, ...bookInfo } = new BookInfoBuilder()
-    .withBookItems([])
-    .build();
-  await e2e.prisma.bookInfo.create({
-    data: { ...bookInfo },
-  });
+  await createBook(e2e.prisma, new BookInfoBuilder().withBookItems([]));
 });
 
 describe("[e2e] POST /v1/bookInfos/item", () => {

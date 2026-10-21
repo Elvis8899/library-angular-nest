@@ -1,6 +1,6 @@
 import { loggerOnLeftR } from "@shared/utils/application/handleLog";
 import { FPF } from "@shared/utils/application/monads";
-import { unknownException } from "@shared/utils/domain/shared.erros";
+import { unknownException } from "@shared/utils/domain/shared.errors";
 import { PinoLogger } from "nestjs-pino";
 
 describe("[Unit] loggerOnLeftR", () => {

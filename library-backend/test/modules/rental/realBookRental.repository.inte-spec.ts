@@ -1,8 +1,5 @@
 import { RealBookInfoRepository } from "@book/database/realBookInfo.repository";
-import {
-  BookItem,
-  BookItemStatusEnum,
-} from "@book/domain/valueObject/bookItem.entity";
+import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
 import { InternalServerErrorException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { RealBookRentalRepository } from "@rental/database/realBookRental.repository";
@@ -13,10 +10,11 @@ import {
 } from "@rental/domain/bookRental.errors";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { FPF, O } from "@shared/utils/application/monads";
+import { O } from "@shared/utils/application/monads";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
+import { createBook } from "@test/util/createBook";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { resetDatabase } from "@test/util/resetDatabase";
 import { RealUserRepository } from "@user/database/realUser.repository";
@@ -38,11 +36,7 @@ beforeAll(async () => {
   prismaService = module.get(PrismaService);
 
   await resetDatabase(prismaService);
-  const { bookItems, ...bookInfo } = new BookInfoBuilder().build();
-  const [bookItem]: [BookItem] = FPF.unsafeCoerce(bookItems);
-  await prismaService.bookInfo.create({
-    data: { ...bookInfo, bookItems: { create: { id: bookItem.id } } },
-  });
+  await createBook(prismaService);
 
   await prismaService.user.create({
     data: new UserBuilder().build(),

@@ -9,7 +9,10 @@ import {
 } from "@user/commands/createUser/createUser.command";
 import { UserRepository } from "@user/database/user.repository.port";
 import { UserRoleEnum } from "@user/domain/user.entity";
-import { UserCPFAlreadyExistsException } from "@user/domain/user.errors";
+import {
+  UserCPFAlreadyExistsException,
+  UserEmailAlreadyExistsException,
+} from "@user/domain/user.errors";
 
 //Adapters
 
@@ -77,6 +80,33 @@ describe("[Unit] Create User", () => {
 
     const users = await executeTask(ctx.userRepository.findAll());
     expect(users.length).toEqual(0);
+  });
+
+  it("Should not create a user if the email already exists, whatever its case", async () => {
+    //Given an existing user
+    const user = new UserBuilder().buildCreateDTO();
+    await ctx.createUserHandler.execute(new CreateUser(user));
+    //When another user signs up with the same email in capitals
+    const other = new UserBuilder(1)
+      .withCPF("11144477735")
+      .withEmail(user.email.toUpperCase())
+      .buildCreateDTO();
+    const resultPromise = ctx.createUserHandler.execute(new CreateUser(other));
+    //Then the email is taken, not the CPF
+    await expect(resultPromise).rejects.toBeInstanceOf(
+      UserEmailAlreadyExistsException,
+    );
+  });
+
+  it("Should store the email in lowercase", async () => {
+    const user = new UserBuilder()
+      .withEmail("Ana@Example.com")
+      .buildCreateDTO();
+
+    await ctx.createUserHandler.execute(new CreateUser(user));
+
+    const [stored] = await executeTask(ctx.userRepository.findAll());
+    expect(stored?.email).toBe("ana@example.com");
   });
 
   it("Should not create a user if cpf already exists", async () => {

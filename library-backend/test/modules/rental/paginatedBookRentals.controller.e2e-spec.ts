@@ -1,11 +1,9 @@
-import { BookItem } from "@book/domain/valueObject/bookItem.entity";
 import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { FPF } from "@shared/utils/application/monads";
-import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
+import { createBook } from "@test/util/createBook";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useE2eApp } from "@test/util/e2eApp";
 import { UserRoleEnum } from "@user/domain/user.entity";
@@ -18,14 +16,7 @@ const e2e = useE2eApp({ authGuard: authGuardMock.build() });
 beforeAll(async () => {
   bookRentalRepository = e2e.get(BookRentalRepository);
 
-  const {
-    bookItems: [bookItemRaw],
-    ...bookInfo
-  } = new BookInfoBuilder().build();
-  const { bookId: _, ...bookItem }: BookItem = FPF.unsafeCoerce(bookItemRaw);
-  await e2e.prisma.bookInfo.create({
-    data: { ...bookInfo, bookItems: { create: { ...bookItem } } },
-  });
+  await createBook(e2e.prisma);
   await e2e.prisma.user.create({
     data: new UserBuilder().build(),
   });

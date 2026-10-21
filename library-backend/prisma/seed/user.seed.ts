@@ -5,7 +5,6 @@ export const userSeed: Prisma.UserCreateInput[] = [
   {
     name: "Usuario admin",
     id: createTestId(TableNameEnum.User, 1),
-    cpf: "",
     email: "admin@admin.com",
     password: "admin",
     role: "admin",

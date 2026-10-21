@@ -1,4 +1,5 @@
 import { FPF } from "@shared/utils/application/monads";
+import { createBook } from "@test/util/createBook";
 import { useE2eApp } from "@test/util/e2eApp";
 
 import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
@@ -22,8 +23,9 @@ const e2e = useE2eApp({ authGuard: authGuardMock.build() });
 beforeAll(async () => {
   bookRentalRepository = e2e.get(BookRentalRepository);
 
-  const { bookItems: bookItemsRaw, ...bookInfo } = new BookInfoBuilder()
-    .withBookItems([
+  await createBook(
+    e2e.prisma,
+    new BookInfoBuilder().withBookItems([
       {
         id: createTestId(TableNameEnum.BookItem, 0),
         status: BookItemStatusEnum.Rented,
@@ -34,25 +36,14 @@ beforeAll(async () => {
         status: BookItemStatusEnum.Available,
         bookId: createTestId(TableNameEnum.BookInfo, 0),
       },
-    ])
-    .build();
-
-  const bookItems = bookItemsRaw.map((bookItemRaw) => {
-    const { bookId: _, ...bookItem } = bookItemRaw;
-    return bookItem;
-  });
+    ]),
+  );
 
   const {
     bookItem: _bookItem,
     user: _user,
     ...bookRental
   } = bookRentalBuilder.build();
-  await e2e.prisma.bookInfo.create({
-    data: {
-      ...bookInfo,
-      bookItems: { createMany: { data: bookItems } },
-    },
-  });
   await e2e.prisma.user.create({
     data: new UserBuilder().build(),
   });

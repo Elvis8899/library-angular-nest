@@ -10,10 +10,13 @@ import {
   validateMaybeRow,
   validateRows,
 } from "@shared/utils/database/rowValidation";
+import { mapUniqueViolations } from "@shared/utils/database/uniqueViolation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 import { UserRepository } from "@user/database/user.repository.port";
 import { User, UserRoleEnum } from "@user/domain/user.entity";
 import {
+  userCPFAlreadyExistsException,
+  userEmailAlreadyExistsException,
   userHasActiveRentalsException,
   userNotFoundException,
 } from "@user/domain/user.errors";
@@ -64,7 +67,7 @@ export class RealUserRepository implements UserRepository {
 
   findByEmail = (email: string): TE.TaskEither<Error, O.Option<User>> =>
     FPF.pipe(
-      this.users.findFirst({ where: { email } }),
+      this.users.findFirst({ where: { email: email.toLowerCase() } }),
       TE.chainEitherK(validateMaybeRow(this.baseValidator)),
     );
 
@@ -94,21 +97,33 @@ export class RealUserRepository implements UserRepository {
       ),
     );
 
-  save = (user: User): TE.TaskEither<Error, void> =>
-    FPF.pipe(
+  save = (user: User): TE.TaskEither<Error, void> => {
+    // An admin's empty CPF is stored as NULL, which the unique index on cpf
+    // ignores; "" would let only one admin have none
+    const cpf = user.cpf || null;
+    // Lowercase like the domain schema, for users that skipped it
+    const email = user.email.toLowerCase();
+    return FPF.pipe(
       this.users.upsert({
         where: { id: user.id },
         update: {
           name: user.name,
-          email: user.email,
+          email,
           password: user.password,
-          cpf: user.cpf,
+          cpf,
           role: user.role,
         },
-        create: user,
+        create: { ...user, email, cpf },
       }),
+      TE.mapError(
+        mapUniqueViolations({
+          User_email_key: userEmailAlreadyExistsException,
+          User_cpf_key: userCPFAlreadyExistsException,
+        }),
+      ),
       TE.asUnit,
     );
+  };
 
   // updateMany does not fail when the user no longer exists
   incrementTokenVersion = (userId: string): TE.TaskEither<Error, void> =>

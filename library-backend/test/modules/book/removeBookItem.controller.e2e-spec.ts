@@ -1,3 +1,4 @@
+import { createBook } from "@test/util/createBook";
 import { useE2eApp } from "@test/util/e2eApp";
 
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
@@ -12,12 +13,7 @@ const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });
 beforeAll(async () => {
   bookInfoRepository = e2e.get(BookInfoRepository);
 
-  const { bookItems: _, ...bookInfo } = new BookInfoBuilder()
-    .withBookItems([])
-    .build();
-  await e2e.prisma.bookInfo.create({
-    data: { ...bookInfo },
-  });
+  await createBook(e2e.prisma, new BookInfoBuilder().withBookItems([]));
 });
 
 beforeEach(async () => {

@@ -21,7 +21,7 @@ import {
   validateRows,
 } from "@shared/utils/database/rowValidation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
-import { unknownException } from "@shared/utils/domain/shared.erros";
+import { unknownException } from "@shared/utils/domain/shared.errors";
 
 @Injectable()
 export class RealBookRentalRepository implements BookRentalRepository {
