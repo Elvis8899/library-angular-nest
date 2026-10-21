@@ -1,10 +1,12 @@
 import { useE2eApp } from "@test/util/e2eApp";
 import { LoginBody, TokensBody } from "@test/util/responseBodies";
 
-import { hashPassword } from "@modules/auth/utils/password";
+import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { HttpStatus } from "@nestjs/common";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
+
+const passwordHasher = new BcryptPasswordHasher();
 const authGuardMock = new MockAuthGuardBuilder();
 
 const e2e = useE2eApp({ authGuard: authGuardMock.build() });
@@ -13,7 +15,7 @@ beforeAll(async () => {
   const userBuilder = new UserBuilder();
   await e2e.prisma.user.create({
     data: userBuilder
-      .withPassword(await hashPassword(userBuilder.build().password))
+      .withPassword(await passwordHasher.hash(userBuilder.build().password))
       .build(),
   });
 });

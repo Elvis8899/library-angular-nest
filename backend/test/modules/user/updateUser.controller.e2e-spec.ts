@@ -3,12 +3,14 @@ import { FPF } from "@shared/utils/application/monads";
 import { useE2eApp } from "@test/util/e2eApp";
 import { resetDatabase } from "@test/util/resetDatabase";
 
-import { comparePassword } from "@modules/auth/utils/password";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
+import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
+
+const passwordHasher = new BcryptPasswordHasher();
 let userRepository: UserRepository;
 const userBuilder = new UserBuilder();
 const originalUser = userBuilder.withName("Test").build();
@@ -63,8 +65,31 @@ describe("[e2e] PUT /v1/users/{userId}", () => {
       cpf: "111.444.777-35",
     });
     expect(
-      await comparePassword("new-password-123", stored?.password ?? ""),
+      await passwordHasher.matches("new-password-123", stored?.password ?? ""),
     ).toBe(true);
+  });
+
+  it("Should keep the password when the update leaves it out", async () => {
+    // Given an update without a password
+    const { password: _, ...userDTO } = userBuilder
+      .withName("Updated Name")
+      .buildCreateDTO();
+
+    // When the user is updated
+    const response = await e2e
+      .http()
+      .put(v1Route(originalUser.id))
+      .send(userDTO);
+
+    // Then the stored password is the one it had
+    expect(response.status).toBe(HttpStatus.OK);
+    const stored = await e2e.prisma.user.findUnique({
+      where: { id: originalUser.id },
+    });
+    expect(stored).toMatchObject({
+      name: "Updated Name",
+      password: originalUser.password,
+    });
   });
 
   it.each([

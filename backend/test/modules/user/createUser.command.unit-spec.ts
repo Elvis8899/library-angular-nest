@@ -8,11 +8,14 @@ import {
   UserCPFAlreadyExistsException,
   UserEmailAlreadyExistsException,
 } from "@modules/user/domain/user.errors";
+import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { useHandlerModule } from "@test/util/handlerModule";
+
+const passwordHasher = new BcryptPasswordHasher();
 
 //Adapters
 
@@ -122,5 +125,35 @@ describe("[Unit] Create User", () => {
     await expect(resultPromise).rejects.toBeInstanceOf(
       UserCPFAlreadyExistsException,
     );
+  });
+
+  it("Should not create a user with a short password", async () => {
+    // Given a user whose password is too short
+    const user = new UserBuilder().withPassword("123").buildCreateDTO();
+
+    // When we create it
+    const resultPromise = ctx.createUserHandler.execute(new CreateUser(user));
+
+    // Then it is refused and nothing is stored
+    await expect(resultPromise).rejects.toBeInstanceOf(
+      UnprocessableEntityException,
+    );
+    const users = await executeTask(ctx.userRepository.findAll());
+    expect(users.length).toEqual(0);
+  });
+
+  it("Should store the password hashed", async () => {
+    // Given a valid user
+    const user = new UserBuilder().buildCreateDTO();
+
+    // When we create it
+    await ctx.createUserHandler.execute(new CreateUser(user));
+
+    // Then the stored password is a hash of the one given
+    const [stored] = await executeTask(ctx.userRepository.findAll());
+    expect(stored?.password).not.toEqual(user.password);
+    expect(
+      await passwordHasher.matches(user.password, stored?.password ?? ""),
+    ).toBe(true);
   });
 });

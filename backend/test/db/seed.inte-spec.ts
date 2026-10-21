@@ -1,8 +1,10 @@
 import { seed } from "@db/seed";
-import { comparePassword } from "@modules/auth/utils/password";
+import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { resetDatabase } from "@test/util/resetDatabase";
+
+const passwordHasher = new BcryptPasswordHasher();
 
 const prismaService = new PrismaService();
 
@@ -32,8 +34,12 @@ describe("[Integration] Database seed", () => {
       ],
     );
     const [admin, client] = users;
-    expect(await comparePassword("admin", admin?.password ?? "")).toBe(true);
-    expect(await comparePassword("client", client?.password ?? "")).toBe(true);
+    expect(await passwordHasher.matches("admin", admin?.password ?? "")).toBe(
+      true,
+    );
+    expect(await passwordHasher.matches("client", client?.password ?? "")).toBe(
+      true,
+    );
   });
 
   it("Should hash the passwords again when seeding a second database", async () => {
@@ -48,7 +54,9 @@ describe("[Integration] Database seed", () => {
     const admin = await prismaService.user.findUnique({
       where: { email: "admin@admin.com" },
     });
-    expect(await comparePassword("admin", admin?.password ?? "")).toBe(true);
+    expect(await passwordHasher.matches("admin", admin?.password ?? "")).toBe(
+      true,
+    );
   });
 
   it("Should skip a database that already has users", async () => {

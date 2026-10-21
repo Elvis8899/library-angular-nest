@@ -1,8 +1,7 @@
-import { hashPassword } from "@modules/auth/utils/password";
 import { UserRepository } from "@modules/user/database/user.repository.port";
-import { CheckedDocumentType } from "@modules/user/domain/document";
 import { userCreated } from "@modules/user/domain/events/userCreated.event";
-import { User } from "@modules/user/domain/user.entity";
+import { PasswordHasher } from "@modules/user/domain/passwordHasher.port";
+import { NewUserInput, registerUser } from "@modules/user/domain/user.entity";
 import {
   userCPFAlreadyExistsException,
   userEmailAlreadyExistsException,
@@ -10,7 +9,7 @@ import {
 import { CreateUserDto } from "@modules/user/dtos/user.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { fromInputRE } from "@shared/utils/application/fromInput";
-import { FPF, RE, RTE } from "@shared/utils/application/monads";
+import { Apply, FPF, RE, RTE } from "@shared/utils/application/monads";
 import { ensureAbsentRTE, performRTE } from "@shared/utils/application/perform";
 import { publishRTE, UseCase } from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
@@ -26,6 +25,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
     private readonly useCase: UseCase,
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly userRepository: UserRepository,
+    private readonly passwordHasher: PasswordHasher,
   ) {}
 
   execute(command: CreateUser): Promise<void> {
@@ -35,37 +35,37 @@ export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
       logged,
       FPF.pipe(
         //Data validation
-        RE.of(command.props),
-        RE.bind("id", () =>
-          fromInputRE(UUID, "uuid")(this.uuidGeneratorService.generateUUID()),
-        ),
-        RE.chain(fromInputRE(User, "User")),
-        RE.tap((user) => fromInputRE(CheckedDocumentType, "cpf")(user.cpf)),
+        Apply.sequenceS(RE.Applicative)({
+          id: fromInputRE(
+            UUID,
+            "uuid",
+          )(this.uuidGeneratorService.generateUUID()),
+          input: fromInputRE(NewUserInput, "User")(command.props),
+        }),
         RTE.fromReaderEither,
 
-        //Encrypt password
-        RTE.chainW((user) =>
-          FPF.pipe(
-            user.password,
-            RTE.fromTaskK((v) => () => hashPassword(v)),
-            RTE.map((password) => ({ ...user, password })),
-          ),
-        ),
-
         //Check cpf and email unicity
-        RTE.tap((user) =>
+        RTE.tap(({ input }) =>
           ensureAbsentRTE(
             this.userRepository.findByCPF,
             "get user by cpf",
             userCPFAlreadyExistsException,
-          )(user.cpf),
+          )(input.cpf),
         ),
-        RTE.tap((user) =>
+        RTE.tap(({ input }) =>
           ensureAbsentRTE(
             this.userRepository.findByEmail,
             "get user by email",
             userEmailAlreadyExistsException,
-          )(user.email),
+          )(input.email),
+        ),
+
+        //Hash the password and build the user
+        RTE.bind("password", ({ input }) =>
+          RTE.fromTask(() => this.passwordHasher.hash(input.password)),
+        ),
+        RTE.map(({ id, input, password }) =>
+          registerUser(id, input, password, new Date()),
         ),
 
         //Store entity

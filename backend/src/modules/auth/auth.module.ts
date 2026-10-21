@@ -31,7 +31,7 @@ const repositories = [
 @Module({
   imports: [
     CqrsModule,
-    // Its UserRepository
+    // Its UserRepository and PasswordHasher
     UserModule,
     ThrottlerModule.forRoot({
       throttlers: [

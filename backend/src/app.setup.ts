@@ -1,6 +1,6 @@
 import helmet from "@fastify/helmet";
 import fastifyRequestContext from "@fastify/request-context";
-import { RequestJWTPayload } from "@modules/auth/domain/login.entity";
+import { RequestJWTPayload } from "@modules/auth/guards/authenticatedRequest";
 import {
   FastifyAdapter,
   NestFastifyApplication,

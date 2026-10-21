@@ -1,5 +1,5 @@
-import { AuthenticatedRequest } from "@modules/auth/domain/login.entity";
 import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { AuthenticatedRequest } from "@modules/auth/guards/authenticatedRequest";
 import {
   BookRentalDetails,
   RentalStatusEnum,

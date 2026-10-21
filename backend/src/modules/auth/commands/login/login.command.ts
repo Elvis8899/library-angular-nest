@@ -1,15 +1,15 @@
 import { RefreshSessionRepository } from "@modules/auth/database/refreshSession.repository.port";
 import { wrongAuthException } from "@modules/auth/domain/auth.errors";
-import { LoginInput } from "@modules/auth/domain/login.entity";
+import { LoginInput } from "@modules/auth/domain/credentials";
 import { AuthResponseDto } from "@modules/auth/dtos/authResponse.dto";
 import { LoginDto } from "@modules/auth/dtos/login.dto";
-import { comparePassword } from "@modules/auth/utils/password";
 import {
   generateTokens,
   refreshSessionExpiry,
   RefreshTokenRef,
 } from "@modules/auth/utils/tokens";
 import { UserRepository } from "@modules/user/database/user.repository.port";
+import { PasswordHasher } from "@modules/user/domain/passwordHasher.port";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { JwtService } from "@nestjs/jwt";
 import { fromInputRE } from "@shared/utils/application/fromInput";
@@ -30,6 +30,7 @@ export class LoginCommandHandler implements ICommandHandler<
   constructor(
     private readonly useCase: UseCase,
     private readonly userRepository: UserRepository,
+    private readonly passwordHasher: PasswordHasher,
     private readonly refreshSessionRepository: RefreshSessionRepository,
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly jwtService: JwtService,
@@ -58,7 +59,11 @@ export class LoginCommandHandler implements ICommandHandler<
         // Validate password
         RTE.chainTaskEitherKW((user) =>
           FPF.pipe(
-            () => comparePassword(command.props.password, user.password),
+            () =>
+              this.passwordHasher.matches(
+                command.props.password,
+                user.password,
+              ),
             TE.fromTask,
             TE.chainW(
               B.fold(

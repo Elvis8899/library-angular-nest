@@ -1,5 +1,11 @@
 import { User, UserRoleEnum } from "@modules/user/domain/user.entity";
-import { ApiProperty, OmitType } from "@nestjs/swagger";
+import {
+  ApiProperty,
+  IntersectionType,
+  OmitType,
+  PartialType,
+  PickType,
+} from "@nestjs/swagger";
 import { BaseEntityDto } from "@shared/utils/dtos/baseEntity.dto";
 import { PaginatedResponseDto } from "@shared/utils/dtos/paginated.response.base";
 
@@ -38,6 +44,12 @@ export class CreateUserDto extends OmitType(UserDto, [
   "createdAt",
   "updatedAt",
 ]) {}
+
+// The password is kept when left out
+export class UpdateUserDto extends IntersectionType(
+  OmitType(CreateUserDto, ["password"]),
+  PartialType(PickType(CreateUserDto, ["password"])),
+) {}
 
 export class UserResponseDto extends OmitType(UserDto, ["password"]) {}
 

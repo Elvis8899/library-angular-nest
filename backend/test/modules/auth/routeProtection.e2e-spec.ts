@@ -1,11 +1,13 @@
-import { hashPassword } from "@modules/auth/utils/password";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
+import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { HttpStatus } from "@nestjs/common";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useE2eApp } from "@test/util/e2eApp";
 import { TokensBody } from "@test/util/responseBodies";
 import { z } from "zod";
+
+const passwordHasher = new BcryptPasswordHasher();
 
 // Unlike the other e2e specs, AuthGuard is not replaced here: requests go
 // through the real guard with real tokens from POST /v1/login
@@ -38,7 +40,7 @@ const saveWithHashedPassword = async (builder: UserBuilder) => {
       ...user,
       // As RealUserRepository stores it: no CPF is NULL
       cpf: user.cpf || null,
-      password: await hashPassword(user.password),
+      password: await passwordHasher.hash(user.password),
     },
   });
 };

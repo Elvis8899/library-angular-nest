@@ -6,6 +6,8 @@ import { BookRentalRepository } from "@modules/rental/database/bookRental.reposi
 import { FakeBookRentalRepository } from "@modules/rental/database/fakeBookRental.repository";
 import { FakeUserRepository } from "@modules/user/database/fakeUser.repository";
 import { UserRepository } from "@modules/user/database/user.repository.port";
+import { PasswordHasher } from "@modules/user/domain/passwordHasher.port";
+import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import {
   Abstract,
   Global,
@@ -38,7 +40,7 @@ class FakeLoggerModule {}
 /**
  * A testing module for command and query handlers: every repository bound to
  * its in-memory fake, a silent logger, real UUIDs and the domain event
- * publisher. Pass the handlers under test; a provider given here replaces the
+ * publisher, and bcrypt for passwords. Pass the handlers under test; a provider given here replaces the
  * default for its token, as the last binding wins. Get providers with the
  * typed `get(UserRepository)`.
  */
@@ -50,6 +52,7 @@ export const createHandlerModule = async (
     imports: [FakeLoggerModule, UseCaseModule, ...imports],
     providers: [
       RealUUIDGeneratorService,
+      { provide: PasswordHasher, useClass: BcryptPasswordHasher },
       // Each port resolves to its fake, which get(FakeUserRepository) also
       // returns, typed, for specs that inspect it
       ...fakeRepository(UserRepository, FakeUserRepository),

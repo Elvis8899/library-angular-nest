@@ -1,5 +1,5 @@
 import { ROLES_KEY } from "@modules/auth/decorators/roles.decorator";
-import { RequestJWTPayload } from "@modules/auth/domain/login.entity";
+import { RequestJWTPayload } from "@modules/auth/guards/authenticatedRequest";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
