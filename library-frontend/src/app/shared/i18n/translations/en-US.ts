@@ -167,6 +167,8 @@ export const enUS: Translations = {
       notFound: "User not found.",
       cpfTaken: "This CPF is already used by another user.",
       emailTaken: "This email is already used by another user.",
+      hasActiveRentals:
+        "This user has rentals in progress. Finish them before deleting the user.",
     },
   },
   update: {

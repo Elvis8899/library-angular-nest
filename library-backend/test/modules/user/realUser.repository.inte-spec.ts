@@ -1,9 +1,11 @@
-import { InternalServerErrorException } from "@nestjs/common";
+import { ConflictException, NotFoundException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
+import { createRental } from "@test/util/createRental";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { RealUserRepository } from "@user/database/realUser.repository";
 import { User, UserRoleEnum } from "@user/domain/user.entity";
@@ -32,10 +34,12 @@ describe("[Integration] User repository", () => {
 
   beforeEach(async () => {
     await prismaService.user.deleteMany();
+    await prismaService.bookInfo.deleteMany();
   });
 
   afterEach(async () => {
     await prismaService.user.deleteMany();
+    await prismaService.bookInfo.deleteMany();
     allBuilders.map((builder) => builder.reset());
   });
 
@@ -155,12 +159,39 @@ describe("[Integration] User repository", () => {
       userRepository.deleteById(unsavedUser.id),
     );
     //Then we should not have deleted him
-    await expect(resultPromise).rejects.toBeInstanceOf(
-      InternalServerErrorException,
-    );
+    await expect(resultPromise).rejects.toBeInstanceOf(NotFoundException);
     const savedUsers = await prismaService.user.findMany({});
 
     expect(savedUsers.length).toBe(1);
+  });
+
+  it("Should not delete user with an unfinished rental", async () => {
+    //Given a user renting a book
+    const user = userBuilder.build();
+    await saveUser(user);
+    await createRental(prismaService, user.id, RentalStatusEnum.Rented);
+
+    //When we try deleting him
+    const resultPromise = executeTask(userRepository.deleteById(user.id));
+
+    //Then he and his rental should remain, or the book item would stay rented
+    await expect(resultPromise).rejects.toBeInstanceOf(ConflictException);
+    expect(await prismaService.user.count()).toBe(1);
+    expect(await prismaService.bookRentalDetails.count()).toBe(1);
+  });
+
+  it("Successfully delete user whose rentals are finished", async () => {
+    //Given a user who returned a book
+    const user = userBuilder.build();
+    await saveUser(user);
+    await createRental(prismaService, user.id, RentalStatusEnum.Finished);
+
+    //When we delete him
+    await executeTask(userRepository.deleteById(user.id));
+
+    //Then he and his rental history should be deleted
+    expect(await prismaService.user.count()).toBe(0);
+    expect(await prismaService.bookRentalDetails.count()).toBe(0);
   });
 
   it("Successfully save admin without cpf", async () => {

@@ -5,11 +5,13 @@ import { createTestApp } from "@test/util/createTestApp";
 import request from "supertest";
 
 import { AuthGuard } from "@auth/guards/auth.guard";
+import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
+import { createRental } from "@test/util/createRental";
 import { UserRepository } from "@user/database/user.repository.port";
 import { PinoLogger } from "nestjs-pino";
 
@@ -44,10 +46,12 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await prismaService.user.deleteMany();
+  await prismaService.bookInfo.deleteMany();
 });
 
 afterEach(async () => {
   await prismaService.user.deleteMany();
+  await prismaService.bookInfo.deleteMany();
 });
 
 describe("[e2e] DELETE /v1/users/:id", () => {
@@ -71,6 +75,20 @@ describe("[e2e] DELETE /v1/users/:id", () => {
       v1Route("fakeId"),
     );
     expect(response.status).toBe(422);
+  });
+
+  it("Should respond 409 for a user with an unfinished rental", async () => {
+    const user = new UserBuilder().withName("Test").build();
+    await executeTask(userRepository.save(user));
+    await createRental(prismaService, user.id, RentalStatusEnum.Rented);
+
+    const response = await request(app.getHttpServer()).delete(
+      v1Route(user.id),
+    );
+
+    expect(response.status).toBe(409);
+    expect(response.body).toMatchObject({ code: "user.hasActiveRentals" });
+    expect(await prismaService.user.count()).toBe(1);
   });
 
   it("Should respond 404 for user not found", async () => {

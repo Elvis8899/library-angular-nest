@@ -1,4 +1,4 @@
-import { Prisma } from "@db/generated/client";
+import { Prisma, RentalStatus } from "@db/generated/client";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { FPF, O, TE } from "@shared/utils/application/monads";
@@ -14,6 +14,10 @@ import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 import { unknownException } from "@shared/utils/domain/shared.erros";
 import { UserRepository } from "@user/database/user.repository.port";
 import { User, UserRoleEnum } from "@user/domain/user.entity";
+import {
+  userHasActiveRentalsException,
+  userNotFoundException,
+} from "@user/domain/user.errors";
 import { formatDocument } from "@user/domain/valueObject/document";
 
 @Injectable()
@@ -43,8 +47,8 @@ export class RealUserRepository implements UserRepository {
     this.defaultErrorException,
   );
 
-  private delete = TE.tryCatchK(
-    this.prisma.user.delete.bind(this.prisma.user),
+  private deleteMany = TE.tryCatchK(
+    this.prisma.user.deleteMany.bind(this.prisma.user),
     this.defaultErrorException,
   );
 
@@ -63,15 +67,9 @@ export class RealUserRepository implements UserRepository {
     this.defaultErrorException,
   );
 
-  private includeAll: Prisma.UserInclude = {
-    bookRentalDetails: true,
-  };
-
   findAll = (): TE.TaskEither<Error, User[]> => {
     return FPF.pipe(
-      this.findMany({
-        include: this.includeAll,
-      }),
+      this.findMany({}),
       TE.chainEitherK(validateRows(this.baseValidator)),
     );
   };
@@ -88,7 +86,6 @@ export class RealUserRepository implements UserRepository {
             skip,
             take,
             orderBy: { createdAt: "desc" },
-            include: this.includeAll,
           }),
         total: () => this.count({ where }),
       },
@@ -102,7 +99,6 @@ export class RealUserRepository implements UserRepository {
         where: {
           id: userId,
         },
-        include: this.includeAll,
       }),
       TE.chainEitherK(validateMaybeRow(this.baseValidator)),
     );
@@ -115,7 +111,6 @@ export class RealUserRepository implements UserRepository {
           role: UserRoleEnum.Client,
           cpf: formatDocument(cpf),
         },
-        include: this.includeAll,
       }),
       TE.chainEitherK(validateMaybeRow(this.baseValidator)),
     );
@@ -127,22 +122,37 @@ export class RealUserRepository implements UserRepository {
         where: {
           email: email,
         },
-        include: this.includeAll,
       }),
       TE.chainEitherK(validateMaybeRow(this.baseValidator)),
     );
   };
 
-  deleteById = (userId: string): TE.TaskEither<Error, void> => {
-    return FPF.pipe(
-      this.delete({
+  // One conditional statement, so a rental started meanwhile can't be
+  // deleted by the cascade. When nothing is deleted, the user's existence
+  // tells the two failures apart
+  deleteById = (userId: string): TE.TaskEither<Error, void> =>
+    FPF.pipe(
+      this.deleteMany({
         where: {
           id: userId,
+          bookRentalDetails: { none: { rentalStatus: RentalStatus.rented } },
         },
       }),
-      TE.map(noop),
+      TE.chain(({ count }): TE.TaskEither<Error, void> =>
+        count > 0
+          ? TE.right(undefined)
+          : FPF.pipe(
+              this.count({ where: { id: userId } }),
+              TE.chain((users) =>
+                TE.left<Error>(
+                  users > 0
+                    ? userHasActiveRentalsException()
+                    : userNotFoundException(),
+                ),
+              ),
+            ),
+      ),
     );
-  };
 
   save = (user: User): TE.TaskEither<Error, void> => {
     return FPF.pipe(

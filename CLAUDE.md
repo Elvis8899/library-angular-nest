@@ -98,6 +98,7 @@ Errors are Nest `HttpException` subclasses created by small factory functions in
 ### Consistency rules
 
 - Renting and returning are atomic: `BookRentalRepository.rent` and `finish` run in a Prisma `$transaction`, using a conditional `updateMany` on the `BookItem` status or the rental status. Book item status must not be changed through events or separate writes.
+- A user with an unfinished rental can't be deleted (409 `user.hasActiveRentals`). Rentals cascade with the user, which would leave the book item rented, so `RealUserRepository.deleteById` is a conditional `deleteMany`.
 - `User.cpf` uses `DocumentType`. It is deliberately lenient (length only), because it also validates rows read from the database. Check-digit validation (CPF and alphanumeric CNPJ) is `CheckedDocumentType`, applied only in the create and update commands. Clients must have a CPF; admins may leave it empty.
 
 ### Database migrations

@@ -48,3 +48,18 @@ export class UserEmailAlreadyExistsException extends ConflictException {
 
 export const userEmailAlreadyExistsException = () =>
   new UserEmailAlreadyExistsException();
+
+export class UserHasActiveRentalsException extends ConflictException {
+  constructor() {
+    super(
+      errorBody(
+        HttpStatus.CONFLICT,
+        "user.hasActiveRentals",
+        "O usuário tem empréstimos em andamento. Finalize-os antes de excluí-lo.",
+      ),
+    );
+  }
+}
+
+export const userHasActiveRentalsException = () =>
+  new UserHasActiveRentalsException();

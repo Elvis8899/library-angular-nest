@@ -170,6 +170,8 @@ export const ptBR = {
       notFound: "Usuário não encontrado.",
       cpfTaken: "O CPF informado já está sendo usado por outro usuário.",
       emailTaken: "O email informado já está sendo usado por outro usuário.",
+      hasActiveRentals:
+        "O usuário tem empréstimos em andamento. Finalize-os antes de excluí-lo.",
     },
   },
   update: {
