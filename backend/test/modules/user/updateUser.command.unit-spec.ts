@@ -159,4 +159,24 @@ describe("[Unit] Update User", () => {
       UserEmailAlreadyExistsException,
     );
   });
+
+  it("Should keep the password and sessions when only the name changes", async () => {
+    // Given an update without a password, changing only the name
+    const { password: _, ...userDTO } = userBuilder
+      .withName("Outro Nome")
+      .buildCreateDTO();
+
+    // When we update the user
+    await ctx.updateUserHandler.execute(
+      new UpdateUser(userDTO, originalUserId),
+    );
+
+    // Then the name changed, the password and the sessions didn't
+    const users = await executeTask(ctx.userRepository.findAll());
+    expect(users[0]).toMatchObject({
+      name: "Outro Nome",
+      password: userBuilder.build().password,
+      tokenVersion: 0,
+    });
+  });
 });

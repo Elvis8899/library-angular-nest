@@ -67,6 +67,29 @@ describe("[e2e] PUT /v1/users/{userId}", () => {
     ).toBe(true);
   });
 
+  it("Should keep the password when the update leaves it out", async () => {
+    // Given an update without a password
+    const { password: _, ...userDTO } = userBuilder
+      .withName("Updated Name")
+      .buildCreateDTO();
+
+    // When the user is updated
+    const response = await e2e
+      .http()
+      .put(v1Route(originalUser.id))
+      .send(userDTO);
+
+    // Then the stored password is the one it had
+    expect(response.status).toBe(HttpStatus.OK);
+    const stored = await e2e.prisma.user.findUnique({
+      where: { id: originalUser.id },
+    });
+    expect(stored).toMatchObject({
+      name: "Updated Name",
+      password: originalUser.password,
+    });
+  });
+
   it.each([
     { invalid: "an empty name", user: () => userBuilder.withName("") },
     {

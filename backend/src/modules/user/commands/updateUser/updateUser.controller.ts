@@ -3,7 +3,7 @@ import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { UpdateUser } from "@modules/user/commands/updateUser/updateUser.command";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
-import { CreateUserDto } from "@modules/user/dtos/user.dto";
+import { UpdateUserDto } from "@modules/user/dtos/user.dto";
 import {
   Body,
   Controller,
@@ -43,7 +43,7 @@ export class UpdateUserController {
   @ApiNotFoundResponse({ description: "Usuário não encontrado." })
   @ApiOperation({ summary: "Atualizar Usuário" })
   async updateUser(
-    @Body() updateModuleDto: CreateUserDto,
+    @Body() updateModuleDto: UpdateUserDto,
     @Param("id") id: string,
   ): Promise<void> {
     return this.commandBus
