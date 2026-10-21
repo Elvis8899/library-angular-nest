@@ -11,7 +11,6 @@ import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
-import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
 import { PinoLogger } from "nestjs-pino";
 
@@ -25,7 +24,6 @@ export class RemoveBookItemHandler implements ICommandHandler<
   void
 > {
   constructor(
-    private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly bookInfoRepository: BookInfoRepository,
     private readonly domainEventPublisher: DomainEventPublisher,
     private readonly logger: PinoLogger,

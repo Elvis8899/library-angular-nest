@@ -1,4 +1,5 @@
 import { BookItem } from "@modules/book/domain/bookItem.entity";
+import { Money } from "@modules/book/domain/money";
 import { BaseDateEntity } from "@shared/utils/domain/dateEntity.base";
 import { UUID } from "@shared/uuid/uuid";
 import { z } from "zod";
@@ -8,7 +9,7 @@ export const BookInfo = z
     id: UUID,
     name: z.string().min(1),
     image: z.string().optional().default(""),
-    price: z.number(),
+    price: Money,
     bookItems: z.array(BookItem).optional().default([]),
   })
   .and(BaseDateEntity);

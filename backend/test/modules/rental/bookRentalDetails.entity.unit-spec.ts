@@ -33,4 +33,18 @@ describe("[Unit] Update BookInfo", () => {
       total: 55,
     });
   });
+
+  it("Should round fines to the centavo", () => {
+    const bookRentalDetails = BookRentalDetails.parse(
+      bookRentalBuilder
+        .withOverdueDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
+        .withBookItem({ book: { name: "Test Book", price: 33.33 } })
+        .build(),
+    );
+    expect(bookRentalDetails.fines).toMatchObject({
+      days: 7,
+      perDayValue: 1.67,
+      total: 31.69,
+    });
+  });
 });

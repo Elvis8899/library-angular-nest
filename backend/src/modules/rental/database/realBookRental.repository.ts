@@ -1,4 +1,5 @@
 import { Prisma } from "@db/generated/client";
+import { bookItemPriceFromCents } from "@modules/book/database/priceColumn";
 import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
 import {
   BookRentalFindAllQuery,
@@ -25,12 +26,16 @@ import {
 } from "@shared/utils/database/rowValidation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 import { unknownException } from "@shared/utils/domain/shared.errors";
+import { z } from "zod";
 
 @Injectable()
 export class RealBookRentalRepository implements BookRentalRepository {
   constructor(private prisma: PrismaService) {}
 
-  private baseValidator = validateFromUnknown(BookRental, "BookRental");
+  private baseValidator = validateFromUnknown(
+    z.preprocess(bookItemPriceFromCents, BookRental),
+    "BookRental",
+  );
 
   private rentals = prismaTasks(() => this.prisma.bookRentalDetails);
 

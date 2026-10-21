@@ -14,7 +14,7 @@ import { GetBookInfoByIdController } from "@modules/book/queries/getBookInfoById
 import { GetBookInfoByIdQueryHandler } from "@modules/book/queries/getBookInfoById/getBookInfoById.query";
 import { PaginatedBookInfoController } from "@modules/book/queries/paginatedBookInfos/paginatedBookInfos.controller";
 import { PaginatedBookInfosQueryHandler } from "@modules/book/queries/paginatedBookInfos/paginatedBookInfos.query";
-import { CreateBookInfoSubscriber } from "@modules/book/subscribers/createBookInfo.subscriber";
+import { AddFirstBookItemSubscriber } from "@modules/book/subscribers/addFirstBookItem.subscriber";
 import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
@@ -39,7 +39,7 @@ const queryHandlers = [
   PaginatedBookInfosQueryHandler,
   GetBookInfoByIdQueryHandler,
 ];
-const subscribers = [CreateBookInfoSubscriber];
+const subscribers = [AddFirstBookItemSubscriber];
 const services = [RealUUIDGeneratorService];
 const repositories = [
   {

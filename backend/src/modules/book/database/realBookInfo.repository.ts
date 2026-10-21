@@ -3,6 +3,10 @@ import {
   BookInfoFindAllQuery,
   BookInfoRepository,
 } from "@modules/book/database/bookInfo.repository.port";
+import {
+  priceFromCents,
+  priceToCents,
+} from "@modules/book/database/priceColumn";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { BookItem } from "@modules/book/domain/bookItem.entity";
 import { Injectable } from "@nestjs/common";
@@ -17,12 +21,16 @@ import {
   validateRows,
 } from "@shared/utils/database/rowValidation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
+import { z } from "zod";
 
 @Injectable()
 export class RealBookInfoRepository implements BookInfoRepository {
   constructor(private prisma: PrismaService) {}
 
-  private baseValidator = validateFromUnknown(BookInfo, "BookInfo");
+  private baseValidator = validateFromUnknown(
+    z.preprocess(priceFromCents, BookInfo),
+    "BookInfo",
+  );
   private bookItemValidator = validateFromUnknown(BookItem, "BookItem");
 
   private bookInfos = prismaTasks(() => this.prisma.bookInfo);
@@ -80,12 +88,16 @@ export class RealBookInfoRepository implements BookInfoRepository {
     FPF.pipe(this.bookInfos.delete({ where: { id: bookInfoId } }), TE.asUnit);
 
   save = (bookInfoRaw: BookInfo): TE.TaskEither<Error, void> => {
-    const { bookItems: _, ...bookInfo } = bookInfoRaw;
+    const { bookItems: _, price, ...bookInfo } = bookInfoRaw;
     return FPF.pipe(
       this.bookInfos.upsert({
         where: { id: bookInfo.id },
-        update: { name: bookInfo.name },
-        create: bookInfo,
+        update: {
+          name: bookInfo.name,
+          image: bookInfo.image,
+          ...priceToCents(price),
+        },
+        create: { ...bookInfo, ...priceToCents(price) },
       }),
       TE.asUnit,
     );

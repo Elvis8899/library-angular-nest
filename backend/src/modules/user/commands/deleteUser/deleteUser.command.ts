@@ -7,7 +7,6 @@ import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
-import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
 import { PinoLogger } from "nestjs-pino";
 
@@ -18,7 +17,6 @@ export class DeleteUser implements ICommand {
 @CommandHandler(DeleteUser)
 export class DeleteUserHandler implements ICommandHandler<DeleteUser, void> {
   constructor(
-    private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly userRepository: UserRepository,
     private readonly domainEventPublisher: DomainEventPublisher,
     private readonly logger: PinoLogger,

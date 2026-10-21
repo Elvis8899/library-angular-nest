@@ -1,4 +1,5 @@
 import { DocumentType } from "@modules/user/domain/document";
+import { Email } from "@modules/user/domain/email";
 import { BaseDateEntity } from "@shared/utils/domain/dateEntity.base";
 import { UUID } from "@shared/uuid/uuid";
 import { z } from "zod";
@@ -12,8 +13,7 @@ export const User = z
   .object({
     id: UUID,
     name: z.string().min(1),
-    // Lowercase, so the case used at sign-up doesn't matter
-    email: z.email().transform((email) => email.toLowerCase()),
+    email: Email,
     password: z.string(),
     // "" for an admin without one, stored as NULL (see RealUserRepository)
     cpf: DocumentType.or(z.literal(""))

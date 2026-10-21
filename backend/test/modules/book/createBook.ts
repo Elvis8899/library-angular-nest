@@ -1,3 +1,4 @@
+import { priceToCents } from "@modules/book/database/priceColumn";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
@@ -9,10 +10,11 @@ export const createBook = async (
   builder: BookInfoBuilder = new BookInfoBuilder(),
 ): Promise<BookInfo> => {
   const book = builder.build();
-  const { bookItems, ...bookInfo } = book;
+  const { bookItems, price, ...bookInfo } = book;
   await prisma.bookInfo.create({
     data: {
       ...bookInfo,
+      ...priceToCents(price),
       // The copies get their book's id from the nested create
       bookItems: { create: bookItems.map(({ bookId: _, ...item }) => item) },
     },

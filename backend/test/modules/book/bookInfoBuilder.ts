@@ -60,6 +60,11 @@ export class BookInfoBuilder {
     return this;
   }
 
+  withPrice(price: number) {
+    this.overrides.price = price;
+    return this;
+  }
+
   withCreatedAt(createdAt: Date) {
     this.overrides.createdAt = createdAt;
     return this;

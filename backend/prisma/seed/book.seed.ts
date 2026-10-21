@@ -6,7 +6,7 @@ export const bookSeed: Prisma.BookInfoCreateInput[] = [
     // Livro 1 - Sem atraso
     name: "O Incrível Sr Raposo",
     image: "https://covers.openlibrary.org/b/id/15152634-M.jpg",
-    price: 100,
+    priceCents: 10000,
     id: createTestId(TableNameEnum.BookInfo, 1),
     bookItems: {
       create: {
@@ -27,7 +27,7 @@ export const bookSeed: Prisma.BookInfoCreateInput[] = [
     // Livro 2 - Com atraso
     name: "O Hobbit",
     image: "https://covers.openlibrary.org/b/id/14627222-M.jpg",
-    price: 100,
+    priceCents: 10000,
     id: createTestId(TableNameEnum.BookInfo, 2),
     bookItems: {
       create: {
@@ -47,7 +47,7 @@ export const bookSeed: Prisma.BookInfoCreateInput[] = [
   {
     name: "O Senhor dos Anéis: A Sociedade do Anel",
     image: "https://covers.openlibrary.org/b/id/15129594-M.jpg",
-    price: 100,
+    priceCents: 10000,
     id: createTestId(TableNameEnum.BookInfo, 3),
     bookItems: {
       create: {

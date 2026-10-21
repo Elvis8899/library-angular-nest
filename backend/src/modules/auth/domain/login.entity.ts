@@ -1,9 +1,10 @@
+import { Email } from "@modules/user/domain/email";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { UUID } from "@shared/uuid/uuid";
 import { z } from "zod";
 
 export const LoginInput = z.object({
-  email: z.email(),
+  email: Email,
   password: z.string().min(1),
 });
 

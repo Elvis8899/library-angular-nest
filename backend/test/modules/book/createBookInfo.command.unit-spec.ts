@@ -3,6 +3,7 @@ import {
   CreateBookInfoHandler,
 } from "@modules/book/commands/createBookInfo/createBookInfo.command";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
+import { UnprocessableEntityException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
@@ -64,4 +65,21 @@ describe("[Unit] Create BookInfo", () => {
     //Then it should have created a bookInfo and emitted an event
     expect(spy).toHaveBeenCalledTimes(1);
   });
+
+  it.each([-1, 12.345])(
+    "Should not create bookInfo with price %s",
+    async (price) => {
+      const bookInfo = new BookInfoBuilder().withPrice(price).buildCreateDTO();
+
+      const resultPromise = ctx.createBookInfoHandler.execute(
+        new CreateBookInfo(bookInfo),
+      );
+
+      await expect(resultPromise).rejects.toBeInstanceOf(
+        UnprocessableEntityException,
+      );
+      const bookInfos = await executeTask(ctx.bookInfoRepository.findAll());
+      expect(bookInfos).toEqual([]);
+    },
+  );
 });

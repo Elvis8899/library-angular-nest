@@ -2,6 +2,7 @@ import {
   BookItem,
   ensureAvailable,
 } from "@modules/book/domain/bookItem.entity";
+import { Money, roundToCentavo } from "@modules/book/domain/money";
 import {
   bookRentalFinishedException,
   bookRentalNotAvailableException,
@@ -34,7 +35,7 @@ export const BookRental = z
     bookItemId: z.string(),
     bookItem: z
       .object({
-        book: z.object({ name: z.string(), price: z.number() }).optional(),
+        book: z.object({ name: z.string(), price: Money }).optional(),
       })
       .optional(),
     user: z.object({ name: z.string() }).optional(),
@@ -93,8 +94,10 @@ export const getRentalFines = (rental: BookRental) => {
   const overdue = days > 0;
   const fixed = overdue ? 20 : 0;
   // 5% book value per day
-  const perDayValue = (rental.bookItem?.book?.price || 0) * 0.05;
-  const total = fixed + perDayValue * days;
+  const perDayValue = roundToCentavo(
+    (rental.bookItem?.book?.price || 0) * 0.05,
+  );
+  const total = roundToCentavo(fixed + perDayValue * days);
   return {
     overdue,
     fixed,

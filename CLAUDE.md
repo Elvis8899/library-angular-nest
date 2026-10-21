@@ -107,6 +107,7 @@ Errors are Nest `HttpException` subclasses created by small factory functions in
 
 - Renting and returning are atomic: `BookRentalRepository.rent` and `finish` run in a Prisma `$transaction`, using a conditional `updateMany` on the `BookItem` status or the rental status. Book item status must not be changed through events or separate writes.
 - A user with an unfinished rental can't be deleted (409 `user.hasActiveRentals`). Rentals cascade with the user, which would leave the book item rented, so `RealUserRepository.deleteById` is a conditional `deleteMany`.
+- Prices are reais to the centavo in the API and the domain (`Money`, `book/domain/money.ts`) and centavos in the database (`BookInfo.priceCents`). The repositories convert with `book/database/priceColumn.ts`; computed amounts like fines are rounded with `roundToCentavo`.
 - `User.cpf` uses `DocumentType`. It is deliberately lenient (length only), because it also validates rows read from the database. Check-digit validation (CPF and alphanumeric CNPJ) is `CheckedDocumentType`, applied only in the create and update commands. Clients must have a CPF; admins may leave it empty.
 
 ### Database migrations

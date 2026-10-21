@@ -5,30 +5,30 @@ import {
   BOOK_INFO_CREATED,
   BookInfoCreatedEvent,
 } from "@modules/book/domain/events/bookInfoCreated.event";
-import { CreateBookInfoSubscriber } from "@modules/book/subscribers/createBookInfo.subscriber";
+import { AddFirstBookItemSubscriber } from "@modules/book/subscribers/addFirstBookItem.subscriber";
 import { CqrsModule } from "@nestjs/cqrs";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
 import { useHandlerModule } from "@test/util/handlerModule";
 
-describe("[Unit] Endpoint Response - Subscriber", () => {
+describe("[Unit] Add first book item", () => {
   const ctx = useHandlerModule(
     {
       providers: [
         CreateBookInfoHandler,
         AddBookItemHandler,
-        CreateBookInfoSubscriber,
+        AddFirstBookItemSubscriber,
       ],
       imports: [CqrsModule],
       init: true,
     },
     (get) => ({
       bookInfoRepository: get(BookInfoRepository),
-      createBookInfoSubscriber: get(CreateBookInfoSubscriber),
+      addFirstBookItemSubscriber: get(AddFirstBookItemSubscriber),
     }),
   );
 
-  it("Should not return error", async () => {
+  it("Should add a copy to a new book", async () => {
     // Given a valid saved book
     const book = new BookInfoBuilder().build();
     await executeTask(ctx.bookInfoRepository.save(book));
@@ -42,10 +42,9 @@ describe("[Unit] Endpoint Response - Subscriber", () => {
       },
     });
     //When the function is called
-    const resultPromise =
-      ctx.createBookInfoSubscriber.afterBookInfoCreatedEvent(
-        responseWatcherEvent.payload,
-      );
+    const resultPromise = ctx.addFirstBookItemSubscriber.addFirstBookItem(
+      responseWatcherEvent.payload,
+    );
 
     //Then it should resolve to undefined
     await expect(resultPromise).resolves.toBe(undefined);

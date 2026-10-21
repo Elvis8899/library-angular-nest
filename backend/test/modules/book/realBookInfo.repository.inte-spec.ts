@@ -234,6 +234,43 @@ describe("[Integration] BookInfo repository", () => {
     expect(savedBookInfos.length).toBe(1);
   });
 
+  it("Should store a price with centavos as cents", async () => {
+    //Given a book that costs R$ 12,50
+    const bookInfo = bookInfoBuilder.withPrice(12.5).build();
+
+    //When we save and retrieve it
+    await saveBookInfo(bookInfo);
+    const result = await executeTask(bookInfoRepository.findById(bookInfo.id));
+
+    //Then the price comes back in reais, and is stored in centavos
+    expect(result).toMatchObject(O.some({ price: 12.5 }));
+    const row = await prismaService.bookInfo.findUnique({
+      where: { id: bookInfo.id },
+    });
+    expect(row?.priceCents).toBe(1250);
+  });
+
+  it("Should update a stored book's name, image and price", async () => {
+    //Given a stored book
+    const bookInfo = bookInfoBuilder.build();
+    await saveBookInfo(bookInfo);
+
+    //When we save it with new values
+    const changed = {
+      ...bookInfo,
+      name: "Novo nome",
+      image: "https://example.com/capa.jpg",
+      price: 49.9,
+    };
+    await saveBookInfo(changed);
+
+    //Then all of them are stored
+    const result = await executeTask(bookInfoRepository.findById(bookInfo.id));
+    expect(result).toMatchObject(
+      O.some({ name: changed.name, image: changed.image, price: 49.9 }),
+    );
+  });
+
   it("Return null when there is no bookInfo", async () => {
     //Given no existing bookInfos in database
     const unsaveBookInfo = bookInfoBuilder

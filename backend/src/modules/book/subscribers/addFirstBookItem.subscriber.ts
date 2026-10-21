@@ -7,12 +7,13 @@ import { Injectable } from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
 import { OnEvent } from "@nestjs/event-emitter";
 
+// Policy: a new book starts with one copy on the shelf
 @Injectable()
-export class CreateBookInfoSubscriber {
+export class AddFirstBookItemSubscriber {
   constructor(private readonly commandBus: CommandBus) {}
 
   @OnEvent(BOOK_INFO_CREATED)
-  async afterBookInfoCreatedEvent(
+  async addFirstBookItem(
     payload: BookInfoCreatedEvent["payload"],
   ): Promise<void> {
     const command = new AddBookItem({

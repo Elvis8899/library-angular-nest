@@ -4,7 +4,7 @@ model BookInfo {
   id    String @id
   name  String
   image String
-  price Int
+  priceCents Int // in centavos; the domain uses reais (`Money`)
 
   bookItems BookItem[]
 
