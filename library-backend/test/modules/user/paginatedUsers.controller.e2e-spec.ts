@@ -1,4 +1,5 @@
 import { AuthGuard } from "@auth/guards/auth.guard";
+import { Prisma } from "@db/generated/client";
 import { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { Test, TestingModule } from "@nestjs/testing";
 import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
@@ -76,6 +77,29 @@ describe("[e2e] GET /v1/users", () => {
     });
     mockAuthGuard.reset();
     expect(response.status).toBe(403);
+  });
+
+  it("Should respond 500 without the database's error details", async () => {
+    // The kind of error Prisma throws for a unique constraint, with the
+    // constraint and table names in its fields
+    const databaseError = new Prisma.PrismaClientKnownRequestError(
+      'duplicate key value violates unique constraint "User_email_key"',
+      { code: "P2002", clientVersion: "7.10.1", meta: { modelName: "User" } },
+    );
+    const findMany = jest
+      .spyOn(prismaService.user, "findMany")
+      .mockRejectedValueOnce(databaseError);
+
+    const response = await request(app.getHttpServer()).get("/v1/users");
+
+    findMany.mockRestore();
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({
+      statusCode: 500,
+      error: "Internal Server Error",
+      message: "Erro interno do servidor.",
+      code: "unknown",
+    });
   });
 
   it("Should respond 200 with empty list", async () => {

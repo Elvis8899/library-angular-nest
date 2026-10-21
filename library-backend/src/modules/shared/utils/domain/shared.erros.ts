@@ -1,13 +1,23 @@
 import { HttpStatus, InternalServerErrorException } from "@nestjs/common";
 
+// The original error is kept as the cause, which the logs show. Sent as the
+// body, it would show clients the database's messages and constraint names
 export function unknownException(error: unknown): Error {
-  return new InternalServerErrorException(error);
+  return new InternalServerErrorException(
+    errorBody(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      "unknown",
+      "Erro interno do servidor.",
+    ),
+    { cause: error },
+  );
 }
 
 const reasons: Partial<Record<HttpStatus, string>> = {
   [HttpStatus.UNAUTHORIZED]: "Unauthorized",
   [HttpStatus.NOT_FOUND]: "Not Found",
   [HttpStatus.CONFLICT]: "Conflict",
+  [HttpStatus.INTERNAL_SERVER_ERROR]: "Internal Server Error",
 };
 
 /**

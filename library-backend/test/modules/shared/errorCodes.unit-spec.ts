@@ -12,6 +12,7 @@ import {
   bookRentalNotAvailableException,
   bookRentalNotFoundException,
 } from "@rental/domain/bookRental.errors";
+import { unknownException } from "@shared/utils/domain/shared.erros";
 import {
   userCPFAlreadyExistsException,
   userEmailAlreadyExistsException,
@@ -99,6 +100,13 @@ const cases: Case[] = [
     "Conflict",
     "user.emailTaken",
   ],
+  [
+    "unknownException",
+    () => unknownException(new Error("connection lost")) as HttpException,
+    500,
+    "Internal Server Error",
+    "unknown",
+  ],
 ];
 
 describe("[Unit] Domain error codes", () => {
@@ -117,4 +125,19 @@ describe("[Unit] Domain error codes", () => {
       expect(exception.message).not.toBe(code);
     },
   );
+});
+
+describe("[Unit] unknownException", () => {
+  it("Should keep the original error as the cause, out of the body", () => {
+    const databaseError = new Error(
+      'duplicate key value violates unique constraint "User_email_key"',
+    );
+
+    const exception = unknownException(databaseError) as HttpException;
+
+    expect(exception.cause).toBe(databaseError);
+    expect(JSON.stringify(exception.getResponse())).not.toContain(
+      "User_email_key",
+    );
+  });
 });

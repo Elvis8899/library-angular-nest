@@ -16,6 +16,12 @@ export const loggerOnLeftR = <
       R.asks(({ logger }: U) => {
         logger.warn([error.name, warningMessage].join(" - "));
         logger.error([error.message, error.stack].join(" - "));
+        // What a 500 hides from the client, such as the database's error
+        if (error.cause instanceof Error) {
+          logger.error(
+            ["Caused by", error.cause.message, error.cause.stack].join(" - "),
+          );
+        }
       }),
     ),
   );
