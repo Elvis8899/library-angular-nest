@@ -13,13 +13,13 @@
     "lint": "ng lint",
     "lint:fix": "eslint \"**/*.ts\" --fix",
     "lint:styles": "stylelint \"src/**/*.scss\"",
-    "format-staged": "pretty-quick --staged",
+    "format-staged": "pretty-quick --staged --pattern \"library-frontend/**\"",
     "write:env": "ngx-scripts env npm_package_version",
     "prettier": "prettier --write \"./src/**/*.{ts,js,html,scss}\"",
     "prettier:check": "prettier --list-different \"./src/**/*.{ts,js,html,scss}\"",
     "style:format": "prettier -w ./src --ignore-unknown",
     "postinstall": "npm run prettier -s",
-    "prepare": "husky"
+    "prepare": "cd .. && husky library-frontend/.husky"
   },
   "private": true,
   "dependencies": {

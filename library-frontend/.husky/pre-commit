@@ -1,1 +1,3 @@
+# Git runs hooks from the repository root
+cd library-frontend
 npm run format-staged
