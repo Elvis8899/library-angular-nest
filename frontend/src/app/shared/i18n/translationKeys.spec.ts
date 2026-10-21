@@ -46,8 +46,8 @@ const usedKeys = new Set(
   )
 );
 
-// The codes the API's errors carry, errorBody(HttpStatus.X, "user.cpfTaken",
-// …) in backend's domain/*.errors.ts; CI checks out both apps
+// The codes the API's errors carry, super(DomainErrorKindEnum.X,
+// "user.cpfTaken", …) in backend's domain/*.errors.ts; CI checks out both apps
 const backendModules = "../backend/src/modules";
 const backendErrorCodes = readdirSync(backendModules).flatMap((module) => {
   const domain = join(backendModules, module, "domain");
@@ -57,7 +57,7 @@ const backendErrorCodes = readdirSync(backendModules).flatMap((module) => {
     .flatMap((file) =>
       [
         ...readFileSync(join(domain, file), "utf8").matchAll(
-          /HttpStatus\.\w+,\s*"([\w.]+)"/g
+          /DomainErrorKindEnum\.\w+,\s*"([\w.]+)"/g
         ),
       ].map((match) => match[1])
     );

@@ -1,5 +1,6 @@
 import { HttpStatus } from "@nestjs/common";
 import { unknownException } from "@shared/utils/domain/shared.errors";
+import { toHttpException } from "@shared/utils/http/domainError.filter";
 import { itAnswersWithErrorCodes } from "@test/util/errorCodes";
 
 // Each module checks its own errors' codes, in test/modules/<module>/
@@ -25,8 +26,8 @@ describe("[Unit] unknownException", () => {
     const exception = unknownException(databaseError);
 
     expect(exception.cause).toBe(databaseError);
-    expect(JSON.stringify(exception.getResponse())).not.toContain(
-      "User_email_key",
-    );
+    expect(
+      JSON.stringify(toHttpException(exception).getResponse()),
+    ).not.toContain("User_email_key");
   });
 });

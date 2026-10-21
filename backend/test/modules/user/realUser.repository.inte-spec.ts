@@ -3,8 +3,8 @@ import { User, UserRoleEnum } from "@modules/user/domain/user.entity";
 import {
   UserCPFAlreadyExistsException,
   UserEmailAlreadyExistsException,
+  UserNotFoundException,
 } from "@modules/user/domain/user.errors";
-import { NotFoundException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -159,7 +159,7 @@ describe("[Integration] User repository", () => {
       userRepository.deleteById(unsavedUser.id),
     );
     //Then we should not have deleted him
-    await expect(resultPromise).rejects.toBeInstanceOf(NotFoundException);
+    await expect(resultPromise).rejects.toBeInstanceOf(UserNotFoundException);
     const savedUsers = await prismaService.user.findMany({});
 
     expect(savedUsers.length).toBe(1);

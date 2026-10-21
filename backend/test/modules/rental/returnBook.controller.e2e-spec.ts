@@ -85,7 +85,7 @@ describe("[e2e] POST /v1/bookRentals/rent", () => {
     expect(response.status).toBe(HttpStatus.OK);
   });
 
-  it("Should respond 404 for invalid bookStatus", async () => {
+  it("Should respond 409 for a rental already returned", async () => {
     // Given a potentially valid book rental
     const bookRental = bookRentalBuilder
       .withBookItemId(createTestId(TableNameEnum.BookItem, 1))
@@ -97,7 +97,8 @@ describe("[e2e] POST /v1/bookRentals/rent", () => {
       .http()
       .put(v1Route(createTestId(TableNameEnum.BookRentalDetails, 0)))
       .send(bookRental);
-    expect(response.status).toBe(HttpStatus.NOT_FOUND);
+    expect(response.status).toBe(HttpStatus.CONFLICT);
+    expect(response.body).toMatchObject({ code: "rental.finished" });
   });
 
   it("Should respond 404 for invalid rental not in system", async () => {
@@ -106,9 +107,10 @@ describe("[e2e] POST /v1/bookRentals/rent", () => {
       .buildCreateDTO();
     const response = await e2e
       .http()
-      .put(v1Route(createTestId(TableNameEnum.BookRentalDetails, 0)))
+      .put(v1Route(createTestId(TableNameEnum.BookRentalDetails, 99)))
       .send(bookInfo);
     expect(response.status).toBe(HttpStatus.NOT_FOUND);
+    expect(response.body).toMatchObject({ code: "rental.notFound" });
   });
 
   it("Should respond 200 when a client returns their own rental", async () => {

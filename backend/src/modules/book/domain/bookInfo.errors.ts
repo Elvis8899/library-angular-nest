@@ -1,24 +1,26 @@
-import { HttpStatus, NotFoundException } from "@nestjs/common";
-import { errorBody } from "@shared/utils/domain/shared.errors";
+import {
+  DomainError,
+  DomainErrorKindEnum,
+} from "@shared/utils/domain/shared.errors";
 
-export class BookInfoNotFoundException extends NotFoundException {
+export class BookInfoNotFoundException extends DomainError {
   constructor() {
     super(
-      errorBody(HttpStatus.NOT_FOUND, "book.notFound", "Livro não encontrado."),
+      DomainErrorKindEnum.NotFound,
+      "book.notFound",
+      "Livro não encontrado.",
     );
   }
 }
 
 export const bookInfoNotFoundException = () => new BookInfoNotFoundException();
 
-export class AvailableBookItemNotFoundException extends NotFoundException {
+export class AvailableBookItemNotFoundException extends DomainError {
   constructor() {
     super(
-      errorBody(
-        HttpStatus.NOT_FOUND,
-        "book.noAvailableCopy",
-        "Exemplar livre do livro não encontrado.",
-      ),
+      DomainErrorKindEnum.NotFound,
+      "book.noAvailableCopy",
+      "Exemplar livre do livro não encontrado.",
     );
   }
 }

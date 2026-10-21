@@ -18,8 +18,8 @@ describe("[Unit] Rental error codes", () => {
     [
       "bookRentalFinishedException",
       bookRentalFinishedException,
-      HttpStatus.NOT_FOUND,
-      "Not Found",
+      HttpStatus.CONFLICT,
+      "Conflict",
       "rental.finished",
     ],
     [

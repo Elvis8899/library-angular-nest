@@ -1,28 +1,26 @@
-import { HttpStatus, UnauthorizedException } from "@nestjs/common";
-import { errorBody } from "@shared/utils/domain/shared.errors";
+import {
+  DomainError,
+  DomainErrorKindEnum,
+} from "@shared/utils/domain/shared.errors";
 
-export class WrongAuthException extends UnauthorizedException {
+export class WrongAuthException extends DomainError {
   constructor() {
     super(
-      errorBody(
-        HttpStatus.UNAUTHORIZED,
-        "auth.wrongCredentials",
-        "O email e/ou senha estão incorretos.",
-      ),
+      DomainErrorKindEnum.Unauthorized,
+      "auth.wrongCredentials",
+      "O email e/ou senha estão incorretos.",
     );
   }
 }
 
 export const wrongAuthException = () => new WrongAuthException();
 
-export class InvalidRefreshTokenException extends UnauthorizedException {
+export class InvalidRefreshTokenException extends DomainError {
   constructor() {
     super(
-      errorBody(
-        HttpStatus.UNAUTHORIZED,
-        "auth.sessionExpired",
-        "Sessão expirada. Faça login novamente.",
-      ),
+      DomainErrorKindEnum.Unauthorized,
+      "auth.sessionExpired",
+      "Sessão expirada. Faça login novamente.",
     );
   }
 }

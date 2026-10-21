@@ -1,18 +1,14 @@
 import {
-  ConflictException,
-  HttpStatus,
-  NotFoundException,
-} from "@nestjs/common";
-import { errorBody } from "@shared/utils/domain/shared.errors";
+  DomainError,
+  DomainErrorKindEnum,
+} from "@shared/utils/domain/shared.errors";
 
-export class BookRentalNotFoundException extends NotFoundException {
+export class BookRentalNotFoundException extends DomainError {
   constructor() {
     super(
-      errorBody(
-        HttpStatus.NOT_FOUND,
-        "rental.notFound",
-        "Empréstimo não encontrado.",
-      ),
+      DomainErrorKindEnum.NotFound,
+      "rental.notFound",
+      "Empréstimo não encontrado.",
     );
   }
 }
@@ -20,14 +16,12 @@ export class BookRentalNotFoundException extends NotFoundException {
 export const bookRentalNotFoundException = () =>
   new BookRentalNotFoundException();
 
-export class BookRentalFinishedException extends NotFoundException {
+export class BookRentalFinishedException extends DomainError {
   constructor() {
     super(
-      errorBody(
-        HttpStatus.NOT_FOUND,
-        "rental.finished",
-        "Empréstimo finalizado.",
-      ),
+      DomainErrorKindEnum.Conflict,
+      "rental.finished",
+      "Empréstimo finalizado.",
     );
   }
 }
@@ -35,14 +29,12 @@ export class BookRentalFinishedException extends NotFoundException {
 export const bookRentalFinishedException = () =>
   new BookRentalFinishedException();
 
-export class BookRentalNotAvailableException extends ConflictException {
+export class BookRentalNotAvailableException extends DomainError {
   constructor() {
     super(
-      errorBody(
-        HttpStatus.CONFLICT,
-        "rental.unavailable",
-        "Livro indisponível.",
-      ),
+      DomainErrorKindEnum.Conflict,
+      "rental.unavailable",
+      "Livro indisponível.",
     );
   }
 }

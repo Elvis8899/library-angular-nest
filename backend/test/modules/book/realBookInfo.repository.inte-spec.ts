@@ -5,11 +5,11 @@ import {
   BookItem,
   BookItemStatusEnum,
 } from "@modules/book/domain/bookItem.entity";
-import { InternalServerErrorException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
+import { UnknownException } from "@shared/utils/domain/shared.errors";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { resetDatabase } from "@test/util/resetDatabase";
@@ -226,9 +226,7 @@ describe("[Integration] BookInfo repository", () => {
       bookInfoRepository.deleteById(unsavedBookInfo.id),
     );
     //Then we should not have deleted him
-    await expect(resultPromise).rejects.toBeInstanceOf(
-      InternalServerErrorException,
-    );
+    await expect(resultPromise).rejects.toBeInstanceOf(UnknownException);
     const savedBookInfos = await prismaService.bookInfo.findMany({});
 
     expect(savedBookInfos.length).toBe(1);

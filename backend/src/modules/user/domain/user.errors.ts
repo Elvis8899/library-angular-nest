@@ -1,30 +1,24 @@
 import {
-  ConflictException,
-  HttpStatus,
-  NotFoundException,
-} from "@nestjs/common";
-import { errorBody } from "@shared/utils/domain/shared.errors";
+  DomainError,
+  DomainErrorKindEnum,
+} from "@shared/utils/domain/shared.errors";
 
-export class UserCPFAlreadyExistsException extends ConflictException {
+export class UserCPFAlreadyExistsException extends DomainError {
   constructor() {
     super(
-      errorBody(
-        HttpStatus.CONFLICT,
-        "user.cpfTaken",
-        "O CPF informado já está sendo utilizado por outro usuário.",
-      ),
+      DomainErrorKindEnum.Conflict,
+      "user.cpfTaken",
+      "O CPF informado já está sendo utilizado por outro usuário.",
     );
   }
 }
 
-export class UserNotFoundException extends NotFoundException {
+export class UserNotFoundException extends DomainError {
   constructor() {
     super(
-      errorBody(
-        HttpStatus.NOT_FOUND,
-        "user.notFound",
-        "Usuário não encontrado.",
-      ),
+      DomainErrorKindEnum.NotFound,
+      "user.notFound",
+      "Usuário não encontrado.",
     );
   }
 }
@@ -34,14 +28,12 @@ export const userCPFAlreadyExistsException = () =>
 
 export const userNotFoundException = () => new UserNotFoundException();
 
-export class UserEmailAlreadyExistsException extends ConflictException {
+export class UserEmailAlreadyExistsException extends DomainError {
   constructor() {
     super(
-      errorBody(
-        HttpStatus.CONFLICT,
-        "user.emailTaken",
-        "O Email informado já está sendo utilizado por outro usuário.",
-      ),
+      DomainErrorKindEnum.Conflict,
+      "user.emailTaken",
+      "O Email informado já está sendo utilizado por outro usuário.",
     );
   }
 }
@@ -50,14 +42,12 @@ export const userEmailAlreadyExistsException = () =>
   new UserEmailAlreadyExistsException();
 
 // Lending example: used by RealUserRepository.deleteById
-export class UserHasActiveRentalsException extends ConflictException {
+export class UserHasActiveRentalsException extends DomainError {
   constructor() {
     super(
-      errorBody(
-        HttpStatus.CONFLICT,
-        "user.hasActiveRentals",
-        "O usuário tem empréstimos em andamento. Finalize-os antes de excluí-lo.",
-      ),
+      DomainErrorKindEnum.Conflict,
+      "user.hasActiveRentals",
+      "O usuário tem empréstimos em andamento. Finalize-os antes de excluí-lo.",
     );
   }
 }

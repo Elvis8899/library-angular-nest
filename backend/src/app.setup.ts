@@ -8,6 +8,7 @@ import {
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { FPF } from "@shared/utils/application/monads";
 import { envConfig } from "@shared/utils/config/environment.config";
+import { DomainErrorFilter } from "@shared/utils/http/domainError.filter";
 import { appInfo } from "@src/app.info";
 import { Logger } from "nestjs-pino";
 
@@ -35,6 +36,7 @@ export const configureApp = async (
     next();
   });
   app.useLogger(app.get(Logger));
+  app.useGlobalFilters(new DomainErrorFilter(app.getHttpAdapter()));
 
   const options = new DocumentBuilder()
     .setTitle(appInfo.title)

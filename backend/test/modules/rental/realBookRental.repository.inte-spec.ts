@@ -10,11 +10,11 @@ import {
   BookRentalNotAvailableException,
 } from "@modules/rental/domain/bookRental.errors";
 import { RealUserRepository } from "@modules/user/database/realUser.repository";
-import { InternalServerErrorException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
+import { UnknownException } from "@shared/utils/domain/shared.errors";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
 import { createBook } from "@test/modules/book/createBook";
@@ -162,9 +162,7 @@ describe("[Integration] BookRental repository", () => {
       bookRentalRepository.deleteById(unsavedBookRental.id),
     );
     //Then we should not have deleted him
-    await expect(resultPromise).rejects.toBeInstanceOf(
-      InternalServerErrorException,
-    );
+    await expect(resultPromise).rejects.toBeInstanceOf(UnknownException);
     const savedBookRentals = await prismaService.bookRentalDetails.findMany({});
 
     expect(savedBookRentals.length).toBe(1);
@@ -279,7 +277,7 @@ describe("[Integration] BookRental repository rent/finish", () => {
 
     const result = executeTask(bookRentalRepository.rent(bookRental));
 
-    await expect(result).rejects.toBeInstanceOf(InternalServerErrorException);
+    await expect(result).rejects.toBeInstanceOf(UnknownException);
     expect(await getBookItemStatus()).toBe(BookItemStatusEnum.Available);
   });
 

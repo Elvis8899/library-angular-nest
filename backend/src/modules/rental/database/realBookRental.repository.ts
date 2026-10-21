@@ -13,7 +13,7 @@ import {
   bookRentalFinishedException,
   bookRentalNotAvailableException,
 } from "@modules/rental/domain/bookRental.errors";
-import { HttpException, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { FPF, O, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
@@ -25,7 +25,10 @@ import {
   validateRows,
 } from "@shared/utils/database/rowValidation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
-import { unknownException } from "@shared/utils/domain/shared.errors";
+import {
+  DomainError,
+  unknownException,
+} from "@shared/utils/domain/shared.errors";
 import { z } from "zod";
 
 @Injectable()
@@ -41,7 +44,7 @@ export class RealBookRentalRepository implements BookRentalRepository {
 
   // Domain errors thrown inside a transaction are passed through as-is
   private transactionErrorException = (error: unknown): Error =>
-    error instanceof HttpException ? error : unknownException(error);
+    error instanceof DomainError ? error : unknownException(error);
 
   private includeAll: Prisma.BookRentalDetailsInclude = {
     bookItem: { include: { book: true } },

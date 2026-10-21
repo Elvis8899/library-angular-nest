@@ -1,21 +1,22 @@
-import { HttpException } from "@nestjs/common";
+import { DomainError } from "@shared/utils/domain/shared.errors";
+import { toHttpException } from "@shared/utils/http/domainError.filter";
 
 // The frontend translates errors by code (errors.<code> in its pt-BR.ts), and
 // its translationKeys.spec.ts checks every code has a translation
 export type ErrorCodeCase = [
   name: string,
-  createException: () => HttpException,
+  createError: () => DomainError,
   statusCode: number,
   error: string,
   code: string,
 ];
 
-/** Checks each module error's status, body and code. */
+/** Checks the status, body and code each module error is answered with. */
 export const itAnswersWithErrorCodes = (cases: ErrorCodeCase[]): void => {
   it.each(cases)(
     "%s answers %i %s with the code %s",
-    (_name, createException, statusCode, error, code) => {
-      const exception = createException();
+    (_name, createError, statusCode, error, code) => {
+      const exception = toHttpException(createError());
 
       expect(exception.getStatus()).toBe(statusCode);
       // The message stays readable for other clients

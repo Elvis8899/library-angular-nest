@@ -1,8 +1,8 @@
 import { USER_DELETED } from "@modules/user/domain/events/userDeleted.event";
-import { InternalServerErrorException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { FPF } from "@shared/utils/application/monads";
+import { UnknownException } from "@shared/utils/domain/shared.errors";
 
 let domainEvent: DomainEventPublisher;
 const eventEmitter2Mock = {
@@ -44,6 +44,6 @@ describe("[Unit] DomainEventPublisher", () => {
           },
         }),
       ),
-    ).rejects.toBeInstanceOf(InternalServerErrorException);
+    ).rejects.toBeInstanceOf(UnknownException);
   });
 });

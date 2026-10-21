@@ -1,7 +1,7 @@
 import { RentalStatusEnum } from "@modules/rental/domain/bookRental.entity";
 import { RealUserRepository } from "@modules/user/database/realUser.repository";
 import { User } from "@modules/user/domain/user.entity";
-import { ConflictException } from "@nestjs/common";
+import { UserHasActiveRentalsException } from "@modules/user/domain/user.errors";
 import { Test } from "@nestjs/testing";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -51,7 +51,9 @@ describe("[Integration] User repository with rentals", () => {
     const resultPromise = executeTask(userRepository.deleteById(user.id));
 
     //Then he and his rental should remain, or the book item would stay rented
-    await expect(resultPromise).rejects.toBeInstanceOf(ConflictException);
+    await expect(resultPromise).rejects.toBeInstanceOf(
+      UserHasActiveRentalsException,
+    );
     expect(await prismaService.user.count()).toBe(1);
     expect(await prismaService.bookRentalDetails.count()).toBe(1);
   });
