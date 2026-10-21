@@ -4,14 +4,14 @@ import { unknownException } from "@shared/utils/domain/shared.errors";
 import { PinoLogger } from "nestjs-pino";
 
 describe("[Unit] loggerOnLeftR", () => {
-  const logger = { warn: jest.fn(), error: jest.fn() };
+  const logger = { warn: vi.fn(), error: vi.fn() };
   const log = (error: Error) =>
     loggerOnLeftR("save user")(error)({
       logger: FPF.unsafeCoerce<typeof logger, PinoLogger>(logger),
     });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("Should log the error", () => {

@@ -54,6 +54,8 @@ jobs:
           # Fails when prisma/schema has changes no migration creates
           yarn migrate:check
           yarn build
+          # SWC strips the types when the tests run, so check them here
+          yarn typecheck
           yarn test:cov
 
       # The tests never run the build output, so check that it starts

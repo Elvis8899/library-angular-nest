@@ -103,7 +103,7 @@ describe("[Unit] Update BookInfo", () => {
     //Given a potentially valid bookInfo
     const bookRental = bookRentalBuilder.buildCreateDTO();
 
-    const spy = jest.spyOn(ctx.eventBookInfo, "publishEvent");
+    const spy = vi.spyOn(ctx.eventBookInfo, "publishEvent");
 
     //When we update the bookInfo
     await ctx.rentBookCommandHandler.execute(

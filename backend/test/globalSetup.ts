@@ -1,10 +1,7 @@
-// Jest's globalSetup runs outside the test runtime, where the path aliases
-// aren't mapped
-/* eslint-disable no-restricted-imports -- jest */
+import { PrismaClient } from "@db/generated/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../prisma/generated/client";
-import { workerDatabaseUrl } from "./util/workerDatabase";
-/* eslint-enable no-restricted-imports -- the aliases again */
+import { workerDatabaseUrl } from "@test/util/workerDatabase";
+import type { TestProject } from "vitest/node";
 
 const quote = (identifier: string) => `"${identifier.replaceAll('"', '""')}"`;
 
@@ -13,13 +10,10 @@ const databaseName = (url: string) =>
 
 /**
  * Copies the migrated test database (DATABASE_URL, migrated by
- * `yarn test:migrate`) to one database per Jest worker, so the suites can
+ * `yarn test:migrate`) to one database per Vitest worker, so the suites can
  * run in parallel. A fresh copy each run keeps them on the latest migration.
  */
-export default async function globalSetup(
-  // Jest's GlobalConfig: --maxWorkers, or the default from the CPUs
-  globalConfig: { maxWorkers: number },
-): Promise<void> {
+export default async function globalSetup(project: TestProject): Promise<void> {
   const baseUrl = process.env.DATABASE_URL;
   if (!baseUrl) throw new Error("DATABASE_URL is not set (.env.test)");
 
@@ -33,7 +27,8 @@ export default async function globalSetup(
   });
   const template = quote(databaseName(baseUrl));
   try {
-    for (let worker = 1; worker <= globalConfig.maxWorkers; worker++) {
+    // --maxWorkers, or the config's share of the CPUs
+    for (let worker = 1; worker <= project.globalConfig.maxWorkers; worker++) {
       const database = quote(databaseName(workerDatabaseUrl(baseUrl, worker)));
       await prisma.$executeRawUnsafe(
         `DROP DATABASE IF EXISTS ${database} WITH (FORCE)`,

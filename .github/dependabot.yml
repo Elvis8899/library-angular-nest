@@ -16,7 +16,7 @@ updates:
       minor-and-patch:
         update-types: [minor, patch]
     ignore:
-      # Angular, typescript-eslint and ts-jest don't support TypeScript 7 yet
+      # Angular and typescript-eslint don't support TypeScript 7 yet
       - dependency-name: typescript
         update-types: [version-update:semver-major]
       # Follows the Node version in .nvmrc (24)

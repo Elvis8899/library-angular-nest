@@ -4,15 +4,14 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "TS-Jest: current file",
-      //"env": { "NODE_ENV": "test" },
-      "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": ["${fileBasenameNoExtension}", "--config", "test/jest.config.js"],
-      "console": "integratedTerminal",
-      // "disableOptimisticBPs": true,
-      "windows": {
-        "program": "${workspaceFolder}/node_modules/jest/bin/jest"
-      }
+      "name": "Vitest: current file",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env.test",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "${file}", "--no-file-parallelism"],
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "console": "integratedTerminal"
     }
   ]
 }

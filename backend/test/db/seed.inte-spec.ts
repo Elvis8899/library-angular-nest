@@ -8,7 +8,7 @@ const prismaService = new PrismaService();
 
 beforeEach(async () => {
   await resetDatabase(prismaService);
-  jest.spyOn(console, "log").mockImplementation(() => undefined);
+  vi.spyOn(console, "log").mockImplementation(() => undefined);
 });
 
 afterAll(async () => {

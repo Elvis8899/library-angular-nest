@@ -20,7 +20,7 @@ describe("RolesGuard", () => {
 
   it("should allow access when no roles are required", () => {
     const mockContext = createMockExecutionContext({});
-    jest.spyOn(reflector, "getAllAndOverride").mockReturnValue(null);
+    vi.spyOn(reflector, "getAllAndOverride").mockReturnValue(null);
 
     const result = guard.canActivate(mockContext);
 
@@ -31,9 +31,9 @@ describe("RolesGuard", () => {
     const mockContext = createMockExecutionContext({
       user: { role: UserRoleEnum.Admin },
     });
-    jest
-      .spyOn(reflector, "getAllAndOverride")
-      .mockReturnValue([UserRoleEnum.Admin]);
+    vi.spyOn(reflector, "getAllAndOverride").mockReturnValue([
+      UserRoleEnum.Admin,
+    ]);
 
     const result = guard.canActivate(mockContext);
 
@@ -44,9 +44,9 @@ describe("RolesGuard", () => {
     const mockContext = createMockExecutionContext({
       user: { role: UserRoleEnum.Client },
     });
-    jest
-      .spyOn(reflector, "getAllAndOverride")
-      .mockReturnValue([UserRoleEnum.Admin]);
+    vi.spyOn(reflector, "getAllAndOverride").mockReturnValue([
+      UserRoleEnum.Admin,
+    ]);
 
     const result = guard.canActivate(mockContext);
 
@@ -57,9 +57,9 @@ describe("RolesGuard", () => {
     const mockContext = createMockExecutionContext({
       user: {},
     });
-    jest
-      .spyOn(reflector, "getAllAndOverride")
-      .mockReturnValue([UserRoleEnum.Admin]);
+    vi.spyOn(reflector, "getAllAndOverride").mockReturnValue([
+      UserRoleEnum.Admin,
+    ]);
 
     const result = guard.canActivate(mockContext);
 
@@ -70,9 +70,9 @@ describe("RolesGuard", () => {
     const mockContext = createMockExecutionContext({
       user: undefined,
     });
-    jest
-      .spyOn(reflector, "getAllAndOverride")
-      .mockReturnValue([UserRoleEnum.Admin]);
+    vi.spyOn(reflector, "getAllAndOverride").mockReturnValue([
+      UserRoleEnum.Admin,
+    ]);
 
     const result = guard.canActivate(mockContext);
 
@@ -86,10 +86,10 @@ describe("RolesGuard", () => {
       switchToHttp: () => ({
         getRequest: FPF.unsafeCoerce(() => request),
         getResponse: FPF.unsafeCoerce(() => ({})),
-        getNext: FPF.unsafeCoerce(() => jest.fn()),
+        getNext: FPF.unsafeCoerce(() => vi.fn()),
       }),
-      getHandler: FPF.unsafeCoerce(() => jest.fn()),
-      getClass: FPF.unsafeCoerce(() => jest.fn()),
+      getHandler: FPF.unsafeCoerce(() => vi.fn()),
+      getClass: FPF.unsafeCoerce(() => vi.fn()),
       getArgs: FPF.unsafeCoerce(() => []),
       getArgByIndex: FPF.unsafeCoerce(() => ({})),
       switchToRpc: () => ({

@@ -1,5 +1,5 @@
 /**
- * The database of one Jest worker: library-test-1, library-test-2… for
+ * The database of one Vitest worker: library-test-1, library-test-2… for
  * library-test. test/globalSetup.ts copies the migrated test database to
  * each before the suites run, so workers never share tables.
  */

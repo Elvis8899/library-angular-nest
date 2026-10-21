@@ -36,7 +36,7 @@ describe("[Unit] prismaTasks", () => {
   });
 
   it("Should read the delegate only when a method is used", () => {
-    const delegateGetter = jest.fn(() => delegate);
+    const delegateGetter = vi.fn(() => delegate);
 
     const lazyTasks = prismaTasks(delegateGetter);
     expect(delegateGetter).not.toHaveBeenCalled();

@@ -51,7 +51,7 @@ describe("[Unit] Delete User", () => {
   it("Should emit domain event when user is deleted", async () => {
     //Given a user
 
-    const spy = jest.spyOn(ctx.eventModule, "publishEvent");
+    const spy = vi.spyOn(ctx.eventModule, "publishEvent");
 
     const user = new UserBuilder().build();
     await executeTask(ctx.userRepository.save(user));

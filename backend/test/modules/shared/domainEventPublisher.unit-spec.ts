@@ -6,7 +6,7 @@ import { FPF } from "@shared/utils/application/monads";
 
 let domainEvent: DomainEventPublisher;
 const eventEmitter2Mock = {
-  emit: jest.fn(() => true),
+  emit: vi.fn(() => true),
 };
 beforeEach(() => {
   domainEvent = new DomainEventPublisher(FPF.unsafeCoerce(eventEmitter2Mock));

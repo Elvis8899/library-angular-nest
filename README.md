@@ -96,7 +96,7 @@ yarn lint
 yarn lint:styles        # Stylelint
 ```
 
-The backend suites run in parallel: before they start, each Jest worker gets its own copy of `library-test` (`library-test-1`, `library-test-2`…), so nothing else may be connected to `library-test` while they run (close pgAdmin's connection to it, for example). See each app's README for running a single suite or test.
+The backend suites run in parallel: before they start, each test worker gets its own copy of `library-test` (`library-test-1`, `library-test-2`…), so nothing else may be connected to `library-test` while they run (close pgAdmin's connection to it, for example). See each app's README for running a single suite or test.
 
 ## CI and deployment
 

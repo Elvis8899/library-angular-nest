@@ -6,7 +6,7 @@ export const getBaseEnvPath = (nodeEnv: string | undefined) =>
 
 // Initializing dotenv. The path is relative to the working directory, which
 // is the backend folder in every way the app runs (yarn scripts, Docker
-// entrypoints, Jest): relative to this file it would differ between src/
+// entrypoints, Vitest): relative to this file it would differ between src/
 // and the build output in dist/src/
 const envPath: string = path.resolve(
   process.cwd(),
