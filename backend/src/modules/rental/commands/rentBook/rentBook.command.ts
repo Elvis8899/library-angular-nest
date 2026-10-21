@@ -1,7 +1,9 @@
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
-import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
 import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
-import { BookRental } from "@modules/rental/domain/bookRental.entity";
+import {
+  BookRental,
+  startRental,
+} from "@modules/rental/domain/bookRental.entity";
 import { bookRentalNotAvailableException } from "@modules/rental/domain/bookRental.errors";
 import { BOOK_RENTAL_RENTED } from "@modules/rental/domain/events/bookRented.event";
 import { CreateBookRentalDto } from "@modules/rental/dtos/bookRental.dto";
@@ -59,20 +61,16 @@ export class RentBookCommandHandler implements ICommandHandler<
         ),
       ),
 
-      //Validate Book exists and is available
-      RTE.tap(
-        FPF.flow(
-          (data) => data.bookItemId,
+      //Start the rental of the book item, which must be available
+      RTE.chain((rental) =>
+        FPF.pipe(
+          rental.bookItemId,
           performRTE(
             this.bookInfoRepository.findBookItemById,
             "get book item by id",
           ),
-
           RTE.chainW(RTE.fromOption<Error>(bookRentalNotAvailableException)),
-          RTE.filterOrElseW(
-            (bookItem) => bookItem.status === BookItemStatusEnum.Available,
-            bookRentalNotAvailableException,
-          ),
+          RTE.chainEitherK(startRental(rental)),
         ),
       ),
 

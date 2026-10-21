@@ -3,13 +3,13 @@ import {
   availableBookItemNotFoundException,
   bookInfoNotFoundException,
 } from "@modules/book/domain/bookInfo.errors";
-import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
+import { ensureAvailable } from "@modules/book/domain/bookItem.entity";
 import { BOOK_ITEM_REMOVED } from "@modules/book/domain/events/bookItemRemoved.event";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
-import { FPF, O, RTE } from "@shared/utils/application/monads";
+import { FPF, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
@@ -53,13 +53,7 @@ export class RemoveBookItemHandler implements ICommandHandler<
       ),
 
       // Validate it is available
-      RTE.chainW(
-        FPF.flow(
-          O.of,
-          O.filter((item) => item.status === BookItemStatusEnum.Available),
-          RTE.fromOption<Error>(availableBookItemNotFoundException),
-        ),
-      ),
+      RTE.chainEitherK(ensureAvailable(availableBookItemNotFoundException)),
 
       // Delete entity
       RTE.tap((existingBookItem) =>

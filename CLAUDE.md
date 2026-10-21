@@ -80,7 +80,7 @@ Each feature module (`user`, `book`, `rental`, `auth`) under `src/modules/` is l
 commands/<name>/<name>.command.ts      # ICommand + @CommandHandler (writes)
 commands/<name>/<name>.controller.ts   # one controller per use case; dispatches via CommandBus
 queries/<name>/<name>.query.ts|controller.ts   # reads via QueryBus
-domain/          # Zod schemas = entities/value objects (type and validator share a name), errors, events
+domain/          # Zod schemas = entities/value objects (type and validator share a name), their rules, errors, events
 database/        # <x>.repository.port.ts (abstract class used as DI token), real<X>.repository.ts (Prisma), fake<X>.repository.ts (in-memory)
 dtos/            # Swagger DTO classes (validation is done by Zod in the domain, not class-validator)
 ```
@@ -95,6 +95,7 @@ Command and query handlers build a `ReaderTaskEither<{ logger }, Error, T>` pipe
 - `fromInputRE(schema, name)`: Zod validation. A failure becomes `UnprocessableEntityException` (422).
 - `performRTE(repoFn, "description")`: wraps a repository `TaskEither` call and logs success or failure with the description.
 - Repositories return `TaskEither<Error, …>`. Lookups return `Option` and are converted with `RTE.fromOption(notFoundException)`.
+- Business rules are pure functions next to their entity, returning `Either` (`startRental`, `finishRental`, `ensureOwnedBy` in `bookRental.entity.ts`, `ensureAvailable` in `bookItem.entity.ts`), and handlers call them with `RTE.chainEitherK`, so a rule is written once and unit-tested without Nest. A handler only looks data up, applies the rules and stores the result. A rule the database must also enforce against concurrent requests is checked again by the repository's conditional write (`rent`, `finish`).
 
 Errors are Nest `HttpException` subclasses created by small factory functions in `domain/*.errors.ts`. A rejected task surfaces as that HTTP status. Each builds its body with `errorBody(status, code, message)` (`shared/utils/domain/shared.errors.ts`): the `code` (`user.cpfTaken`) is what the frontend translates, so a new error needs a code, and the frontend's `errors.<code>` translations (its `translationKeys.spec.ts` fails otherwise).
 

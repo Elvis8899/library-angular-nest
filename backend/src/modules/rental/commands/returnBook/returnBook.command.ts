@@ -1,14 +1,16 @@
 import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
-import { RentalStatusEnum } from "@modules/rental/domain/bookRental.entity";
+import {
+  ensureOwnedBy,
+  finishRental,
+} from "@modules/rental/domain/bookRental.entity";
 import { bookRentalNotFoundException } from "@modules/rental/domain/bookRental.errors";
 import { BOOK_RENTAL_RETURNED } from "@modules/rental/domain/events/bookReturned.event";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
-import { FPF, RE, RTE } from "@shared/utils/application/monads";
+import { FPF, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
-import { DateType } from "@shared/utils/domain/dateType";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
 import { PinoLogger } from "nestjs-pino";
@@ -45,38 +47,26 @@ export class ReturnBookCommandHandler implements ICommandHandler<
     );
     const task = FPF.pipe(
       //Data validation
-      RE.of({
-        rentalStatus: RentalStatusEnum.Finished,
-      }),
-      RE.bind("id", () => fromInputRE(UUID, "uuid")(command.bookRentalId)),
-      RE.bind("deliveryDate", () => fromInputRE(DateType, "date")(new Date())),
-
+      command.bookRentalId,
+      fromInputRE(UUID, "uuid"),
       RTE.fromReaderEither,
 
-      //Validate BookRental exists and belongs to the requester;
-      //someone else's rental is reported as not found
-      RTE.chain((data) =>
-        FPF.pipe(
-          data.id,
+      //Validate BookRental exists and belongs to the requester
+      RTE.chain(
+        FPF.flow(
           performRTE(
             this.bookRentalRepository.findById,
             "get book rental by id",
           ),
           RTE.chainW(RTE.fromOption<Error>(bookRentalNotFoundException)),
-          RTE.filterOrElseW(
-            (bookRental) =>
-              command.ownerId === undefined ||
-              bookRental.userId === command.ownerId,
-            bookRentalNotFoundException,
-          ),
-          RTE.map((bookRental) => ({
-            ...bookRental,
-            ...data,
-          })),
         ),
       ),
-      //Finish rental and make book item available atomically;
-      //fails if the rental was already finished
+      RTE.chainEitherK(ensureOwnedBy(command.ownerId)),
+
+      //Finish the rental, which must be active
+      RTE.chainEitherK(finishRental(new Date())),
+
+      //Store it and make book item available atomically
       RTE.tap(
         performRTE(this.bookRentalRepository.finish, "finish book rental."),
       ),

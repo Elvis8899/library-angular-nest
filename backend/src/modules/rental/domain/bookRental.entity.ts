@@ -1,3 +1,13 @@
+import {
+  BookItem,
+  ensureAvailable,
+} from "@modules/book/domain/bookItem.entity";
+import {
+  bookRentalFinishedException,
+  bookRentalNotAvailableException,
+  bookRentalNotFoundException,
+} from "@modules/rental/domain/bookRental.errors";
+import { E, FPF } from "@shared/utils/application/monads";
 import { BaseDateEntity } from "@shared/utils/domain/dateEntity.base";
 import { DateType } from "@shared/utils/domain/dateType";
 import { UUID } from "@shared/uuid/uuid";
@@ -37,6 +47,44 @@ export const BookRental = z
   .and(BaseDateEntity);
 
 export type BookRental = z.infer<typeof BookRental>;
+
+// The rules below decide from what was read. The repository's `rent` and
+// `finish` check again in one conditional write, for changes made meanwhile.
+
+// Starts the rental of a copy that's on the shelf
+export const startRental =
+  (rental: BookRental) =>
+  (bookItem: BookItem): E.Either<Error, BookRental> =>
+    FPF.pipe(
+      bookItem,
+      ensureAvailable(bookRentalNotAvailableException),
+      E.map((item) => ({
+        ...rental,
+        bookItemId: item.id,
+        rentalStatus: RentalStatusEnum.Rented,
+      })),
+    );
+
+// Finishes an active rental, with the copy delivered at `now`
+export const finishRental =
+  (now: Date) =>
+  (rental: BookRental): E.Either<Error, BookRental> =>
+    rental.rentalStatus === RentalStatusEnum.Rented
+      ? E.right({
+          ...rental,
+          rentalStatus: RentalStatusEnum.Finished,
+          deliveryDate: now,
+        })
+      : E.left(bookRentalFinishedException());
+
+// Clients may only handle their own rentals, and someone else's is reported
+// as not found; no owner (an admin) may handle any
+export const ensureOwnedBy =
+  (ownerId: string | undefined) =>
+  (rental: BookRental): E.Either<Error, BookRental> =>
+    ownerId === undefined || rental.userId === ownerId
+      ? E.right(rental)
+      : E.left(bookRentalNotFoundException());
 
 export const getRentalFines = (rental: BookRental) => {
   const days = Math.ceil(
