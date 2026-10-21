@@ -36,8 +36,9 @@ COPY --chown=node:node --from=prod-deps /app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /app/dist ./dist
 COPY --chown=node:node package.json ./
 COPY --chown=node:node prisma ./prisma
-# The app reads its configuration from .env next to package.json
-COPY --chown=node:node .env ./.env
+# No .env in the image: Compose passes the settings in when the container
+# starts (env_file in .docker/docker-compose.yml), so the secrets stay out of
+# the image and any registry it's pushed to
 USER node
 EXPOSE 3000
 ENTRYPOINT ["dumb-init", "--"]

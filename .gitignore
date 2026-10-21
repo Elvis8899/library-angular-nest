@@ -1,1 +1,4 @@
 Frontend/
+# Production settings: the stack's (see .docker/.env.example) and the API's
+.docker/.env
+/.env
