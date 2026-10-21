@@ -50,8 +50,9 @@ jobs:
         run: |
           yarn && CI=true
           yarn generate
-          yarn migrate:init
+          yarn test:migrate
           # Fails when schema.prisma has changes no migration creates
+          yarn migrate:check
           yarn build
           yarn test:cov
 
