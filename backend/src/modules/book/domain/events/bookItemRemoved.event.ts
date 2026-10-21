@@ -1,3 +1,4 @@
+import { BookItem } from "@modules/book/domain/bookItem.entity";
 import { z } from "zod";
 
 export const BOOK_ITEM_REMOVED = "bookItem.removed";
@@ -11,3 +12,10 @@ export const BookItemRemovedEvent = z.object({
 });
 
 export type BookItemRemovedEvent = z.infer<typeof BookItemRemovedEvent>;
+
+export const bookItemRemoved = (
+  bookItem: Pick<BookItem, "id" | "bookId">,
+): BookItemRemovedEvent => ({
+  eventKey: BOOK_ITEM_REMOVED,
+  payload: { id: bookItem.id, bookId: bookItem.bookId },
+});

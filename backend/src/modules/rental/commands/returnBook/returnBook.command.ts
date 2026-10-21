@@ -4,15 +4,13 @@ import {
   finishRental,
 } from "@modules/rental/domain/bookRental.entity";
 import { bookRentalNotFoundException } from "@modules/rental/domain/bookRental.errors";
-import { BOOK_RENTAL_RETURNED } from "@modules/rental/domain/events/bookReturned.event";
+import { bookReturned } from "@modules/rental/domain/events/bookReturned.event";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
-import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
-import { performRTE } from "@shared/utils/application/perform";
+import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
+import { publishRTE, UseCase } from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
-import { PinoLogger } from "nestjs-pino";
 
 export class ReturnBookCommand implements ICommand {
   /**
@@ -31,59 +29,41 @@ export class ReturnBookCommandHandler implements ICommandHandler<
   void
 > {
   constructor(
+    private readonly useCase: UseCase,
     private readonly bookRentalRepository: BookRentalRepository,
-    private readonly domainEventPublisher: DomainEventPublisher,
-    private readonly logger: PinoLogger,
-  ) {
-    this.logger.setContext("ReturnBookCommand");
-  }
+  ) {}
 
   execute(command: ReturnBookCommand): Promise<void> {
-    this.logger.info(
+    return this.useCase.run(
+      "ReturnBookCommand",
       command.bookRentalId,
-      "ReturnBookCommand command received",
-    );
-    const task = FPF.pipe(
-      //Data validation
-      command.bookRentalId,
-      fromInputRE(UUID, "uuid"),
-      RTE.fromReaderEither,
+      FPF.pipe(
+        //Data validation
+        command.bookRentalId,
+        fromInputRE(UUID, "uuid"),
+        RTE.fromReaderEither,
 
-      //Validate BookRental exists and belongs to the requester
-      RTE.chain(
-        FPF.flow(
-          performRTE(
+        //Validate BookRental exists and belongs to the requester
+        RTE.chain(
+          findOrFailRTE(
             this.bookRentalRepository.findById,
             "get book rental by id",
+            bookRentalNotFoundException,
           ),
-          RTE.chainW(RTE.fromOption<Error>(bookRentalNotFoundException)),
         ),
-      ),
-      RTE.chainEitherK(ensureOwnedBy(command.ownerId)),
+        RTE.chainEitherK(ensureOwnedBy(command.ownerId)),
 
-      //Finish the rental, which must be active
-      RTE.chainEitherK(finishRental(new Date())),
+        //Finish the rental, which must be active
+        RTE.chainEitherK(finishRental(new Date())),
 
-      //Store it and make book item available atomically
-      RTE.tap(
-        performRTE(this.bookRentalRepository.finish, "finish book rental."),
-      ),
+        //Store it and make book item available atomically
+        RTE.tap(
+          performRTE(this.bookRentalRepository.finish, "finish book rental."),
+        ),
 
-      //Emit domain event
-      RTE.chain((bookRental) =>
-        performRTE(
-          this.domainEventPublisher.publishEvent,
-          "emit book returned event.",
-        )({
-          eventKey: BOOK_RENTAL_RETURNED,
-          payload: {
-            id: bookRental.id,
-            bookItemId: bookRental.bookItemId,
-          },
-        }),
+        RTE.tap(publishRTE(bookReturned)),
+        RTE.asUnit,
       ),
-      RTE.asUnit,
-    )({ logger: this.logger });
-    return executeTask(task);
+    );
   }
 }

@@ -2,12 +2,11 @@ import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.p
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
-import { performRTE } from "@shared/utils/application/perform";
+import { findOrFailRTE } from "@shared/utils/application/perform";
+import { UseCase } from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
-import { PinoLogger } from "nestjs-pino";
 
 export class GetBookInfoByIdQuery implements IQuery {
   constructor(public readonly id: string) {}
@@ -19,11 +18,9 @@ export class GetBookInfoByIdQueryHandler implements IQueryHandler<
   BookInfo
 > {
   constructor(
+    private readonly useCase: UseCase,
     private readonly bookInfoRepository: BookInfoRepository,
-    private readonly logger: PinoLogger,
-  ) {
-    this.logger.setContext("GetBookInfoById");
-  }
+  ) {}
 
   /**
    * In read model we don't need to execute
@@ -31,19 +28,22 @@ export class GetBookInfoByIdQueryHandler implements IQueryHandler<
    * domain and repository layers completely
    * and execute query directly
    */
-  async execute(query: GetBookInfoByIdQuery): Promise<BookInfo> {
-    const task = FPF.pipe(
-      query.id,
-      fromInputRE(UUID, "UUID"),
-      RTE.fromReaderEither,
-      RTE.chain(
-        performRTE(
-          this.bookInfoRepository.findById,
-          "get bookInfo in storage system.",
+  execute(query: GetBookInfoByIdQuery): Promise<BookInfo> {
+    return this.useCase.run(
+      "GetBookInfoById",
+      query,
+      FPF.pipe(
+        query.id,
+        fromInputRE(UUID, "UUID"),
+        RTE.fromReaderEither,
+        RTE.chain(
+          findOrFailRTE(
+            this.bookInfoRepository.findById,
+            "get bookInfo in storage system.",
+            bookInfoNotFoundException,
+          ),
         ),
       ),
-      RTE.chainW(RTE.fromOption<Error>(bookInfoNotFoundException)),
-    )({ logger: this.logger });
-    return executeTask(task);
+    );
   }
 }

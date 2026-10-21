@@ -89,19 +89,20 @@ Modules bind the port to the real repository (`{ provide: UserRepository, useCla
 
 ### Handlers are fp-ts pipelines
 
-Command and query handlers build a `ReaderTaskEither<{ logger }, Error, T>` pipeline and finish with `executeTask(task)`, which turns it into a Promise for Nest. The building blocks:
+Command and query handlers inject `UseCase` (`shared/utils/application/useCase.ts`, transient, provided by the global `UseCaseModule`) next to their repositories, and their `execute` is `return this.useCase.run("CreateUser", input, FPF.pipe(…))`. `run` sets the logger's context, logs the request with `input` (leave out passwords and tokens; `undefined` logs none), runs the `ReaderTaskEither<{ logger, events }, Error, T>` pipeline and returns the Promise Nest expects. Handlers don't inject `PinoLogger` or `DomainEventPublisher` themselves. The building blocks:
 
 - `shared/utils/application/monads.ts`: re-exports fp-ts modules under short names (`RTE`, `TE`, `RE`, `O`, `E`, `FPF`, …). Import from here, not from `fp-ts/*` directly.
 - `fromInputRE(schema, name)`: Zod validation. A failure becomes `UnprocessableEntityException` (422).
 - `performRTE(repoFn, "description")`: wraps a repository `TaskEither` call and logs success or failure with the description.
-- Repositories return `TaskEither<Error, …>`. Lookups return `Option` and are converted with `RTE.fromOption(notFoundException)`.
+- Repositories return `TaskEither<Error, …>`. Lookups return `Option`: `findOrFailRTE(repo.findById, "get user by id", userNotFoundException)(id)` (in `perform.ts`) fails when nothing is found, and `ensureAbsentRTE(repo.findByCPF, "get user by cpf", userCPFAlreadyExistsException, conflicts?)` when something is (uniqueness checks; `conflicts` lets an update skip its own row).
+- `publishRTE(userCreated)`, the step that ends a command: `RTE.tap(publishRTE(userCreated))` builds the event from the pipeline's value with the factory next to the event's schema and publishes it.
 - Business rules are pure functions next to their entity, returning `Either` (`startRental`, `finishRental`, `ensureOwnedBy` in `bookRental.entity.ts`, `ensureAvailable` in `bookItem.entity.ts`), and handlers call them with `RTE.chainEitherK`, so a rule is written once and unit-tested without Nest. A handler only looks data up, applies the rules and stores the result. A rule the database must also enforce against concurrent requests is checked again by the repository's conditional write (`rent`, `finish`).
 
 Domain errors know nothing of HTTP. Each is a `DomainError` subclass (`shared/utils/domain/shared.errors.ts`) in `domain/*.errors.ts`, with a small factory function, built with a kind, a `code` and a message: `super(DomainErrorKindEnum.Conflict, "user.cpfTaken", "…")`. `DomainErrorFilter` (`shared/utils/http/domainError.filter.ts`, registered in `app.setup.ts`) answers a rejected task with the kind's status (not found 404, conflict 409, unauthorized 401, unknown 500) and Nest's usual body plus the `code`; other errors, such as the 422 from `fromInputRE` and the guards' 401, stay Nest exceptions. The `code` is what the frontend translates, so a new error needs a code, and the frontend's `errors.<code>` translations (its `translationKeys.spec.ts` reads the codes from these files and fails otherwise). A new kind needs its status in the filter.
 
 ### Domain events
 
-`DomainEventPublisher.publishEvent` validates the event against `DomainEvent`. That's a Zod discriminated union on `eventKey`, assembled in `shared/domainEventPublisher/domainEvent.ts` from each module's `domain/events/index.ts` (`AllUserEvents`, `AllBookInfoEvents`, `AllRentalEvents`). It then emits through `@nestjs/event-emitter`. **A new event schema has to be added to its module's `All*Events` tuple, or publishing fails validation.** Subscribers (`book/subscribers/`) use `@OnEvent` and dispatch commands.
+`DomainEventPublisher.publishEvent` validates the event against `DomainEvent`. That's a Zod discriminated union on `eventKey`, assembled in `shared/domainEventPublisher/domainEvent.ts` from each module's `domain/events/index.ts` (`AllUserEvents`, `AllBookInfoEvents`, `AllRentalEvents`). It then emits through `@nestjs/event-emitter`. Each event file also exports a factory that builds the event from its entity (`userCreated(user)`, `bookRented(rental)`), which handlers pass to `publishRTE`. **A new event schema has to be added to its module's `All*Events` tuple, or publishing fails validation.** Subscribers (`book/subscribers/`) use `@OnEvent` and dispatch commands.
 
 ### Consistency rules
 
@@ -161,7 +162,7 @@ Copy the closest existing module and rename it: `user` for plain CRUD, `rental` 
 Backend (`src/modules/<name>/`, imported as `@modules/<name>/…`):
 
 1. **Model**: add `prisma/schema/<name>.prisma`, run `yarn migrate --name <change>` and `yarn generate`. Add its `TableNameEnum` entry and id prefix in `test/util/defaultIds.ts`. `resetDatabase` empties the new table by itself.
-2. **Domain**: the Zod entity in `domain/<name>.entity.ts`; errors in `domain/<name>.errors.ts`, each a `DomainError` with a kind and a code, and a case in `test/modules/<name>/<name>Errors.unit-spec.ts` (`itAnswersWithErrorCodes`); events in `domain/events/`, exported as `All<Name>Events` and spread into `DomainEvent` (`shared/domainEventPublisher/domainEvent.ts`), or publishing fails validation.
+2. **Domain**: the Zod entity in `domain/<name>.entity.ts`; errors in `domain/<name>.errors.ts`, each a `DomainError` with a kind and a code, and a case in `test/modules/<name>/<name>Errors.unit-spec.ts` (`itAnswersWithErrorCodes`); events in `domain/events/`, each with its factory, exported as `All<Name>Events` and spread into `DomainEvent` (`shared/domainEventPublisher/domainEvent.ts`), or publishing fails validation.
 3. **Repository**: the port, the Prisma repository and the fake (`database/`). Bind the port in `<name>.module.ts`, and the fake in `test/util/handlerModule.ts` (`fakeRepository(Port, Fake)`) so unit tests get it.
 4. **Use cases**: a `commands/` or `queries/` folder per use case, each controller with `AuthGuard` (and `RolesGuard` with `@Roles` when restricted). A public route goes in `publicRoutes` (`routeProtection.e2e-spec.ts`).
 5. **Register** the module in `src/app.module.ts`.

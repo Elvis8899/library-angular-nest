@@ -6,11 +6,18 @@ import { BookRentalRepository } from "@modules/rental/database/bookRental.reposi
 import { FakeBookRentalRepository } from "@modules/rental/database/fakeBookRental.repository";
 import { FakeUserRepository } from "@modules/user/database/fakeUser.repository";
 import { UserRepository } from "@modules/user/database/user.repository.port";
-import { Abstract, ModuleMetadata, Provider, Type } from "@nestjs/common";
+import {
+  Abstract,
+  Global,
+  Module,
+  ModuleMetadata,
+  Provider,
+  Type,
+} from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
 import { FakeLoggerService } from "@shared/logger/fakeLogger.service";
 import { FPF } from "@shared/utils/application/monads";
+import { UseCaseModule } from "@shared/utils/application/useCase.module";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { typedGet, TypedGet } from "@test/util/typedGet";
 import { PinoLogger } from "nestjs-pino";
@@ -19,6 +26,14 @@ const fakeRepository = <Port>(
   port: Abstract<Port>,
   fake: Type<Port>,
 ): Provider[] => [fake, { provide: port, useExisting: fake }];
+
+// Global, as nestjs-pino's LoggerModule is in the app, so that UseCase finds it
+@Global()
+@Module({
+  providers: [{ provide: PinoLogger, useClass: FakeLoggerService }],
+  exports: [PinoLogger],
+})
+class FakeLoggerModule {}
 
 /**
  * A testing module for command and query handlers: every repository bound to
@@ -32,7 +47,7 @@ export const createHandlerModule = async (
   imports: ModuleMetadata["imports"] = [],
 ): Promise<{ module: TestingModule; get: TypedGet }> => {
   const module = await Test.createTestingModule({
-    imports: [DomainEventPublisherModule, ...imports],
+    imports: [FakeLoggerModule, UseCaseModule, ...imports],
     providers: [
       RealUUIDGeneratorService,
       // Each port resolves to its fake, which get(FakeUserRepository) also
@@ -42,7 +57,6 @@ export const createHandlerModule = async (
       // Lending example
       ...fakeRepository(BookInfoRepository, FakeBookInfoRepository),
       ...fakeRepository(BookRentalRepository, FakeBookRentalRepository),
-      { provide: PinoLogger, useClass: FakeLoggerService },
       ...providers,
     ],
   }).compile();
