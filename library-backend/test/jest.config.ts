@@ -20,7 +20,6 @@ const config: Config = {
   moduleNameMapper: {
     "^@src/(.*)$": "<rootDir>/src/$1",
     "^@test/(.*)$": "<rootDir>/test/$1",
-    "^@configs/(.*)$": "<rootDir>/src/modules/shared/configs/$1",
     "^@shared/(.*)$": "<rootDir>/src/modules/shared/$1",
     "^@user/(.*)$": "<rootDir>/src/modules/user/$1",
     "^@auth/(.*)$": "<rootDir>/src/modules/auth/$1",

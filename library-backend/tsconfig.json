@@ -1,33 +1,29 @@
 {
   "compilerOptions": {
-    "module": "esnext",
-    "declaration": true,
-    "removeComments": true,
+    // Emits CommonJS (package.json has no "type": "module"); Node 24 require()s
+    // the ESM-only dependencies natively
+    "module": "nodenext",
+    "target": "es2024",
+    "lib": ["ES2024"],
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "target": "es2021",
-    "lib": ["ESNext"],
+    // The ES2022+ default (true) makes a field redeclared in a subclass, such as
+    // a DTO's decorated `data!`, overwrite what the base constructor assigned
+    "useDefineForClassFields": false,
+    "removeComments": true,
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "noImplicitAny": true,
-    "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": true,
-    //
-    "noUncheckedIndexedAccess": true,
-    "alwaysStrict": true,
-    "noImplicitThis": true,
-    "strictBindCallApply": true,
-    "useUnknownInCatchVariables": true,
-    //
     "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
     "types": ["node", "jest"],
     "paths": {
       "@src/*": ["./src/*"],
       "@test/*": ["./test/*"],
-      "@configs/*": ["./src/shared/configs/*"],
       "@shared/*": ["./src/modules/shared/*"],
       "@auth/*": ["./src/modules/auth/*"],
       "@user/*": ["./src/modules/user/*"],
