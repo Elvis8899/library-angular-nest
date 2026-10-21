@@ -2,8 +2,8 @@ import { RequestJWTPayload } from "@auth/domain/login.entity";
 import { RolesGuard } from "@auth/guards/roles.guard";
 import { ExecutionContext } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
+import { FPF } from "@shared/utils/application/monads";
 import { UserRoleEnum } from "@user/domain/user.entity";
-import { unsafeCoerce } from "fp-ts/lib/function";
 
 describe("RolesGuard", () => {
   let guard: RolesGuard;
@@ -84,24 +84,24 @@ describe("RolesGuard", () => {
   }): ExecutionContext {
     return {
       switchToHttp: () => ({
-        getRequest: unsafeCoerce(() => request),
-        getResponse: unsafeCoerce(() => ({})),
-        getNext: unsafeCoerce(() => jest.fn()),
+        getRequest: FPF.unsafeCoerce(() => request),
+        getResponse: FPF.unsafeCoerce(() => ({})),
+        getNext: FPF.unsafeCoerce(() => jest.fn()),
       }),
-      getHandler: unsafeCoerce(() => jest.fn()),
-      getClass: unsafeCoerce(() => jest.fn()),
-      getArgs: unsafeCoerce(() => []),
-      getArgByIndex: unsafeCoerce(() => ({})),
+      getHandler: FPF.unsafeCoerce(() => jest.fn()),
+      getClass: FPF.unsafeCoerce(() => jest.fn()),
+      getArgs: FPF.unsafeCoerce(() => []),
+      getArgByIndex: FPF.unsafeCoerce(() => ({})),
       switchToRpc: () => ({
-        getContext: unsafeCoerce(() => ({})),
-        getData: unsafeCoerce(() => ({})),
+        getContext: FPF.unsafeCoerce(() => ({})),
+        getData: FPF.unsafeCoerce(() => ({})),
       }),
       switchToWs: () => ({
-        getClient: unsafeCoerce(() => ({})),
-        getData: unsafeCoerce(() => ({})),
+        getClient: FPF.unsafeCoerce(() => ({})),
+        getData: FPF.unsafeCoerce(() => ({})),
         getPattern: () => "test-pattern",
       }),
-      getType: unsafeCoerce(() => "http"),
+      getType: FPF.unsafeCoerce(() => "http"),
     };
   }
 });

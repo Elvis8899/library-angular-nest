@@ -2,6 +2,7 @@ import { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { Test } from "@nestjs/testing";
 import { AppModule } from "@src/app.module";
 import { createTestApp } from "@test/util/createTestApp";
+import { LoginBody, TokensBody } from "@test/util/responseBodies";
 import request from "supertest";
 
 import { AuthGuard } from "@auth/guards/auth.guard";
@@ -91,7 +92,7 @@ describe("[e2e] POST /v1/refresh", () => {
     const login = await request(app.getHttpServer())
       .post("/v1/login")
       .send(new UserBuilder().buildCreateDTO());
-    const { refreshToken } = login.body as { refreshToken: string };
+    const { refreshToken } = TokensBody.parse(login.body);
 
     // When it refreshes its tokens
     const response = await request(app.getHttpServer())
@@ -109,7 +110,7 @@ describe("[e2e] POST /v1/refresh", () => {
     const login = await request(app.getHttpServer())
       .post("/v1/login")
       .send(new UserBuilder().buildCreateDTO());
-    const { refreshToken } = login.body as { refreshToken: string };
+    const { refreshToken } = TokensBody.parse(login.body);
     const rotated = await request(app.getHttpServer())
       .post(v1Route)
       .send({ refreshToken });
@@ -124,7 +125,7 @@ describe("[e2e] POST /v1/refresh", () => {
     expect(reuse.status).toBe(HttpStatus.UNAUTHORIZED);
     const afterReuse = await request(app.getHttpServer())
       .post(v1Route)
-      .send(rotated.body as { refreshToken: string });
+      .send({ refreshToken: TokensBody.parse(rotated.body).refreshToken });
     expect(afterReuse.status).toBe(HttpStatus.UNAUTHORIZED);
   });
 
@@ -143,10 +144,7 @@ describe("[e2e] POST /v1/logout", () => {
     const login = await request(app.getHttpServer())
       .post("/v1/login")
       .send(userInfo);
-    const { refreshToken, user } = login.body as {
-      refreshToken: string;
-      user: { id: string };
-    };
+    const { refreshToken, user } = LoginBody.parse(login.body);
 
     // When the user logs out
     authGuardMock.withSub(user.id);

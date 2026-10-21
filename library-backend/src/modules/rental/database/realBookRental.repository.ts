@@ -83,7 +83,7 @@ export class RealBookRentalRepository implements BookRentalRepository {
   deleteById = (bookRentalId: string): TE.TaskEither<Error, void> =>
     FPF.pipe(this.rentals.delete({ where: { id: bookRentalId } }), TE.asUnit);
 
-  save = (bookRentalRaw: Partial<BookRental>): TE.TaskEither<Error, void> => {
+  save = (bookRentalRaw: BookRental): TE.TaskEither<Error, void> => {
     const { bookItem: _, user: __, ...bookRental } = bookRentalRaw;
     return FPF.pipe(
       this.rentals.upsert({
@@ -93,9 +93,7 @@ export class RealBookRentalRepository implements BookRentalRepository {
           overdueDate: bookRental.overdueDate,
           deliveryDate: bookRental.deliveryDate,
         },
-        create: {
-          ...(bookRental as Omit<BookRental, "bookItem" | "user">),
-        },
+        create: bookRental,
       }),
       TE.asUnit,
     );

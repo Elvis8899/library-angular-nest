@@ -6,6 +6,7 @@ import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.servi
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { AppModule } from "@src/app.module";
 import { createTestApp } from "@test/util/createTestApp";
+import { SwaggerDocumentBody } from "@test/util/responseBodies";
 import { PinoLogger } from "nestjs-pino";
 import request from "supertest";
 
@@ -61,11 +62,7 @@ describe("[e2e] App setup", () => {
     expect(ui.status).toBe(HttpStatus.OK);
     expect(ui.headers["content-type"]).toContain("text/html");
     expect(document.status).toBe(HttpStatus.OK);
-    const body = document.body as {
-      info: { title: string };
-      paths: Record<string, unknown>;
-      components: { securitySchemes: Record<string, unknown> };
-    };
+    const body = SwaggerDocumentBody.parse(document.body);
     expect(body.info.title).toBe("Biblioteca");
     expect(body.paths).toHaveProperty("/v1/bookInfos");
     expect(body.components.securitySchemes).toHaveProperty("bearer");

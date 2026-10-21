@@ -18,9 +18,7 @@ export abstract class BookRentalRepository implements RepositoryDefaultPort<Book
     params: PaginatedQueryParams<BookRentalFindAllQuery>,
   ) => TE.TaskEither<Error, Paginated<BookRental>>;
   deleteById!: (id: string) => TE.TaskEither<Error, void>;
-  save!: <U extends BookRental>(
-    bookRental: Partial<U>,
-  ) => TE.TaskEither<Error, void>;
+  save!: (bookRental: BookRental) => TE.TaskEither<Error, void>;
   /** Atomically marks the book item as rented and stores the rental.
    * Fails with BookRentalNotAvailableException if the item is not available. */
   rent!: (bookRental: BookRental) => TE.TaskEither<Error, void>;

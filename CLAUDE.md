@@ -61,6 +61,7 @@ npx ng test --watch=false --coverage=false --include src/app/services/authentica
   - frontend: `@app/ @shared/ @pages/ @env/`
 - **File and folder names are camelCase** in both apps, plus a role suffix (`createUser.command.ts`, `customizedTable.component.ts`, `bookRental.repository.port.ts`). `eslint-plugin-check-file` enforces this. The exceptions are the frontend locale files (`en-US.ts`, `pt-BR.ts`), the backend Jest configs (`test/jest-*.config.ts`) and Prisma migrations. Selectors and CSS classes stay kebab-case.
 - Backend aliases are defined in both `tsconfig.json` and `test/jest.config.ts` (`moduleNameMapper`). A new alias has to be added to both.
+- **No `as` type assertions** in the backend (`consistent-type-assertions`; `as const` is allowed). Prefer a precise type, or parsing with Zod (the e2e tests parse response bodies with the schemas in `test/util/responseBodies.ts`). A cast that's really needed goes through `FPF.unsafeCoerce`, imported from `monads.ts` like the rest of fp-ts.
 - Prettier with organize-imports runs on format. Double quotes.
 
 ## Backend architecture

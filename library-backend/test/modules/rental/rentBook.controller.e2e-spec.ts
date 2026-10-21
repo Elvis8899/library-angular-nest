@@ -1,5 +1,6 @@
 import { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { Test, TestingModule } from "@nestjs/testing";
+import { FPF } from "@shared/utils/application/monads";
 import { AppModule } from "@src/app.module";
 import { createTestApp } from "@test/util/createTestApp";
 import request from "supertest";
@@ -20,7 +21,6 @@ import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { UserRoleEnum } from "@user/domain/user.entity";
-import { unsafeCoerce } from "fp-ts/lib/function";
 import { PinoLogger } from "nestjs-pino";
 
 let app: NestFastifyApplication;
@@ -52,7 +52,7 @@ beforeAll(async () => {
     bookItems: [bookItemRaw],
     ...bookInfo
   } = new BookInfoBuilder().build();
-  const { bookId: _, ...bookItem } = bookItemRaw as BookItem;
+  const { bookId: _, ...bookItem }: BookItem = FPF.unsafeCoerce(bookItemRaw);
   await prismaService.bookInfo.create({
     data: { ...bookInfo, bookItems: { create: { ...bookItem } } },
   });
@@ -122,7 +122,7 @@ describe("[e2e] POST /v1/bookRentals/rent", () => {
 
   it("Should respond 422 for invalid name type", async () => {
     const bookInfo = new BookInfoBuilder(2)
-      .withName(unsafeCoerce(1))
+      .withName(FPF.unsafeCoerce(1))
       .buildCreateDTO();
     const response = await request(app.getHttpServer())
       .post(v1Route)

@@ -1,4 +1,5 @@
 import { loggerOnLeftR } from "@shared/utils/application/handleLog";
+import { FPF } from "@shared/utils/application/monads";
 import { unknownException } from "@shared/utils/domain/shared.erros";
 import { PinoLogger } from "nestjs-pino";
 
@@ -6,7 +7,7 @@ describe("[Unit] loggerOnLeftR", () => {
   const logger = { warn: jest.fn(), error: jest.fn() };
   const log = (error: Error) =>
     loggerOnLeftR("save user")(error)({
-      logger: logger as unknown as PinoLogger,
+      logger: FPF.unsafeCoerce<typeof logger, PinoLogger>(logger),
     });
 
   beforeEach(() => {

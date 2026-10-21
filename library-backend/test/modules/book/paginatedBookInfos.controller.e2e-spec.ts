@@ -9,6 +9,7 @@ import { AppModule } from "@src/app.module";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { createTestApp } from "@test/util/createTestApp";
+import { PageBody } from "@test/util/responseBodies";
 import { PinoLogger } from "nestjs-pino";
 import request from "supertest";
 
@@ -100,7 +101,7 @@ describe("[e2e] GET /v1/bookInfos", () => {
       order: "desc",
     });
     expect(response.status).toBe(200);
-    const body = response.body as { count: number; data: { id: string }[] };
+    const body = PageBody.parse(response.body);
     expect(body.count).toBe(2);
     expect(body.data.map((b) => b.id)).toEqual([cortico.id, iracema.id]);
   });

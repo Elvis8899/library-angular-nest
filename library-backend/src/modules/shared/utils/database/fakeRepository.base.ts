@@ -1,4 +1,4 @@
-import { O, Ord, TE } from "@shared/utils/application/monads";
+import { FPF, O, Ord, TE } from "@shared/utils/application/monads";
 import {
   Paginated,
   RepositoryDefaultPort,
@@ -60,9 +60,15 @@ export abstract class FakeRepository<
     TE.fromEither(validateMaybeRow(this.validate)(this.rows.get(id)));
 
   /** Inserts the row, or merges the given fields into the stored one. */
-  save = (entity: Partial<Entity>): TE.TaskEither<Error, void> => {
-    const id = entity.id as string;
-    this.rows.set(id, { ...this.rows.get(id), ...entity } as Entity);
+  save = (
+    entity: Partial<Entity> & Pick<Entity, "id">,
+  ): TE.TaskEither<Error, void> => {
+    // A partial merged into the stored row; reads validate it
+    const merged: Entity = FPF.unsafeCoerce({
+      ...this.rows.get(entity.id),
+      ...entity,
+    });
+    this.rows.set(entity.id, merged);
     return TE.of(undefined);
   };
 

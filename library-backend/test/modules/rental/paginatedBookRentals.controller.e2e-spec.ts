@@ -6,6 +6,7 @@ import { BookRentalRepository } from "@rental/database/bookRental.repository.por
 import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
+import { FPF } from "@shared/utils/application/monads";
 import { AppModule } from "@src/app.module";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
@@ -47,7 +48,7 @@ beforeAll(async () => {
     bookItems: [bookItemRaw],
     ...bookInfo
   } = new BookInfoBuilder().build();
-  const { bookId: _, ...bookItem } = bookItemRaw as BookItem;
+  const { bookId: _, ...bookItem }: BookItem = FPF.unsafeCoerce(bookItemRaw);
   await prismaService.bookInfo.create({
     data: { ...bookInfo, bookItems: { create: { ...bookItem } } },
   });

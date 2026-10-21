@@ -13,7 +13,7 @@ import {
 } from "@rental/domain/bookRental.errors";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { O } from "@shared/utils/application/monads";
+import { FPF, O } from "@shared/utils/application/monads";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
@@ -42,7 +42,7 @@ beforeAll(async () => {
   await prismaService.bookInfo.deleteMany();
   await prismaService.bookRentalDetails.deleteMany();
   const { bookItems, ...bookInfo } = new BookInfoBuilder().build();
-  const [bookItem] = bookItems as [BookItem];
+  const [bookItem]: [BookItem] = FPF.unsafeCoerce(bookItems);
   await prismaService.bookInfo.create({
     data: { ...bookInfo, bookItems: { create: { id: bookItem.id } } },
   });

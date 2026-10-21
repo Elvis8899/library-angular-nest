@@ -5,17 +5,12 @@ import {
 import { BookInfo } from "@book/domain/bookInfo.entity";
 import { BookItem } from "@book/domain/valueObject/bookItem.entity";
 import { Injectable } from "@nestjs/common";
-import { O, Ord, TE } from "@shared/utils/application/monads";
+import { D, FPF, M, O, Ord, S, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
 import { FakeRepository } from "@shared/utils/database/fakeRepository.base";
 import { Paginated } from "@shared/utils/database/repository.port";
 import { validateMaybeRow } from "@shared/utils/database/rowValidation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
-
-const compareBy =
-  (key: (book: BookInfo) => string | number) =>
-  (a: BookInfo, b: BookInfo): number =>
-    key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0;
 
 @Injectable()
 export class FakeBookInfoRepository
@@ -31,16 +26,25 @@ export class FakeBookInfoRepository
   ): TE.TaskEither<Error, Paginated<BookInfo>> => {
     const { createdFrom, createdBefore, sort } = params.query;
     const name = params.query.name?.toLowerCase();
-    const byField = compareBy((book) =>
-      sort.by === "name" ? book.name : book.createdAt.getTime(),
+    const byField: Ord.Ord<BookInfo> =
+      sort.by === "name"
+        ? FPF.pipe(
+            S.Ord,
+            Ord.contramap((book: BookInfo) => book.name),
+          )
+        : FPF.pipe(
+            D.Ord,
+            Ord.contramap((book: BookInfo) => book.createdAt),
+          );
+    const byId = FPF.pipe(
+      S.Ord,
+      Ord.contramap((book: BookInfo) => book.id),
     );
-    const direction = sort.order === "asc" ? 1 : -1;
     // id breaks ties in both directions, like the real repository
-    const order = Ord.fromCompare<BookInfo>(
-      (a, b) =>
-        (direction * byField(a, b) || compareBy((book) => book.id)(a, b)) as
-          -1 | 0 | 1,
-    );
+    const order = M.concatAll(Ord.getMonoid<BookInfo>())([
+      sort.order === "asc" ? byField : Ord.reverse(byField),
+      byId,
+    ]);
     return this.pageOf(
       (book) =>
         (!name || book.name.toLowerCase().includes(name)) &&

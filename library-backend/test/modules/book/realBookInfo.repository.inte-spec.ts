@@ -175,7 +175,6 @@ describe("[Integration] BookInfo repository", () => {
       // Should be able to retrieve it
       const [resultById, resultPaginated, resultAll] = await Promise.all([
         executeTask(bookInfoRepository.findById(bookInfo.id)),
-
         executeTask(
           bookInfoRepository.findAllPaginated({
             page: 0,

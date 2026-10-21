@@ -102,7 +102,7 @@ const cases: Case[] = [
   ],
   [
     "unknownException",
-    () => unknownException(new Error("connection lost")) as HttpException,
+    () => unknownException(new Error("connection lost")),
     500,
     "Internal Server Error",
     "unknown",
@@ -114,14 +114,15 @@ describe("[Unit] Domain error codes", () => {
     "%s answers %i %s with the code %s",
     (_name, createException, statusCode, error, code) => {
       const exception = createException();
-      const body = exception.getResponse() as Record<string, unknown>;
 
       expect(exception.getStatus()).toBe(statusCode);
-      expect(body.statusCode).toBe(statusCode);
-      expect(body.error).toBe(error);
-      expect(body.code).toBe(code);
       // The message stays readable for other clients
-      expect(body.message).toBe(exception.message);
+      expect(exception.getResponse()).toMatchObject({
+        statusCode,
+        error,
+        code,
+        message: exception.message,
+      });
       expect(exception.message).not.toBe(code);
     },
   );
@@ -133,7 +134,7 @@ describe("[Unit] unknownException", () => {
       'duplicate key value violates unique constraint "User_email_key"',
     );
 
-    const exception = unknownException(databaseError) as HttpException;
+    const exception = unknownException(databaseError);
 
     expect(exception.cause).toBe(databaseError);
     expect(JSON.stringify(exception.getResponse())).not.toContain(

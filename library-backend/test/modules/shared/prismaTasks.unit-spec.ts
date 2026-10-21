@@ -1,5 +1,5 @@
 import { InternalServerErrorException } from "@nestjs/common";
-import { E } from "@shared/utils/application/monads";
+import { E, FPF } from "@shared/utils/application/monads";
 import { prismaTasks } from "@shared/utils/database/prismaTasks";
 
 // Stands in for a Prisma delegate: its methods read `this`, as Prisma's do
@@ -48,7 +48,9 @@ describe("[Unit] prismaTasks", () => {
   it.each([["then"], ["name"], ["missing"]])(
     "Should leave %s undefined, since it isn't a method",
     (key) => {
-      expect((tasks as Record<string, unknown>)[key]).toBeUndefined();
+      // Keys the type doesn't declare, read anyway
+      const untyped: Record<string, unknown> = FPF.unsafeCoerce(tasks);
+      expect(untyped[key]).toBeUndefined();
     },
   );
 });

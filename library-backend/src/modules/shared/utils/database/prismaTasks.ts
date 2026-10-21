@@ -1,4 +1,4 @@
-import { TE } from "@shared/utils/application/monads";
+import { FPF, TE } from "@shared/utils/application/monads";
 import { unknownException } from "@shared/utils/domain/shared.erros";
 
 type Query = (...args: unknown[]) => Promise<unknown>;
@@ -24,19 +24,21 @@ export type PrismaTasks<Delegate> = {
  */
 export const prismaTasks = <Delegate extends object>(
   delegate: () => Delegate,
-): PrismaTasks<Delegate> =>
-  new Proxy({} as PrismaTasks<Delegate>, {
+): PrismaTasks<Delegate> => {
+  // Empty: the proxy answers every property
+  const target: PrismaTasks<Delegate> = FPF.unsafeCoerce({});
+  return new Proxy(target, {
     // Only the delegate's methods: `then` or Node's inspection symbols stay
     // undefined, so the object never looks like a promise
     get: (_, method) => {
-      const methods = delegate() as Partial<Record<PropertyKey, unknown>>;
+      const methods: Partial<Record<PropertyKey, unknown>> =
+        FPF.unsafeCoerce(delegate());
       const query = methods[method];
-      return typeof query === "function"
-        ? (...args: unknown[]) =>
-            TE.tryCatch(
-              () => (query as Query).apply(methods, args),
-              unknownException,
-            )
-        : undefined;
+      if (typeof query !== "function") return undefined;
+      // A function the delegate calls with its arguments
+      const run: Query = FPF.unsafeCoerce(query);
+      return (...args: unknown[]) =>
+        TE.tryCatch(() => run.apply(methods, args), unknownException);
     },
   });
+};

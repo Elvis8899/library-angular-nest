@@ -8,15 +8,19 @@ import { AppModule } from "@src/app.module";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestApp } from "@test/util/createTestApp";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { TokensBody } from "@test/util/responseBodies";
 import { UserRoleEnum } from "@user/domain/user.entity";
 import { PinoLogger } from "nestjs-pino";
 import request from "supertest";
+import { z } from "zod";
 
 // Unlike the other e2e specs, AuthGuard is not replaced here: requests go
 // through the real guard with real tokens from POST /v1/login
 
 // Every route not listed here must require a token. Adding a public route
 // means adding it to this list on purpose.
+const HttpMethod = z.enum(["get", "post", "put", "patch", "delete"]);
+
 const publicRoutes = [
   "POST /v1/login",
   "POST /v1/refresh",
@@ -49,7 +53,7 @@ const login = async (builder: UserBuilder) => {
     .post("/v1/login")
     .send({ email, password });
   expect(response.status).toBe(HttpStatus.OK);
-  return (response.body as { accessToken: string }).accessToken;
+  return TokensBody.parse(response.body).accessToken;
 };
 
 beforeAll(async () => {
@@ -105,7 +109,7 @@ describe("[e2e] Route protection", () => {
       const [method = "", url = ""] = route.split(" ");
       const path = url.replace(/:\w+/g, id);
       const response = await request(app.getHttpServer())[
-        method.toLowerCase() as "get" | "post" | "put" | "patch" | "delete"
+        HttpMethod.parse(method.toLowerCase())
       ](path);
       results.push(`${route} -> ${String(response.status)}`);
     }

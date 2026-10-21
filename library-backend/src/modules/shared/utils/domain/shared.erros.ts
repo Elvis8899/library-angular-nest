@@ -2,7 +2,7 @@ import { HttpStatus, InternalServerErrorException } from "@nestjs/common";
 
 // The original error is kept as the cause, which the logs show. Sent as the
 // body, it would show clients the database's messages and constraint names
-export function unknownException(error: unknown): Error {
+export function unknownException(error: unknown): InternalServerErrorException {
   return new InternalServerErrorException(
     errorBody(
       HttpStatus.INTERNAL_SERVER_ERROR,

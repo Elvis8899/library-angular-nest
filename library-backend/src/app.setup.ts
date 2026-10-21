@@ -6,6 +6,7 @@ import {
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { FPF } from "@shared/utils/application/monads";
 import { envConfig } from "@shared/utils/config/environment.config";
 import { Logger } from "nestjs-pino";
 
@@ -26,8 +27,10 @@ export const configureApp = async (
   const fastifyInstance = app.getHttpAdapter().getInstance();
   fastifyInstance.decorateRequest("user", null);
   fastifyInstance.addHook("preHandler", (req, reply, next) => {
-    (req as typeof req & { user?: Partial<RequestJWTPayload> }).user =
-      (req as typeof req & { user?: RequestJWTPayload }).user || {};
+    // Fastify's request type doesn't declare the user the guards set
+    const request: { user?: Partial<RequestJWTPayload> } =
+      FPF.unsafeCoerce(req);
+    request.user = request.user || {};
     next();
   });
   app.useLogger(app.get(Logger));

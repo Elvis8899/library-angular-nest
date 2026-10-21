@@ -1,5 +1,6 @@
 import { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { Test } from "@nestjs/testing";
+import { FPF } from "@shared/utils/application/monads";
 import { AppModule } from "@src/app.module";
 import { createTestApp } from "@test/util/createTestApp";
 import request from "supertest";
@@ -11,7 +12,6 @@ import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
-import { unsafeCoerce } from "fp-ts/lib/function";
 import { PinoLogger } from "nestjs-pino";
 
 let app: NestFastifyApplication;
@@ -75,7 +75,7 @@ describe("[e2e] PUT /v1/bookInfos/{bookInfoId}", () => {
 
   it("Should respond 422 for invalid name type", async () => {
     const bookInfoDTO = bookInfoBuilder
-      .withName(unsafeCoerce(1))
+      .withName(FPF.unsafeCoerce(1))
       .buildCreateDTO();
     const response = await request(app.getHttpServer())
       .put(v1Route(originalBookInfo.id))

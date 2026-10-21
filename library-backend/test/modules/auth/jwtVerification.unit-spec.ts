@@ -3,9 +3,9 @@ import { AuthGuard } from "@auth/guards/auth.guard";
 import { generateTokens } from "@auth/util/signTokenParams";
 import { ExecutionContext, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { FPF } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { unsafeCoerce } from "fp-ts/lib/function";
 
 // Uses the real JwtService configured like JwtModule, unlike
 // auth.guard.unit-spec.ts which mocks token verification
@@ -19,7 +19,7 @@ describe("[Unit] JWT verification", () => {
   };
 
   const contextWithToken = (token: string) =>
-    unsafeCoerce<unknown, ExecutionContext>({
+    FPF.unsafeCoerce<unknown, ExecutionContext>({
       switchToHttp: () => ({
         getRequest: () => ({ headers: { authorization: `Bearer ${token}` } }),
       }),

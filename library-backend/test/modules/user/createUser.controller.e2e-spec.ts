@@ -1,5 +1,6 @@
 import { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { Test, TestingModule } from "@nestjs/testing";
+import { FPF } from "@shared/utils/application/monads";
 import { AppModule } from "@src/app.module";
 import { createTestApp } from "@test/util/createTestApp";
 import request from "supertest";
@@ -9,7 +10,6 @@ import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.servi
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
-import { unsafeCoerce } from "fp-ts/lib/function";
 import { PinoLogger } from "nestjs-pino";
 
 let app: NestFastifyApplication;
@@ -84,7 +84,7 @@ describe("[e2e] POST /v1/users", () => {
   });
 
   it("Should respond 422 for invalid name type", async () => {
-    const user = userBuilder.withName(unsafeCoerce(1)).buildCreateDTO();
+    const user = userBuilder.withName(FPF.unsafeCoerce(1)).buildCreateDTO();
     const response = await request(app.getHttpServer())
       .post(v1Route)
       .send(user);

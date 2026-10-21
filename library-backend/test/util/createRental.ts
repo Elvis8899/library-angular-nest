@@ -1,6 +1,7 @@
 import { BookItem } from "@book/domain/valueObject/bookItem.entity";
 import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { FPF } from "@shared/utils/application/monads";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 
@@ -12,7 +13,7 @@ export const createRental = async (
   rentalStatus: RentalStatusEnum,
 ): Promise<void> => {
   const { bookItems, ...bookInfo } = new BookInfoBuilder().build();
-  const [bookItem] = bookItems as [BookItem];
+  const [bookItem]: [BookItem] = FPF.unsafeCoerce(bookItems);
   await prisma.bookInfo.create({
     data: { ...bookInfo, bookItems: { create: { id: bookItem.id } } },
   });

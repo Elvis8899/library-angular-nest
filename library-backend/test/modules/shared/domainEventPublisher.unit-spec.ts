@@ -1,15 +1,15 @@
 import { InternalServerErrorException } from "@nestjs/common";
+import { FPF } from "@shared/utils/application/monads";
 import { BOOK_INFO_CREATED } from "@src/modules/book/domain/events/bookInfoCreated.event";
 import { DomainEventPublisher } from "@src/modules/shared/domainEventPublisher/adapters/domainEventPublisher";
 import { executeTask } from "@src/modules/shared/utils/application/executeTask";
-import { unsafeCoerce } from "fp-ts/lib/function";
 
 let domainEvent: DomainEventPublisher;
 const eventEmitter2Mock = {
   emit: jest.fn(() => true),
 };
 beforeEach(() => {
-  domainEvent = new DomainEventPublisher(unsafeCoerce(eventEmitter2Mock));
+  domainEvent = new DomainEventPublisher(FPF.unsafeCoerce(eventEmitter2Mock));
 });
 
 describe("[Unit] DomainEventPublisher", () => {

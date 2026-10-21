@@ -41,6 +41,12 @@ export default defineConfig(
         { allowOptionalChaining: true },
       ],
       "@typescript-eslint/no-explicit-any": "error",
+      // Casts go through FPF.unsafeCoerce, which makes them easy to spot;
+      // `as const` is still allowed
+      "@typescript-eslint/consistent-type-assertions": [
+        "error",
+        { assertionStyle: "never" },
+      ],
       // // TS errors
       "@typescript-eslint/no-misused-new": "error",
       "@typescript-eslint/no-non-null-assertion": "error",

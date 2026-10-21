@@ -1,5 +1,6 @@
 import { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { Test, TestingModule } from "@nestjs/testing";
+import { FPF } from "@shared/utils/application/monads";
 import { AppModule } from "@src/app.module";
 import { createTestApp } from "@test/util/createTestApp";
 import request from "supertest";
@@ -18,7 +19,6 @@ import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { UserRoleEnum } from "@user/domain/user.entity";
-import { unsafeCoerce } from "fp-ts/lib/function";
 import { PinoLogger } from "nestjs-pino";
 
 let app: NestFastifyApplication;
@@ -141,7 +141,7 @@ describe("[e2e] POST /v1/bookRentals/rent", () => {
 
   it("Should respond 404 for invalid rental not in system", async () => {
     const bookInfo = new BookInfoBuilder(2)
-      .withName(unsafeCoerce(1))
+      .withName(FPF.unsafeCoerce(1))
       .buildCreateDTO();
     const response = await request(app.getHttpServer())
       .put(v1Route(createTestId(TableNameEnum.BookRentalDetails, 0)))

@@ -14,7 +14,7 @@ export class DomainEventPublisher {
       domainEvent,
       validateWith(DomainEvent, "DomainEvent"),
       TE.fromEither,
-      TE.chainEitherK(
+      TE.chainEitherKW(
         E.tryCatchK((event: DomainEvent) => {
           this.eventEmitter.emit(event.eventKey, event.payload);
         }, unknownException),
