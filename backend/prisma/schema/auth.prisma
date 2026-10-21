@@ -1,0 +1,15 @@
+// One per login. Refresh tokens are single-use: only the token carrying the
+// session's current jti is accepted, and each refresh replaces it
+model RefreshSession {
+  id         String   @id
+  currentJti String
+  expiresAt  DateTime
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}

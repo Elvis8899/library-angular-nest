@@ -1,0 +1,22 @@
+// Lending example
+
+enum RentalStatus {
+  rented
+  finished
+}
+
+model BookRentalDetails {
+  id           String       @id
+  rentalStatus RentalStatus
+
+  bookItemId String
+  bookItem   BookItem @relation(fields: [bookItemId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  overdueDate  DateTime
+  deliveryDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

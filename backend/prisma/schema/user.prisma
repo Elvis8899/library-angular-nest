@@ -1,0 +1,21 @@
+enum UserRoleEnum {
+  admin
+  client
+}
+
+model User {
+  id           String       @id
+  name         String
+  email        String       @unique
+  password     String
+  cpf          String?      @unique
+  role         UserRoleEnum
+  // Incremented to revoke all refresh tokens issued to the user
+  tokenVersion Int          @default(0)
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  // Lending example: remove with the rental module
+  bookRentalDetails BookRentalDetails[]
+  refreshSessions   RefreshSession[]
+}

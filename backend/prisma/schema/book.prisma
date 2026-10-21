@@ -1,0 +1,30 @@
+// Lending example
+
+model BookInfo {
+  id    String @id
+  name  String
+  image String
+  price Int
+
+  bookItems BookItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum BookItemStatus {
+  rented
+  available
+}
+
+model BookItem {
+  id     String         @id
+  status BookItemStatus @default(available)
+
+  bookId     String
+  book       BookInfo            @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookRental BookRentalDetails[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

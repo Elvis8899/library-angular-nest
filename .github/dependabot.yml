@@ -4,7 +4,7 @@ version: 2
 
 updates:
   - package-ecosystem: npm
-    directory: /library-backend
+    directory: /backend
     schedule:
       interval: weekly
     groups:
@@ -24,7 +24,7 @@ updates:
         update-types: [version-update:semver-major]
 
   - package-ecosystem: npm
-    directory: /library-frontend
+    directory: /frontend
     schedule:
       interval: weekly
     groups:

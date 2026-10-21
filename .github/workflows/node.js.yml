@@ -43,22 +43,22 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
-          cache-dependency-path: ./library-backend/yarn.lock
+          cache-dependency-path: ./backend/yarn.lock
 
       - name: run yarn commands
-        working-directory: library-backend
+        working-directory: backend
         run: |
           yarn && CI=true
           yarn generate
           yarn test:migrate
-          # Fails when schema.prisma has changes no migration creates
+          # Fails when prisma/schema has changes no migration creates
           yarn migrate:check
           yarn build
           yarn test:cov
 
       # The tests never run the build output, so check that it starts
       - name: Start the built app
-        working-directory: library-backend
+        working-directory: backend
         run: |
           npx env-cmd -f .env.test env LOG_LEVEL=info node dist/src/main.js &
           for i in $(seq 1 30); do
@@ -71,7 +71,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: backend-coverage
-          path: library-backend/coverage/coverage-summary.json
+          path: backend/coverage/coverage-summary.json
 
   frontend:
     runs-on: ubuntu-latest
@@ -81,12 +81,12 @@ jobs:
       - name: Use Node.js from .nvmrc
         uses: actions/setup-node@v7
         with:
-          node-version-file: ./library-frontend/.nvmrc
+          node-version-file: ./frontend/.nvmrc
           cache: "yarn"
-          cache-dependency-path: ./library-frontend/yarn.lock
+          cache-dependency-path: ./frontend/yarn.lock
 
       - name: Lint, test and build
-        working-directory: library-frontend
+        working-directory: frontend
         run: |
           yarn install --frozen-lockfile
           yarn lint
@@ -98,7 +98,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: frontend-coverage
-          path: library-frontend/coverage/library-frontend/coverage-summary.json
+          path: frontend/coverage/frontend/coverage-summary.json
 
   badges:
     needs: [build, frontend]
@@ -113,13 +113,13 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: backend-coverage
-          path: library-backend/coverage
+          path: backend/coverage
 
       - name: Download frontend coverage summary
         uses: actions/download-artifact@v7
         with:
           name: frontend-coverage
-          path: library-frontend/coverage/library-frontend
+          path: frontend/coverage/frontend
 
       - name: 🔴 Delete remote badges branch
         # The branch does not exist on the first run
@@ -128,16 +128,18 @@ jobs:
       - name: ➕ Create badges branch
         run: git checkout -b badges
 
-      # The part of the path matched by ** names each badge folder:
-      # badges/library-backend and badges/library-frontend
+      # Pinned to a commit: a third-party action runs with this job's push
+      # access, and Dependabot updates the hash together with the comment
       - name: ⚙️ Generating coverage badges
-        uses: jpb06/coverage-badges-action@latest
+        uses: jpb06/coverage-badges-action@6bebba3f008cb03c2be0ff9b148c663df30cde4b # v1.4.11
         with:
           branches: "*"
           target-branch: badges
+          # The part of the path matched by ** names each badge folder:
+          # badges/backend and badges/frontend
           coverage-summary-path: |
             ./**/coverage/coverage-summary.json
-            ./**/coverage/library-frontend/coverage-summary.json
+            ./**/coverage/frontend/coverage-summary.json
 
       - name: ⬆️ Push badges branch
         run: git push origin badges

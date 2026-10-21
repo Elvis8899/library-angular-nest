@@ -23,11 +23,7 @@ Done (2026-10-21): primary keys, unique-constraint races and the unique CPF, cas
 
 The repository is the seed for other projects, so what matters is how cheaply it grows. Done: one `@modules/` alias instead of one per module, the "Adding a feature" checklist in `CLAUDE.md`, and Dependabot (`.github/dependabot.yml`).
 
-- [ ] **Separate the reusable core from the example**: `shared/`, `auth` and `user` are what every project needs; `book` and `rental` are the lending example. Say so in the README and `CLAUDE.md`, and check that deleting `book` and `rental` (backend and frontend) leaves a working app, so a new project starts by removing two folders. `auth` imports `@modules/user/` in 9 files; keep those to the user repository and entity.
-- [ ] **Run the e2e and integration suites in parallel**: they share one database and run with `--runInBand` (about 40 s for 60 suites), so the time grows with every module. A database or schema per Jest worker (`JEST_WORKER_ID` in `DATABASE_URL`, migrated in `globalSetup`) would let them run side by side.
-- [ ] **Decide on fp-ts**: it is in maintenance; its author moved to Effect. The handlers are consistent, but for a seed meant to last, either keep it deliberately or choose before more modules exist whether new code uses plain `async`/`await` with typed results (or Effect). Not a rewrite of existing modules.
-- [ ] **One place for the project name**: "library" appears in the package names, Docker Compose, nginx, Swagger and the README; a new project has to find them all. The README also still says NestJS 11 (it's 12).
-- [ ] **Pin `jpb06/coverage-badges-action`**: it uses `@latest`, so any release can change the badges job.
+Done (2026-10-21): the core and the lending example are separate (the example's code in its own folders, its few lines in core files marked `Lending example`, removal checked to leave both apps passing; see "Starting a new project" in the README), the folders are `backend/` and `frontend/` and the project's name is in the few places the README lists, the backend's DB suites run in parallel on a database per Jest worker (about 44 s to 19 s), and the badges action is pinned to a commit.
 
 ## Demo on GitHub Pages (2026-10-20)
 

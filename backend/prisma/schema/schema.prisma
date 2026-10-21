@@ -1,0 +1,13 @@
+// The schema is one file per module in this folder; Prisma reads them all
+generator client {
+  provider            = "prisma-client"
+  output              = "../generated"
+  moduleFormat        = "cjs"
+  // Extensionless imports: Jest can't resolve "./x.js" to the generated .ts files
+  importFileExtension = ""
+}
+
+// The connection URL is in prisma.config.ts
+datasource db {
+  provider = "postgresql"
+}

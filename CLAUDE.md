@@ -6,8 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Library management system (book lending) for a Brazilian audience: UI text, API docs (Swagger tags/summaries) and error messages are in Portuguese. Two independent apps, each with its own `package.json`, `yarn.lock` (Yarn 1) and `node_modules`; there is no root workspace.
 
-- `library-backend/` — NestJS 12 on Fastify, Prisma 7 + PostgreSQL, Zod, fp-ts, JWT auth.
-- `library-frontend/` — Angular 22 (standalone components), Angular Material, ngx-translate (pt-BR, en-US), Vitest via `@angular/build:unit-test`.
+- `backend/` — NestJS 12 on Fastify, Prisma 7 + PostgreSQL, Zod, fp-ts, JWT auth.
+- `frontend/` — Angular 22 (standalone components), Angular Material, ngx-translate (pt-BR, en-US), Vitest via `@angular/build:unit-test`.
+
+The repository is also a seed for other projects. `shared`, `auth` and `user` (backend) and `auth`, `home`, `users` (frontend pages) are the core; `book` and `rental` (`books`, `rentals` pages) are the lending example. Everything the example owns lives in its own folders; the few lines it needs in core files are marked with a `Lending example` comment, so `git grep -i "lending example"` lists them (README, "Starting a new project"). Keep that true: example code doesn't go into core files unmarked, and core code and specs don't use the example (core specs use user routes and keys). The project's name is in the places the README lists under "Rename"; the backend's is `src/app.info.ts`.
 
 Both use TypeScript 6.0. TypeScript 7 isn't supported by Angular, typescript-eslint or ts-jest yet.
 
@@ -15,7 +17,7 @@ Both apps run on Node 24 (`.nvmrc` in each); the backend Docker images and CI us
 
 ## Commands
 
-### Backend (`cd library-backend`)
+### Backend (`cd backend`)
 
 Tests need Postgres. Start it from the dev compose file, then apply migrations to the `library-test` database. `yarn test:docker:up` does both in one step, but it resets the test database and reseeds it.
 
@@ -36,14 +38,14 @@ npx env-cmd -f .env.test jest --config ./test/jest.config.ts test/modules/user/d
 npx env-cmd -f .env.test jest --config ./test/jest.config.ts -t "test name" <file>
 
 yarn migrate                  # prisma migrate dev (new migration)
-yarn migrate:check            # fails if schema.prisma differs from the migrated test database (CI runs it)
+yarn migrate:check            # fails if prisma/schema differs from the migrated test database (CI runs it)
 yarn seed                     # prisma db seed; skips a database that already has users or books
 yarn generate                 # prisma generate; Prisma 7 doesn't on install or migrate, so run it after either
 ```
 
 The app refuses to start unless `JWT_SECRET_KEY` and `JWT_REFRESH_SECRET` are set and at least 32 characters long (`src/modules/auth/auth.config.ts`). `.env.test` contains test values. It also sets `NODE_OPTIONS=--experimental-vm-modules`, which lets Jest `require()` the ESM-only packages (NestJS 12, uuid); the built app needs no flag, since Node 24 loads them natively. `make dockerDev` (from the repo root) starts the dev stack behind nginx on `localhost:3000`: the frontend dev server at `/`, the API at `/v1` and `/swagger`, plus Postgres, pgAdmin, Prometheus and Grafana. The dev Docker entrypoint copies `.env.example` to `.env.dev`. The dev `app` and `frontend` containers run as uid/gid 1000 so files it writes to the mounted source folder aren't root-owned; set `HOST_UID`/`HOST_GID` if yours differ.
 
-### Frontend (`cd library-frontend`, Node 24)
+### Frontend (`cd frontend`, Node 24)
 
 ```bash
 yarn start                    # ng serve on :4200, proxies /v1 to localhost:3000 (proxy.conf.json)
@@ -54,7 +56,7 @@ yarn test                     # ng test: Vitest with coverage, 80% thresholds (a
 npx ng test --watch=false --coverage=false --include src/app/services/authentication.service.spec.ts
 ```
 
-`yarn install` here also installs the Git pre-commit hook (Husky, `core.hooksPath` = `library-frontend/.husky/_`), which runs Prettier on staged frontend files.
+`yarn install` here also installs the Git pre-commit hook (Husky, `core.hooksPath` = `frontend/.husky/_`), which runs Prettier on staged frontend files.
 
 ## Conventions enforced by lint
 
@@ -70,7 +72,7 @@ npx ng test --watch=false --coverage=false --include src/app/services/authentica
 
 ### Module layout
 
-Each feature module (`user`, `book`, `rental`, `auth`) under `src/modules/` is laid out as hexagonal/CQRS:
+Each feature module (`user`, `book`, `rental`, `auth`) under `src/modules/` is laid out as hexagonal/CQRS. Modules use another module's entity, repository port or exported providers, not its DTOs or handlers (`auth` gets `UserRepository` by importing `UserModule`, which exports it):
 
 ```
 commands/<name>/<name>.command.ts      # ICommand + @CommandHandler (writes)
@@ -106,7 +108,7 @@ Errors are Nest `HttpException` subclasses created by small factory functions in
 
 ### Database migrations
 
-- Prisma's configuration is `prisma.config.ts`: the datasource URL and the seed command. It loads `.env` itself, without overriding variables that are already set (env-cmd, Docker Compose `env_file`). The client is generated into `prisma/generated/` (gitignored, excluded from coverage) and imported as `@db/generated/client`, not `@prisma/client`. `PrismaService` and the seed connect through the `pg` driver adapter (`createPrismaAdapter`).
+- The schema is one file per module in `prisma/schema/` (`schema.prisma` holds the generator and datasource); Prisma reads the whole folder. Prisma's configuration is `prisma.config.ts`: the schema folder, the datasource URL and the seed command. It loads `.env` itself, without overriding variables that are already set (env-cmd, Docker Compose `env_file`). The client is generated into `prisma/generated/` (gitignored, excluded from coverage) and imported as `@db/generated/client`, not `@prisma/client`. `PrismaService` and the seed connect through the `pg` driver adapter (`createPrismaAdapter`).
 - Schema changes go through `yarn migrate` (`prisma migrate dev`), which writes a migration under `prisma/migrations/`. Production applies them with `make dockerMigrate` (`prisma migrate deploy`).
 - Data changes that SQL can express belong in the same migration: create it with `yarn migrate --create-only --name <name>` and add the `UPDATE`/`INSERT` after the schema changes in its `migration.sql`. It then runs once, in order, in a transaction, and in every environment (dev container, test database, CI). Prefer a column `DEFAULT` when it fills existing rows, as `add_user_token_version` does.
 - There is no separate post-migration script, because one would run on every deploy rather than once. If a data change ever needs app code, add one script per change with a table recording which have run, and run the pending ones after `migrate deploy`. For changes that must not break the running app, expand first (add and backfill the new column), switch the code over, then drop the old column in a later migration.
@@ -124,17 +126,17 @@ Errors are Nest `HttpException` subclasses created by small factory functions in
 ### Tests
 
 - Test files live in `test/modules/<module>/`, named by kind: `*.unit-spec.ts` (handlers with fake repositories), `*.inte-spec.ts` (real repositories against Postgres), `*.e2e-spec.ts` (AppModule + supertest).
-- Use the builders in `test/dataBuilders/` (`UserBuilder`, `BookInfoBuilder`, `BookRentalBuilder`, …) and deterministic IDs from `test/util/defaultIds.ts` (`createTestId(TableNameEnum.X, n)`).
+- Use the builders: the core's in `test/dataBuilders/` (`UserBuilder`, `MockAuthGuardBuilder`), and each module's own next to its specs (`test/modules/book/bookInfoBuilder.ts`, `createBook.ts`, `test/modules/rental/bookRentalBuilder.ts`). Use deterministic IDs from `test/util/defaultIds.ts` (`createTestId(TableNameEnum.X, n)`).
 - Unit specs start with `const ctx = useHandlerModule({ providers: [Handler] }, (get) => ({ handler: get(Handler), users: get(UserRepository) }))` (`test/util/handlerModule.ts`), then use `ctx.handler`. It rebuilds the module before each test: every repository bound to its fake, a silent logger, real UUIDs and the event publisher; a provider passed in replaces the default for its token, and `init: true` runs `module.init()` for CQRS event handlers. `get` is typed from the token (Nest's own `get` types abstract-class tokens as `any`); `get(FakeUserRepository)` returns the same fake, for specs that inspect it.
 - E2E specs start with `const e2e = useE2eApp({ authGuard })` (`test/util/e2eApp.ts`), then use `e2e.http()`, `e2e.prisma` and the typed `e2e.get(…)`. It builds the app with the same setup as `main.ts` (`src/app.setup.ts`: helmet, Swagger, request context, `trustProxy`; `main.ts` only adds listening), empties the database first and closes the app afterwards. `beforeInit` runs before `app.init()`; `buildE2eApp`/`closeE2eApp` build extra apps, e.g. with another `trustProxy`.
 - E2E tests replace `AuthGuard` with `MockAuthGuardBuilder` (an admin by default); call `.withRole(UserRoleEnum.Client)` and then `.reset()` to test role restrictions, and `RolesGuard` stays real. `routeProtection.e2e-spec.ts` logs in for real instead.
 - `test/db/seed.inte-spec.ts` tests `prisma/seed.ts` through its exported `seed(prisma)`.
-- Suites share one database and run with `--runInBand`. `resetDatabase(prisma)` (`test/util/resetDatabase.ts`) empties every table; specs call it in `beforeEach` unless they seed once in `beforeAll` and clean only what each test adds.
+- Suites run in parallel (`maxWorkers: "50%"`; each worker compiles the TypeScript again, so more cost more), each worker on its own database: `test/globalSetup.ts` copies the migrated `library-test` to `library-test-<worker>` (`CREATE DATABASE … TEMPLATE`) before every run, and `test/util/useWorkerDatabase.ts` (`setupFiles`) points `DATABASE_URL` at the worker's copy. The copy fails if anything else is connected to `library-test`. The unit config needs no database and skips both. `resetDatabase(prisma)` (`test/util/resetDatabase.ts`) empties every table; specs call it in `beforeEach` unless they seed once in `beforeAll` and clean only what each test adds.
 
 ## Frontend architecture
 
-- `src/app/pages/<feature>/` holds lazy-loaded route groups (`*.routes.ts`, loaded from `pages/pages.routes.ts`). Route access is restricted with `data: { roles: [...] }` and `shared/guards/permission.guard.ts`, which the layout route runs as both `canActivate` and `canActivateChild` (`canActivate` alone never sees the children's roles). `pages/pages.routes.spec.ts` checks which pages each role can open.
-- `services/*.http.service.ts` are thin `HttpClient` wrappers; their specs pin each URL and method to the backend routes. Paginated requests build their query parameters with `PageRequestUtility.toHttpParams`. `CredentialsService` stores the user and tokens in localStorage. `AuthenticationService` handles login, logout and refresh.
+- `src/app/pages/<feature>/` holds lazy-loaded route groups (`*.routes.ts`, loaded from `pages/pages.routes.ts`). Route access is restricted with `data: { roles: [...] }` and `shared/guards/permission.guard.ts`, which the layout route runs as both `canActivate` and `canActivateChild` (`canActivate` alone never sees the children's roles). `pages/pages.routes.spec.ts` checks which pages each role can open. A role lands on the first page of `sidebarMenuItems` it can open (`defaultRolePage` in `navMenuItems.ts`), after login and for unknown or forbidden pages, or on `home` when it has none.
+- `services/*.http.service.ts` are thin `HttpClient` wrappers (a feature's own models and services live in its page folder, as `pages/books/book.http.service.ts`); their specs pin each URL and method to the backend routes. Paginated requests build their query parameters with `PageRequestUtility.toHttpParams`. `CredentialsService` stores the user and tokens in localStorage. `AuthenticationService` handles login, logout and refresh.
 - HTTP interceptors run in this order: `authHttpInterceptor` → `errorHandlerInterceptor`.
   - `authHttpInterceptor` adds the Bearer token and language headers, and merges identical requests that are in flight at the same time. A request with a `noauth` header skips it entirely.
   - `errorHandlerInterceptor`: on a 401 it refreshes the token once and retries the request; it logs out on 403 or when the refresh fails.
@@ -153,21 +155,21 @@ Copy the closest existing module and rename it: `user` for plain CRUD, `rental` 
 
 Backend (`src/modules/<name>/`, imported as `@modules/<name>/…`):
 
-1. **Model**: add it to `prisma/schema.prisma`, run `yarn migrate --name <change>` and `yarn generate`. Add its `TableNameEnum` entry and id prefix in `test/util/defaultIds.ts`. `resetDatabase` empties the new table by itself.
-2. **Domain**: the Zod entity in `domain/<name>.entity.ts`; errors in `domain/<name>.errors.ts`, each with a code (`errorBody`) and a case in `test/modules/shared/errorCodes.unit-spec.ts`; events in `domain/events/`, exported as `All<Name>Events` and spread into `DomainEvent` (`shared/domainEventPublisher/domainEvent.ts`), or publishing fails validation.
+1. **Model**: add `prisma/schema/<name>.prisma`, run `yarn migrate --name <change>` and `yarn generate`. Add its `TableNameEnum` entry and id prefix in `test/util/defaultIds.ts`. `resetDatabase` empties the new table by itself.
+2. **Domain**: the Zod entity in `domain/<name>.entity.ts`; errors in `domain/<name>.errors.ts`, each with a code (`errorBody`) and a case in `test/modules/<name>/<name>Errors.unit-spec.ts` (`itAnswersWithErrorCodes`); events in `domain/events/`, exported as `All<Name>Events` and spread into `DomainEvent` (`shared/domainEventPublisher/domainEvent.ts`), or publishing fails validation.
 3. **Repository**: the port, the Prisma repository and the fake (`database/`). Bind the port in `<name>.module.ts`, and the fake in `test/util/handlerModule.ts` (`fakeRepository(Port, Fake)`) so unit tests get it.
 4. **Use cases**: a `commands/` or `queries/` folder per use case, each controller with `AuthGuard` (and `RolesGuard` with `@Roles` when restricted). A public route goes in `publicRoutes` (`routeProtection.e2e-spec.ts`).
 5. **Register** the module in `src/app.module.ts`.
-6. **Tests**, in `test/modules/<name>/`: a builder in `test/dataBuilders/`, unit specs for the handlers, an integration spec for the Prisma repository and e2e specs for the routes. `yarn test:cov` requires 100% coverage, fakes included.
+6. **Tests**, in `test/modules/<name>/`: its builder, unit specs for the handlers, an integration spec for the Prisma repository and e2e specs for the routes. `yarn test:cov` requires 100% coverage, fakes included.
 
 Frontend:
 
-1. **Data**: the model in `models/` and `services/<name>.http.service.ts`, with a spec that pins each URL and method.
+1. **Data**: the model and `<name>.http.service.ts` in `pages/<name>/`, with a spec that pins each URL and method.
 2. **Pages**: `pages/<name>/<name>.routes.ts`, loaded from `pages/pages.routes.ts` with `data: { roles }`, plus cases in `pages.routes.spec.ts`; the sidebar entry in `layouts/components/sidebar/navMenuItems.ts`. Build them from the shared components (`app-page-header`, `app-form-card`, `customizedTable`).
 3. **Text**: keys in `pt-BR.ts` and the same shape in `en-US.ts`, including `errors.<code>` for each new backend error code (`translationKeys.spec.ts`).
 
 ## CI and deployment
 
-- `.github/workflows/node.js.yml` runs on pushes and PRs to `main`. The backend job runs migrations, build and `test:cov` against a Postgres service. The frontend job runs lint, Stylelint, tests and build on the Node version in `library-frontend/.nvmrc`. Both upload their `coverage-summary.json` as artifacts, and the `badges` job, which waits for both, regenerates the coverage badges on the `badges` branch (`badges/library-backend/`, `badges/library-frontend/`, shown in the README).
+- `.github/workflows/node.js.yml` runs on pushes and PRs to `main`. The backend job runs migrations, build and `test:cov` against a Postgres service. The frontend job runs lint, Stylelint, tests and build on the Node version in `frontend/.nvmrc`. Both upload their `coverage-summary.json` as artifacts, and the `badges` job, which waits for both, regenerates the coverage badges on the `badges` branch (`badges/backend/`, `badges/frontend/`, shown in the README).
 - Swagger (`/swagger`) is public in production on purpose; nginx proxies it.
-- Deployment is manual. On the server, `make dockerMigrate` applies migrations and `make dockerProd` pulls and rebuilds the stack, both from the repo root with Docker Compose (`.docker/docker-compose.yml`: app, Postgres, nginx, pgAdmin). The compose files, nginx and Prometheus configs live in the root `.docker/`; the API's Dockerfiles and entrypoints stay in `library-backend/.docker/`, its build context. Only nginx (port 80) is public; the app, Postgres and pgAdmin publish their ports on the `nginx_network` gateway (`172.18.0.1`), which nginx proxies to. The production Dockerfile copies `.env` into the image and starts `dist/src/main.js`.
+- Deployment is manual. On the server, `make dockerMigrate` applies migrations and `make dockerProd` pulls and rebuilds the stack, both from the repo root with Docker Compose (`.docker/docker-compose.yml`: app, Postgres, nginx, pgAdmin). The compose files, nginx and Prometheus configs live in the root `.docker/`; the API's Dockerfiles and entrypoints stay in `backend/.docker/`, its build context. Only nginx (port 80) is public; the app, Postgres and pgAdmin publish their ports on the `nginx_network` gateway (`172.18.0.1`), which nginx proxies to. The production Dockerfile copies `.env` into the image and starts `dist/src/main.js`.

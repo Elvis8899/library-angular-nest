@@ -1,4 +1,3 @@
-version: "3.9"
 name: "library"
 
 services:
@@ -19,12 +18,9 @@ services:
 
   app:
     build:
-      context: ../library-backend
+      context: ../backend
       dockerfile: .docker/Dockerfile
-    container_name: library-api-prod
-    hostname: library-api
     restart: always
-    image: library-api
     # Uncomment this line in case you are in M1
     # platform: linux/amd64
     # Reachable only through nginx, which proxies to the nginx_network
@@ -41,7 +37,6 @@ services:
       - postgres
 
   postgres:
-    container_name: postgres-container-prod
     image: postgres:latest
     restart: always
     # Not reachable from outside the server: the app uses the Docker
@@ -58,9 +53,7 @@ services:
       - "nginx_network"
 
   pgadmin:
-    container_name: pgadmin-container-prod
     image: dpage/pgadmin4
-    hostname: pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@email.com
       PGADMIN_DEFAULT_PASSWORD: admin
@@ -73,11 +66,9 @@ services:
 
   migrate-deploy:
     build:
-      context: ../library-backend
+      context: ../backend
       dockerfile: .docker/Dockerfile
       target: migrate
-    container_name: migrate-deploy-prod
-    image: library-api-deploy
     # Uncomment this line in case you are in M1
     # platform: linux/amd64
     ports:

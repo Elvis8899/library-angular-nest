@@ -1,0 +1,3 @@
+# Git runs hooks from the repository root
+cd frontend
+npm run format-staged
