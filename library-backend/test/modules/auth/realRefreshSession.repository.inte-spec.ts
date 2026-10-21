@@ -5,6 +5,7 @@ import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { resetDatabase } from "@test/util/resetDatabase";
 
 let prismaService: PrismaService;
 let refreshSessionRepository: RealRefreshSessionRepository;
@@ -38,13 +39,8 @@ describe("[Integration] Refresh session repository", () => {
     ).map((s) => s.id);
 
   beforeEach(async () => {
-    // Sessions are removed with their user
-    await prismaService.user.deleteMany();
+    await resetDatabase(prismaService);
     await prismaService.user.create({ data: user });
-  });
-
-  afterAll(async () => {
-    await prismaService.user.deleteMany();
   });
 
   it("Should rotate the session only from its current jti", async () => {

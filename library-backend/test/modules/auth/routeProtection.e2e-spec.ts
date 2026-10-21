@@ -1,17 +1,10 @@
 import { hashPassword } from "@auth/util/signTokenParams";
 import { HttpStatus } from "@nestjs/common";
-import { NestFastifyApplication } from "@nestjs/platform-fastify";
-import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
-import { AppModule } from "@src/app.module";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
-import { createTestApp } from "@test/util/createTestApp";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { useE2eApp } from "@test/util/e2eApp";
 import { TokensBody } from "@test/util/responseBodies";
 import { UserRoleEnum } from "@user/domain/user.entity";
-import { PinoLogger } from "nestjs-pino";
-import request from "supertest";
 import { z } from "zod";
 
 // Unlike the other e2e specs, AuthGuard is not replaced here: requests go
@@ -28,9 +21,6 @@ const publicRoutes = [
 ];
 
 const checkedMethods = ["GET", "POST", "PUT", "PATCH", "DELETE"];
-
-let app: NestFastifyApplication;
-let prismaService: PrismaService;
 const routes: string[] = [];
 
 const admin = new UserBuilder(1)
@@ -42,54 +32,35 @@ const client = new UserBuilder(2)
 
 const saveWithHashedPassword = async (builder: UserBuilder) => {
   const user = builder.build();
-  await prismaService.user.create({
+  await e2e.prisma.user.create({
     data: { ...user, password: await hashPassword(user.password) },
   });
 };
 
 const login = async (builder: UserBuilder) => {
   const { email, password } = builder.build();
-  const response = await request(app.getHttpServer())
-    .post("/v1/login")
-    .send({ email, password });
+  const response = await e2e.http().post("/v1/login").send({ email, password });
   expect(response.status).toBe(HttpStatus.OK);
   return TokensBody.parse(response.body).accessToken;
 };
 
-beforeAll(async () => {
-  const testingModule = await Test.createTestingModule({
-    imports: [AppModule],
-  })
-    .overrideProvider(PinoLogger)
-    .useClass(FakeLoggerService)
-    .compile();
-
-  app = await createTestApp(testingModule);
+const e2e = useE2eApp({
   // Nest registers its routes during init, so this sees every one of them
-  app
-    .getHttpAdapter()
-    .getInstance()
-    .addHook("onRoute", ({ method, url }) => {
-      for (const m of [method].flat()) {
-        if (checkedMethods.includes(m)) routes.push(`${m} ${url}`);
-      }
-    });
-  prismaService = testingModule.get<PrismaService>(PrismaService);
-
-  await prismaService.refreshSession.deleteMany();
-  await prismaService.user.deleteMany();
-  await saveWithHashedPassword(admin);
-  await saveWithHashedPassword(client);
-
-  await app.init();
-  await app.getHttpAdapter().getInstance().ready();
+  beforeInit: (app) => {
+    app
+      .getHttpAdapter()
+      .getInstance()
+      .addHook("onRoute", ({ method, url }) => {
+        for (const m of [method].flat()) {
+          if (checkedMethods.includes(m)) routes.push(`${m} ${url}`);
+        }
+      });
+  },
 });
 
-afterAll(async () => {
-  await prismaService.refreshSession.deleteMany();
-  await prismaService.user.deleteMany();
-  await app.close();
-  await prismaService.$disconnect();
+beforeAll(async () => {
+  await saveWithHashedPassword(admin);
+  await saveWithHashedPassword(client);
 });
 
 describe("[e2e] Route protection", () => {
@@ -108,9 +79,9 @@ describe("[e2e] Route protection", () => {
     for (const route of protectedRoutes) {
       const [method = "", url = ""] = route.split(" ");
       const path = url.replace(/:\w+/g, id);
-      const response = await request(app.getHttpServer())[
-        HttpMethod.parse(method.toLowerCase())
-      ](path);
+      const response = await e2e
+        .http()
+        [HttpMethod.parse(method.toLowerCase())](path);
       results.push(`${route} -> ${String(response.status)}`);
     }
 
@@ -123,7 +94,8 @@ describe("[e2e] Route protection", () => {
   });
 
   it("Should reject a token that is not a valid JWT", async () => {
-    const response = await request(app.getHttpServer())
+    const response = await e2e
+      .http()
       .get("/v1/bookInfos")
       .set("Authorization", "Bearer not-a-jwt");
 
@@ -134,12 +106,8 @@ describe("[e2e] Route protection", () => {
     const token = await login(client);
 
     const [books, users] = await Promise.all([
-      request(app.getHttpServer())
-        .get("/v1/bookInfos")
-        .set("Authorization", `Bearer ${token}`),
-      request(app.getHttpServer())
-        .get("/v1/users")
-        .set("Authorization", `Bearer ${token}`),
+      e2e.http().get("/v1/bookInfos").set("Authorization", `Bearer ${token}`),
+      e2e.http().get("/v1/users").set("Authorization", `Bearer ${token}`),
     ]);
 
     expect(books.status).toBe(HttpStatus.OK);
@@ -149,7 +117,8 @@ describe("[e2e] Route protection", () => {
   it("Should let an admin with a login token list users", async () => {
     const token = await login(admin);
 
-    const response = await request(app.getHttpServer())
+    const response = await e2e
+      .http()
       .get("/v1/users")
       .set("Authorization", `Bearer ${token}`);
 

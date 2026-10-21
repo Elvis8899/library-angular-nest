@@ -7,17 +7,11 @@ import { RefreshSessionRepository } from "@auth/database/refreshSession.reposito
 import { WrongAuthException } from "@auth/domain/auth.errors";
 import { hashPassword } from "@auth/util/signTokenParams";
 import { JwtService } from "@nestjs/jwt";
-import { Test } from "@nestjs/testing";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { createHandlerModule } from "@test/util/handlerModule";
 import { UserRepository } from "@user/database/user.repository.port";
-import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 let userRepository: UserRepository;
@@ -27,24 +21,10 @@ describe("[Unit] Create User", () => {
   let loginCommandHandler: LoginCommandHandler;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [DomainEventPublisherModule],
-      providers: [
-        {
-          provide: DomainEventPublisherModule,
-          useClass: DomainEventPublisher,
-        },
-        JwtService,
-        LoginCommandHandler,
-        RealUUIDGeneratorService,
-        { provide: UserRepository, useClass: FakeUserRepository },
-        {
-          provide: RefreshSessionRepository,
-          useClass: FakeRefreshSessionRepository,
-        },
-        { provide: PinoLogger, useClass: FakeLoggerService },
-      ],
-    }).compile();
+    const moduleRef = await createHandlerModule([
+      JwtService,
+      LoginCommandHandler,
+    ]);
 
     userRepository = moduleRef.get<UserRepository>(UserRepository);
     refreshSessionRepository = moduleRef.get(RefreshSessionRepository);

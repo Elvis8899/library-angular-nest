@@ -1,19 +1,12 @@
-import { NestFastifyApplication } from "@nestjs/platform-fastify";
-import { Test, TestingModule } from "@nestjs/testing";
 import { FPF } from "@shared/utils/application/monads";
-import { AppModule } from "@src/app.module";
-import { createTestApp } from "@test/util/createTestApp";
-import request from "supertest";
+import { useE2eApp } from "@test/util/e2eApp";
 
-import { AuthGuard } from "@auth/guards/auth.guard";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
 import {
   BookItem,
   BookItemStatusEnum,
 } from "@book/domain/valueObject/bookItem.entity";
 import { HttpStatus } from "@nestjs/common";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
@@ -21,56 +14,32 @@ import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { UserRoleEnum } from "@user/domain/user.entity";
-import { PinoLogger } from "nestjs-pino";
-
-let app: NestFastifyApplication;
-let testingModule: TestingModule;
-let prismaService: PrismaService;
 let bookInfoRepository: BookInfoRepository;
 
 const bookRentalBuilder = new BookRentalBuilder(0);
 const authGuardMock = new MockAuthGuardBuilder();
 
-beforeAll(async () => {
-  testingModule = await Test.createTestingModule({
-    imports: [AppModule],
-  })
-    .overrideProvider(PinoLogger)
-    .useClass(FakeLoggerService)
-    .overrideGuard(AuthGuard)
-    .useValue(authGuardMock.build())
-    .compile();
+const e2e = useE2eApp({ authGuard: authGuardMock.build() });
 
-  app = await createTestApp(testingModule);
-  prismaService = testingModule.get<PrismaService>(PrismaService);
-  bookInfoRepository =
-    testingModule.get<BookInfoRepository>(BookInfoRepository);
-  await prismaService.bookInfo.deleteMany();
-  await prismaService.user.deleteMany();
+beforeAll(async () => {
+  bookInfoRepository = e2e.module.get<BookInfoRepository>(BookInfoRepository);
 
   const {
     bookItems: [bookItemRaw],
     ...bookInfo
   } = new BookInfoBuilder().build();
   const { bookId: _, ...bookItem }: BookItem = FPF.unsafeCoerce(bookItemRaw);
-  await prismaService.bookInfo.create({
+  await e2e.prisma.bookInfo.create({
     data: { ...bookInfo, bookItems: { create: { ...bookItem } } },
   });
-  await prismaService.user.create({
+  await e2e.prisma.user.create({
     data: new UserBuilder().build(),
   });
-  await app.init();
-  await app.getHttpAdapter().getInstance().ready();
 });
 
 beforeEach(async () => {
-  await prismaService.bookRentalDetails.deleteMany();
+  await e2e.prisma.bookRentalDetails.deleteMany();
   authGuardMock.reset();
-});
-
-afterAll(async () => {
-  await app.close();
-  await prismaService.$disconnect();
 });
 
 describe("[e2e] POST /v1/bookRentals/rent", () => {
@@ -78,9 +47,7 @@ describe("[e2e] POST /v1/bookRentals/rent", () => {
 
   it("Should respond 201 for a valid bookInfo", async () => {
     const bookRental = bookRentalBuilder.buildCreateDTO();
-    const response = await request(app.getHttpServer())
-      .post(v1Route)
-      .send(bookRental);
+    const response = await e2e.http().post(v1Route).send(bookRental);
     expect(response.status).toBe(HttpStatus.CREATED);
   });
 
@@ -89,9 +56,7 @@ describe("[e2e] POST /v1/bookRentals/rent", () => {
       .withSub(createTestId(TableNameEnum.User, 2))
       .withRole(UserRoleEnum.Client);
     const bookRental = bookRentalBuilder.buildCreateDTO();
-    const response = await request(app.getHttpServer())
-      .post(v1Route)
-      .send(bookRental);
+    const response = await e2e.http().post(v1Route).send(bookRental);
     expect(response.status).toBe(HttpStatus.NOT_FOUND);
   });
 
@@ -114,9 +79,7 @@ describe("[e2e] POST /v1/bookRentals/rent", () => {
           .build(),
       ),
     );
-    const response = await request(app.getHttpServer())
-      .post(v1Route)
-      .send(bookRental);
+    const response = await e2e.http().post(v1Route).send(bookRental);
     expect(response.status).toBe(HttpStatus.CONFLICT);
   });
 
@@ -124,9 +87,7 @@ describe("[e2e] POST /v1/bookRentals/rent", () => {
     const bookInfo = new BookInfoBuilder(2)
       .withName(FPF.unsafeCoerce(1))
       .buildCreateDTO();
-    const response = await request(app.getHttpServer())
-      .post(v1Route)
-      .send(bookInfo);
+    const response = await e2e.http().post(v1Route).send(bookInfo);
     expect(response.status).toBe(422);
   });
 });

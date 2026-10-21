@@ -1,16 +1,12 @@
-import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
-import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { createHandlerModule } from "@test/util/handlerModule";
 import { UserRepository } from "@user/database/user.repository.port";
 import { UserNotFoundException } from "@user/domain/user.errors";
 import {
   GetUserByIdQuery,
   GetUserByIdQueryHandler,
 } from "@user/queries/getUserById/getUserById.query";
-import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 let userRepository: UserRepository;
@@ -19,14 +15,7 @@ describe("[Unit] List Users", () => {
   let getUserByIdQueryHandler: GetUserByIdQueryHandler;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        GetUserByIdQueryHandler,
-        RealUUIDGeneratorService,
-        { provide: UserRepository, useClass: FakeUserRepository },
-        { provide: PinoLogger, useClass: FakeLoggerService },
-      ],
-    }).compile();
+    const moduleRef = await createHandlerModule([GetUserByIdQueryHandler]);
 
     userRepository = moduleRef.get<UserRepository>(UserRepository);
     getUserByIdQueryHandler = moduleRef.get<GetUserByIdQueryHandler>(

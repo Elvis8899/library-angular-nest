@@ -1,50 +1,21 @@
-import { NestFastifyApplication } from "@nestjs/platform-fastify";
-import { Test } from "@nestjs/testing";
-import { AppModule } from "@src/app.module";
-import { createTestApp } from "@test/util/createTestApp";
+import { useE2eApp } from "@test/util/e2eApp";
 import { LoginBody, TokensBody } from "@test/util/responseBodies";
-import request from "supertest";
 
-import { AuthGuard } from "@auth/guards/auth.guard";
 import { hashPassword } from "@auth/util/signTokenParams";
 import { HttpStatus } from "@nestjs/common";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
-import { PinoLogger } from "nestjs-pino";
-
-let app: NestFastifyApplication;
-let prismaService: PrismaService;
 const authGuardMock = new MockAuthGuardBuilder();
 
-beforeAll(async () => {
-  const testingModule = await Test.createTestingModule({
-    imports: [AppModule],
-  })
-    .overrideProvider(PinoLogger)
-    .useClass(FakeLoggerService)
-    .overrideGuard(AuthGuard)
-    .useValue(authGuardMock.build())
-    .compile();
+const e2e = useE2eApp({ authGuard: authGuardMock.build() });
 
-  app = await createTestApp(testingModule);
-  prismaService = testingModule.get<PrismaService>(PrismaService);
+beforeAll(async () => {
   const userBuilder = new UserBuilder();
-  await prismaService.user.deleteMany();
-  await prismaService.user.create({
+  await e2e.prisma.user.create({
     data: userBuilder
       .withPassword(await hashPassword(userBuilder.build().password))
       .build(),
   });
-  await app.init();
-  await app.getHttpAdapter().getInstance().ready();
-});
-
-afterAll(async () => {
-  await prismaService.user.deleteMany();
-  await app.close();
-  await prismaService.$disconnect();
 });
 
 describe("[e2e] POST /v1/login", () => {
@@ -52,9 +23,7 @@ describe("[e2e] POST /v1/login", () => {
 
   it("Should respond 201 for a valid login", async () => {
     const userInfo = new UserBuilder().buildCreateDTO();
-    const response = await request(app.getHttpServer())
-      .post(v1Route)
-      .send(userInfo);
+    const response = await e2e.http().post(v1Route).send(userInfo);
     expect(response.status).toBe(HttpStatus.OK);
   });
 
@@ -71,10 +40,12 @@ describe("[e2e] POST /v1/login", () => {
       .buildCreateDTO();
 
     // When it tries to login
-    const responseWrongEmail = await request(app.getHttpServer())
+    const responseWrongEmail = await e2e
+      .http()
       .post(v1Route)
       .send(userWrongEmail);
-    const responseWrongPassword = await request(app.getHttpServer())
+    const responseWrongPassword = await e2e
+      .http()
       .post(v1Route)
       .send(userWrongPassword);
 
@@ -89,15 +60,14 @@ describe("[e2e] POST /v1/refresh", () => {
 
   it("Should respond 200 with new tokens for a valid refresh token", async () => {
     // Given a logged in user
-    const login = await request(app.getHttpServer())
+    const login = await e2e
+      .http()
       .post("/v1/login")
       .send(new UserBuilder().buildCreateDTO());
     const { refreshToken } = TokensBody.parse(login.body);
 
     // When it refreshes its tokens
-    const response = await request(app.getHttpServer())
-      .post(v1Route)
-      .send({ refreshToken });
+    const response = await e2e.http().post(v1Route).send({ refreshToken });
 
     // Then it should receive new tokens
     expect(response.status).toBe(HttpStatus.OK);
@@ -107,30 +77,29 @@ describe("[e2e] POST /v1/refresh", () => {
 
   it("Should accept a refresh token only once", async () => {
     // Given a refresh token that was already exchanged
-    const login = await request(app.getHttpServer())
+    const login = await e2e
+      .http()
       .post("/v1/login")
       .send(new UserBuilder().buildCreateDTO());
     const { refreshToken } = TokensBody.parse(login.body);
-    const rotated = await request(app.getHttpServer())
-      .post(v1Route)
-      .send({ refreshToken });
+    const rotated = await e2e.http().post(v1Route).send({ refreshToken });
 
     // When it is used again
-    const reuse = await request(app.getHttpServer())
-      .post(v1Route)
-      .send({ refreshToken });
+    const reuse = await e2e.http().post(v1Route).send({ refreshToken });
 
     // Then it is rejected, and the session is revoked
     expect(rotated.status).toBe(HttpStatus.OK);
     expect(reuse.status).toBe(HttpStatus.UNAUTHORIZED);
-    const afterReuse = await request(app.getHttpServer())
+    const afterReuse = await e2e
+      .http()
       .post(v1Route)
       .send({ refreshToken: TokensBody.parse(rotated.body).refreshToken });
     expect(afterReuse.status).toBe(HttpStatus.UNAUTHORIZED);
   });
 
   it("Should respond 401 for an invalid refresh token", async () => {
-    const response = await request(app.getHttpServer())
+    const response = await e2e
+      .http()
       .post(v1Route)
       .send({ refreshToken: "not-a-jwt" });
     expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
@@ -141,21 +110,17 @@ describe("[e2e] POST /v1/logout", () => {
   it("Should revoke refresh tokens issued before logout", async () => {
     // Given a logged in user whose refresh token works
     const userInfo = new UserBuilder().buildCreateDTO();
-    const login = await request(app.getHttpServer())
-      .post("/v1/login")
-      .send(userInfo);
+    const login = await e2e.http().post("/v1/login").send(userInfo);
     const { refreshToken, user } = LoginBody.parse(login.body);
 
     // When the user logs out
     authGuardMock.withSub(user.id);
-    const logout = await request(app.getHttpServer()).post("/v1/logout");
+    const logout = await e2e.http().post("/v1/logout");
     authGuardMock.reset();
 
     // Then the old refresh token is rejected
     expect(logout.status).toBe(HttpStatus.NO_CONTENT);
-    const refresh = await request(app.getHttpServer())
-      .post("/v1/refresh")
-      .send({ refreshToken });
+    const refresh = await e2e.http().post("/v1/refresh").send({ refreshToken });
     expect(refresh.status).toBe(HttpStatus.UNAUTHORIZED);
   });
 });

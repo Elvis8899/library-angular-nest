@@ -3,15 +3,10 @@ import {
   CreateBookInfoHandler,
 } from "@book/commands/createBookInfo/createBookInfo.command";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
-import { Test } from "@nestjs/testing";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
-import { PinoLogger } from "nestjs-pino";
+import { createHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
 let bookInfoRepository: BookInfoRepository;
@@ -21,19 +16,7 @@ describe("[Unit] Create BookInfo", () => {
   let createBookInfoHandler: CreateBookInfoHandler;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [DomainEventPublisherModule],
-      providers: [
-        {
-          provide: DomainEventPublisherModule,
-          useClass: DomainEventPublisher,
-        },
-        CreateBookInfoHandler,
-        RealUUIDGeneratorService,
-        { provide: BookInfoRepository, useClass: FakeBookInfoRepository },
-        { provide: PinoLogger, useClass: FakeLoggerService },
-      ],
-    }).compile();
+    const moduleRef = await createHandlerModule([CreateBookInfoHandler]);
 
     bookInfoRepository = moduleRef.get<BookInfoRepository>(BookInfoRepository);
     createBookInfoHandler = moduleRef.get<CreateBookInfoHandler>(

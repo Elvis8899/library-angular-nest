@@ -18,6 +18,7 @@ import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { resetDatabase } from "@test/util/resetDatabase";
 import { RealUserRepository } from "@user/database/realUser.repository";
 
 let prismaService: PrismaService;
@@ -38,9 +39,7 @@ beforeAll(async () => {
   );
   prismaService = module.get<PrismaService>(PrismaService);
 
-  await prismaService.user.deleteMany();
-  await prismaService.bookInfo.deleteMany();
-  await prismaService.bookRentalDetails.deleteMany();
+  await resetDatabase(prismaService);
   const { bookItems, ...bookInfo } = new BookInfoBuilder().build();
   const [bookItem]: [BookItem] = FPF.unsafeCoerce(bookItems);
   await prismaService.bookInfo.create({
@@ -67,8 +66,7 @@ describe("[Integration] BookRental repository", () => {
     await prismaService.bookRentalDetails.deleteMany();
   });
 
-  afterEach(async () => {
-    await prismaService.bookRentalDetails.deleteMany();
+  afterEach(() => {
     allBuilders.map((builder) => builder.reset());
   });
 

@@ -7,6 +7,7 @@ import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createRental } from "@test/util/createRental";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { resetDatabase } from "@test/util/resetDatabase";
 import { RealUserRepository } from "@user/database/realUser.repository";
 import { User, UserRoleEnum } from "@user/domain/user.entity";
 
@@ -33,13 +34,10 @@ describe("[Integration] User repository", () => {
   const saveUser = (p: User) => executeTask(userRepository.save(p));
 
   beforeEach(async () => {
-    await prismaService.user.deleteMany();
-    await prismaService.bookInfo.deleteMany();
+    await resetDatabase(prismaService);
   });
 
-  afterEach(async () => {
-    await prismaService.user.deleteMany();
-    await prismaService.bookInfo.deleteMany();
+  afterEach(() => {
     allBuilders.map((builder) => builder.reset());
   });
 

@@ -1,16 +1,12 @@
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
 import { BookInfoNotFoundException } from "@book/domain/bookInfo.errors";
 import {
   GetBookInfoByIdQuery,
   GetBookInfoByIdQueryHandler,
 } from "@book/queries/getBookById/getBookInfoById.query";
-import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
-import { PinoLogger } from "nestjs-pino";
+import { createHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
 let bookInfoRepository: BookInfoRepository;
@@ -19,14 +15,7 @@ describe("[Unit] List BookInfos", () => {
   let getBookInfoByIdQueryHandler: GetBookInfoByIdQueryHandler;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        GetBookInfoByIdQueryHandler,
-        RealUUIDGeneratorService,
-        { provide: BookInfoRepository, useClass: FakeBookInfoRepository },
-        { provide: PinoLogger, useClass: FakeLoggerService },
-      ],
-    }).compile();
+    const moduleRef = await createHandlerModule([GetBookInfoByIdQueryHandler]);
 
     bookInfoRepository = moduleRef.get<BookInfoRepository>(BookInfoRepository);
     getBookInfoByIdQueryHandler = moduleRef.get<GetBookInfoByIdQueryHandler>(

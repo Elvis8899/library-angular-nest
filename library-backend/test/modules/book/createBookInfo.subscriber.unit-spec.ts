@@ -1,42 +1,25 @@
 import { AddBookItemHandler } from "@book/commands/addBookItem/addBookItem.command";
 import { CreateBookInfoHandler } from "@book/commands/createBookInfo/createBookInfo.command";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
 import {
   BOOK_INFO_CREATED,
   BookInfoCreatedEvent,
 } from "@book/domain/events/bookInfoCreated.event";
 import { CreateBookInfoSubscriber } from "@book/subscriber/createBookInfo.subscriber";
 import { CqrsModule } from "@nestjs/cqrs";
-import { Test } from "@nestjs/testing";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
-import { PinoLogger } from "nestjs-pino";
+import { createHandlerModule } from "@test/util/handlerModule";
 
 describe("[Unit] Endpoint Response - Subscriber", () => {
   let createBookInfoSubscriber: CreateBookInfoSubscriber;
   let bookInfoRepository: BookInfoRepository;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [CqrsModule, DomainEventPublisherModule],
-      providers: [
-        { provide: DomainEventPublisherModule, useClass: DomainEventPublisher },
-        CreateBookInfoHandler,
-        AddBookItemHandler,
-        CreateBookInfoSubscriber,
-        RealUUIDGeneratorService,
-        {
-          provide: BookInfoRepository,
-          useClass: FakeBookInfoRepository,
-        },
-        { provide: PinoLogger, useClass: FakeLoggerService },
-      ],
-    }).compile();
+    const moduleRef = await createHandlerModule(
+      [CreateBookInfoHandler, AddBookItemHandler, CreateBookInfoSubscriber],
+      [CqrsModule],
+    );
     await moduleRef.init();
     bookInfoRepository = moduleRef.get<BookInfoRepository>(BookInfoRepository);
     createBookInfoSubscriber = moduleRef.get<CreateBookInfoSubscriber>(

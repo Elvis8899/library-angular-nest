@@ -3,21 +3,16 @@ import {
   RemoveBookItemHandler,
 } from "@book/commands/removeBookItem/removeBookItem.command";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
 import {
   AvailableBookItemNotFoundException,
   BookInfoNotFoundException,
 } from "@book/domain/bookInfo.errors";
 import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
-import { Test } from "@nestjs/testing";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { PinoLogger } from "nestjs-pino";
+import { createHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
 let bookInfoRepository: BookInfoRepository;
@@ -27,16 +22,7 @@ describe("[Unit] Delete BookInfo", () => {
   let removeBookItemHandler: RemoveBookItemHandler;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [DomainEventPublisherModule],
-      providers: [
-        { provide: DomainEventPublisherModule, useClass: DomainEventPublisher },
-        RemoveBookItemHandler,
-        RealUUIDGeneratorService,
-        { provide: BookInfoRepository, useClass: FakeBookInfoRepository },
-        { provide: PinoLogger, useClass: FakeLoggerService },
-      ],
-    }).compile();
+    const moduleRef = await createHandlerModule([RemoveBookItemHandler]);
 
     bookInfoRepository = moduleRef.get<BookInfoRepository>(BookInfoRepository);
     removeBookItemHandler = moduleRef.get<RemoveBookItemHandler>(

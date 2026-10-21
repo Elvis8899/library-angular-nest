@@ -1,18 +1,13 @@
-import { Test } from "@nestjs/testing";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
+import { createHandlerModule } from "@test/util/handlerModule";
 import {
   DeleteUser,
   DeleteUserHandler,
 } from "@user/commands/deleteUser/deleteUser.command";
-import { FakeUserRepository } from "@user/database/fakeUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 import { UserNotFoundException } from "@user/domain/user.errors";
-import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 let userRepository: UserRepository;
@@ -22,16 +17,7 @@ describe("[Unit] Delete User", () => {
   let deleteUserHandler: DeleteUserHandler;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [DomainEventPublisherModule],
-      providers: [
-        { provide: DomainEventPublisherModule, useClass: DomainEventPublisher },
-        DeleteUserHandler,
-        RealUUIDGeneratorService,
-        { provide: UserRepository, useClass: FakeUserRepository },
-        { provide: PinoLogger, useClass: FakeLoggerService },
-      ],
-    }).compile();
+    const moduleRef = await createHandlerModule([DeleteUserHandler]);
 
     userRepository = moduleRef.get<UserRepository>(UserRepository);
     deleteUserHandler = moduleRef.get<DeleteUserHandler>(DeleteUserHandler);

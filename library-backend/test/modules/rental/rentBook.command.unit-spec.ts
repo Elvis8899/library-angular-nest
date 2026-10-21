@@ -1,26 +1,19 @@
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
 import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
-import { Test } from "@nestjs/testing";
 import {
   RentBookCommand,
   RentBookCommandHandler,
 } from "@rental/commands/rentBook/rentBook.command";
 import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
-import { FakeBookRentalRepository } from "@rental/database/fakeBookRental.repository";
 import { BookRentalNotAvailableException } from "@rental/domain/bookRental.errors";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { createHandlerModule } from "@test/util/handlerModule";
 import { UserRepository } from "@user/database/user.repository.port";
-import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 
@@ -42,21 +35,7 @@ describe("[Unit] Update BookInfo", () => {
   const bookRentalBuilder = new BookRentalBuilder(0);
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [DomainEventPublisherModule],
-      providers: [
-        {
-          provide: DomainEventPublisherModule,
-          useClass: DomainEventPublisher,
-        },
-        RentBookCommandHandler,
-        RealUUIDGeneratorService,
-        { provide: BookInfoRepository, useClass: FakeBookInfoRepository },
-        { provide: UserRepository, useClass: FakeUserRepository },
-        { provide: BookRentalRepository, useClass: FakeBookRentalRepository },
-        { provide: PinoLogger, useClass: FakeLoggerService },
-      ],
-    }).compile();
+    const moduleRef = await createHandlerModule([RentBookCommandHandler]);
 
     bookInfoRepository = moduleRef.get<BookInfoRepository>(BookInfoRepository);
     const userRepository = moduleRef.get<UserRepository>(UserRepository);

@@ -12,6 +12,7 @@ import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { resetDatabase } from "@test/util/resetDatabase";
 
 let prismaService: PrismaService;
 let bookInfoRepository: RealBookInfoRepository;
@@ -39,11 +40,10 @@ describe("[Integration] BookInfo repository", () => {
   const saveBookInfo = (p: BookInfo) => executeTask(bookInfoRepository.save(p));
 
   beforeEach(async () => {
-    await prismaService.bookInfo.deleteMany();
+    await resetDatabase(prismaService);
   });
 
-  afterEach(async () => {
-    await prismaService.bookInfo.deleteMany();
+  afterEach(() => {
     allBuilders.map((builder) => builder.reset());
   });
 

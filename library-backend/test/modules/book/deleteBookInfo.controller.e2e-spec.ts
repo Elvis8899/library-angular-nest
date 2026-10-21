@@ -1,55 +1,21 @@
-import { NestFastifyApplication } from "@nestjs/platform-fastify";
-import { Test, TestingModule } from "@nestjs/testing";
-import { AppModule } from "@src/app.module";
-import { createTestApp } from "@test/util/createTestApp";
-import request from "supertest";
+import { useE2eApp } from "@test/util/e2eApp";
+import { resetDatabase } from "@test/util/resetDatabase";
 
-import { AuthGuard } from "@auth/guards/auth.guard";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
 import { HttpStatus } from "@nestjs/common";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
-import { PinoLogger } from "nestjs-pino";
-
-let app: NestFastifyApplication;
-let testingModule: TestingModule;
-let prismaService: PrismaService;
 
 let bookInfoRepository: BookInfoRepository;
-beforeAll(async () => {
-  testingModule = await Test.createTestingModule({
-    imports: [AppModule],
-  })
-    .overrideProvider(PinoLogger)
-    .useClass(FakeLoggerService)
-    .overrideGuard(AuthGuard)
-    .useValue(new MockAuthGuardBuilder())
-    .compile();
+const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });
 
-  app = await createTestApp(testingModule);
-  prismaService = testingModule.get<PrismaService>(PrismaService);
-
-  bookInfoRepository =
-    testingModule.get<BookInfoRepository>(BookInfoRepository);
-
-  await app.init();
-  await app.getHttpAdapter().getInstance().ready();
-});
-
-afterAll(async () => {
-  await app.close();
-  await prismaService.$disconnect();
+beforeAll(() => {
+  bookInfoRepository = e2e.module.get<BookInfoRepository>(BookInfoRepository);
 });
 
 beforeEach(async () => {
-  await prismaService.bookInfo.deleteMany();
-});
-
-afterEach(async () => {
-  await prismaService.bookInfo.deleteMany();
+  await resetDatabase(e2e.prisma);
 });
 
 describe("[e2e] DELETE /v1/bookInfos/:id", () => {
@@ -59,27 +25,21 @@ describe("[e2e] DELETE /v1/bookInfos/:id", () => {
     const bookInfo = new BookInfoBuilder().withName("Test").build();
     await executeTask(bookInfoRepository.save(bookInfo));
 
-    const response = await request(app.getHttpServer()).delete(
-      v1Route(bookInfo.id),
-    );
+    const response = await e2e.http().delete(v1Route(bookInfo.id));
 
     expect(response.status).toBe(HttpStatus.OK);
-    const bookInfoAmount = await prismaService.bookInfo.count();
+    const bookInfoAmount = await e2e.prisma.bookInfo.count();
     expect(bookInfoAmount).toBe(0);
   });
 
   it("Should respond 422 for invalid id", async () => {
-    const response = await request(app.getHttpServer()).delete(
-      v1Route("fakeId"),
-    );
+    const response = await e2e.http().delete(v1Route("fakeId"));
     expect(response.status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
   });
 
   it("Should respond 404 for bookInfo not found", async () => {
     const bookInfo = new BookInfoBuilder().withName("Test").build();
-    const response = await request(app.getHttpServer()).delete(
-      v1Route(bookInfo.id),
-    );
+    const response = await e2e.http().delete(v1Route(bookInfo.id));
     expect(response.status).toBe(HttpStatus.NOT_FOUND);
   });
 });

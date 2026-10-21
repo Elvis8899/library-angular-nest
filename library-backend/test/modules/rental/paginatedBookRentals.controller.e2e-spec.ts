@@ -1,76 +1,40 @@
-import { AuthGuard } from "@auth/guards/auth.guard";
 import { BookItem } from "@book/domain/valueObject/bookItem.entity";
-import { NestFastifyApplication } from "@nestjs/platform-fastify";
-import { Test, TestingModule } from "@nestjs/testing";
 import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { FPF } from "@shared/utils/application/monads";
-import { AppModule } from "@src/app.module";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
-import { createTestApp } from "@test/util/createTestApp";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { useE2eApp } from "@test/util/e2eApp";
 import { UserRoleEnum } from "@user/domain/user.entity";
-import { PinoLogger } from "nestjs-pino";
-import request from "supertest";
-
-let app: NestFastifyApplication;
-let testingModule: TestingModule;
-let prismaService: PrismaService;
 
 const authGuardMock = new MockAuthGuardBuilder();
 
 let bookRentalRepository: BookRentalRepository;
+const e2e = useE2eApp({ authGuard: authGuardMock.build() });
+
 beforeAll(async () => {
-  testingModule = await Test.createTestingModule({
-    imports: [AppModule],
-  })
-    .overrideProvider(PinoLogger)
-    .useClass(FakeLoggerService)
-    .overrideGuard(AuthGuard)
-    .useValue(authGuardMock.build())
-    .compile();
-
-  app = await createTestApp(testingModule);
-  prismaService = testingModule.get<PrismaService>(PrismaService);
-
   bookRentalRepository =
-    testingModule.get<BookRentalRepository>(BookRentalRepository);
-
-  await prismaService.bookInfo.deleteMany();
-  await prismaService.user.deleteMany();
+    e2e.module.get<BookRentalRepository>(BookRentalRepository);
 
   const {
     bookItems: [bookItemRaw],
     ...bookInfo
   } = new BookInfoBuilder().build();
   const { bookId: _, ...bookItem }: BookItem = FPF.unsafeCoerce(bookItemRaw);
-  await prismaService.bookInfo.create({
+  await e2e.prisma.bookInfo.create({
     data: { ...bookInfo, bookItems: { create: { ...bookItem } } },
   });
-  await prismaService.user.create({
+  await e2e.prisma.user.create({
     data: new UserBuilder().build(),
   });
-  await app.init();
-  await app.getHttpAdapter().getInstance().ready();
-});
-
-afterAll(async () => {
-  await app.close();
-  await prismaService.$disconnect();
 });
 
 beforeEach(async () => {
   authGuardMock.reset();
-  await prismaService.bookRentalDetails.deleteMany();
-});
-
-afterEach(async () => {
-  await prismaService.bookRentalDetails.deleteMany();
+  await e2e.prisma.bookRentalDetails.deleteMany();
 });
 
 describe("[e2e] GET /v1/bookRentals", () => {
@@ -85,7 +49,7 @@ describe("[e2e] GET /v1/bookRentals", () => {
 
     await executeTask(bookRentalRepository.save(bookRental));
 
-    const response = await request(app.getHttpServer()).get(v1Route).query({
+    const response = await e2e.http().get(v1Route).query({
       limit: 10,
       page: 0,
     });
@@ -106,7 +70,7 @@ describe("[e2e] GET /v1/bookRentals", () => {
 
     await executeTask(bookRentalRepository.save(bookRental));
 
-    const response = await request(app.getHttpServer()).get(v1Route).query({
+    const response = await e2e.http().get(v1Route).query({
       limit: 10,
       page: 0,
     });
@@ -127,7 +91,7 @@ describe("[e2e] GET /v1/bookRentals", () => {
 
     await executeTask(bookRentalRepository.save(bookRental));
 
-    const response = await request(app.getHttpServer()).get(v1Route).query({
+    const response = await e2e.http().get(v1Route).query({
       limit: 10,
       page: 0,
     });
@@ -137,7 +101,7 @@ describe("[e2e] GET /v1/bookRentals", () => {
   });
 
   it("Should respond 200 with empty list", async () => {
-    const response = await request(app.getHttpServer()).get(v1Route).query({
+    const response = await e2e.http().get(v1Route).query({
       limit: 100,
       page: 1,
     });

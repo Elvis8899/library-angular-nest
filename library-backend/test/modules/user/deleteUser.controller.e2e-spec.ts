@@ -1,57 +1,22 @@
-import { NestFastifyApplication } from "@nestjs/platform-fastify";
-import { Test, TestingModule } from "@nestjs/testing";
-import { AppModule } from "@src/app.module";
-import { createTestApp } from "@test/util/createTestApp";
-import request from "supertest";
+import { useE2eApp } from "@test/util/e2eApp";
+import { resetDatabase } from "@test/util/resetDatabase";
 
-import { AuthGuard } from "@auth/guards/auth.guard";
 import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createRental } from "@test/util/createRental";
 import { UserRepository } from "@user/database/user.repository.port";
-import { PinoLogger } from "nestjs-pino";
-
-let app: NestFastifyApplication;
-let testingModule: TestingModule;
-let prismaService: PrismaService;
 
 let userRepository: UserRepository;
-beforeAll(async () => {
-  testingModule = await Test.createTestingModule({
-    imports: [AppModule],
-  })
-    .overrideProvider(PinoLogger)
-    .useClass(FakeLoggerService)
-    .overrideGuard(AuthGuard)
-    .useValue(new MockAuthGuardBuilder())
-    .compile();
+const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });
 
-  app = await createTestApp(testingModule);
-  prismaService = testingModule.get<PrismaService>(PrismaService);
-
-  userRepository = testingModule.get<UserRepository>(UserRepository);
-
-  await app.init();
-  await app.getHttpAdapter().getInstance().ready();
-});
-
-afterAll(async () => {
-  await app.close();
-  await prismaService.$disconnect();
+beforeAll(() => {
+  userRepository = e2e.module.get<UserRepository>(UserRepository);
 });
 
 beforeEach(async () => {
-  await prismaService.user.deleteMany();
-  await prismaService.bookInfo.deleteMany();
-});
-
-afterEach(async () => {
-  await prismaService.user.deleteMany();
-  await prismaService.bookInfo.deleteMany();
+  await resetDatabase(e2e.prisma);
 });
 
 describe("[e2e] DELETE /v1/users/:id", () => {
@@ -61,41 +26,33 @@ describe("[e2e] DELETE /v1/users/:id", () => {
     const user = new UserBuilder().withName("Test").build();
     await executeTask(userRepository.save(user));
 
-    const response = await request(app.getHttpServer()).delete(
-      v1Route(user.id),
-    );
+    const response = await e2e.http().delete(v1Route(user.id));
 
     expect(response.status).toBe(200);
-    const userAmount = await prismaService.user.count();
+    const userAmount = await e2e.prisma.user.count();
     expect(userAmount).toBe(0);
   });
 
   it("Should respond 422 for invalid id", async () => {
-    const response = await request(app.getHttpServer()).delete(
-      v1Route("fakeId"),
-    );
+    const response = await e2e.http().delete(v1Route("fakeId"));
     expect(response.status).toBe(422);
   });
 
   it("Should respond 409 for a user with an unfinished rental", async () => {
     const user = new UserBuilder().withName("Test").build();
     await executeTask(userRepository.save(user));
-    await createRental(prismaService, user.id, RentalStatusEnum.Rented);
+    await createRental(e2e.prisma, user.id, RentalStatusEnum.Rented);
 
-    const response = await request(app.getHttpServer()).delete(
-      v1Route(user.id),
-    );
+    const response = await e2e.http().delete(v1Route(user.id));
 
     expect(response.status).toBe(409);
     expect(response.body).toMatchObject({ code: "user.hasActiveRentals" });
-    expect(await prismaService.user.count()).toBe(1);
+    expect(await e2e.prisma.user.count()).toBe(1);
   });
 
   it("Should respond 404 for user not found", async () => {
     const user = new UserBuilder().withName("Test").build();
-    const response = await request(app.getHttpServer()).delete(
-      v1Route(user.id),
-    );
+    const response = await e2e.http().delete(v1Route(user.id));
     expect(response.status).toBe(404);
   });
 });

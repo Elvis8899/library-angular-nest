@@ -121,12 +121,13 @@ Errors are Nest `HttpException` subclasses created by small factory functions in
 
 ### Tests
 
-- Test files live in `test/modules/<module>/`, named by kind: `*.unit-spec.ts` (handlers with fake repositories via `Test.createTestingModule`), `*.inte-spec.ts` (real repositories against Postgres), `*.e2e-spec.ts` (AppModule + supertest).
+- Test files live in `test/modules/<module>/`, named by kind: `*.unit-spec.ts` (handlers with fake repositories), `*.inte-spec.ts` (real repositories against Postgres), `*.e2e-spec.ts` (AppModule + supertest).
 - Use the builders in `test/dataBuilders/` (`UserBuilder`, `BookInfoBuilder`, `BookRentalBuilder`, …) and deterministic IDs from `test/util/defaultIds.ts` (`createTestId(TableNameEnum.X, n)`).
-- E2E tests build their app with `createTestApp(testingModule)` (`test/util/createTestApp.ts`), which applies the same setup as `main.ts` (`src/app.setup.ts`: helmet, Swagger, request context, `trustProxy`); `main.ts` only adds listening. Call `app.init()` afterwards.
-- E2E tests replace `AuthGuard` with `MockAuthGuardBuilder` (an admin by default), except `routeProtection.e2e-spec.ts`, which logs in for real.
-- `test/db/seed.inte-spec.ts` tests `prisma/seed.ts` through its exported `seed(prisma)`. Call `.withRole(UserRoleEnum.Client)` and then `.reset()` to test role restrictions. `RolesGuard` stays real.
-- Suites share one database and run with `--runInBand`. Each spec cleans the tables it uses.
+- Unit specs build their module with `createHandlerModule([Handler, …])` (`test/util/handlerModule.ts`): every repository bound to its fake, a silent logger, real UUIDs and the event publisher. A provider passed in replaces the default for its token.
+- E2E specs start with `const e2e = useE2eApp({ authGuard })` (`test/util/e2eApp.ts`), then use `e2e.http()`, `e2e.prisma` and `e2e.module.get(…)`. It builds the app with the same setup as `main.ts` (`src/app.setup.ts`: helmet, Swagger, request context, `trustProxy`; `main.ts` only adds listening), empties the database first and closes the app afterwards. `beforeInit` runs before `app.init()`; `buildE2eApp`/`closeE2eApp` build extra apps, e.g. with another `trustProxy`.
+- E2E tests replace `AuthGuard` with `MockAuthGuardBuilder` (an admin by default); call `.withRole(UserRoleEnum.Client)` and then `.reset()` to test role restrictions, and `RolesGuard` stays real. `routeProtection.e2e-spec.ts` logs in for real instead.
+- `test/db/seed.inte-spec.ts` tests `prisma/seed.ts` through its exported `seed(prisma)`.
+- Suites share one database and run with `--runInBand`. `resetDatabase(prisma)` (`test/util/resetDatabase.ts`) empties every table; specs call it in `beforeEach` unless they seed once in `beforeAll` and clean only what each test adds.
 
 ## Frontend architecture
 

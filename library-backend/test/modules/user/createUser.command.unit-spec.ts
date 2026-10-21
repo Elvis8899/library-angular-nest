@@ -1,20 +1,15 @@
 import { UnprocessableEntityException } from "@nestjs/common";
-import { Test } from "@nestjs/testing";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
-import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
+import { createHandlerModule } from "@test/util/handlerModule";
 import {
   CreateUser,
   CreateUserHandler,
 } from "@user/commands/createUser/createUser.command";
-import { FakeUserRepository } from "@user/database/fakeUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 import { UserRoleEnum } from "@user/domain/user.entity";
 import { UserCPFAlreadyExistsException } from "@user/domain/user.errors";
-import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 let userRepository: UserRepository;
@@ -24,19 +19,7 @@ describe("[Unit] Create User", () => {
   let createUserHandler: CreateUserHandler;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [DomainEventPublisherModule],
-      providers: [
-        {
-          provide: DomainEventPublisherModule,
-          useClass: DomainEventPublisher,
-        },
-        CreateUserHandler,
-        RealUUIDGeneratorService,
-        { provide: UserRepository, useClass: FakeUserRepository },
-        { provide: PinoLogger, useClass: FakeLoggerService },
-      ],
-    }).compile();
+    const moduleRef = await createHandlerModule([CreateUserHandler]);
 
     userRepository = moduleRef.get<UserRepository>(UserRepository);
     createUserHandler = moduleRef.get<CreateUserHandler>(CreateUserHandler);

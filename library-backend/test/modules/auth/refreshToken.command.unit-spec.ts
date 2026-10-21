@@ -13,16 +13,12 @@ import {
 } from "@auth/util/signTokenParams";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { createHandlerModule } from "@test/util/handlerModule";
 import { UserRepository } from "@user/database/user.repository.port";
-import { PinoLogger } from "nestjs-pino";
 
 describe("[Unit] Refresh token", () => {
   let refreshTokenCommandHandler: RefreshTokenCommandHandler;
@@ -55,19 +51,10 @@ describe("[Unit] Refresh token", () => {
   };
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        JwtService,
-        RefreshTokenCommandHandler,
-        RealUUIDGeneratorService,
-        { provide: UserRepository, useClass: FakeUserRepository },
-        {
-          provide: RefreshSessionRepository,
-          useClass: FakeRefreshSessionRepository,
-        },
-        { provide: PinoLogger, useClass: FakeLoggerService },
-      ],
-    }).compile();
+    const moduleRef = await createHandlerModule([
+      JwtService,
+      RefreshTokenCommandHandler,
+    ]);
 
     userRepository = moduleRef.get<UserRepository>(UserRepository);
     refreshSessionRepository = moduleRef.get(RefreshSessionRepository);

@@ -1,55 +1,22 @@
-import { AuthGuard } from "@auth/guards/auth.guard";
 import { Prisma } from "@db/generated/client";
-import { NestFastifyApplication } from "@nestjs/platform-fastify";
-import { Test, TestingModule } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { AppModule } from "@src/app.module";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
-import { createTestApp } from "@test/util/createTestApp";
+import { useE2eApp } from "@test/util/e2eApp";
+import { resetDatabase } from "@test/util/resetDatabase";
 import { UserRepository } from "@user/database/user.repository.port";
 import { UserRoleEnum } from "@user/domain/user.entity";
-import { PinoLogger } from "nestjs-pino";
-import request from "supertest";
-
-let app: NestFastifyApplication;
-let testingModule: TestingModule;
-let prismaService: PrismaService;
 const mockAuthGuard = new MockAuthGuardBuilder();
 
 let userRepository: UserRepository;
-beforeAll(async () => {
-  testingModule = await Test.createTestingModule({
-    imports: [AppModule],
-  })
-    .overrideProvider(PinoLogger)
-    .useClass(FakeLoggerService)
-    .overrideGuard(AuthGuard)
-    .useValue(mockAuthGuard)
-    .compile();
+const e2e = useE2eApp({ authGuard: mockAuthGuard });
 
-  app = await createTestApp(testingModule);
-  prismaService = testingModule.get<PrismaService>(PrismaService);
-
-  userRepository = testingModule.get<UserRepository>(UserRepository);
-
-  await app.init();
-  await app.getHttpAdapter().getInstance().ready();
-});
-
-afterAll(async () => {
-  await app.close();
-  await prismaService.$disconnect();
+beforeAll(() => {
+  userRepository = e2e.module.get<UserRepository>(UserRepository);
 });
 
 beforeEach(async () => {
-  await prismaService.user.deleteMany();
-});
-
-afterEach(async () => {
-  await prismaService.user.deleteMany();
+  await resetDatabase(e2e.prisma);
 });
 
 describe("[e2e] GET /v1/users", () => {
@@ -59,7 +26,7 @@ describe("[e2e] GET /v1/users", () => {
     const user = new UserBuilder().withName("Test").build();
     await executeTask(userRepository.save(user));
 
-    const response = await request(app.getHttpServer()).get(v1Route).query({
+    const response = await e2e.http().get(v1Route).query({
       limit: 10,
       page: 0,
     });
@@ -71,7 +38,7 @@ describe("[e2e] GET /v1/users", () => {
 
   it("Should respond 403 for client role", async () => {
     mockAuthGuard.withRole(UserRoleEnum.Client);
-    const response = await request(app.getHttpServer()).get(v1Route).query({
+    const response = await e2e.http().get(v1Route).query({
       limit: 10,
       page: 0,
     });
@@ -87,10 +54,10 @@ describe("[e2e] GET /v1/users", () => {
       { code: "P2002", clientVersion: "7.10.1", meta: { modelName: "User" } },
     );
     const findMany = jest
-      .spyOn(prismaService.user, "findMany")
+      .spyOn(e2e.prisma.user, "findMany")
       .mockRejectedValueOnce(databaseError);
 
-    const response = await request(app.getHttpServer()).get("/v1/users");
+    const response = await e2e.http().get("/v1/users");
 
     findMany.mockRestore();
     expect(response.status).toBe(500);
@@ -103,7 +70,7 @@ describe("[e2e] GET /v1/users", () => {
   });
 
   it("Should respond 200 with empty list", async () => {
-    const response = await request(app.getHttpServer()).get(v1Route).query({
+    const response = await e2e.http().get(v1Route).query({
       limit: 100,
       page: 1,
     });

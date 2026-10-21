@@ -1,16 +1,12 @@
-import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { FakeUserRepository } from "@user/database/fakeUser.repository";
+import { createHandlerModule } from "@test/util/handlerModule";
 import { UserRepository } from "@user/database/user.repository.port";
 import {
   PaginatedUsersQuery,
   PaginatedUsersQueryHandler,
 } from "@user/queries/paginatedUsers/paginatedUsers.query";
-import { PinoLogger } from "nestjs-pino";
 
 //Adapters
 let userRepository: UserRepository;
@@ -19,14 +15,7 @@ describe("[Unit] List Users", () => {
   let paginatedUsersQueryHandler: PaginatedUsersQueryHandler;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        PaginatedUsersQueryHandler,
-        RealUUIDGeneratorService,
-        { provide: UserRepository, useClass: FakeUserRepository },
-        { provide: PinoLogger, useClass: FakeLoggerService },
-      ],
-    }).compile();
+    const moduleRef = await createHandlerModule([PaginatedUsersQueryHandler]);
 
     userRepository = moduleRef.get<UserRepository>(UserRepository);
     paginatedUsersQueryHandler = moduleRef.get<PaginatedUsersQueryHandler>(

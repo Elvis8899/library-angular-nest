@@ -1,16 +1,12 @@
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
 import {
   PaginatedBookInfosQuery,
   PaginatedBookInfosQueryHandler,
 } from "@book/queries/paginatedBookInfos/paginatedBookInfos.query";
 import { UnprocessableEntityException } from "@nestjs/common";
-import { Test } from "@nestjs/testing";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
-import { PinoLogger } from "nestjs-pino";
+import { createHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
 let bookInfoRepository: BookInfoRepository;
@@ -19,14 +15,9 @@ describe("[Unit] List BookInfos", () => {
   let paginatedBookInfosQueryHandler: PaginatedBookInfosQueryHandler;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        PaginatedBookInfosQueryHandler,
-        RealUUIDGeneratorService,
-        { provide: BookInfoRepository, useClass: FakeBookInfoRepository },
-        { provide: PinoLogger, useClass: FakeLoggerService },
-      ],
-    }).compile();
+    const moduleRef = await createHandlerModule([
+      PaginatedBookInfosQueryHandler,
+    ]);
 
     bookInfoRepository = moduleRef.get<BookInfoRepository>(BookInfoRepository);
     paginatedBookInfosQueryHandler =

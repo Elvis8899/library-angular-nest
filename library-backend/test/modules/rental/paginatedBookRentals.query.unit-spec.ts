@@ -1,17 +1,13 @@
-import { Test } from "@nestjs/testing";
 import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
-import { FakeBookRentalRepository } from "@rental/database/fakeBookRental.repository";
 import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
 import {
   PaginatedBookRentalsQuery,
   PaginatedBookRentalsQueryHandler,
 } from "@rental/queries/paginatedBookRentals/paginatedBookRentals.query";
-import { FakeLoggerService } from "@shared/logger/adapters/fake/fakeLogger.service";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { PinoLogger } from "nestjs-pino";
+import { createHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
 let bookRentalRepository: BookRentalRepository;
@@ -20,14 +16,9 @@ describe("[Unit] List Users", () => {
   let paginatedBookRentalsQueryHandler: PaginatedBookRentalsQueryHandler;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        PaginatedBookRentalsQueryHandler,
-        RealUUIDGeneratorService,
-        { provide: BookRentalRepository, useClass: FakeBookRentalRepository },
-        { provide: PinoLogger, useClass: FakeLoggerService },
-      ],
-    }).compile();
+    const moduleRef = await createHandlerModule([
+      PaginatedBookRentalsQueryHandler,
+    ]);
 
     bookRentalRepository =
       moduleRef.get<BookRentalRepository>(BookRentalRepository);

@@ -3,24 +3,16 @@ import { seed } from "@db/seed";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { resetDatabase } from "@test/util/resetDatabase";
 
 const prismaService = new PrismaService();
 
-const clearSeededTables = async () => {
-  await prismaService.bookRentalDetails.deleteMany();
-  await prismaService.bookItem.deleteMany();
-  await prismaService.bookInfo.deleteMany();
-  await prismaService.refreshSession.deleteMany();
-  await prismaService.user.deleteMany();
-};
-
 beforeEach(async () => {
-  await clearSeededTables();
+  await resetDatabase(prismaService);
   jest.spyOn(console, "log").mockImplementation(() => undefined);
 });
 
 afterAll(async () => {
-  await clearSeededTables();
   await prismaService.$disconnect();
 });
 
@@ -59,7 +51,7 @@ describe("[Integration] Database seed", () => {
   it("Should hash the passwords again when seeding a second database", async () => {
     //Given a database seeded once and then emptied
     await seed(prismaService);
-    await clearSeededTables();
+    await resetDatabase(prismaService);
 
     //When we seed it again in the same process
     await seed(prismaService);
