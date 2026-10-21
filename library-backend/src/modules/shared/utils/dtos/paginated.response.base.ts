@@ -6,16 +6,16 @@ export abstract class PaginatedResponseDto<T> extends Paginated<T> {
     example: 5312,
     description: "Total number of items",
   })
-  count!: number;
+  declare count: number;
 
   @ApiProperty({
     example: 10,
     description: "Number of items per page",
   })
-  limit!: number;
+  declare limit: number;
 
   @ApiProperty({ example: 0, description: "Page number" })
-  page!: number;
+  declare page: number;
 
   @ApiProperty({ isArray: true })
   abstract data: T[];

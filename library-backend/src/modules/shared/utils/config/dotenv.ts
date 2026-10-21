@@ -12,4 +12,4 @@ const envPath: string = path.resolve(
   process.cwd(),
   getBaseEnvPath(process.env.NODE_ENV),
 );
-config({ path: envPath });
+config({ path: envPath, quiet: true });

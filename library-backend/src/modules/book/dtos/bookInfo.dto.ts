@@ -3,6 +3,7 @@ import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { BaseEntityDto } from "@shared/utils/dtos/baseEntity.dto";
 import { PaginatedResponseDto } from "@shared/utils/dtos/paginated.response.base";
 import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginatedQuery.request.dto";
+import { BookInfo } from "@src/modules/book/domain/bookInfo.entity";
 
 export class BookInfoDto extends BaseEntityDto {
   @ApiProperty({
@@ -33,7 +34,7 @@ export class BookItemDto extends BaseEntityDto {
     description: "ID do exemplar",
     required: true,
   })
-  id!: string;
+  declare id: string;
   @ApiProperty({
     description: "Status do exemplar",
     required: false,
@@ -45,6 +46,9 @@ export class BookItemDto extends BaseEntityDto {
   })
   bookId!: string;
 }
+export const toBookInfoResponse = (bookInfo: BookInfo): BookInfoDto => ({
+  ...bookInfo,
+});
 
 export class CreateBookItemDto extends OmitType(BookItemDto, [
   "id",

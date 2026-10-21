@@ -1,8 +1,8 @@
 import { AuthGuard } from "@auth/guards/auth.guard";
 import {
-  BookInfoDto,
   PaginatedBookInfoQueryRequestDto,
   PaginatedBookInfoResponseDto,
+  toBookInfoResponse,
 } from "@book/dtos/bookInfo.dto";
 import { PaginatedBookInfosQuery } from "@book/queries/paginatedBookInfos/paginatedBookInfos.query";
 import { Controller, Get, HttpStatus, Query, UseGuards } from "@nestjs/common";
@@ -13,7 +13,8 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { PaginatedResponseDto } from "@shared/utils/dtos/paginated.response.base";
+import { Paginated } from "@shared/utils/database/repository.port";
+import { BookInfo } from "@src/modules/book/domain/bookInfo.entity";
 
 @Controller("v1/")
 @ApiBearerAuth()
@@ -35,7 +36,7 @@ export class PaginatedBookInfoController {
     @Query() queryParams: PaginatedBookInfoQueryRequestDto,
   ): Promise<PaginatedBookInfoResponseDto> {
     return this.queryBus
-      .execute<PaginatedBookInfosQuery, PaginatedResponseDto<BookInfoDto>>(
+      .execute<PaginatedBookInfosQuery, Paginated<BookInfo>>(
         new PaginatedBookInfosQuery(queryParams, {
           name: queryParams.name,
           createdFrom: queryParams.createdFrom,
@@ -44,6 +45,14 @@ export class PaginatedBookInfoController {
           order: queryParams.order,
         }),
       )
-      .then((result) => new PaginatedBookInfoResponseDto(result));
+      .then(
+        (result) =>
+          new PaginatedBookInfoResponseDto({
+            count: result.count,
+            limit: result.limit,
+            page: result.page,
+            data: result.data.map(toBookInfoResponse),
+          }),
+      );
   }
 }
