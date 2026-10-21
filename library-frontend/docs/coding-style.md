@@ -17,7 +17,7 @@ SCSS rules are configured in [`.stylelintrc`](../.stylelintrc), but no script ru
 
 ## Lint rules worth knowing
 
-The [ESLint config](../eslint.config.mjs) extends the recommended rules from ESLint, typescript-eslint (recommended and stylistic) and angular-eslint (TypeScript, templates and accessibility). On top of those:
+The [ESLint config](../eslint.config.mts) extends the recommended rules from ESLint, typescript-eslint (recommended and stylistic) and angular-eslint (TypeScript, templates and accessibility). On top of those:
 
 | Rule | What it means |
 |---|---|

@@ -15,6 +15,7 @@ This app has third-party dependencies (both production and development). These d
 - [eslint](https://www.npmjs.com/package/eslint): JavaScript/TypeScript linter.
 - [eslint-config-prettier](https://github.com/prettier/eslint-config-prettier): Turns off ESLint rules that conflict with Prettier.
 - [eslint-plugin-prettier](https://github.com/prettier/eslint-plugin-prettier): Runs Prettier as an ESLint rule.
+- [jiti](https://www.npmjs.com/package/jiti): Lets ESLint load its TypeScript config (`eslint.config.mts`).
 - [husky](https://www.npmjs.com/package/husky): Git hooks tool to enforce code standards.
 - [prettier](https://www.npmjs.com/package/prettier): Code formatter for consistent style.
 - [pretty-quick](https://www.npmjs.com/package/pretty-quick): Runs Prettier on staged files.

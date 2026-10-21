@@ -1,4 +1,3 @@
-// @ts-check
 import comments from "@eslint-community/eslint-plugin-eslint-comments/configs";
 import eslint from "@eslint/js";
 import prettierlint from "eslint-config-prettier";
