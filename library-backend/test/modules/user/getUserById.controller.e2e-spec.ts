@@ -1,11 +1,11 @@
+import { UserRepository } from "@modules/user/database/user.repository.port";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { HttpStatus } from "@nestjs/common";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { useE2eApp } from "@test/util/e2eApp";
 import { resetDatabase } from "@test/util/resetDatabase";
-import { UserRepository } from "@user/database/user.repository.port";
-import { UserRoleEnum } from "@user/domain/user.entity";
 const mockAuthGuard = new MockAuthGuardBuilder();
 
 let userRepository: UserRepository;

@@ -1,9 +1,9 @@
 import {
   DeleteBookInfo,
   DeleteBookInfoHandler,
-} from "@book/commands/deleteBookInfo/deleteBookInfo.command";
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { BookInfoNotFoundException } from "@book/domain/bookInfo.errors";
+} from "@modules/book/commands/deleteBookInfo/deleteBookInfo.command";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
+import { BookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";

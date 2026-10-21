@@ -1,14 +1,14 @@
 import {
   LogoutCommand,
   LogoutCommandHandler,
-} from "@auth/commands/logout/logout.command";
+} from "@modules/auth/commands/logout/logout.command";
+import { UserRepository } from "@modules/user/database/user.repository.port";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
-import { UserRepository } from "@user/database/user.repository.port";
 
 describe("[Unit] Logout", () => {
   const user = new UserBuilder().build();

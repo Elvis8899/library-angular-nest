@@ -1,4 +1,4 @@
-import { authConfig } from "@auth/auth.config";
+import { authConfig } from "@modules/auth/auth.config";
 import { HttpStatus } from "@nestjs/common";
 import { buildE2eApp, closeE2eApp, E2eApp, useE2eApp } from "@test/util/e2eApp";
 import { SwaggerDocumentBody } from "@test/util/responseBodies";

@@ -1,8 +1,8 @@
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import {
   PaginatedBookInfosQuery,
   PaginatedBookInfosQueryHandler,
-} from "@book/queries/paginatedBookInfos/paginatedBookInfos.query";
+} from "@modules/book/queries/paginatedBookInfos/paginatedBookInfos.query";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";

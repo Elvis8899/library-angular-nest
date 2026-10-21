@@ -1,14 +1,15 @@
-import { RefreshSessionRepository } from "@auth/database/refreshSession.repository.port";
-import { wrongAuthException } from "@auth/domain/auth.errors";
-import { LoginInput } from "@auth/domain/login.entity";
-import { AuthResponseDto } from "@auth/dtos/authResponse.dto";
-import { LoginDto } from "@auth/dtos/login.dto";
-import { comparePassword } from "@auth/utils/password";
+import { RefreshSessionRepository } from "@modules/auth/database/refreshSession.repository.port";
+import { wrongAuthException } from "@modules/auth/domain/auth.errors";
+import { LoginInput } from "@modules/auth/domain/login.entity";
+import { AuthResponseDto } from "@modules/auth/dtos/authResponse.dto";
+import { LoginDto } from "@modules/auth/dtos/login.dto";
+import { comparePassword } from "@modules/auth/utils/password";
 import {
   generateTokens,
   refreshSessionExpiry,
   RefreshTokenRef,
-} from "@auth/utils/tokens";
+} from "@modules/auth/utils/tokens";
+import { UserRepository } from "@modules/user/database/user.repository.port";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { JwtService } from "@nestjs/jwt";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -16,7 +17,6 @@ import { fromInputRE } from "@shared/utils/application/fromInput";
 import { B, FPF, RE, RTE, TE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
-import { UserRepository } from "@user/database/user.repository.port";
 import { PinoLogger } from "nestjs-pino";
 
 export class LoginCommand implements ICommand {

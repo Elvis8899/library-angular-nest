@@ -1,6 +1,12 @@
+import { RentalStatusEnum } from "@modules/rental/domain/bookRental.entity";
+import { RealUserRepository } from "@modules/user/database/realUser.repository";
+import { User, UserRoleEnum } from "@modules/user/domain/user.entity";
+import {
+  UserCPFAlreadyExistsException,
+  UserEmailAlreadyExistsException,
+} from "@modules/user/domain/user.errors";
 import { ConflictException, NotFoundException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
@@ -8,12 +14,6 @@ import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createRental } from "@test/util/createRental";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { resetDatabase } from "@test/util/resetDatabase";
-import { RealUserRepository } from "@user/database/realUser.repository";
-import { User, UserRoleEnum } from "@user/domain/user.entity";
-import {
-  UserCPFAlreadyExistsException,
-  UserEmailAlreadyExistsException,
-} from "@user/domain/user.errors";
 
 let prismaService: PrismaService;
 let userRepository: RealUserRepository;

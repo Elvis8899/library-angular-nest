@@ -1,10 +1,10 @@
-import { hashPassword } from "@auth/utils/password";
+import { hashPassword } from "@modules/auth/utils/password";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { HttpStatus } from "@nestjs/common";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useE2eApp } from "@test/util/e2eApp";
 import { TokensBody } from "@test/util/responseBodies";
-import { UserRoleEnum } from "@user/domain/user.entity";
 import { z } from "zod";
 
 // Unlike the other e2e specs, AuthGuard is not replaced here: requests go

@@ -1,11 +1,11 @@
-import { AuthGuard } from "@auth/guards/auth.guard";
-import { BookInfo } from "@book/domain/bookInfo.entity";
+import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import {
   PaginatedBookInfoQueryRequestDto,
   PaginatedBookInfoResponseDto,
   toBookInfoResponse,
-} from "@book/dtos/bookInfo.dto";
-import { PaginatedBookInfosQuery } from "@book/queries/paginatedBookInfos/paginatedBookInfos.query";
+} from "@modules/book/dtos/bookInfo.dto";
+import { PaginatedBookInfosQuery } from "@modules/book/queries/paginatedBookInfos/paginatedBookInfos.query";
 import { Controller, Get, HttpStatus, Query, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {

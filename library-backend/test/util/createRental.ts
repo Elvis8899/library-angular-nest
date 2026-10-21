@@ -1,4 +1,4 @@
-import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
+import { RentalStatusEnum } from "@modules/rental/domain/bookRental.entity";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { createBook } from "@test/util/createBook";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";

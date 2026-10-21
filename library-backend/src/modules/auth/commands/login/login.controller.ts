@@ -1,7 +1,7 @@
-import { LoginCommand } from "@auth/commands/login/login.command";
-import { AuthResponseDto } from "@auth/dtos/authResponse.dto";
-import { LoginDto } from "@auth/dtos/login.dto";
-import { LoginThrottlerGuard } from "@auth/guards/loginThrottler.guard";
+import { LoginCommand } from "@modules/auth/commands/login/login.command";
+import { AuthResponseDto } from "@modules/auth/dtos/authResponse.dto";
+import { LoginDto } from "@modules/auth/dtos/login.dto";
+import { LoginThrottlerGuard } from "@modules/auth/guards/loginThrottler.guard";
 import {
   Body,
   Controller,

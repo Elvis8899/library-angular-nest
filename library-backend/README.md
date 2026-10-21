@@ -46,4 +46,4 @@ npx env-cmd -f .env.test jest --config ./test/jest.config.ts -t "test name" <fil
 
 ## Code organisation
 
-Each feature in `src/modules/` (`user`, `book`, `rental`, `auth`) is split into `commands/` (writes), `queries/` (reads), `domain/` (Zod entities, errors, events), `database/` (repository port with Prisma and in-memory implementations) and `dtos/`. Imports use path aliases (`@user/`, `@book/`, `@shared/`, …); relative imports are rejected by lint. See [`CLAUDE.md`](../CLAUDE.md) for details.
+Each feature in `src/modules/` (`user`, `book`, `rental`, `auth`) is split into `commands/` (writes), `queries/` (reads), `domain/` (Zod entities, errors, events), `database/` (repository port with Prisma and in-memory implementations) and `dtos/`. Imports use path aliases (`@modules/user/`, `@shared/`, …); relative imports are rejected by lint. See [`CLAUDE.md`](../CLAUDE.md) for details.

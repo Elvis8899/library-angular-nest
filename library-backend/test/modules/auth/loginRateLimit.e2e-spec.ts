@@ -1,4 +1,4 @@
-import { authConfig } from "@auth/auth.config";
+import { authConfig } from "@modules/auth/auth.config";
 import { HttpStatus } from "@nestjs/common";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { useE2eApp } from "@test/util/e2eApp";

@@ -1,11 +1,12 @@
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
+import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
 import {
   RentBookCommand,
   RentBookCommandHandler,
-} from "@rental/commands/rentBook/rentBook.command";
-import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
-import { BookRentalNotAvailableException } from "@rental/domain/bookRental.errors";
+} from "@modules/rental/commands/rentBook/rentBook.command";
+import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
+import { BookRentalNotAvailableException } from "@modules/rental/domain/bookRental.errors";
+import { UserRepository } from "@modules/user/database/user.repository.port";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
@@ -13,7 +14,6 @@ import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
-import { UserRepository } from "@user/database/user.repository.port";
 
 //Adapters
 

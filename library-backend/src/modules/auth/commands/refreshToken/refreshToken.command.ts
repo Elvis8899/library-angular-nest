@@ -1,17 +1,18 @@
-import { RefreshSessionRepository } from "@auth/database/refreshSession.repository.port";
-import { invalidRefreshTokenException } from "@auth/domain/auth.errors";
+import { RefreshSessionRepository } from "@modules/auth/database/refreshSession.repository.port";
+import { invalidRefreshTokenException } from "@modules/auth/domain/auth.errors";
 import {
   RefreshTokenClaims,
   RefreshTokenInput,
-} from "@auth/domain/login.entity";
-import { AuthResponseDto } from "@auth/dtos/authResponse.dto";
-import { RefreshTokenDto } from "@auth/dtos/refreshToken.dto";
+} from "@modules/auth/domain/login.entity";
+import { AuthResponseDto } from "@modules/auth/dtos/authResponse.dto";
+import { RefreshTokenDto } from "@modules/auth/dtos/refreshToken.dto";
 import {
   generateTokens,
   refreshSessionExpiry,
   RefreshTokenRef,
   refreshVerifyOptions,
-} from "@auth/utils/tokens";
+} from "@modules/auth/utils/tokens";
+import { UserRepository } from "@modules/user/database/user.repository.port";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { JwtService } from "@nestjs/jwt";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -19,7 +20,6 @@ import { fromInputRE } from "@shared/utils/application/fromInput";
 import { B, E, FPF, RE, RTE, TE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
-import { UserRepository } from "@user/database/user.repository.port";
 import { PinoLogger } from "nestjs-pino";
 
 export class RefreshTokenCommand implements ICommand {

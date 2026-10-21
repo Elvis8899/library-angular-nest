@@ -1,13 +1,13 @@
 import {
   RemoveBookItem,
   RemoveBookItemHandler,
-} from "@book/commands/removeBookItem/removeBookItem.command";
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+} from "@modules/book/commands/removeBookItem/removeBookItem.command";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import {
   AvailableBookItemNotFoundException,
   BookInfoNotFoundException,
-} from "@book/domain/bookInfo.errors";
-import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
+} from "@modules/book/domain/bookInfo.errors";
+import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";

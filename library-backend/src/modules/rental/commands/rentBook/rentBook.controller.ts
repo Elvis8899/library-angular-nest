@@ -1,7 +1,10 @@
-import { Roles } from "@auth/decorators/roles.decorator";
-import { AuthenticatedRequest } from "@auth/domain/login.entity";
-import { AuthGuard } from "@auth/guards/auth.guard";
-import { RolesGuard } from "@auth/guards/roles.guard";
+import { Roles } from "@modules/auth/decorators/roles.decorator";
+import { AuthenticatedRequest } from "@modules/auth/domain/login.entity";
+import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { RolesGuard } from "@modules/auth/guards/roles.guard";
+import { RentBookCommand } from "@modules/rental/commands/rentBook/rentBook.command";
+import { BookRentalDto } from "@modules/rental/dtos/bookRental.dto";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import {
   Body,
   Controller,
@@ -20,10 +23,7 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { RentBookCommand } from "@rental/commands/rentBook/rentBook.command";
-import { BookRentalDto } from "@rental/dtos/bookRental.dto";
 import { noop } from "@shared/utils/application/noop";
-import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Controller("v1/bookRentals")
 @ApiTags("Empréstimos")

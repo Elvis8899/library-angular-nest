@@ -1,8 +1,8 @@
-import { RefreshSessionRepository } from "@auth/database/refreshSession.repository.port";
+import { RefreshSessionRepository } from "@modules/auth/database/refreshSession.repository.port";
 import {
   RefreshSession,
   RotateRefreshSession,
-} from "@auth/domain/refreshSession.entity";
+} from "@modules/auth/domain/refreshSession.entity";
 import { Injectable } from "@nestjs/common";
 import { FPF, O, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";

@@ -1,11 +1,13 @@
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
+import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
+import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
+import { BookRental } from "@modules/rental/domain/bookRental.entity";
+import { bookRentalNotAvailableException } from "@modules/rental/domain/bookRental.errors";
+import { BOOK_RENTAL_RENTED } from "@modules/rental/domain/events/bookRented.event";
+import { CreateBookRentalDto } from "@modules/rental/dtos/bookRental.dto";
+import { UserRepository } from "@modules/user/database/user.repository.port";
+import { userNotFoundException } from "@modules/user/domain/user.errors";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
-import { BookRental } from "@rental/domain/bookRental.entity";
-import { bookRentalNotAvailableException } from "@rental/domain/bookRental.errors";
-import { BOOK_RENTAL_RENTED } from "@rental/domain/events/bookRented.event";
-import { CreateBookRentalDto } from "@rental/dtos/bookRental.dto";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
@@ -13,8 +15,6 @@ import { Apply, FPF, RE, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
-import { UserRepository } from "@user/database/user.repository.port";
-import { userNotFoundException } from "@user/domain/user.errors";
 import { PinoLogger } from "nestjs-pino";
 
 export class RentBookCommand implements ICommand {

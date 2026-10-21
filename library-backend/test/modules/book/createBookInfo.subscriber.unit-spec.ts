@@ -1,11 +1,11 @@
-import { AddBookItemHandler } from "@book/commands/addBookItem/addBookItem.command";
-import { CreateBookInfoHandler } from "@book/commands/createBookInfo/createBookInfo.command";
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { AddBookItemHandler } from "@modules/book/commands/addBookItem/addBookItem.command";
+import { CreateBookInfoHandler } from "@modules/book/commands/createBookInfo/createBookInfo.command";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import {
   BOOK_INFO_CREATED,
   BookInfoCreatedEvent,
-} from "@book/domain/events/bookInfoCreated.event";
-import { CreateBookInfoSubscriber } from "@book/subscribers/createBookInfo.subscriber";
+} from "@modules/book/domain/events/bookInfoCreated.event";
+import { CreateBookInfoSubscriber } from "@modules/book/subscribers/createBookInfo.subscriber";
 import { CqrsModule } from "@nestjs/cqrs";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";

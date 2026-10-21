@@ -1,6 +1,6 @@
+import { DocumentType } from "@modules/user/domain/document";
 import { BaseDateEntity } from "@shared/utils/domain/dateEntity.base";
 import { UUID } from "@shared/uuid/uuid";
-import { DocumentType } from "@user/domain/document";
 import { z } from "zod";
 
 export enum UserRoleEnum {

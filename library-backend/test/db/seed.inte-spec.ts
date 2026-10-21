@@ -1,5 +1,5 @@
-import { comparePassword } from "@auth/utils/password";
 import { seed } from "@db/seed";
+import { comparePassword } from "@modules/auth/utils/password";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";

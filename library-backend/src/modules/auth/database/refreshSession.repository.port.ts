@@ -1,7 +1,7 @@
 import {
   RefreshSession,
   RotateRefreshSession,
-} from "@auth/domain/refreshSession.entity";
+} from "@modules/auth/domain/refreshSession.entity";
 import { TE } from "@shared/utils/application/monads";
 
 export abstract class RefreshSessionRepository {

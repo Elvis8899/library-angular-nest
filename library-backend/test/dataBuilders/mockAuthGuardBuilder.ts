@@ -1,7 +1,7 @@
-import { RequestJWTPayload } from "@auth/domain/login.entity";
+import { RequestJWTPayload } from "@modules/auth/domain/login.entity";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { ExecutionContext } from "@nestjs/common";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { UserRoleEnum } from "@user/domain/user.entity";
 
 type AuthGuardMock = {
   canActivate: (context: ExecutionContext) => boolean;

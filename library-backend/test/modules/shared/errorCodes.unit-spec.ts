@@ -1,23 +1,23 @@
 import {
   invalidRefreshTokenException,
   wrongAuthException,
-} from "@auth/domain/auth.errors";
+} from "@modules/auth/domain/auth.errors";
 import {
   availableBookItemNotFoundException,
   bookInfoNotFoundException,
-} from "@book/domain/bookInfo.errors";
-import { HttpException, HttpStatus } from "@nestjs/common";
+} from "@modules/book/domain/bookInfo.errors";
 import {
   bookRentalFinishedException,
   bookRentalNotAvailableException,
   bookRentalNotFoundException,
-} from "@rental/domain/bookRental.errors";
-import { unknownException } from "@shared/utils/domain/shared.errors";
+} from "@modules/rental/domain/bookRental.errors";
 import {
   userCPFAlreadyExistsException,
   userEmailAlreadyExistsException,
   userNotFoundException,
-} from "@user/domain/user.errors";
+} from "@modules/user/domain/user.errors";
+import { HttpException, HttpStatus } from "@nestjs/common";
+import { unknownException } from "@shared/utils/domain/shared.errors";
 
 // The frontend translates errors by code (errors.<code> in its pt-BR.ts), and
 // its translationKeys.spec.ts checks every code here has a translation

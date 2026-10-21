@@ -59,10 +59,10 @@ npx ng test --watch=false --coverage=false --include src/app/services/authentica
 ## Conventions enforced by lint
 
 - **No relative imports** in either app (`no-restricted-imports` bans `./` and `../`). Use path aliases:
-  - backend: `@src/ @test/ @shared/ @auth/ @user/ @book/ @rental/ @db/` (`@db/` is `prisma/`)
+  - backend: `@src/ @test/ @shared/ @modules/ @db/` (`@modules/user/…` is `src/modules/user/`, `@shared/` is `src/modules/shared/`, `@db/` is `prisma/`)
   - frontend: `@app/ @shared/ @pages/ @env/`
 - **File and folder names are camelCase** in both apps, plus a role suffix (`createUser.command.ts`, `customizedTable.component.ts`, `bookRental.repository.port.ts`). `eslint-plugin-check-file` enforces this. The exceptions are the frontend locale files (`en-US.ts`, `pt-BR.ts`), the backend Jest configs (`test/jest-*.config.ts`) and Prisma migrations. Selectors and CSS classes stay kebab-case.
-- Backend aliases are defined in both `tsconfig.json` and `test/jest.config.ts` (`moduleNameMapper`). A new alias has to be added to both.
+- Backend aliases are defined in both `tsconfig.json` and `test/jest.config.ts` (`moduleNameMapper`). A new alias has to be added to both; a new module needs none, since `@modules/` covers it.
 - **No `as` type assertions** in the backend (`consistent-type-assertions`; `as const` is allowed). Prefer a precise type, or parsing with Zod (the e2e tests parse response bodies with the schemas in `test/util/responseBodies.ts`). A cast that's really needed goes through `FPF.unsafeCoerce`, imported from `monads.ts` like the rest of fp-ts.
 - Prettier with organize-imports runs on format. Double quotes.
 
@@ -146,6 +146,25 @@ Errors are Nest `HttpException` subclasses created by small factory functions in
 - Small screens are below 768px (`smallScreenQuery` and `injectIsSmallScreen()` in `shared/utils/smallScreen.utility.ts`; SCSS uses `@media (width < 768px)`). There the sidebar becomes a menu opened from the header, and the lists pass fewer columns to `customizedTable` through `[columns]`, moving the rest under the main cell.
 - An `@if` block isn't projected into a named content slot (`select="…"`) by itself, and the build warns (NG8011). Wrap it in an element that matches the slot (`<ng-container pageActions>`, `ngProjectAs="mat-card-subtitle"`), or, inside a `mat-form-field`, use one `mat-error` and pick its message inside it.
 - Specs use `@openng/spectator/vitest` (the maintained fork of `@ngneat/spectator`) (`createComponentFactory`, `createHostFactory`, `createServiceFactory`, `createInjectionContextFactory`, `mocks: [...]`) with `HttpTestingController`, not `TestBed` directly. To run effects or render overlays (autocomplete panels, dialogs), call `spectator.inject(ApplicationRef).tick()`.
+
+## Adding a feature
+
+Copy the closest existing module and rename it: `user` for plain CRUD, `rental` for writes that must be atomic.
+
+Backend (`src/modules/<name>/`, imported as `@modules/<name>/…`):
+
+1. **Model**: add it to `prisma/schema.prisma`, run `yarn migrate --name <change>` and `yarn generate`. Add its `TableNameEnum` entry and id prefix in `test/util/defaultIds.ts`. `resetDatabase` empties the new table by itself.
+2. **Domain**: the Zod entity in `domain/<name>.entity.ts`; errors in `domain/<name>.errors.ts`, each with a code (`errorBody`) and a case in `test/modules/shared/errorCodes.unit-spec.ts`; events in `domain/events/`, exported as `All<Name>Events` and spread into `DomainEvent` (`shared/domainEventPublisher/domainEvent.ts`), or publishing fails validation.
+3. **Repository**: the port, the Prisma repository and the fake (`database/`). Bind the port in `<name>.module.ts`, and the fake in `test/util/handlerModule.ts` (`fakeRepository(Port, Fake)`) so unit tests get it.
+4. **Use cases**: a `commands/` or `queries/` folder per use case, each controller with `AuthGuard` (and `RolesGuard` with `@Roles` when restricted). A public route goes in `publicRoutes` (`routeProtection.e2e-spec.ts`).
+5. **Register** the module in `src/app.module.ts`.
+6. **Tests**, in `test/modules/<name>/`: a builder in `test/dataBuilders/`, unit specs for the handlers, an integration spec for the Prisma repository and e2e specs for the routes. `yarn test:cov` requires 100% coverage, fakes included.
+
+Frontend:
+
+1. **Data**: the model in `models/` and `services/<name>.http.service.ts`, with a spec that pins each URL and method.
+2. **Pages**: `pages/<name>/<name>.routes.ts`, loaded from `pages/pages.routes.ts` with `data: { roles }`, plus cases in `pages.routes.spec.ts`; the sidebar entry in `layouts/components/sidebar/navMenuItems.ts`. Build them from the shared components (`app-page-header`, `app-form-card`, `customizedTable`).
+3. **Text**: keys in `pt-BR.ts` and the same shape in `en-US.ts`, including `errors.<code>` for each new backend error code (`translationKeys.spec.ts`).
 
 ## CI and deployment
 

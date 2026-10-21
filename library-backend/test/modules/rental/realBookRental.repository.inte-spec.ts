@@ -1,13 +1,17 @@
-import { RealBookInfoRepository } from "@book/database/realBookInfo.repository";
-import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
-import { InternalServerErrorException } from "@nestjs/common";
-import { Test } from "@nestjs/testing";
-import { RealBookRentalRepository } from "@rental/database/realBookRental.repository";
-import { BookRental, RentalStatusEnum } from "@rental/domain/bookRental.entity";
+import { RealBookInfoRepository } from "@modules/book/database/realBookInfo.repository";
+import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
+import { RealBookRentalRepository } from "@modules/rental/database/realBookRental.repository";
+import {
+  BookRental,
+  RentalStatusEnum,
+} from "@modules/rental/domain/bookRental.entity";
 import {
   BookRentalFinishedException,
   BookRentalNotAvailableException,
-} from "@rental/domain/bookRental.errors";
+} from "@modules/rental/domain/bookRental.errors";
+import { RealUserRepository } from "@modules/user/database/realUser.repository";
+import { InternalServerErrorException } from "@nestjs/common";
+import { Test } from "@nestjs/testing";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
@@ -17,7 +21,6 @@ import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createBook } from "@test/util/createBook";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { resetDatabase } from "@test/util/resetDatabase";
-import { RealUserRepository } from "@user/database/realUser.repository";
 
 let prismaService: PrismaService;
 let bookRentalRepository: RealBookRentalRepository;

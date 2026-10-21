@@ -1,5 +1,5 @@
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { BookInfo } from "@book/domain/bookInfo.entity";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
+import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";

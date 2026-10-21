@@ -1,4 +1,4 @@
-import { getSecret } from "@auth/auth.config";
+import { getSecret } from "@modules/auth/auth.config";
 
 describe("[Unit] Auth config", () => {
   const envName = "TEST_AUTH_CONFIG_SECRET";

@@ -2,17 +2,17 @@ import { FPF } from "@shared/utils/application/monads";
 import { createBook } from "@test/util/createBook";
 import { useE2eApp } from "@test/util/e2eApp";
 
-import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
+import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
+import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
+import { RentalStatusEnum } from "@modules/rental/domain/bookRental.entity";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { HttpStatus } from "@nestjs/common";
-import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
-import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
-import { UserRoleEnum } from "@user/domain/user.entity";
 let bookRentalRepository: BookRentalRepository;
 
 const bookRentalBuilder = new BookRentalBuilder(0);

@@ -1,18 +1,18 @@
+import { CreateUserHandler } from "@modules/user/commands/createUser/createUser.command";
+import { CreateUserController } from "@modules/user/commands/createUser/createUser.controller";
+import { DeleteUserHandler } from "@modules/user/commands/deleteUser/deleteUser.command";
+import { DeleteUserController } from "@modules/user/commands/deleteUser/deleteUser.controller";
+import { UpdateUserHandler } from "@modules/user/commands/updateUser/updateUser.command";
+import { UpdateUserController } from "@modules/user/commands/updateUser/updateUser.controller";
+import { RealUserRepository } from "@modules/user/database/realUser.repository";
+import { UserRepository } from "@modules/user/database/user.repository.port";
+import { GetUserByIdController } from "@modules/user/queries/getUserById/getUserById.controller";
+import { GetUserByIdQueryHandler } from "@modules/user/queries/getUserById/getUserById.query";
+import { PaginatedUserController } from "@modules/user/queries/paginatedUsers/paginatedUsers.controller";
+import { PaginatedUsersQueryHandler } from "@modules/user/queries/paginatedUsers/paginatedUsers.query";
 import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
-import { CreateUserHandler } from "@user/commands/createUser/createUser.command";
-import { CreateUserController } from "@user/commands/createUser/createUser.controller";
-import { DeleteUserHandler } from "@user/commands/deleteUser/deleteUser.command";
-import { DeleteUserController } from "@user/commands/deleteUser/deleteUser.controller";
-import { UpdateUserHandler } from "@user/commands/updateUser/updateUser.command";
-import { UpdateUserController } from "@user/commands/updateUser/updateUser.controller";
-import { RealUserRepository } from "@user/database/realUser.repository";
-import { UserRepository } from "@user/database/user.repository.port";
-import { GetUserByIdController } from "@user/queries/getUserById/getUserById.controller";
-import { GetUserByIdQueryHandler } from "@user/queries/getUserById/getUserById.query";
-import { PaginatedUserController } from "@user/queries/paginatedUsers/paginatedUsers.controller";
-import { PaginatedUsersQueryHandler } from "@user/queries/paginatedUsers/paginatedUsers.query";
 
 const controllers = [
   CreateUserController,

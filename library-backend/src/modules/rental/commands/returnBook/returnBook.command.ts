@@ -1,8 +1,8 @@
+import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
+import { RentalStatusEnum } from "@modules/rental/domain/bookRental.entity";
+import { bookRentalNotFoundException } from "@modules/rental/domain/bookRental.errors";
+import { BOOK_RENTAL_RETURNED } from "@modules/rental/domain/events/bookReturned.event";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
-import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
-import { bookRentalNotFoundException } from "@rental/domain/bookRental.errors";
-import { BOOK_RENTAL_RETURNED } from "@rental/domain/events/bookReturned.event";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";

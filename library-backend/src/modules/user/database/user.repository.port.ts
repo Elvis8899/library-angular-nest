@@ -1,10 +1,10 @@
+import { User } from "@modules/user/domain/user.entity";
 import { O, TE } from "@shared/utils/application/monads";
 import {
   Paginated,
   RepositoryDefaultPort,
 } from "@shared/utils/database/repository.port";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
-import { User } from "@user/domain/user.entity";
 
 export abstract class UserRepository implements RepositoryDefaultPort<User> {
   findById!: (id: string) => TE.TaskEither<Error, O.Option<User>>;

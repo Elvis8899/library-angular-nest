@@ -1,8 +1,8 @@
 import {
   CreateBookInfo,
   CreateBookInfoHandler,
-} from "@book/commands/createBookInfo/createBookInfo.command";
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+} from "@modules/book/commands/createBookInfo/createBookInfo.command";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";

@@ -1,15 +1,18 @@
-import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
 import { Prisma } from "@db/generated/client";
-import { HttpException, Injectable } from "@nestjs/common";
+import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
 import {
   BookRentalFindAllQuery,
   BookRentalRepository,
-} from "@rental/database/bookRental.repository.port";
-import { BookRental, RentalStatusEnum } from "@rental/domain/bookRental.entity";
+} from "@modules/rental/database/bookRental.repository.port";
+import {
+  BookRental,
+  RentalStatusEnum,
+} from "@modules/rental/domain/bookRental.entity";
 import {
   bookRentalFinishedException,
   bookRentalNotAvailableException,
-} from "@rental/domain/bookRental.errors";
+} from "@modules/rental/domain/bookRental.errors";
+import { HttpException, Injectable } from "@nestjs/common";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { FPF, O, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";

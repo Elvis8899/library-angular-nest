@@ -19,11 +19,15 @@ Done (2026-10-21): primary keys, unique-constraint races and the unique CPF, cas
 
 - [ ] **Close accounts instead of deleting users** (optional): deleting a user cascades away their finished rentals too, so the lending history is lost. A `closeAccount` with a status on `User` keeps it; lists, login and the email and CPF checks would ignore closed accounts, and closing would bump `tokenVersion`.
 
-## Branch `update-backend-dependencies` (2026-10-20)
+## Boilerplate (2026-10-21)
 
-- [ ] **Push it** and open a pull request: NestJS 12, Prisma 7, the advisory fixes, the user deletion guard and the refactors.
-- [ ] **Run `yarn test:docker:up` once** in `library-backend`. Prisma 7 refuses `migrate reset` when an AI agent runs it, so it wasn't tested after the update.
-- [ ] **After pulling**, run `yarn generate` in `library-backend`: Prisma 7 no longer generates the client on install, and `prisma/generated/` isn't committed.
+The repository is the seed for other projects, so what matters is how cheaply it grows. Done: one `@modules/` alias instead of one per module, the "Adding a feature" checklist in `CLAUDE.md`, and Dependabot (`.github/dependabot.yml`).
+
+- [ ] **Separate the reusable core from the example**: `shared/`, `auth` and `user` are what every project needs; `book` and `rental` are the lending example. Say so in the README and `CLAUDE.md`, and check that deleting `book` and `rental` (backend and frontend) leaves a working app, so a new project starts by removing two folders. `auth` imports `@modules/user/` in 9 files; keep those to the user repository and entity.
+- [ ] **Run the e2e and integration suites in parallel**: they share one database and run with `--runInBand` (about 40 s for 60 suites), so the time grows with every module. A database or schema per Jest worker (`JEST_WORKER_ID` in `DATABASE_URL`, migrated in `globalSetup`) would let them run side by side.
+- [ ] **Decide on fp-ts**: it is in maintenance; its author moved to Effect. The handlers are consistent, but for a seed meant to last, either keep it deliberately or choose before more modules exist whether new code uses plain `async`/`await` with typed results (or Effect). Not a rewrite of existing modules.
+- [ ] **One place for the project name**: "library" appears in the package names, Docker Compose, nginx, Swagger and the README; a new project has to find them all. The README also still says NestJS 11 (it's 12).
+- [ ] **Pin `jpb06/coverage-badges-action`**: it uses `@latest`, so any release can change the badges job.
 
 ## Demo on GitHub Pages (2026-10-20)
 

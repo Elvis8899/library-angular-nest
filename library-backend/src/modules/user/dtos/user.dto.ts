@@ -1,7 +1,7 @@
+import { User, UserRoleEnum } from "@modules/user/domain/user.entity";
 import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { BaseEntityDto } from "@shared/utils/dtos/baseEntity.dto";
 import { PaginatedResponseDto } from "@shared/utils/dtos/paginated.response.base";
-import { User, UserRoleEnum } from "@user/domain/user.entity";
 
 export class UserDto extends BaseEntityDto {
   @ApiProperty({

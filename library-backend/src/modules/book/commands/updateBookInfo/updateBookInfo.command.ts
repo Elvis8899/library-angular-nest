@@ -1,8 +1,8 @@
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { BookInfo } from "@book/domain/bookInfo.entity";
-import { bookInfoNotFoundException } from "@book/domain/bookInfo.errors";
-import { BOOK_INFO_UPDATED } from "@book/domain/events/bookInfoUpdated.event";
-import { CreateBookInfoDto } from "@book/dtos/bookInfo.dto";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
+import { BookInfo } from "@modules/book/domain/bookInfo.entity";
+import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
+import { BOOK_INFO_UPDATED } from "@modules/book/domain/events/bookInfoUpdated.event";
+import { CreateBookInfoDto } from "@modules/book/dtos/bookInfo.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";

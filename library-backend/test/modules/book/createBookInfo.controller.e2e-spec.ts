@@ -2,9 +2,9 @@ import { HttpStatus } from "@nestjs/common";
 import { FPF } from "@shared/utils/application/monads";
 import { useE2eApp } from "@test/util/e2eApp";
 
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
-import { UserRoleEnum } from "@user/domain/user.entity";
 const mockAuthGuard = new MockAuthGuardBuilder();
 
 const e2e = useE2eApp({ authGuard: mockAuthGuard });

@@ -1,6 +1,6 @@
-import { RefreshTokenCommand } from "@auth/commands/refreshToken/refreshToken.command";
-import { AuthResponseDto } from "@auth/dtos/authResponse.dto";
-import { RefreshTokenDto } from "@auth/dtos/refreshToken.dto";
+import { RefreshTokenCommand } from "@modules/auth/commands/refreshToken/refreshToken.command";
+import { AuthResponseDto } from "@modules/auth/dtos/authResponse.dto";
+import { RefreshTokenDto } from "@modules/auth/dtos/refreshToken.dto";
 import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
 import {

@@ -1,18 +1,18 @@
+import {
+  CreateUser,
+  CreateUserHandler,
+} from "@modules/user/commands/createUser/createUser.command";
+import { UserRepository } from "@modules/user/database/user.repository.port";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
+import {
+  UserCPFAlreadyExistsException,
+  UserEmailAlreadyExistsException,
+} from "@modules/user/domain/user.errors";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { useHandlerModule } from "@test/util/handlerModule";
-import {
-  CreateUser,
-  CreateUserHandler,
-} from "@user/commands/createUser/createUser.command";
-import { UserRepository } from "@user/database/user.repository.port";
-import { UserRoleEnum } from "@user/domain/user.entity";
-import {
-  UserCPFAlreadyExistsException,
-  UserEmailAlreadyExistsException,
-} from "@user/domain/user.errors";
 
 //Adapters
 

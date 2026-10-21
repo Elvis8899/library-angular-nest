@@ -2,12 +2,12 @@ import { HttpStatus } from "@nestjs/common";
 import { useE2eApp } from "@test/util/e2eApp";
 import { resetDatabase } from "@test/util/resetDatabase";
 
-import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
+import { RentalStatusEnum } from "@modules/rental/domain/bookRental.entity";
+import { UserRepository } from "@modules/user/database/user.repository.port";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createRental } from "@test/util/createRental";
-import { UserRepository } from "@user/database/user.repository.port";
 
 let userRepository: UserRepository;
 const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });

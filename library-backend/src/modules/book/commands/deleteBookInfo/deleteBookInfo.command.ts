@@ -1,6 +1,6 @@
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { bookInfoNotFoundException } from "@book/domain/bookInfo.errors";
-import { BOOK_INFO_DELETED } from "@book/domain/events/bookInfoDeleted.event";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
+import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
+import { BOOK_INFO_DELETED } from "@modules/book/domain/events/bookInfoDeleted.event";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";

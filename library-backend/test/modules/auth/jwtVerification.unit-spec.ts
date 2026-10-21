@@ -1,6 +1,6 @@
-import { authConfig, jwtModuleOptions } from "@auth/auth.config";
-import { AuthGuard } from "@auth/guards/auth.guard";
-import { generateTokens } from "@auth/utils/tokens";
+import { authConfig, jwtModuleOptions } from "@modules/auth/auth.config";
+import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { generateTokens } from "@modules/auth/utils/tokens";
 import { ExecutionContext, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { FPF } from "@shared/utils/application/monads";

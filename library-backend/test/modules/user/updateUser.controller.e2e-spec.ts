@@ -3,12 +3,12 @@ import { FPF } from "@shared/utils/application/monads";
 import { useE2eApp } from "@test/util/e2eApp";
 import { resetDatabase } from "@test/util/resetDatabase";
 
-import { comparePassword } from "@auth/utils/password";
+import { comparePassword } from "@modules/auth/utils/password";
+import { UserRepository } from "@modules/user/database/user.repository.port";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
-import { UserRepository } from "@user/database/user.repository.port";
-import { UserRoleEnum } from "@user/domain/user.entity";
 let userRepository: UserRepository;
 const userBuilder = new UserBuilder();
 const originalUser = userBuilder.withName("Test").build();

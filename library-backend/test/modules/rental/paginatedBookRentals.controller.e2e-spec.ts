@@ -1,5 +1,6 @@
+import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { HttpStatus } from "@nestjs/common";
-import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
@@ -7,7 +8,6 @@ import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createBook } from "@test/util/createBook";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useE2eApp } from "@test/util/e2eApp";
-import { UserRoleEnum } from "@user/domain/user.entity";
 
 const authGuardMock = new MockAuthGuardBuilder();
 

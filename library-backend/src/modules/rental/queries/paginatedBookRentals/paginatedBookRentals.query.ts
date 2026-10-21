@@ -1,9 +1,9 @@
-import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
+import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
 import {
   BookRentalDetails,
   RentalStatusEnum,
-} from "@rental/domain/bookRental.entity";
+} from "@modules/rental/domain/bookRental.entity";
+import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { Apply, FPF, RE, RTE } from "@shared/utils/application/monads";

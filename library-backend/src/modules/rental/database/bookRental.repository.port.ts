@@ -1,4 +1,7 @@
-import { BookRental, RentalStatusEnum } from "@rental/domain/bookRental.entity";
+import {
+  BookRental,
+  RentalStatusEnum,
+} from "@modules/rental/domain/bookRental.entity";
 import { O, TE } from "@shared/utils/application/monads";
 import {
   Paginated,

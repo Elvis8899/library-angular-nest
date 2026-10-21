@@ -1,4 +1,13 @@
 import { RentalStatus } from "@db/generated/client";
+import { UserRepository } from "@modules/user/database/user.repository.port";
+import { formatDocument } from "@modules/user/domain/document";
+import { User, UserRoleEnum } from "@modules/user/domain/user.entity";
+import {
+  userCPFAlreadyExistsException,
+  userEmailAlreadyExistsException,
+  userHasActiveRentalsException,
+  userNotFoundException,
+} from "@modules/user/domain/user.errors";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { FPF, O, TE } from "@shared/utils/application/monads";
@@ -12,15 +21,6 @@ import {
 } from "@shared/utils/database/rowValidation";
 import { mapUniqueViolations } from "@shared/utils/database/uniqueViolation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
-import { UserRepository } from "@user/database/user.repository.port";
-import { formatDocument } from "@user/domain/document";
-import { User, UserRoleEnum } from "@user/domain/user.entity";
-import {
-  userCPFAlreadyExistsException,
-  userEmailAlreadyExistsException,
-  userHasActiveRentalsException,
-  userNotFoundException,
-} from "@user/domain/user.errors";
 
 @Injectable()
 export class RealUserRepository implements UserRepository {

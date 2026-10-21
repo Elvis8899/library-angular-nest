@@ -1,4 +1,4 @@
-import { RequestJWTPayload } from "@auth/domain/login.entity";
+import { RequestJWTPayload } from "@modules/auth/domain/login.entity";
 import {
   CanActivate,
   ExecutionContext,

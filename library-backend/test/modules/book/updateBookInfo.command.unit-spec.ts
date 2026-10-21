@@ -1,9 +1,9 @@
 import {
   UpdateBookInfo,
   UpdateBookInfoHandler,
-} from "@book/commands/updateBookInfo/updateBookInfo.command";
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { BookInfoNotFoundException } from "@book/domain/bookInfo.errors";
+} from "@modules/book/commands/updateBookInfo/updateBookInfo.command";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
+import { BookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";

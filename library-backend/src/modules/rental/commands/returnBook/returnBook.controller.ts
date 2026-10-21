@@ -1,7 +1,9 @@
-import { Roles } from "@auth/decorators/roles.decorator";
-import { AuthenticatedRequest } from "@auth/domain/login.entity";
-import { AuthGuard } from "@auth/guards/auth.guard";
-import { RolesGuard } from "@auth/guards/roles.guard";
+import { Roles } from "@modules/auth/decorators/roles.decorator";
+import { AuthenticatedRequest } from "@modules/auth/domain/login.entity";
+import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { RolesGuard } from "@modules/auth/guards/roles.guard";
+import { ReturnBookCommand } from "@modules/rental/commands/returnBook/returnBook.command";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import {
   Controller,
   HttpCode,
@@ -19,9 +21,7 @@ import {
   ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
-import { ReturnBookCommand } from "@rental/commands/returnBook/returnBook.command";
 import { noop } from "@shared/utils/application/noop";
-import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Controller("v1/bookRentals")
 @ApiTags("Empréstimos")

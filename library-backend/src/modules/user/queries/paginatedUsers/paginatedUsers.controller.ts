@@ -1,6 +1,12 @@
-import { Roles } from "@auth/decorators/roles.decorator";
-import { AuthGuard } from "@auth/guards/auth.guard";
-import { RolesGuard } from "@auth/guards/roles.guard";
+import { Roles } from "@modules/auth/decorators/roles.decorator";
+import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { RolesGuard } from "@modules/auth/guards/roles.guard";
+import { User, UserRoleEnum } from "@modules/user/domain/user.entity";
+import {
+  PaginatedUserResponseDto,
+  toUserResponse,
+} from "@modules/user/dtos/user.dto";
+import { PaginatedUsersQuery } from "@modules/user/queries/paginatedUsers/paginatedUsers.query";
 import { Controller, Get, HttpStatus, Query, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
@@ -11,9 +17,6 @@ import {
 } from "@nestjs/swagger";
 import { Paginated } from "@shared/utils/database/repository.port";
 import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginatedQuery.request.dto";
-import { User, UserRoleEnum } from "@user/domain/user.entity";
-import { PaginatedUserResponseDto, toUserResponse } from "@user/dtos/user.dto";
-import { PaginatedUsersQuery } from "@user/queries/paginatedUsers/paginatedUsers.query";
 
 @Controller("v1/")
 @ApiTags("Usuários")

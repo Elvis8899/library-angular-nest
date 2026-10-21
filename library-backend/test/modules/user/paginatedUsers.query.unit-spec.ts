@@ -1,12 +1,12 @@
+import { UserRepository } from "@modules/user/database/user.repository.port";
+import {
+  PaginatedUsersQuery,
+  PaginatedUsersQueryHandler,
+} from "@modules/user/queries/paginatedUsers/paginatedUsers.query";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
-import { UserRepository } from "@user/database/user.repository.port";
-import {
-  PaginatedUsersQuery,
-  PaginatedUsersQueryHandler,
-} from "@user/queries/paginatedUsers/paginatedUsers.query";
 
 //Adapters
 

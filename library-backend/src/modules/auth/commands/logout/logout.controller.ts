@@ -1,6 +1,6 @@
-import { LogoutCommand } from "@auth/commands/logout/logout.command";
-import { AuthenticatedRequest } from "@auth/domain/login.entity";
-import { AuthGuard } from "@auth/guards/auth.guard";
+import { LogoutCommand } from "@modules/auth/commands/logout/logout.command";
+import { AuthenticatedRequest } from "@modules/auth/domain/login.entity";
+import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import {
   Controller,
   HttpCode,

@@ -1,5 +1,5 @@
+import { UserDto } from "@modules/user/dtos/user.dto";
 import { ApiProperty, PickType } from "@nestjs/swagger";
-import { UserDto } from "@user/dtos/user.dto";
 
 class AuthUserDto extends PickType(UserDto, [
   "id",

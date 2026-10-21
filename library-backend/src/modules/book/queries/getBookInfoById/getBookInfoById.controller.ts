@@ -1,6 +1,6 @@
-import { AuthGuard } from "@auth/guards/auth.guard";
-import { BookInfoDto } from "@book/dtos/bookInfo.dto";
-import { GetBookInfoByIdQuery } from "@book/queries/getBookInfoById/getBookInfoById.query";
+import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { BookInfoDto } from "@modules/book/dtos/bookInfo.dto";
+import { GetBookInfoByIdQuery } from "@modules/book/queries/getBookInfoById/getBookInfoById.query";
 import { Controller, Get, HttpStatus, Param, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {

@@ -1,9 +1,9 @@
 import {
   BookInfoFindAllQuery,
   BookInfoRepository,
-} from "@book/database/bookInfo.repository.port";
-import { BookInfo } from "@book/domain/bookInfo.entity";
-import { BookItem } from "@book/domain/bookItem.entity";
+} from "@modules/book/database/bookInfo.repository.port";
+import { BookInfo } from "@modules/book/domain/bookInfo.entity";
+import { BookItem } from "@modules/book/domain/bookItem.entity";
 import { Injectable } from "@nestjs/common";
 import { D, FPF, M, O, Ord, S, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";

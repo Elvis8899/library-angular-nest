@@ -1,6 +1,9 @@
-import { Roles } from "@auth/decorators/roles.decorator";
-import { AuthGuard } from "@auth/guards/auth.guard";
-import { RolesGuard } from "@auth/guards/roles.guard";
+import { Roles } from "@modules/auth/decorators/roles.decorator";
+import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { RolesGuard } from "@modules/auth/guards/roles.guard";
+import { UpdateUser } from "@modules/user/commands/updateUser/updateUser.command";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
+import { CreateUserDto } from "@modules/user/dtos/user.dto";
 import {
   Body,
   Controller,
@@ -20,9 +23,6 @@ import {
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/application/noop";
-import { UpdateUser } from "@user/commands/updateUser/updateUser.command";
-import { UserRoleEnum } from "@user/domain/user.entity";
-import { CreateUserDto } from "@user/dtos/user.dto";
 
 @Controller("v1/")
 @ApiBearerAuth()

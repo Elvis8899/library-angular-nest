@@ -3,7 +3,7 @@ import {
   DocumentType,
   formatDocument,
   isValidDocument,
-} from "@user/domain/document";
+} from "@modules/user/domain/document";
 
 describe("[Unit] Document", () => {
   it.each([

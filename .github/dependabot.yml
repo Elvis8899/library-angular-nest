@@ -1,0 +1,48 @@
+# Weekly update pull requests; CI runs on each, so a breaking update shows
+# up as a red PR instead of a surprise on the next install
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /library-backend
+    schedule:
+      interval: weekly
+    groups:
+      # Released together and must stay on the same version
+      nestjs:
+        patterns: ["@nestjs/*"]
+      prisma:
+        patterns: ["prisma", "@prisma/*"]
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Angular, typescript-eslint and ts-jest don't support TypeScript 7 yet
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      # Follows the Node version in .nvmrc (24)
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: npm
+    directory: /library-frontend
+    schedule:
+      interval: weekly
+    groups:
+      angular:
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+          - "angular-eslint"
+          - "@angular-eslint/*"
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

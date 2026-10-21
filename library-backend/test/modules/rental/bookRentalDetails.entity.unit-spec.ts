@@ -1,4 +1,4 @@
-import { BookRentalDetails } from "@rental/domain/bookRental.entity";
+import { BookRentalDetails } from "@modules/rental/domain/bookRental.entity";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 
 describe("[Unit] Update BookInfo", () => {

@@ -1,16 +1,16 @@
 import {
   LoginCommand,
   LoginCommandHandler,
-} from "@auth/commands/login/login.command";
-import { FakeRefreshSessionRepository } from "@auth/database/fakeRefreshSession.repository";
-import { WrongAuthException } from "@auth/domain/auth.errors";
-import { hashPassword } from "@auth/utils/password";
+} from "@modules/auth/commands/login/login.command";
+import { FakeRefreshSessionRepository } from "@modules/auth/database/fakeRefreshSession.repository";
+import { WrongAuthException } from "@modules/auth/domain/auth.errors";
+import { hashPassword } from "@modules/auth/utils/password";
+import { UserRepository } from "@modules/user/database/user.repository.port";
 import { JwtService } from "@nestjs/jwt";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
-import { UserRepository } from "@user/database/user.repository.port";
 
 //Adapters
 

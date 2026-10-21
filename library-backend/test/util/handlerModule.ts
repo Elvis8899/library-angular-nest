@@ -1,18 +1,18 @@
-import { FakeRefreshSessionRepository } from "@auth/database/fakeRefreshSession.repository";
-import { RefreshSessionRepository } from "@auth/database/refreshSession.repository.port";
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
+import { FakeRefreshSessionRepository } from "@modules/auth/database/fakeRefreshSession.repository";
+import { RefreshSessionRepository } from "@modules/auth/database/refreshSession.repository.port";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
+import { FakeBookInfoRepository } from "@modules/book/database/fakeBookInfo.repository";
+import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
+import { FakeBookRentalRepository } from "@modules/rental/database/fakeBookRental.repository";
+import { FakeUserRepository } from "@modules/user/database/fakeUser.repository";
+import { UserRepository } from "@modules/user/database/user.repository.port";
 import { Abstract, ModuleMetadata, Provider, Type } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
-import { FakeBookRentalRepository } from "@rental/database/fakeBookRental.repository";
 import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
 import { FakeLoggerService } from "@shared/logger/fakeLogger.service";
 import { FPF } from "@shared/utils/application/monads";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { typedGet, TypedGet } from "@test/util/typedGet";
-import { FakeUserRepository } from "@user/database/fakeUser.repository";
-import { UserRepository } from "@user/database/user.repository.port";
 import { PinoLogger } from "nestjs-pino";
 
 const fakeRepository = <Port>(

@@ -1,11 +1,11 @@
+import { UserRepository } from "@modules/user/database/user.repository.port";
+import { formatDocument } from "@modules/user/domain/document";
+import { User, UserRoleEnum } from "@modules/user/domain/user.entity";
 import { Injectable } from "@nestjs/common";
 import { O, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
 import { FakeRepository } from "@shared/utils/database/fakeRepository.base";
 import { validateMaybeRow } from "@shared/utils/database/rowValidation";
-import { UserRepository } from "@user/database/user.repository.port";
-import { formatDocument } from "@user/domain/document";
-import { User, UserRoleEnum } from "@user/domain/user.entity";
 
 @Injectable()
 export class FakeUserRepository

@@ -1,7 +1,7 @@
 import { createBook } from "@test/util/createBook";
 import { useE2eApp } from "@test/util/e2eApp";
 
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { HttpStatus } from "@nestjs/common";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";

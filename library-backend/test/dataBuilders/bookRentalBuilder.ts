@@ -2,8 +2,8 @@ import {
   BookRental,
   BookRentalDetails,
   RentalStatusEnum,
-} from "@rental/domain/bookRental.entity";
-import { CreateBookRentalDto } from "@rental/dtos/bookRental.dto";
+} from "@modules/rental/domain/bookRental.entity";
+import { CreateBookRentalDto } from "@modules/rental/dtos/bookRental.dto";
 import { FPF } from "@shared/utils/application/monads";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { z } from "zod";

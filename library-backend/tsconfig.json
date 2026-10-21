@@ -25,10 +25,7 @@
       "@src/*": ["./src/*"],
       "@test/*": ["./test/*"],
       "@shared/*": ["./src/modules/shared/*"],
-      "@auth/*": ["./src/modules/auth/*"],
-      "@user/*": ["./src/modules/user/*"],
-      "@rental/*": ["./src/modules/rental/*"],
-      "@book/*": ["./src/modules/book/*"],
+      "@modules/*": ["./src/modules/*"],
       "@db/*": ["./prisma/*"]
     }
   },

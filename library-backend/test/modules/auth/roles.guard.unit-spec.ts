@@ -1,9 +1,9 @@
-import { RequestJWTPayload } from "@auth/domain/login.entity";
-import { RolesGuard } from "@auth/guards/roles.guard";
+import { RequestJWTPayload } from "@modules/auth/domain/login.entity";
+import { RolesGuard } from "@modules/auth/guards/roles.guard";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { ExecutionContext } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { FPF } from "@shared/utils/application/monads";
-import { UserRoleEnum } from "@user/domain/user.entity";
 
 describe("RolesGuard", () => {
   let guard: RolesGuard;

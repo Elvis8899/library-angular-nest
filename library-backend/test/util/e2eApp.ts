@@ -1,4 +1,4 @@
-import { AuthGuard } from "@auth/guards/auth.guard";
+import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { CanActivate } from "@nestjs/common";
 import { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { Test, TestingModule } from "@nestjs/testing";

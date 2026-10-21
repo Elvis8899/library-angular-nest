@@ -1,8 +1,8 @@
-import { RefreshSessionRepository } from "@auth/database/refreshSession.repository.port";
+import { RefreshSessionRepository } from "@modules/auth/database/refreshSession.repository.port";
 import {
   RefreshSession,
   RotateRefreshSession,
-} from "@auth/domain/refreshSession.entity";
+} from "@modules/auth/domain/refreshSession.entity";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { FPF, TE } from "@shared/utils/application/monads";

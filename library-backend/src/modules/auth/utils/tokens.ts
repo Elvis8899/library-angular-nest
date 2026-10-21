@@ -1,7 +1,7 @@
-import { authConfig } from "@auth/auth.config";
-import { AuthResponseDto } from "@auth/dtos/authResponse.dto";
+import { authConfig } from "@modules/auth/auth.config";
+import { AuthResponseDto } from "@modules/auth/dtos/authResponse.dto";
+import { User } from "@modules/user/domain/user.entity";
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from "@nestjs/jwt";
-import { User } from "@user/domain/user.entity";
 
 export const getSignTokenParams = (
   sub: string,

@@ -1,5 +1,5 @@
-import { RealRefreshSessionRepository } from "@auth/database/realRefreshSession.repository";
-import { RefreshSession } from "@auth/domain/refreshSession.entity";
+import { RealRefreshSessionRepository } from "@modules/auth/database/realRefreshSession.repository";
+import { RefreshSession } from "@modules/auth/domain/refreshSession.entity";
 import { Test } from "@nestjs/testing";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";

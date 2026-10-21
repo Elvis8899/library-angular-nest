@@ -1,7 +1,7 @@
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { BookInfo } from "@book/domain/bookInfo.entity";
-import { BOOK_INFO_CREATED } from "@book/domain/events/bookInfoCreated.event";
-import { CreateBookInfoDto } from "@book/dtos/bookInfo.dto";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
+import { BookInfo } from "@modules/book/domain/bookInfo.entity";
+import { BOOK_INFO_CREATED } from "@modules/book/domain/events/bookInfoCreated.event";
+import { CreateBookInfoDto } from "@modules/book/dtos/bookInfo.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";

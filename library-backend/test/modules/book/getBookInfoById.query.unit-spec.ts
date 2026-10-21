@@ -1,9 +1,9 @@
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { BookInfoNotFoundException } from "@book/domain/bookInfo.errors";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
+import { BookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import {
   GetBookInfoByIdQuery,
   GetBookInfoByIdQueryHandler,
-} from "@book/queries/getBookInfoById/getBookInfoById.query";
+} from "@modules/book/queries/getBookInfoById/getBookInfoById.query";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { useHandlerModule } from "@test/util/handlerModule";

@@ -1,8 +1,8 @@
-import { ROLES_KEY } from "@auth/decorators/roles.decorator";
-import { RequestJWTPayload } from "@auth/domain/login.entity";
+import { ROLES_KEY } from "@modules/auth/decorators/roles.decorator";
+import { RequestJWTPayload } from "@modules/auth/domain/login.entity";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Injectable()
 export class RolesGuard implements CanActivate {

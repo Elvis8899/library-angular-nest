@@ -1,4 +1,4 @@
-import { LoginThrottlerGuard } from "@auth/guards/loginThrottler.guard";
+import { LoginThrottlerGuard } from "@modules/auth/guards/loginThrottler.guard";
 import { Reflector } from "@nestjs/core";
 import { ThrottlerStorageService } from "@nestjs/throttler";
 

@@ -1,10 +1,10 @@
-import { RequestJWTPayload } from "@auth/domain/login.entity";
-import { AuthGuard } from "@auth/guards/auth.guard";
+import { RequestJWTPayload } from "@modules/auth/domain/login.entity";
+import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { ExecutionContext, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
 import { FPF } from "@shared/utils/application/monads";
-import { UserRoleEnum } from "@user/domain/user.entity";
 
 describe("AuthGuard", () => {
   let guard: AuthGuard;

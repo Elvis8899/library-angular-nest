@@ -3,7 +3,7 @@ import { FPF } from "@shared/utils/application/monads";
 import { useE2eApp } from "@test/util/e2eApp";
 import { resetDatabase } from "@test/util/resetDatabase";
 
-import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
+import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";

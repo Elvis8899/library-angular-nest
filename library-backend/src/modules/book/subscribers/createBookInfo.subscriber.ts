@@ -1,8 +1,8 @@
-import { AddBookItem } from "@book/commands/addBookItem/addBookItem.command";
+import { AddBookItem } from "@modules/book/commands/addBookItem/addBookItem.command";
 import {
   BOOK_INFO_CREATED,
   BookInfoCreatedEvent,
-} from "@book/domain/events/bookInfoCreated.event";
+} from "@modules/book/domain/events/bookInfoCreated.event";
 import { Injectable } from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
 import { OnEvent } from "@nestjs/event-emitter";

@@ -1,10 +1,10 @@
+import { UserRepository } from "@modules/user/database/user.repository.port";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
 import { UUID } from "@shared/uuid/uuid";
-import { UserRepository } from "@user/database/user.repository.port";
 import { PinoLogger } from "nestjs-pino";
 
 export class LogoutCommand implements ICommand {

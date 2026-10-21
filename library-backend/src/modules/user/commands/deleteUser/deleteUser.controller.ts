@@ -1,6 +1,8 @@
-import { Roles } from "@auth/decorators/roles.decorator";
-import { AuthGuard } from "@auth/guards/auth.guard";
-import { RolesGuard } from "@auth/guards/roles.guard";
+import { Roles } from "@modules/auth/decorators/roles.decorator";
+import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { RolesGuard } from "@modules/auth/guards/roles.guard";
+import { DeleteUser } from "@modules/user/commands/deleteUser/deleteUser.command";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import {
   Controller,
   Delete,
@@ -19,8 +21,6 @@ import {
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/application/noop";
-import { DeleteUser } from "@user/commands/deleteUser/deleteUser.command";
-import { UserRoleEnum } from "@user/domain/user.entity";
 
 @Controller("v1/")
 @ApiBearerAuth()

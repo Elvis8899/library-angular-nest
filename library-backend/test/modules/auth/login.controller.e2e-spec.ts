@@ -1,7 +1,7 @@
 import { useE2eApp } from "@test/util/e2eApp";
 import { LoginBody, TokensBody } from "@test/util/responseBodies";
 
-import { hashPassword } from "@auth/utils/password";
+import { hashPassword } from "@modules/auth/utils/password";
 import { HttpStatus } from "@nestjs/common";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";

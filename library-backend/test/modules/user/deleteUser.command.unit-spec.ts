@@ -1,13 +1,13 @@
+import {
+  DeleteUser,
+  DeleteUserHandler,
+} from "@modules/user/commands/deleteUser/deleteUser.command";
+import { UserRepository } from "@modules/user/database/user.repository.port";
+import { UserNotFoundException } from "@modules/user/domain/user.errors";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { useHandlerModule } from "@test/util/handlerModule";
-import {
-  DeleteUser,
-  DeleteUserHandler,
-} from "@user/commands/deleteUser/deleteUser.command";
-import { UserRepository } from "@user/database/user.repository.port";
-import { UserNotFoundException } from "@user/domain/user.errors";
 
 //Adapters
 

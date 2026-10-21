@@ -1,3 +1,5 @@
+import { UserRepository } from "@modules/user/database/user.repository.port";
+import { User } from "@modules/user/domain/user.entity";
 import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
@@ -8,8 +10,6 @@ import {
   PageRequest,
   PageRequestSchema,
 } from "@shared/utils/domain/query.base";
-import { UserRepository } from "@user/database/user.repository.port";
-import { User } from "@user/domain/user.entity";
 import { PinoLogger } from "nestjs-pino";
 
 export class PaginatedUsersQuery implements IQuery {

@@ -1,5 +1,5 @@
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { UUID } from "@shared/uuid/uuid";
-import { UserRoleEnum } from "@user/domain/user.entity";
 import { z } from "zod";
 
 export const LoginInput = z.object({

@@ -1,14 +1,14 @@
-import { AuthModule } from "@auth/auth.module";
-import { BookModule } from "@book/book.module";
+import { AuthModule } from "@modules/auth/auth.module";
+import { BookModule } from "@modules/book/book.module";
+import { RentalModule } from "@modules/rental/rental.module";
+import { UserModule } from "@modules/user/user.module";
 import { DynamicModule, ForwardReference, Module, Type } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { CqrsModule } from "@nestjs/cqrs";
-import { RentalModule } from "@rental/rental.module";
 import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
 import { LoggerModule } from "@shared/logger/logger.module";
 import { PrismaModule } from "@shared/prisma/prisma.module";
 import { AppController } from "@src/app.controller";
-import { UserModule } from "@user/user.module";
 
 type NestModuleImport =
   Type | DynamicModule | Promise<DynamicModule> | ForwardReference;

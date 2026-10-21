@@ -1,15 +1,16 @@
 import {
   RefreshTokenCommand,
   RefreshTokenCommandHandler,
-} from "@auth/commands/refreshToken/refreshToken.command";
-import { FakeRefreshSessionRepository } from "@auth/database/fakeRefreshSession.repository";
-import { InvalidRefreshTokenException } from "@auth/domain/auth.errors";
+} from "@modules/auth/commands/refreshToken/refreshToken.command";
+import { FakeRefreshSessionRepository } from "@modules/auth/database/fakeRefreshSession.repository";
+import { InvalidRefreshTokenException } from "@modules/auth/domain/auth.errors";
 import {
   generateTokens,
   getSignTokenParams,
   refreshSessionExpiry,
   refreshVerifyOptions,
-} from "@auth/utils/tokens";
+} from "@modules/auth/utils/tokens";
+import { UserRepository } from "@modules/user/database/user.repository.port";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -17,7 +18,6 @@ import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
-import { UserRepository } from "@user/database/user.repository.port";
 
 describe("[Unit] Refresh token", () => {
   const user = new UserBuilder().build();

@@ -1,9 +1,9 @@
-import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
-import { RentalStatusEnum } from "@rental/domain/bookRental.entity";
+import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
+import { RentalStatusEnum } from "@modules/rental/domain/bookRental.entity";
 import {
   PaginatedBookRentalsQuery,
   PaginatedBookRentalsQueryHandler,
-} from "@rental/queries/paginatedBookRentals/paginatedBookRentals.query";
+} from "@modules/rental/queries/paginatedBookRentals/paginatedBookRentals.query";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";

@@ -1,3 +1,6 @@
+import { UserRepository } from "@modules/user/database/user.repository.port";
+import { USER_DELETED } from "@modules/user/domain/events/userDeleted.event";
+import { userNotFoundException } from "@modules/user/domain/user.errors";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -6,9 +9,6 @@ import { FPF, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
-import { UserRepository } from "@user/database/user.repository.port";
-import { USER_DELETED } from "@user/domain/events/userDeleted.event";
-import { userNotFoundException } from "@user/domain/user.errors";
 import { PinoLogger } from "nestjs-pino";
 
 export class DeleteUser implements ICommand {

@@ -1,4 +1,4 @@
-import { BookItem } from "@book/domain/bookItem.entity";
+import { BookItem } from "@modules/book/domain/bookItem.entity";
 import { BaseDateEntity } from "@shared/utils/domain/dateEntity.base";
 import { UUID } from "@shared/uuid/uuid";
 import { z } from "zod";

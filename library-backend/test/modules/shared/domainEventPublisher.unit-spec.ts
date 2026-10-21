@@ -1,4 +1,4 @@
-import { BOOK_INFO_CREATED } from "@book/domain/events/bookInfoCreated.event";
+import { BOOK_INFO_CREATED } from "@modules/book/domain/events/bookInfoCreated.event";
 import { InternalServerErrorException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
