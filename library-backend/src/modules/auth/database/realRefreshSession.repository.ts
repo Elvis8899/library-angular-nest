@@ -6,7 +6,6 @@ import {
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { FPF, TE } from "@shared/utils/application/monads";
-import { noop } from "@shared/utils/application/noop";
 import { prismaTasks } from "@shared/utils/database/prismaTasks";
 
 @Injectable()
@@ -16,7 +15,7 @@ export class RealRefreshSessionRepository implements RefreshSessionRepository {
   private sessions = prismaTasks(() => this.prisma.refreshSession);
 
   create = (session: RefreshSession): TE.TaskEither<Error, void> =>
-    FPF.pipe(this.sessions.create({ data: session }), TE.map(noop));
+    FPF.pipe(this.sessions.create({ data: session }), TE.asUnit);
 
   // Conditional update, so two concurrent uses of one token cannot both win
   rotate = ({
@@ -34,13 +33,13 @@ export class RealRefreshSessionRepository implements RefreshSessionRepository {
     );
 
   deleteById = (id: string): TE.TaskEither<Error, void> =>
-    FPF.pipe(this.sessions.deleteMany({ where: { id } }), TE.map(noop));
+    FPF.pipe(this.sessions.deleteMany({ where: { id } }), TE.asUnit);
 
   deleteExpired = (userId: string): TE.TaskEither<Error, void> =>
     FPF.pipe(
       this.sessions.deleteMany({
         where: { userId, expiresAt: { lt: new Date() } },
       }),
-      TE.map(noop),
+      TE.asUnit,
     );
 }

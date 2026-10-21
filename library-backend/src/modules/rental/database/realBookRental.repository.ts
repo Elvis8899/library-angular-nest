@@ -12,7 +12,6 @@ import {
 } from "@rental/domain/bookRental.errors";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { FPF, O, TE } from "@shared/utils/application/monads";
-import { noop } from "@shared/utils/application/noop";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
 import { prismaTasks } from "@shared/utils/database/prismaTasks";
 import { Paginated } from "@shared/utils/database/repository.port";
@@ -41,14 +40,11 @@ export class RealBookRentalRepository implements BookRentalRepository {
     user: true,
   };
 
-  findAll = (): TE.TaskEither<Error, BookRental[]> => {
-    return FPF.pipe(
-      this.rentals.findMany({
-        include: this.includeAll,
-      }),
+  findAll = (): TE.TaskEither<Error, BookRental[]> =>
+    FPF.pipe(
+      this.rentals.findMany({ include: this.includeAll }),
       TE.chainEitherK(validateRows(this.baseValidator)),
     );
-  };
 
   findAllPaginated = (
     params: PaginatedQueryParams<BookRentalFindAllQuery>,
@@ -75,36 +71,23 @@ export class RealBookRentalRepository implements BookRentalRepository {
 
   findById = (
     bookRentalId: string,
-  ): TE.TaskEither<Error, O.Option<BookRental>> => {
-    return FPF.pipe(
+  ): TE.TaskEither<Error, O.Option<BookRental>> =>
+    FPF.pipe(
       this.rentals.findUnique({
-        where: {
-          id: bookRentalId,
-        },
+        where: { id: bookRentalId },
         include: this.includeAll,
       }),
       TE.chainEitherK(validateMaybeRow(this.baseValidator)),
     );
-  };
 
-  deleteById = (bookRentalId: string): TE.TaskEither<Error, void> => {
-    return FPF.pipe(
-      this.rentals.delete({
-        where: {
-          id: bookRentalId,
-        },
-      }),
-      TE.map(noop),
-    );
-  };
+  deleteById = (bookRentalId: string): TE.TaskEither<Error, void> =>
+    FPF.pipe(this.rentals.delete({ where: { id: bookRentalId } }), TE.asUnit);
 
   save = (bookRentalRaw: Partial<BookRental>): TE.TaskEither<Error, void> => {
     const { bookItem: _, user: __, ...bookRental } = bookRentalRaw;
     return FPF.pipe(
       this.rentals.upsert({
-        where: {
-          id: bookRental.id,
-        },
+        where: { id: bookRental.id },
         update: {
           rentalStatus: bookRental.rentalStatus,
           overdueDate: bookRental.overdueDate,
@@ -114,8 +97,7 @@ export class RealBookRentalRepository implements BookRentalRepository {
           ...(bookRental as Omit<BookRental, "bookItem" | "user">),
         },
       }),
-
-      TE.map(noop),
+      TE.asUnit,
     );
   };
 

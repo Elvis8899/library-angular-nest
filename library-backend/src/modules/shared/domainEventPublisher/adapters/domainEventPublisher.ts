@@ -9,8 +9,8 @@ import { unknownException } from "@shared/utils/domain/shared.erros";
 export class DomainEventPublisher {
   constructor(private eventEmitter: EventEmitter2) {}
 
-  publishEvent = (domainEvent: DomainEvent): TE.TaskEither<Error, void> => {
-    return FPF.pipe(
+  publishEvent = (domainEvent: DomainEvent): TE.TaskEither<Error, void> =>
+    FPF.pipe(
       domainEvent,
       validateWith(DomainEvent, "DomainEvent"),
       TE.fromEither,
@@ -20,5 +20,4 @@ export class DomainEventPublisher {
         }, unknownException),
       ),
     );
-  };
 }

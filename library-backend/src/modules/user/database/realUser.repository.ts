@@ -1,8 +1,7 @@
-import { Prisma, RentalStatus } from "@db/generated/client";
+import { RentalStatus } from "@db/generated/client";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { FPF, O, TE } from "@shared/utils/application/monads";
-import { noop } from "@shared/utils/application/noop";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
 import { prismaTasks } from "@shared/utils/database/prismaTasks";
 import { Paginated } from "@shared/utils/database/repository.port";
@@ -28,45 +27,32 @@ export class RealUserRepository implements UserRepository {
 
   private users = prismaTasks(() => this.prisma.user);
 
-  findAll = (): TE.TaskEither<Error, User[]> => {
-    return FPF.pipe(
-      this.users.findMany({}),
+  findAll = (): TE.TaskEither<Error, User[]> =>
+    FPF.pipe(
+      this.users.findMany(),
       TE.chainEitherK(validateRows(this.baseValidator)),
     );
-  };
 
   findAllPaginated = (
     params: PaginatedQueryParams,
-  ): TE.TaskEither<Error, Paginated<User>> => {
-    const where: Prisma.UserWhereInput = {};
-    return loadPage(
+  ): TE.TaskEither<Error, Paginated<User>> =>
+    loadPage(
       {
         rows: ({ skip, take }) =>
-          this.users.findMany({
-            where,
-            skip,
-            take,
-            orderBy: { createdAt: "desc" },
-          }),
-        total: () => this.users.count({ where }),
+          this.users.findMany({ skip, take, orderBy: { createdAt: "desc" } }),
+        total: () => this.users.count(),
       },
       this.baseValidator,
     )(params);
-  };
 
-  findById = (userId: string): TE.TaskEither<Error, O.Option<User>> => {
-    return FPF.pipe(
-      this.users.findUnique({
-        where: {
-          id: userId,
-        },
-      }),
+  findById = (userId: string): TE.TaskEither<Error, O.Option<User>> =>
+    FPF.pipe(
+      this.users.findUnique({ where: { id: userId } }),
       TE.chainEitherK(validateMaybeRow(this.baseValidator)),
     );
-  };
 
-  findByCPF = (cpf: string): TE.TaskEither<Error, O.Option<User>> => {
-    return FPF.pipe(
+  findByCPF = (cpf: string): TE.TaskEither<Error, O.Option<User>> =>
+    FPF.pipe(
       this.users.findFirst({
         where: {
           role: UserRoleEnum.Client,
@@ -75,22 +61,15 @@ export class RealUserRepository implements UserRepository {
       }),
       TE.chainEitherK(validateMaybeRow(this.baseValidator)),
     );
-  };
 
-  findByEmail = (email: string): TE.TaskEither<Error, O.Option<User>> => {
-    return FPF.pipe(
-      this.users.findFirst({
-        where: {
-          email: email,
-        },
-      }),
+  findByEmail = (email: string): TE.TaskEither<Error, O.Option<User>> =>
+    FPF.pipe(
+      this.users.findFirst({ where: { email } }),
       TE.chainEitherK(validateMaybeRow(this.baseValidator)),
     );
-  };
 
   // One conditional statement, so a rental started meanwhile can't be
-  // deleted by the cascade. When nothing is deleted, the user's existence
-  // tells the two failures apart
+  // deleted by the cascade
   deleteById = (userId: string): TE.TaskEither<Error, void> =>
     FPF.pipe(
       this.users.deleteMany({
@@ -99,28 +78,26 @@ export class RealUserRepository implements UserRepository {
           bookRentalDetails: { none: { rentalStatus: RentalStatus.rented } },
         },
       }),
-      TE.chain(({ count }): TE.TaskEither<Error, void> =>
-        count > 0
-          ? TE.right(undefined)
-          : FPF.pipe(
-              this.users.count({ where: { id: userId } }),
-              TE.chain((users) =>
-                TE.left<Error>(
-                  users > 0
-                    ? userHasActiveRentalsException()
-                    : userNotFoundException(),
-                ),
-              ),
-            ),
+      TE.chain(({ count }) =>
+        count > 0 ? TE.right(undefined) : this.deletionFailure(userId),
       ),
     );
 
-  save = (user: User): TE.TaskEither<Error, void> => {
-    return FPF.pipe(
+  // Nothing was deleted: the user has an unfinished rental, or is gone
+  private deletionFailure = (userId: string): TE.TaskEither<Error, void> =>
+    FPF.pipe(
+      this.users.count({ where: { id: userId } }),
+      TE.chain((users) =>
+        TE.left<Error>(
+          users > 0 ? userHasActiveRentalsException() : userNotFoundException(),
+        ),
+      ),
+    );
+
+  save = (user: User): TE.TaskEither<Error, void> =>
+    FPF.pipe(
       this.users.upsert({
-        where: {
-          id: user.id,
-        },
+        where: { id: user.id },
         update: {
           name: user.name,
           email: user.email,
@@ -128,14 +105,10 @@ export class RealUserRepository implements UserRepository {
           cpf: user.cpf,
           role: user.role,
         },
-        create: {
-          ...user,
-        },
+        create: user,
       }),
-
-      TE.map(noop),
+      TE.asUnit,
     );
-  };
 
   // updateMany does not fail when the user no longer exists
   incrementTokenVersion = (userId: string): TE.TaskEither<Error, void> =>
@@ -144,6 +117,6 @@ export class RealUserRepository implements UserRepository {
         where: { id: userId },
         data: { tokenVersion: { increment: 1 } },
       }),
-      TE.map(noop),
+      TE.asUnit,
     );
 }

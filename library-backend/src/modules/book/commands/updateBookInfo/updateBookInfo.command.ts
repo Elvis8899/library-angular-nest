@@ -8,7 +8,6 @@ import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/doma
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RE, RTE } from "@shared/utils/application/monads";
-import { noop } from "@shared/utils/application/noop";
 import { performRTE } from "@shared/utils/application/perform";
 import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/entities/uuid";
@@ -74,7 +73,7 @@ export class UpdateBookInfoHandler implements ICommandHandler<
           },
         }),
       ),
-      RTE.map(noop),
+      RTE.asUnit,
     )({ logger: this.logger });
     return executeTask(task);
   }
