@@ -91,7 +91,7 @@ yarn test:cov           # unit + integration + e2e, requires 100% coverage
 
 # Frontend
 cd frontend
-yarn test               # Vitest, requires 80% coverage
+yarn test               # Vitest, requires 100% coverage
 yarn lint
 yarn lint:styles        # Stylelint
 ```
@@ -144,7 +144,7 @@ The project's name is in a few places:
      frontend/src/app/pages/{books,rentals}
    ```
 2. `git grep -n -i "lending example"` lists what's left in the core, each marked with a `Lending example` comment: the module registrations, events and test fakes, the test ids, the seed, the `User` relation in the schema, the menu, routes and their spec, the translations and the `user.hasActiveRentals` error. Delete each marked line or block. `RealUserRepository.deleteById` becomes a plain delete, as its comment says.
-3. In `backend/`: `yarn migrate --name remove_lending_example` (drops the tables) and `yarn generate`. Then `yarn lint --fix`, `yarn test:cov`, and `yarn lint` and `yarn test` in `frontend/`. Both pass without the example, at full coverage on the backend.
+3. In `backend/`: `yarn migrate --name remove_lending_example` (drops the tables) and `yarn generate`. Then `yarn lint --fix`, `yarn test:cov`, and `yarn lint` and `yarn test` in `frontend/`. Both pass without the example, at full coverage.
 
 Then add your own modules: [`CLAUDE.md`](CLAUDE.md) has an "Adding a feature" checklist.
 

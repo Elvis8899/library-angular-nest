@@ -9,6 +9,7 @@ import {
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
 import { authHttpInterceptor } from "@app/shared/interceptors/authHttp.interceptor";
+import { environment } from "@env/environment";
 import { TranslateService } from "@ngx-translate/core";
 import {
   createInjectionContextFactory,
@@ -66,6 +67,17 @@ describe("AuthenticationHttpInterceptor", () => {
     req.flush({});
     expect(req.request.headers.has("Authorization")).toBeTruthy();
     expect(req.request.headers.get("Authorization")).toBe("Bearer test_token");
+  });
+
+  it("should send the default language before one is in use", () => {
+    spectator.inject(TranslateService).getCurrentLang.mockReturnValue(null);
+
+    httpClient.get("/test").subscribe();
+    const req = httpMock.expectOne("/test");
+    req.flush({});
+    expect(req.request.headers.get("Accept-Language")).toBe(
+      environment.defaultLanguage.substring(0, 2)
+    );
   });
 
   it("Should cache requests", () => {

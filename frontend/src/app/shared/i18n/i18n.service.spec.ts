@@ -167,6 +167,18 @@ describe("I18nService", () => {
       // Assert
       expect(currentLanguage).toEqual(defaultLanguage);
     });
+
+    it("should return the default language before one is in use", () => {
+      // Arrange
+      spectator.service.init(defaultLanguage, supportedLanguages);
+      vi.spyOn(translateService, "getCurrentLang").mockReturnValue(null);
+
+      // Act
+      const currentLanguage = spectator.service.language;
+
+      // Assert
+      expect(currentLanguage).toEqual(defaultLanguage);
+    });
   });
 
   describe("get titles", () => {

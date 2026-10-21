@@ -52,7 +52,7 @@ yarn start                    # ng serve on :4200, proxies /v1 to localhost:3000
 yarn build
 yarn lint
 yarn lint:styles              # stylelint on src/**/*.scss (CI runs it)
-yarn test                     # ng test: Vitest with coverage, 80% thresholds (angular.json)
+yarn test                     # ng test: Vitest with coverage, 100% thresholds (angular.json)
 npx ng test --watch=false --coverage=false --include src/app/services/authentication.service.spec.ts
 ```
 
