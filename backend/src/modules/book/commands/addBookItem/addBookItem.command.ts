@@ -1,17 +1,15 @@
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { BookItem } from "@modules/book/domain/bookItem.entity";
-import { BOOK_ITEM_CREATED } from "@modules/book/domain/events/bookItemCreated.event";
+import { bookItemCreated } from "@modules/book/domain/events/bookItemCreated.event";
 import { CreateBookItemDto } from "@modules/book/dtos/bookInfo.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
-import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RE, RTE } from "@shared/utils/application/monads";
-import { performRTE } from "@shared/utils/application/perform";
+import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
+import { publishRTE, UseCase } from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
-import { PinoLogger } from "nestjs-pino";
 
 export class AddBookItem implements ICommand {
   constructor(public readonly props: CreateBookItemDto) {}
@@ -20,57 +18,44 @@ export class AddBookItem implements ICommand {
 @CommandHandler(AddBookItem)
 export class AddBookItemHandler implements ICommandHandler<AddBookItem, void> {
   constructor(
+    private readonly useCase: UseCase,
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly bookInfoRepository: BookInfoRepository,
-    private readonly domainEventPublisher: DomainEventPublisher,
-    private readonly logger: PinoLogger,
-  ) {
-    this.logger.setContext("AddBookItem");
-  }
+  ) {}
 
   execute(command: AddBookItem): Promise<void> {
-    this.logger.info(command.props, "AddBookItem command received");
-    const task = FPF.pipe(
-      //Data validation
-      RE.of(command.props),
-      RE.bind("id", () =>
-        fromInputRE(UUID, "uuid")(this.uuidGeneratorService.generateUUID()),
-      ),
-      RE.chain(fromInputRE(BookItem, "BookItem")),
-      RTE.fromReaderEither,
-
-      //Validate BookInfo exists
-      RTE.tap(
-        FPF.flow(
-          (data) => data.bookId,
-          performRTE(this.bookInfoRepository.findById, "get bookInfo by id"),
-          RTE.chainW(RTE.fromOption<Error>(bookInfoNotFoundException)),
+    return this.useCase.run(
+      "AddBookItem",
+      command.props,
+      FPF.pipe(
+        //Data validation
+        RE.of(command.props),
+        RE.bind("id", () =>
+          fromInputRE(UUID, "uuid")(this.uuidGeneratorService.generateUUID()),
         ),
-      ),
+        RE.chain(fromInputRE(BookItem, "BookItem")),
+        RTE.fromReaderEither,
 
-      //Store entity
-      RTE.tap(
-        performRTE(
-          this.bookInfoRepository.createBookItem,
-          "save bookItem in storage system.",
+        //Validate BookInfo exists
+        RTE.tap((bookItem) =>
+          findOrFailRTE(
+            this.bookInfoRepository.findById,
+            "get bookInfo by id",
+            bookInfoNotFoundException,
+          )(bookItem.bookId),
         ),
-      ),
 
-      // //Emit domain event
-      RTE.chain((bookInfo) =>
-        performRTE(
-          this.domainEventPublisher.publishEvent,
-          "emit bookItem created event.",
-        )({
-          eventKey: BOOK_ITEM_CREATED,
-          payload: {
-            id: bookInfo.id,
-            bookId: bookInfo.bookId,
-          },
-        }),
+        //Store entity
+        RTE.tap(
+          performRTE(
+            this.bookInfoRepository.createBookItem,
+            "save bookItem in storage system.",
+          ),
+        ),
+
+        RTE.tap(publishRTE(bookItemCreated)),
+        RTE.asUnit,
       ),
-      RTE.asUnit,
-    )({ logger: this.logger });
-    return executeTask(task);
+    );
   }
 }

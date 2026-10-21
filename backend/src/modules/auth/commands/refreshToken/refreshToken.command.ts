@@ -15,12 +15,11 @@ import {
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { JwtService } from "@nestjs/jwt";
-import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { B, E, FPF, RE, RTE, TE } from "@shared/utils/application/monads";
-import { performRTE } from "@shared/utils/application/perform";
+import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
+import { UseCase } from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
-import { PinoLogger } from "nestjs-pino";
 
 export class RefreshTokenCommand implements ICommand {
   constructor(public readonly props: RefreshTokenDto) {}
@@ -32,67 +31,71 @@ export class RefreshTokenCommandHandler implements ICommandHandler<
   AuthResponseDto
 > {
   constructor(
+    private readonly useCase: UseCase,
     private readonly userRepository: UserRepository,
     private readonly refreshSessionRepository: RefreshSessionRepository,
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly jwtService: JwtService,
-    private readonly logger: PinoLogger,
-  ) {
-    this.logger.setContext("RefreshTokenCommand");
-  }
+  ) {}
 
   execute(command: RefreshTokenCommand): Promise<AuthResponseDto> {
-    this.logger.info("RefreshTokenCommand command received");
-    const task = FPF.pipe(
-      //Data validation
-      RE.of(command.props),
-      RE.chain(fromInputRE(RefreshTokenInput, "RefreshTokenInput")),
-      RTE.fromReaderEither,
+    // The refresh token is not logged
+    return this.useCase.run(
+      "RefreshTokenCommand",
+      undefined,
+      FPF.pipe(
+        //Data validation
+        RE.of(command.props),
+        RE.chain(fromInputRE(RefreshTokenInput, "RefreshTokenInput")),
+        RTE.fromReaderEither,
 
-      //Validate refresh token signature, expiration, audience and issuer
-      RTE.chainTaskEitherKW(({ refreshToken }) =>
-        FPF.pipe(
-          TE.tryCatch(
-            () =>
-              this.jwtService.verifyAsync<object>(
-                refreshToken,
-                refreshVerifyOptions,
-              ),
-            () => invalidRefreshTokenException(),
-          ),
-          // Tokens issued before rotation have no session: log in again
-          TE.chainEitherKW((payload) =>
-            E.tryCatch(
-              () => RefreshTokenClaims.parse(payload),
+        //Validate refresh token signature, expiration, audience and issuer
+        RTE.chainTaskEitherKW(({ refreshToken }) =>
+          FPF.pipe(
+            TE.tryCatch(
+              () =>
+                this.jwtService.verifyAsync<object>(
+                  refreshToken,
+                  refreshVerifyOptions,
+                ),
               () => invalidRefreshTokenException(),
+            ),
+            // Tokens issued before rotation have no session: log in again
+            TE.chainEitherKW((payload) =>
+              E.tryCatch(
+                () => RefreshTokenClaims.parse(payload),
+                () => invalidRefreshTokenException(),
+              ),
             ),
           ),
         ),
-      ),
 
-      //Validate User still exists and the token was not revoked
-      //(logout or user update increments the user's token version),
-      //then use the user's current data for new tokens
-      RTE.chain((claims) =>
-        FPF.pipe(
-          claims.sub,
-          performRTE(this.userRepository.findById, "get user by id"),
-          RTE.chainW(RTE.fromOption<Error>(invalidRefreshTokenException)),
-          RTE.filterOrElseW(
-            (user) => user.tokenVersion === claims.ver,
-            invalidRefreshTokenException,
+        //Validate User still exists and the token was not revoked
+        //(logout or user update increments the user's token version),
+        //then use the user's current data for new tokens
+        RTE.chain((claims) =>
+          FPF.pipe(
+            claims.sub,
+            findOrFailRTE(
+              this.userRepository.findById,
+              "get user by id",
+              invalidRefreshTokenException,
+            ),
+            RTE.filterOrElseW(
+              (user) => user.tokenVersion === claims.ver,
+              invalidRefreshTokenException,
+            ),
+            RTE.bindTo("user"),
+            RTE.bindW("next", () => this.rotateSession(claims)),
           ),
-          RTE.bindTo("user"),
-          RTE.bindW("next", () => this.rotateSession(claims)),
+        ),
+        RTE.chainTaskK(
+          ({ user, next }) =>
+            () =>
+              generateTokens(this.jwtService)(user, next),
         ),
       ),
-      RTE.chainTaskK(
-        ({ user, next }) =>
-          () =>
-            generateTokens(this.jwtService)(user, next),
-      ),
-    )({ logger: this.logger });
-    return executeTask(task);
+    );
   }
 
   // A refresh token is single-use. Using one again means it may have been

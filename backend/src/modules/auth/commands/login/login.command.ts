@@ -12,12 +12,11 @@ import {
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { JwtService } from "@nestjs/jwt";
-import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { B, FPF, RE, RTE, TE } from "@shared/utils/application/monads";
-import { performRTE } from "@shared/utils/application/perform";
+import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
+import { UseCase } from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
-import { PinoLogger } from "nestjs-pino";
 
 export class LoginCommand implements ICommand {
   constructor(public readonly props: LoginDto) {}
@@ -29,55 +28,55 @@ export class LoginCommandHandler implements ICommandHandler<
   AuthResponseDto
 > {
   constructor(
+    private readonly useCase: UseCase,
     private readonly userRepository: UserRepository,
     private readonly refreshSessionRepository: RefreshSessionRepository,
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly jwtService: JwtService,
-    private readonly logger: PinoLogger,
-  ) {
-    this.logger.setContext("LoginCommand");
-  }
+  ) {}
 
   execute(command: LoginCommand): Promise<AuthResponseDto> {
-    this.logger.info(command.props, "LoginCommand command received");
-    const task = FPF.pipe(
-      //Data validation
-      RE.of(command.props),
+    return this.useCase.run(
+      "LoginCommand",
+      { email: command.props.email },
+      FPF.pipe(
+        //Data validation
+        RE.of(command.props),
 
-      RE.chain(fromInputRE(LoginInput, "LoginInput")),
-      RTE.fromReaderEither,
+        RE.chain(fromInputRE(LoginInput, "LoginInput")),
+        RTE.fromReaderEither,
 
-      //Validate User exists
-      RTE.chain((data) =>
-        FPF.pipe(
-          data.email,
-          performRTE(this.userRepository.findByEmail, "get user by email"),
-          RTE.chainW(RTE.fromOption<Error>(wrongAuthException)),
+        //Validate User exists
+        RTE.chain((data) =>
+          findOrFailRTE(
+            this.userRepository.findByEmail,
+            "get user by email",
+            wrongAuthException,
+          )(data.email),
         ),
-      ),
 
-      // Validate password
-      RTE.chainTaskEitherKW((user) =>
-        FPF.pipe(
-          () => comparePassword(command.props.password, user.password),
-          TE.fromTask,
-          TE.chainW(
-            B.fold(
-              () => TE.left(wrongAuthException()),
-              () => TE.right(user),
+        // Validate password
+        RTE.chainTaskEitherKW((user) =>
+          FPF.pipe(
+            () => comparePassword(command.props.password, user.password),
+            TE.fromTask,
+            TE.chainW(
+              B.fold(
+                () => TE.left(wrongAuthException()),
+                () => TE.right(user),
+              ),
             ),
           ),
         ),
+        RTE.bindTo("user"),
+        RTE.bindW("session", ({ user }) => this.startSession(user.id)),
+        RTE.chainTaskK(
+          ({ user, session }) =>
+            () =>
+              generateTokens(this.jwtService)(user, session),
+        ),
       ),
-      RTE.bindTo("user"),
-      RTE.bindW("session", ({ user }) => this.startSession(user.id)),
-      RTE.chainTaskK(
-        ({ user, session }) =>
-          () =>
-            generateTokens(this.jwtService)(user, session),
-      ),
-    )({ logger: this.logger });
-    return executeTask(task);
+    );
   }
 
   // Each login starts a refresh session; the user's expired ones are

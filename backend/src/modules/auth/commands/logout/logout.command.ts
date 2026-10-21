@@ -1,11 +1,10 @@
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
+import { UseCase } from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
-import { PinoLogger } from "nestjs-pino";
 
 export class LogoutCommand implements ICommand {
   constructor(public readonly userId: string) {}
@@ -18,25 +17,25 @@ export class LogoutCommandHandler implements ICommandHandler<
   void
 > {
   constructor(
+    private readonly useCase: UseCase,
     private readonly userRepository: UserRepository,
-    private readonly logger: PinoLogger,
-  ) {
-    this.logger.setContext("LogoutCommand");
-  }
+  ) {}
 
   execute(command: LogoutCommand): Promise<void> {
-    this.logger.info(command.userId, "LogoutCommand command received");
-    const task = FPF.pipe(
+    return this.useCase.run(
+      "LogoutCommand",
       command.userId,
-      fromInputRE(UUID, "uuid"),
-      RTE.fromReaderEither,
-      RTE.chain(
-        performRTE(
-          this.userRepository.incrementTokenVersion,
-          "revoke user refresh tokens",
+      FPF.pipe(
+        command.userId,
+        fromInputRE(UUID, "uuid"),
+        RTE.fromReaderEither,
+        RTE.chain(
+          performRTE(
+            this.userRepository.incrementTokenVersion,
+            "revoke user refresh tokens",
+          ),
         ),
       ),
-    )({ logger: this.logger });
-    return executeTask(task);
+    );
   }
 }

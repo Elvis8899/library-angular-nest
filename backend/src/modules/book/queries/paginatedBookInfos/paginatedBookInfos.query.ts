@@ -1,16 +1,15 @@
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RE, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
+import { UseCase } from "@shared/utils/application/useCase";
 import { Paginated } from "@shared/utils/database/repository.port";
 import {
   PageRequest,
   PageRequestSchema,
 } from "@shared/utils/domain/query.base";
-import { PinoLogger } from "nestjs-pino";
 import { z } from "zod";
 
 // Raw query string values, validated by BookInfoListFilters
@@ -65,11 +64,9 @@ export class PaginatedBookInfosQueryHandler implements IQueryHandler<
   Paginated<BookInfo>
 > {
   constructor(
+    private readonly useCase: UseCase,
     private readonly bookInfoRepository: BookInfoRepository,
-    private readonly logger: PinoLogger,
-  ) {
-    this.logger.setContext("PaginatedBookInfos");
-  }
+  ) {}
 
   /**
    * In read model we don't need to execute
@@ -77,21 +74,24 @@ export class PaginatedBookInfosQueryHandler implements IQueryHandler<
    * domain and repository layers completely
    * and execute query directly
    */
-  async execute(query: PaginatedBookInfosQuery): Promise<Paginated<BookInfo>> {
-    const task = FPF.pipe(
-      query.params,
-      fromInputRE(PageRequestSchema, "PaginatedBookInfosQuery"),
-      RE.bind("query", () =>
-        fromInputRE(BookInfoListFilters, "filters")(query.filters),
-      ),
-      RTE.fromReaderEither,
-      RTE.chain(
-        performRTE(
-          this.bookInfoRepository.findAllPaginated,
-          "get bookInfo list in storage system.",
+  execute(query: PaginatedBookInfosQuery): Promise<Paginated<BookInfo>> {
+    return this.useCase.run(
+      "PaginatedBookInfos",
+      query,
+      FPF.pipe(
+        query.params,
+        fromInputRE(PageRequestSchema, "PaginatedBookInfosQuery"),
+        RE.bind("query", () =>
+          fromInputRE(BookInfoListFilters, "filters")(query.filters),
+        ),
+        RTE.fromReaderEither,
+        RTE.chain(
+          performRTE(
+            this.bookInfoRepository.findAllPaginated,
+            "get bookInfo list in storage system.",
+          ),
         ),
       ),
-    )({ logger: this.logger });
-    return executeTask(task);
+    );
   }
 }
