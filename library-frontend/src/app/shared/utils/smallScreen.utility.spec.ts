@@ -2,7 +2,7 @@ import { BreakpointObserver, BreakpointState } from "@angular/cdk/layout";
 import {
   injectIsSmallScreen,
   smallScreenQuery,
-} from "@app/shared/helpers/smallScreen";
+} from "@app/shared/utils/smallScreen.utility";
 import {
   createInjectionContextFactory,
   SpectatorInjectionContext,

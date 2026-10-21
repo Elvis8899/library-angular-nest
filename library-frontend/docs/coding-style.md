@@ -19,14 +19,14 @@ SCSS rules are configured in [`.stylelintrc`](../.stylelintrc), but no script ru
 
 The [ESLint config](../eslint.config.mts) extends the recommended rules from ESLint, typescript-eslint (recommended and stylistic) and angular-eslint (TypeScript, templates and accessibility). On top of those:
 
-| Rule | What it means |
-|---|---|
-| No relative imports | Use path aliases: `@app/`, `@shared/`, `@pages/`, `@env/`. Lazy `import()` calls in route files are the one exception. |
-| `no-console` | Use the `Logger` service: `const log = new Logger("MyComponent")` at the top of the file. |
-| No property setters | Use methods or signals instead of `set foo(...)`. |
-| Component selectors | Kebab-case elements with the `app` prefix (`app-list-books`); directives use the `app` prefix in camelCase. |
-| `check-file/*` naming rules | File and folder names must be camelCase; see [File naming](#file-naming). |
-| `prefer-on-push-component-change-detection` | Off for now; see [Change detection](#change-detection). |
+| Rule                                        | What it means                                                                                                          |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| No relative imports                         | Use path aliases: `@app/`, `@shared/`, `@pages/`, `@env/`. Lazy `import()` calls in route files are the one exception. |
+| `no-console`                                | Use the `Logger` service: `const log = new Logger("MyComponent")` at the top of the file.                              |
+| No property setters                         | Use methods or signals instead of `set foo(...)`.                                                                      |
+| Component selectors                         | Kebab-case elements with the `app` prefix (`app-list-books`); directives use the `app` prefix in camelCase.            |
+| `check-file/*` naming rules                 | File and folder names must be camelCase; see [File naming](#file-naming).                                              |
+| `prefer-on-push-component-change-detection` | Off for now; see [Change detection](#change-detection).                                                                |
 
 ## Components
 
@@ -41,8 +41,8 @@ The [ESLint config](../eslint.config.mts) extends the recommended rules from ESL
 - **Templates use the built-in control flow** (`@if`, `@for`, `@switch`), not `*ngIf` or `*ngFor`.
 - **Template text goes through translations:** use the `translate` directive or pipe from ngx-translate. See [Translations](#translations).
 - **User feedback** uses `HotToastService` (`this._toast.success(...)`, `.error(...)`). Toast messages are currently hard-coded English strings; new ones should use `TranslateService.instant(...)` so they get translated too.
-- **Dialogs** extend `StronglyTypedDialog<Data, Result>` and are opened with `TypedDialog` (`shared/components/dialog/typedDialog.ts`), so their data and result are typed.
-- **Paginated tables** use `PaginatedDataSource` (`models/utils/paginatedDataSource.entity.ts`) together with `CustomizedTableComponent`.
+- **Dialogs** extend `StronglyTypedDialog<Data, Result>` and are opened with `TypedDialog` (`shared/utils/typedDialog.utility.ts`), so their data and result are typed.
+- **Paginated tables** use `PaginatedDataSource` (`shared/components/customizedTable/paginatedDataSource.ts`) together with `CustomizedTableComponent`.
 - **Forms** use reactive forms (`FormBuilder` with `Validators`). Custom validators live in `shared/utils/formValidators.utility.ts`.
 
 ### Change detection

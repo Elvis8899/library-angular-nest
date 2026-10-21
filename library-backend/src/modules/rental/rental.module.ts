@@ -10,7 +10,7 @@ import { BookRentalRepository } from "@rental/database/bookRental.repository.por
 import { RealBookRentalRepository } from "@rental/database/realBookRental.repository";
 import { PaginatedBookRentalsController } from "@rental/queries/paginatedBookRentals/paginatedBookRentals.controller";
 import { PaginatedBookRentalsQueryHandler } from "@rental/queries/paginatedBookRentals/paginatedBookRentals.query";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { RealUserRepository } from "@user/database/realUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 const controllers: ModuleMetadata["controllers"] = [
@@ -51,4 +51,4 @@ const repositories = [
     ...subscribers,
   ],
 })
-export class BookRentalModule {}
+export class RentalModule {}

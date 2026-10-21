@@ -1,4 +1,4 @@
-import { hashPassword } from "@auth/util/signTokenParams";
+import { hashPassword } from "@auth/utils/password";
 import { HttpStatus } from "@nestjs/common";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";

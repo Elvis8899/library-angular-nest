@@ -6,13 +6,13 @@ import { MatTableModule } from "@angular/material/table";
 import { Router } from "@angular/router";
 import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
-import { PaginatedDataSource } from "@app/models/utils/paginatedDataSource.entity";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
+import { PaginatedDataSource } from "@app/shared/components/customizedTable/paginatedDataSource";
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
-import { injectIsSmallScreen } from "@app/shared/helpers/smallScreen";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
+import { injectIsSmallScreen } from "@app/shared/utils/smallScreen.utility";
 import { TranslatePipe } from "@ngx-translate/core";
 
 const log = new Logger("ListUsersComponent");

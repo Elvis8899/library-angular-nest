@@ -1,4 +1,4 @@
-import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
+import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
 import { Prisma } from "@db/generated/client";
 import { HttpException, Injectable } from "@nestjs/common";
 import {
@@ -10,7 +10,7 @@ import {
   bookRentalFinishedException,
   bookRentalNotAvailableException,
 } from "@rental/domain/bookRental.errors";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { PrismaService } from "@shared/prisma/prisma.service";
 import { FPF, O, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
 import { prismaTasks } from "@shared/utils/database/prismaTasks";

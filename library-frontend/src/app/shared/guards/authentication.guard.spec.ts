@@ -8,7 +8,7 @@ import { CredentialsService } from "@app/services/credentials.service";
 import {
   alreadyLoggedCheckGuard,
   authenticationGuard,
-} from "@app/shared/guard/authentication.guard";
+} from "@app/shared/guards/authentication.guard";
 import {
   createInjectionContextFactory,
   SpectatorInjectionContext,

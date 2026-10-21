@@ -18,7 +18,7 @@ import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
-import { StronglyTypedDialog } from "@app/shared/components/dialog/typedDialog";
+import { StronglyTypedDialog } from "@app/shared/utils/typedDialog.utility";
 import { TranslatePipe } from "@ngx-translate/core";
 
 const log = new Logger("ChooseUserDialogComponent");

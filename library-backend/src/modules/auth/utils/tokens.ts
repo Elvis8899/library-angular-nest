@@ -2,7 +2,6 @@ import { authConfig } from "@auth/auth.config";
 import { AuthResponseDto } from "@auth/dtos/authResponse.dto";
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from "@nestjs/jwt";
 import { User } from "@user/domain/user.entity";
-import * as bcrypt from "bcrypt";
 
 export const getSignTokenParams = (
   sub: string,
@@ -78,14 +77,3 @@ export const generateTokens =
       },
     };
   };
-
-export const comparePassword = async (
-  password: string,
-  hash: string,
-): Promise<boolean> => {
-  return bcrypt.compare(password, hash);
-};
-
-export const hashPassword = async (password: string): Promise<string> => {
-  return bcrypt.hash(password, 10);
-};

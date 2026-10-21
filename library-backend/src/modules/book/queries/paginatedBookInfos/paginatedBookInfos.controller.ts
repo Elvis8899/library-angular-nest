@@ -1,4 +1,5 @@
 import { AuthGuard } from "@auth/guards/auth.guard";
+import { BookInfo } from "@book/domain/bookInfo.entity";
 import {
   PaginatedBookInfoQueryRequestDto,
   PaginatedBookInfoResponseDto,
@@ -14,7 +15,6 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { Paginated } from "@shared/utils/database/repository.port";
-import { BookInfo } from "@src/modules/book/domain/bookInfo.entity";
 
 @Controller("v1/")
 @ApiBearerAuth()

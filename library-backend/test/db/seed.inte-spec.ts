@@ -1,6 +1,6 @@
-import { comparePassword } from "@auth/util/signTokenParams";
+import { comparePassword } from "@auth/utils/password";
 import { seed } from "@db/seed";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { PrismaService } from "@shared/prisma/prisma.service";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { resetDatabase } from "@test/util/resetDatabase";

@@ -1,7 +1,7 @@
 import { RealRefreshSessionRepository } from "@auth/database/realRefreshSession.repository";
 import { RefreshSession } from "@auth/domain/refreshSession.entity";
 import { Test } from "@nestjs/testing";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { PrismaService } from "@shared/prisma/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";

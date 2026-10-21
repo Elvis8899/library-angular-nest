@@ -1,13 +1,10 @@
 import { BookInfoSort } from "@book/database/bookInfo.repository.port";
 import { RealBookInfoRepository } from "@book/database/realBookInfo.repository";
 import { BookInfo } from "@book/domain/bookInfo.entity";
-import {
-  BookItem,
-  BookItemStatusEnum,
-} from "@book/domain/valueObject/bookItem.entity";
+import { BookItem, BookItemStatusEnum } from "@book/domain/bookItem.entity";
 import { InternalServerErrorException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { PrismaService } from "@shared/prisma/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";

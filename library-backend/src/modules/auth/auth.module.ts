@@ -11,7 +11,7 @@ import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
 import { JwtModule } from "@nestjs/jwt";
 import { ThrottlerModule } from "@nestjs/throttler";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { RealUserRepository } from "@user/database/realUser.repository";
 import { UserRepository } from "@user/database/user.repository.port";
 
@@ -53,4 +53,4 @@ const repositories = [
   controllers: [...controllers],
   providers: [...commandHandlers, ...services, ...repositories],
 })
-export class LoginModule {}
+export class AuthModule {}

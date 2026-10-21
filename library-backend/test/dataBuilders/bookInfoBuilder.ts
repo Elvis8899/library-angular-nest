@@ -1,11 +1,8 @@
 import { BookInfo } from "@book/domain/bookInfo.entity";
-import {
-  BookItem,
-  BookItemStatusEnum,
-} from "@book/domain/valueObject/bookItem.entity";
+import { BookItem, BookItemStatusEnum } from "@book/domain/bookItem.entity";
 import { CreateBookInfoDto } from "@book/dtos/bookInfo.dto";
 import { FPF } from "@shared/utils/application/monads";
-import { UUID } from "@shared/uuid/entities/uuid";
+import { UUID } from "@shared/uuid/uuid";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { z } from "zod";
 

@@ -9,7 +9,7 @@ import {
   getSignTokenParams,
   refreshSessionExpiry,
   refreshVerifyOptions,
-} from "@auth/util/signTokenParams";
+} from "@auth/utils/tokens";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { executeTask } from "@shared/utils/application/executeTask";

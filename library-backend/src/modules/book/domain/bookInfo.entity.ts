@@ -1,6 +1,6 @@
-import { BookItem } from "@book/domain/valueObject/bookItem.entity";
+import { BookItem } from "@book/domain/bookItem.entity";
 import { BaseDateEntity } from "@shared/utils/domain/dateEntity.base";
-import { UUID } from "@shared/uuid/entities/uuid";
+import { UUID } from "@shared/uuid/uuid";
 import { z } from "zod";
 
 export const BookInfo = z

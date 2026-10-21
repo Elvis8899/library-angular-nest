@@ -1,4 +1,4 @@
-import { UUID } from "@shared/uuid/entities/uuid";
+import { UUID } from "@shared/uuid/uuid";
 import { UserRoleEnum } from "@user/domain/user.entity";
 import { z } from "zod";
 

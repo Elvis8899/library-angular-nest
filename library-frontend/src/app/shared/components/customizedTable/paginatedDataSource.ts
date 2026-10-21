@@ -1,4 +1,9 @@
 import { DataSource } from "@angular/cdk/collections";
+import {
+  Page,
+  PaginatedEndpoint,
+  PaginatedSort,
+} from "@app/models/utils/pageRequest.entity";
 import { Logger } from "@app/services/logger.service";
 import {
   BehaviorSubject,
@@ -16,29 +21,6 @@ import {
   startWith,
   switchMap,
 } from "rxjs/operators";
-
-export interface PaginatedSort<T> {
-  property: keyof T;
-  order: "asc" | "desc";
-}
-
-export interface PageRequest<T, Q> {
-  limit: number;
-  page: number;
-  sort?: PaginatedSort<T>;
-  query?: Q;
-}
-
-export interface Page<T> {
-  data: T[];
-  count: number;
-  limit: number;
-  page: number;
-}
-
-export type PaginatedEndpoint<T, Q> = (
-  pageable: PageRequest<T, Q>
-) => Observable<Page<T>>;
 
 export function prepare<T>(
   callback: () => void

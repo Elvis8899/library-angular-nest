@@ -1,7 +1,7 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from "@angular/forms";
 
 // CPF and CNPJ check digits, as the API checks them (CheckedDocumentType in
-// library-backend/src/modules/user/domain/valueObject/document.ts). CNPJs
+// library-backend/src/modules/user/domain/document.ts). CNPJs
 // may be alphanumeric since July 2026, so letters are kept.
 const normalizeDocument = (v: string) =>
   v.toUpperCase().replace(/[^0-9A-Z]/g, "");

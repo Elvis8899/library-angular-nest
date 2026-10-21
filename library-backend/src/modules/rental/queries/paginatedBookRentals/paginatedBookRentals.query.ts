@@ -14,7 +14,7 @@ import {
   PageRequestSchema,
   paginatedSchema,
 } from "@shared/utils/domain/query.base";
-import { UUID } from "@shared/uuid/entities/uuid";
+import { UUID } from "@shared/uuid/uuid";
 import { PinoLogger } from "nestjs-pino";
 import { z } from "zod";
 

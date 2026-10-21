@@ -11,7 +11,7 @@ import {
  * To reuse a given route, add `data: { reuse: true }` to the route definition.
  */
 @Injectable()
-export class RouteReusableStrategy extends RouteReuseStrategy {
+export class ExplicitRouteReuseStrategy extends RouteReuseStrategy {
   public shouldDetach(): boolean {
     return false;
   }

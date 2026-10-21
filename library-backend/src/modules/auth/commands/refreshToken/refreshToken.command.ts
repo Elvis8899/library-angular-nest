@@ -11,14 +11,14 @@ import {
   refreshSessionExpiry,
   RefreshTokenRef,
   refreshVerifyOptions,
-} from "@auth/util/signTokenParams";
+} from "@auth/utils/tokens";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { JwtService } from "@nestjs/jwt";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { B, E, FPF, RE, RTE, TE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UserRepository } from "@user/database/user.repository.port";
 import { PinoLogger } from "nestjs-pino";
 

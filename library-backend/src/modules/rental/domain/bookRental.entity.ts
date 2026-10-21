@@ -1,6 +1,6 @@
 import { BaseDateEntity } from "@shared/utils/domain/dateEntity.base";
 import { DateType } from "@shared/utils/domain/dateType";
-import { UUID } from "@shared/uuid/entities/uuid";
+import { UUID } from "@shared/uuid/uuid";
 import { z } from "zod";
 
 export enum RentalStatusEnum {

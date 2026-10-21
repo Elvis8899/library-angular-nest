@@ -3,19 +3,19 @@ import { wrongAuthException } from "@auth/domain/auth.errors";
 import { LoginInput } from "@auth/domain/login.entity";
 import { AuthResponseDto } from "@auth/dtos/authResponse.dto";
 import { LoginDto } from "@auth/dtos/login.dto";
+import { comparePassword } from "@auth/utils/password";
 import {
-  comparePassword,
   generateTokens,
   refreshSessionExpiry,
   RefreshTokenRef,
-} from "@auth/util/signTokenParams";
+} from "@auth/utils/tokens";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { JwtService } from "@nestjs/jwt";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { B, FPF, RE, RTE, TE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UserRepository } from "@user/database/user.repository.port";
 import { PinoLogger } from "nestjs-pino";
 

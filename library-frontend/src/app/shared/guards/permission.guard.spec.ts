@@ -5,7 +5,7 @@ import {
 } from "@angular/router";
 import { PERMISSIONS, ROLE } from "@app/models/credentials.entity";
 import { CredentialsService } from "@app/services/credentials.service";
-import { permissionGuard } from "@app/shared/guard/permission.guard";
+import { permissionGuard } from "@app/shared/guards/permission.guard";
 import {
   createInjectionContextFactory,
   SpectatorInjectionContext,

@@ -3,7 +3,7 @@ import { createBook } from "@test/util/createBook";
 import { useE2eApp } from "@test/util/e2eApp";
 
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
+import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
 import { HttpStatus } from "@nestjs/common";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";

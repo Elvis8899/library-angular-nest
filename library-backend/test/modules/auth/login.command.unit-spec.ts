@@ -4,7 +4,7 @@ import {
 } from "@auth/commands/login/login.command";
 import { FakeRefreshSessionRepository } from "@auth/database/fakeRefreshSession.repository";
 import { WrongAuthException } from "@auth/domain/auth.errors";
-import { hashPassword } from "@auth/util/signTokenParams";
+import { hashPassword } from "@auth/utils/password";
 import { JwtService } from "@nestjs/jwt";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";

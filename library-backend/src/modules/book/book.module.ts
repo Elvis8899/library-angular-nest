@@ -10,14 +10,14 @@ import { UpdateBookInfoHandler } from "@book/commands/updateBookInfo/updateBookI
 import { UpdateBookInfoController } from "@book/commands/updateBookInfo/updateBookInfo.controller";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
 import { RealBookInfoRepository } from "@book/database/realBookInfo.repository";
-import { GetBookInfoByIdController } from "@book/queries/getBookById/getBookInfoById.controller";
-import { GetBookInfoByIdQueryHandler } from "@book/queries/getBookById/getBookInfoById.query";
+import { GetBookInfoByIdController } from "@book/queries/getBookInfoById/getBookInfoById.controller";
+import { GetBookInfoByIdQueryHandler } from "@book/queries/getBookInfoById/getBookInfoById.query";
 import { PaginatedBookInfoController } from "@book/queries/paginatedBookInfos/paginatedBookInfos.controller";
 import { PaginatedBookInfosQueryHandler } from "@book/queries/paginatedBookInfos/paginatedBookInfos.query";
-import { CreateBookInfoSubscriber } from "@book/subscriber/createBookInfo.subscriber";
+import { CreateBookInfoSubscriber } from "@book/subscribers/createBookInfo.subscriber";
 import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 
 const controllers = [
   CreateBookInfoController,
@@ -59,4 +59,4 @@ const repositories = [
     ...subscribers,
   ],
 })
-export class BookInfoModule {}
+export class BookModule {}

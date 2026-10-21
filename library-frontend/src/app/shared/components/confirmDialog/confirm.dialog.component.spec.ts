@@ -4,8 +4,8 @@ import {
   ConfirmDialogComponent,
   ConfirmDialogData,
 } from "@app/shared/components/confirmDialog/confirm.dialog.component";
-import { TypedDialog } from "@app/shared/components/dialog/typedDialog";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
+import { TypedDialog } from "@app/shared/utils/typedDialog.utility";
 import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import {
   createComponentFactory,

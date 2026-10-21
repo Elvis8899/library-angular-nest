@@ -3,7 +3,7 @@ import { BookInfoNotFoundException } from "@book/domain/bookInfo.errors";
 import {
   GetBookInfoByIdQuery,
   GetBookInfoByIdQueryHandler,
-} from "@book/queries/getBookById/getBookInfoById.query";
+} from "@book/queries/getBookInfoById/getBookInfoById.query";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { useHandlerModule } from "@test/util/handlerModule";

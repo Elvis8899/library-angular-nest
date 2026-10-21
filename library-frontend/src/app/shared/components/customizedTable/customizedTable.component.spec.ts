@@ -1,12 +1,9 @@
 import { MatTableModule } from "@angular/material/table";
-import {
-  Page,
-  PageRequest,
-  PaginatedDataSource,
-} from "@app/models/utils/paginatedDataSource.entity";
+import { Page, PageRequest } from "@app/models/utils/pageRequest.entity";
 import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
 import { Logger } from "@app/services/logger.service";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
+import { PaginatedDataSource } from "@app/shared/components/customizedTable/paginatedDataSource";
 import { provideTranslateService } from "@ngx-translate/core";
 import { createHostFactory, SpectatorHost } from "@openng/spectator/vitest";
 import { Observable, of } from "rxjs";

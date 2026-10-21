@@ -4,7 +4,7 @@ import {
   BookRentalEntity,
   BookRentEntity,
 } from "@app/models/bookRental.entity";
-import { PageRequest } from "@app/models/utils/paginatedDataSource.entity";
+import { PageRequest } from "@app/models/utils/pageRequest.entity";
 import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
 import { PageRequestUtility } from "@app/shared/utils/pageRequest.utility";
 import { Observable } from "rxjs";

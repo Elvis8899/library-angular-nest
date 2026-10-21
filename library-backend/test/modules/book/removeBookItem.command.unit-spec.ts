@@ -7,8 +7,8 @@ import {
   AvailableBookItemNotFoundException,
   BookInfoNotFoundException,
 } from "@book/domain/bookInfo.errors";
-import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
+import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";

@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
+import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { CreateUserHandler } from "@user/commands/createUser/createUser.command";
 import { CreateUserController } from "@user/commands/createUser/createUser.controller";
 import { DeleteUserHandler } from "@user/commands/deleteUser/deleteUser.command";

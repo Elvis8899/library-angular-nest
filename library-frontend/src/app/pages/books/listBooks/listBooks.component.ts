@@ -18,7 +18,6 @@ import {
   BookQuery,
 } from "@app/models/book.entity";
 import { BookRentEntity } from "@app/models/bookRental.entity";
-import { PaginatedDataSource } from "@app/models/utils/paginatedDataSource.entity";
 import { ChooseUserDialogComponent } from "@app/pages/books/listBooks/chooseUserDialog/chooseUser.dialog.component";
 import { BookService } from "@app/services/book.http.service";
 import { CredentialsService } from "@app/services/credentials.service";
@@ -27,10 +26,11 @@ import { NotificationService } from "@app/services/notification.service";
 import { RentalService } from "@app/services/rental.http.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
-import { TypedDialog } from "@app/shared/components/dialog/typedDialog";
+import { PaginatedDataSource } from "@app/shared/components/customizedTable/paginatedDataSource";
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
-import { injectIsSmallScreen } from "@app/shared/helpers/smallScreen";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
+import { injectIsSmallScreen } from "@app/shared/utils/smallScreen.utility";
+import { TypedDialog } from "@app/shared/utils/typedDialog.utility";
 import { TranslatePipe } from "@ngx-translate/core";
 import { filter } from "rxjs";
 

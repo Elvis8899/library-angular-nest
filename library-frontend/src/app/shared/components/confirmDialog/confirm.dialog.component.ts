@@ -6,11 +6,11 @@ import {
   MatDialogContent,
   MatDialogTitle,
 } from "@angular/material/dialog";
+import { TranslationKey } from "@app/shared/i18n/translations/translationKey";
 import {
   StronglyTypedDialog,
   TypedDialog,
-} from "@app/shared/components/dialog/typedDialog";
-import { TranslationKey } from "@app/shared/i18n/translations/translationKey";
+} from "@app/shared/utils/typedDialog.utility";
 import { TranslatePipe } from "@ngx-translate/core";
 import { map, Observable } from "rxjs";
 

@@ -14,7 +14,7 @@ import {
   MatTable,
   MatTableModule,
 } from "@angular/material/table";
-import { PaginatedDataSource } from "@app/models/utils/paginatedDataSource.entity";
+import { PaginatedDataSource } from "@app/shared/components/customizedTable/paginatedDataSource";
 import { TranslatePipe } from "@ngx-translate/core";
 import { switchMap } from "rxjs";
 

@@ -1,9 +1,9 @@
-import { LoginModule } from "@auth/login.module";
-import { BookInfoModule } from "@book/bookInfo.module";
+import { AuthModule } from "@auth/auth.module";
+import { BookModule } from "@book/book.module";
 import { DynamicModule, ForwardReference, Module, Type } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { CqrsModule } from "@nestjs/cqrs";
-import { BookRentalModule } from "@rental/bookRental.module";
+import { RentalModule } from "@rental/rental.module";
 import { DomainEventPublisherModule } from "@shared/domainEventPublisher/domainEventPublisher.module";
 import { LoggerModule } from "@shared/logger/logger.module";
 import { PrismaModule } from "@shared/prisma/prisma.module";
@@ -22,11 +22,11 @@ const appModules: NestModuleImport[] = [
   }),
   PrismaModule,
   //
-  LoginModule,
+  AuthModule,
   //
   UserModule,
-  BookInfoModule,
-  BookRentalModule,
+  BookModule,
+  RentalModule,
 ];
 
 // Infrastructure Modules (DB, config) used by the server

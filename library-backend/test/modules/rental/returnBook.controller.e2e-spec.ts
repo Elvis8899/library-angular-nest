@@ -2,7 +2,7 @@ import { FPF } from "@shared/utils/application/monads";
 import { createBook } from "@test/util/createBook";
 import { useE2eApp } from "@test/util/e2eApp";
 
-import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
+import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
 import { HttpStatus } from "@nestjs/common";
 import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
 import { RentalStatusEnum } from "@rental/domain/bookRental.entity";

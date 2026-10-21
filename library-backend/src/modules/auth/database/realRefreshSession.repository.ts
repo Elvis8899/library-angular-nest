@@ -4,7 +4,7 @@ import {
   RotateRefreshSession,
 } from "@auth/domain/refreshSession.entity";
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { PrismaService } from "@shared/prisma/prisma.service";
 import { FPF, TE } from "@shared/utils/application/monads";
 import { prismaTasks } from "@shared/utils/database/prismaTasks";
 

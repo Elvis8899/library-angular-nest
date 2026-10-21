@@ -1,5 +1,5 @@
 import { BookInfo } from "@book/domain/bookInfo.entity";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { PrismaService } from "@shared/prisma/prisma.service";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 
 /** Stores a built book with its copies, by default the builder's one

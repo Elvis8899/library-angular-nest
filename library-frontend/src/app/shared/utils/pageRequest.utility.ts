@@ -1,5 +1,5 @@
 import { HttpParams } from "@angular/common/http";
-import { PageRequest } from "@app/models/utils/paginatedDataSource.entity";
+import { PageRequest } from "@app/models/utils/pageRequest.entity";
 
 export class PageRequestUtility {
   /**

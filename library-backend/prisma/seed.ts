@@ -1,9 +1,9 @@
-import { hashPassword } from "@auth/util/signTokenParams";
+import { hashPassword } from "@auth/utils/password";
 import { PrismaClient } from "@db/generated/client";
 import { bookSeed } from "@db/seed/book.seed";
 import { userSeed } from "@db/seed/user.seed";
-import { createPrismaAdapter } from "@shared/prisma/adapter/prisma.service";
-import { formatDocument } from "@user/domain/valueObject/document";
+import { createPrismaAdapter } from "@shared/prisma/prisma.service";
+import { formatDocument } from "@user/domain/document";
 
 /**
  * Seeds the demo users and books. Safe to run on every start: the seeded

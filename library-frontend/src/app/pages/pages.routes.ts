@@ -4,8 +4,8 @@ import { LoginComponent } from "@app/pages/auth/login/login.component";
 import {
   alreadyLoggedCheckGuard,
   authenticationGuard,
-} from "@app/shared/guard/authentication.guard";
-import { permissionGuard } from "@app/shared/guard/permission.guard";
+} from "@app/shared/guards/authentication.guard";
+import { permissionGuard } from "@app/shared/guards/permission.guard";
 import { t } from "@app/shared/i18n/translations/translationKey";
 
 export const routes: Routes = [

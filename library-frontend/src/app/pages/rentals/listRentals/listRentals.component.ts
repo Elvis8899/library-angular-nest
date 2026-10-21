@@ -10,16 +10,16 @@ import { MatIcon } from "@angular/material/icon";
 import { MatTableModule } from "@angular/material/table";
 import { MatTooltip } from "@angular/material/tooltip";
 import { BookRentalEntity } from "@app/models/bookRental.entity";
-import { PaginatedDataSource } from "@app/models/utils/paginatedDataSource.entity";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { RentalService } from "@app/services/rental.http.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
+import { PaginatedDataSource } from "@app/shared/components/customizedTable/paginatedDataSource";
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
-import { injectIsSmallScreen } from "@app/shared/helpers/smallScreen";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
+import { injectIsSmallScreen } from "@app/shared/utils/smallScreen.utility";
 import { TranslatePipe } from "@ngx-translate/core";
 import { filter } from "rxjs";
 

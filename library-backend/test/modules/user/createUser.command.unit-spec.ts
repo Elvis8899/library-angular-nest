@@ -1,5 +1,5 @@
 import { UnprocessableEntityException } from "@nestjs/common";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { useHandlerModule } from "@test/util/handlerModule";

@@ -1,5 +1,5 @@
 import { BookInfo } from "@book/domain/bookInfo.entity";
-import { BookItem } from "@book/domain/valueObject/bookItem.entity";
+import { BookItem } from "@book/domain/bookItem.entity";
 import { O, TE } from "@shared/utils/application/monads";
 import {
   Paginated,

@@ -1,5 +1,5 @@
 import { RealBookInfoRepository } from "@book/database/realBookInfo.repository";
-import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
+import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
 import { InternalServerErrorException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { RealBookRentalRepository } from "@rental/database/realBookRental.repository";
@@ -8,7 +8,7 @@ import {
   BookRentalFinishedException,
   BookRentalNotAvailableException,
 } from "@rental/domain/bookRental.errors";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { PrismaService } from "@shared/prisma/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";

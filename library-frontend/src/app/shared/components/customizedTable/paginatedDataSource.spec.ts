@@ -1,9 +1,6 @@
-import {
-  Page,
-  PageRequest,
-  PaginatedDataSource,
-} from "@app/models/utils/paginatedDataSource.entity";
+import { Page, PageRequest } from "@app/models/utils/pageRequest.entity";
 import { Logger } from "@app/services/logger.service";
+import { PaginatedDataSource } from "@app/shared/components/customizedTable/paginatedDataSource";
 import { Observable, of, throwError } from "rxjs";
 
 Logger.level = 0;

@@ -1,12 +1,12 @@
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
+import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
 import {
   RentBookCommand,
   RentBookCommandHandler,
 } from "@rental/commands/rentBook/rentBook.command";
 import { BookRentalRepository } from "@rental/database/bookRental.repository.port";
 import { BookRentalNotAvailableException } from "@rental/domain/bookRental.errors";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { BookRentalBuilder } from "@test/dataBuilders/bookRentalBuilder";

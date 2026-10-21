@@ -54,6 +54,8 @@ yarn test                     # ng test: Vitest with coverage, 80% thresholds (a
 npx ng test --watch=false --coverage=false --include src/app/services/authentication.service.spec.ts
 ```
 
+`yarn install` here also installs the Git pre-commit hook (Husky, `core.hooksPath` = `library-frontend/.husky/_`), which runs Prettier on staged frontend files.
+
 ## Conventions enforced by lint
 
 - **No relative imports** in either app (`no-restricted-imports` bans `./` and `../`). Use path aliases:
@@ -94,7 +96,7 @@ Errors are Nest `HttpException` subclasses created by small factory functions in
 
 ### Domain events
 
-`DomainEventPublisher.publishEvent` validates the event against `DomainEvent`. That's a Zod discriminated union on `eventKey`, assembled in `shared/domainEventPublisher/domain/domainEvent.ts` from each module's `domain/events/index.ts` (`AllUserEvents`, `AllBookInfoEvents`, `AllRentalEvents`). It then emits through `@nestjs/event-emitter`. **A new event schema has to be added to its module's `All*Events` tuple, or publishing fails validation.** Subscribers (`book/subscriber/`) use `@OnEvent` and dispatch commands.
+`DomainEventPublisher.publishEvent` validates the event against `DomainEvent`. That's a Zod discriminated union on `eventKey`, assembled in `shared/domainEventPublisher/domainEvent.ts` from each module's `domain/events/index.ts` (`AllUserEvents`, `AllBookInfoEvents`, `AllRentalEvents`). It then emits through `@nestjs/event-emitter`. **A new event schema has to be added to its module's `All*Events` tuple, or publishing fails validation.** Subscribers (`book/subscribers/`) use `@OnEvent` and dispatch commands.
 
 ### Consistency rules
 
@@ -131,7 +133,7 @@ Errors are Nest `HttpException` subclasses created by small factory functions in
 
 ## Frontend architecture
 
-- `src/app/pages/<feature>/` holds lazy-loaded route groups (`*.routes.ts`, loaded from `pages/pages.routes.ts`). Route access is restricted with `data: { roles: [...] }` and `shared/guard/permission.guard.ts`, which the layout route runs as both `canActivate` and `canActivateChild` (`canActivate` alone never sees the children's roles). `pages/pages.routes.spec.ts` checks which pages each role can open.
+- `src/app/pages/<feature>/` holds lazy-loaded route groups (`*.routes.ts`, loaded from `pages/pages.routes.ts`). Route access is restricted with `data: { roles: [...] }` and `shared/guards/permission.guard.ts`, which the layout route runs as both `canActivate` and `canActivateChild` (`canActivate` alone never sees the children's roles). `pages/pages.routes.spec.ts` checks which pages each role can open.
 - `services/*.http.service.ts` are thin `HttpClient` wrappers; their specs pin each URL and method to the backend routes. Paginated requests build their query parameters with `PageRequestUtility.toHttpParams`. `CredentialsService` stores the user and tokens in localStorage. `AuthenticationService` handles login, logout and refresh.
 - HTTP interceptors run in this order: `authHttpInterceptor` → `errorHandlerInterceptor`.
   - `authHttpInterceptor` adds the Bearer token and language headers, and merges identical requests that are in flight at the same time. A request with a `noauth` header skips it entirely.
@@ -141,7 +143,7 @@ Errors are Nest `HttpException` subclasses created by small factory functions in
 - Translations (ngx-translate): `shared/i18n/translations/pt-BR.ts` is the source, nested by area (`books.list.title`, `common.cancel`); `TranslationKey` is derived from it, and `en-US.ts` must have the same shape or the build fails. Templates use `"books.list.title" | translate`; TypeScript passes keys typed `TranslationKey` or wrapped in `t()` (`translate.instant(t("books.created"))`). `translationKeys.spec.ts` reads the templates and code and fails on unknown or unused keys, and checks `errors.<code>` against the backend's error codes, which the error interceptor translates.
 - State that templates read is a signal (`signal`, `computed`, `input()`, `viewChild()`/`contentChildren()`, `toSignal`); request pipelines stay RxJS (services, interceptors, `PaginatedDataSource`, where `switchMap` cancels a stale request). Unsubscribe with `takeUntilDestroyed()`.
 - Shared building blocks in `shared/components/`: `app-page-header` (page title and actions), `app-form-card` (form pages), `customizedTable` with `PaginatedDataSource` (lists), `ConfirmDialog.confirm()` (destructive actions) and `app-theme-toggle`. Messages go through `NotificationService` (`services/`): `success(key)` and `error(key)` take translation keys, `errorMessage(text)` takes text that's already translated, like the API's errors, and `persistent(key, actionKey)` stays until its action is picked, coming back after other messages (the update alert). Colors come from Material's `--mat-sys-*` variables and spacing from `--space-1`…`--space-6` (`theme/_variables.scss`), so both light and dark schemes work.
-- Small screens are below 768px (`smallScreenQuery` and `injectIsSmallScreen()` in `shared/helpers/smallScreen.ts`; SCSS uses `@media (width < 768px)`). There the sidebar becomes a menu opened from the header, and the lists pass fewer columns to `customizedTable` through `[columns]`, moving the rest under the main cell.
+- Small screens are below 768px (`smallScreenQuery` and `injectIsSmallScreen()` in `shared/utils/smallScreen.utility.ts`; SCSS uses `@media (width < 768px)`). There the sidebar becomes a menu opened from the header, and the lists pass fewer columns to `customizedTable` through `[columns]`, moving the rest under the main cell.
 - An `@if` block isn't projected into a named content slot (`select="…"`) by itself, and the build warns (NG8011). Wrap it in an element that matches the slot (`<ng-container pageActions>`, `ngProjectAs="mat-card-subtitle"`), or, inside a `mat-form-field`, use one `mat-error` and pick its message inside it.
 - Specs use `@openng/spectator/vitest` (the maintained fork of `@ngneat/spectator`) (`createComponentFactory`, `createHostFactory`, `createServiceFactory`, `createInjectionContextFactory`, `mocks: [...]`) with `HttpTestingController`, not `TestBed` directly. To run effects or render overlays (autocomplete panels, dialogs), call `spectator.inject(ApplicationRef).tick()`.
 

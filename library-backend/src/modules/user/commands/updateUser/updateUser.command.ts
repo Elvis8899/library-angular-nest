@@ -1,13 +1,14 @@
-import { hashPassword } from "@auth/util/signTokenParams";
+import { hashPassword } from "@auth/utils/password";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, O, RE, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UUID } from "@shared/uuid/entities/uuid";
+import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
+import { UUID } from "@shared/uuid/uuid";
 import { UserRepository } from "@user/database/user.repository.port";
+import { CheckedDocumentType } from "@user/domain/document";
 import { USER_UPDATED } from "@user/domain/events/userUpdated.event";
 import { User } from "@user/domain/user.entity";
 import {
@@ -15,7 +16,6 @@ import {
   userEmailAlreadyExistsException,
   userNotFoundException,
 } from "@user/domain/user.errors";
-import { CheckedDocumentType } from "@user/domain/valueObject/document";
 import { CreateUserDto } from "@user/dtos/user.dto";
 import { PinoLogger } from "nestjs-pino";
 

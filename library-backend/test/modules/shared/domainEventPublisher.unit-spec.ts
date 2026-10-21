@@ -1,8 +1,8 @@
+import { BOOK_INFO_CREATED } from "@book/domain/events/bookInfoCreated.event";
 import { InternalServerErrorException } from "@nestjs/common";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import { executeTask } from "@shared/utils/application/executeTask";
 import { FPF } from "@shared/utils/application/monads";
-import { BOOK_INFO_CREATED } from "@src/modules/book/domain/events/bookInfoCreated.event";
-import { DomainEventPublisher } from "@src/modules/shared/domainEventPublisher/adapters/domainEventPublisher";
-import { executeTask } from "@src/modules/shared/utils/application/executeTask";
 
 let domainEvent: DomainEventPublisher;
 const eventEmitter2Mock = {

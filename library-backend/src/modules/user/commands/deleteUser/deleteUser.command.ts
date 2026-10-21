@@ -1,11 +1,11 @@
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UUID } from "@shared/uuid/entities/uuid";
+import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
+import { UUID } from "@shared/uuid/uuid";
 import { UserRepository } from "@user/database/user.repository.port";
 import { USER_DELETED } from "@user/domain/events/userDeleted.event";
 import { userNotFoundException } from "@user/domain/user.errors";

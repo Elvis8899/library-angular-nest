@@ -3,13 +3,13 @@ import { BookInfo } from "@book/domain/bookInfo.entity";
 import { BOOK_INFO_CREATED } from "@book/domain/events/bookInfoCreated.event";
 import { CreateBookInfoDto } from "@book/dtos/bookInfo.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RE, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
-import { RealUUIDGeneratorService } from "@shared/uuid/adapters/secondaries/realUUIDGenerator.service";
-import { UUID } from "@shared/uuid/entities/uuid";
+import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
+import { UUID } from "@shared/uuid/uuid";
 import { PinoLogger } from "nestjs-pino";
 
 export class CreateBookInfo implements ICommand {

@@ -3,7 +3,7 @@ import {
   CreateBookInfoHandler,
 } from "@book/commands/createBookInfo/createBookInfo.command";
 import { BookInfoRepository } from "@book/database/bookInfo.repository.port";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/dataBuilders/bookInfoBuilder";
 import { useHandlerModule } from "@test/util/handlerModule";

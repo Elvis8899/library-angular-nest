@@ -1,5 +1,5 @@
 import { Prisma } from "@db/generated/client";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { PrismaService } from "@shared/prisma/prisma.service";
 
 // Every model's table, so a new model is emptied too
 const tables = Object.values(Prisma.ModelName)

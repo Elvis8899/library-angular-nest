@@ -1,5 +1,5 @@
 import { FakeBookInfoRepository } from "@book/database/fakeBookInfo.repository";
-import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
+import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";

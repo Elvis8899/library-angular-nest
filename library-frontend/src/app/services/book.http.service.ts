@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { BookEntity, BookItemEntity, BookQuery } from "@app/models/book.entity";
-import { PageRequest } from "@app/models/utils/paginatedDataSource.entity";
+import { PageRequest } from "@app/models/utils/pageRequest.entity";
 import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
 import { PageRequestUtility } from "@app/shared/utils/pageRequest.utility";
 import { Observable } from "rxjs";

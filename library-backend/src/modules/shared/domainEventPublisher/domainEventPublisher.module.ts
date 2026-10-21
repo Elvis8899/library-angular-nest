@@ -1,6 +1,6 @@
 import { Global, Module } from "@nestjs/common";
 import { EventEmitterModule } from "@nestjs/event-emitter";
-import { DomainEventPublisher } from "@shared/domainEventPublisher/adapters/domainEventPublisher";
+import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 
 @Global()
 @Module({

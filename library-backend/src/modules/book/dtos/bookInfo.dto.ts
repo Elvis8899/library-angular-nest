@@ -1,9 +1,9 @@
-import { BookItemStatusEnum } from "@book/domain/valueObject/bookItem.entity";
+import { BookInfo } from "@book/domain/bookInfo.entity";
+import { BookItemStatusEnum } from "@book/domain/bookItem.entity";
 import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { BaseEntityDto } from "@shared/utils/dtos/baseEntity.dto";
 import { PaginatedResponseDto } from "@shared/utils/dtos/paginated.response.base";
 import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginatedQuery.request.dto";
-import { BookInfo } from "@src/modules/book/domain/bookInfo.entity";
 
 export class BookInfoDto extends BaseEntityDto {
   @ApiProperty({

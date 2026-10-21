@@ -1,14 +1,14 @@
 import { ActivatedRouteSnapshot } from "@angular/router";
-import { RouteReusableStrategy } from "@app/shared/helpers/routeReusableStrategy";
+import { ExplicitRouteReuseStrategy } from "@app/shared/utils/explicitRouteReuse.strategy";
 import {
   createServiceFactory,
   SpectatorService,
 } from "@openng/spectator/vitest";
 
 describe("RouteReuseStrategy", () => {
-  let spectator: SpectatorService<RouteReusableStrategy>;
+  let spectator: SpectatorService<ExplicitRouteReuseStrategy>;
   const createContext = createServiceFactory({
-    service: RouteReusableStrategy,
+    service: ExplicitRouteReuseStrategy,
     mocks: [ActivatedRouteSnapshot],
   });
 
@@ -18,7 +18,7 @@ describe("RouteReuseStrategy", () => {
 
   describe("shouldReuseRoute", () => {
     it("should return true for same route", () => {
-      // RouteReusableStrategy
+      // ExplicitRouteReuseStrategy
       const route = spectator.inject(ActivatedRouteSnapshot);
       const res = spectator.service.shouldReuseRoute(route, route);
 
@@ -26,7 +26,7 @@ describe("RouteReuseStrategy", () => {
     });
 
     it("should return false for different route", () => {
-      // RouteReusableStrategy
+      // ExplicitRouteReuseStrategy
       const route = spectator.inject(ActivatedRouteSnapshot);
       const route2 = { routeConfig: {} } as ActivatedRouteSnapshot;
       const res = spectator.service.shouldReuseRoute(route, route2);
@@ -35,7 +35,7 @@ describe("RouteReuseStrategy", () => {
     });
 
     it("should return true for different routeConfig, but same component", () => {
-      // RouteReusableStrategy
+      // ExplicitRouteReuseStrategy
       const component = {};
       const route = { routeConfig: { component } } as ActivatedRouteSnapshot;
       const route2 = { routeConfig: { component } } as ActivatedRouteSnapshot;

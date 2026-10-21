@@ -3,10 +3,10 @@ import {
   BookInfoRepository,
 } from "@book/database/bookInfo.repository.port";
 import { BookInfo } from "@book/domain/bookInfo.entity";
-import { BookItem } from "@book/domain/valueObject/bookItem.entity";
+import { BookItem } from "@book/domain/bookItem.entity";
 import { Prisma } from "@db/generated/client";
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@shared/prisma/adapter/prisma.service";
+import { PrismaService } from "@shared/prisma/prisma.service";
 import { FPF, O, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
 import { prismaTasks } from "@shared/utils/database/prismaTasks";
