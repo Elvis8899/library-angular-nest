@@ -10,6 +10,7 @@ import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { E, FPF, O, TE } from "@shared/utils/application/monads";
 import { noop } from "@shared/utils/application/noop";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
+import { prismaTasks } from "@shared/utils/database/prismaTasks";
 import { Paginated } from "@shared/utils/database/repository.port";
 import {
   loadPage,
@@ -17,7 +18,6 @@ import {
   validateRows,
 } from "@shared/utils/database/rowValidation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
-import { unknownException } from "@shared/utils/domain/shared.erros";
 
 @Injectable()
 export class RealBookInfoRepository implements BookInfoRepository {
@@ -25,56 +25,8 @@ export class RealBookInfoRepository implements BookInfoRepository {
 
   private baseValidator = validateFromUnknown(BookInfo, "BookInfo");
 
-  private defaultErrorException = unknownException;
-
-  private findMany = TE.tryCatchK(
-    this.prisma.bookInfo.findMany.bind(this.prisma.bookInfo),
-    this.defaultErrorException,
-  );
-
-  private findFirst = TE.tryCatchK(
-    this.prisma.bookInfo.findFirst.bind(this.prisma.bookInfo),
-    this.defaultErrorException,
-  );
-  private findUnique = TE.tryCatchK(
-    this.prisma.bookInfo.findUnique.bind(this.prisma.bookInfo),
-    this.defaultErrorException,
-  );
-
-  private count = TE.tryCatchK(
-    this.prisma.bookInfo.count.bind(this.prisma.bookInfo),
-    this.defaultErrorException,
-  );
-
-  private delete = TE.tryCatchK(
-    this.prisma.bookInfo.delete.bind(this.prisma.bookInfo),
-    this.defaultErrorException,
-  );
-
-  private upsert = TE.tryCatchK(
-    this.prisma.bookInfo.upsert.bind(this.prisma.bookInfo),
-    this.defaultErrorException,
-  );
-
-  private update = TE.tryCatchK(
-    this.prisma.bookInfo.update.bind(this.prisma.bookInfo),
-    this.defaultErrorException,
-  );
-
-  private findUniqueItem = TE.tryCatchK(
-    this.prisma.bookItem.findUnique.bind(this.prisma.bookItem),
-    this.defaultErrorException,
-  );
-
-  private addItem = TE.tryCatchK(
-    this.prisma.bookItem.create.bind(this.prisma.bookItem),
-    this.defaultErrorException,
-  );
-
-  private removeItem = TE.tryCatchK(
-    this.prisma.bookItem.delete.bind(this.prisma.bookItem),
-    this.defaultErrorException,
-  );
+  private bookInfos = prismaTasks(() => this.prisma.bookInfo);
+  private bookItems = prismaTasks(() => this.prisma.bookItem);
 
   private includeAll: Prisma.BookInfoInclude = {
     bookItems: true,
@@ -82,7 +34,7 @@ export class RealBookInfoRepository implements BookInfoRepository {
 
   findAll = (): TE.TaskEither<Error, BookInfo[]> => {
     return FPF.pipe(
-      this.findMany({
+      this.bookInfos.findMany({
         include: this.includeAll,
       }),
       TE.chainEitherK(validateRows(this.baseValidator)),
@@ -105,14 +57,14 @@ export class RealBookInfoRepository implements BookInfoRepository {
     return loadPage(
       {
         rows: ({ skip, take }) =>
-          this.findMany({
+          this.bookInfos.findMany({
             where,
             skip,
             take,
             orderBy,
             include: this.includeAll,
           }),
-        total: () => this.count({ where }),
+        total: () => this.bookInfos.count({ where }),
       },
       this.baseValidator,
     )(params);
@@ -120,7 +72,7 @@ export class RealBookInfoRepository implements BookInfoRepository {
 
   findById = (bookInfoId: string): TE.TaskEither<Error, O.Option<BookInfo>> => {
     return FPF.pipe(
-      this.findUnique({
+      this.bookInfos.findUnique({
         where: {
           id: bookInfoId,
         },
@@ -132,7 +84,7 @@ export class RealBookInfoRepository implements BookInfoRepository {
 
   deleteById = (bookInfoId: string): TE.TaskEither<Error, void> => {
     return FPF.pipe(
-      this.delete({
+      this.bookInfos.delete({
         where: {
           id: bookInfoId,
         },
@@ -144,7 +96,7 @@ export class RealBookInfoRepository implements BookInfoRepository {
   save = (bookInfoRaw: BookInfo): TE.TaskEither<Error, void> => {
     const { bookItems: _, ...bookInfo } = bookInfoRaw;
     return FPF.pipe(
-      this.upsert({
+      this.bookInfos.upsert({
         where: {
           id: bookInfo.id,
         },
@@ -164,7 +116,7 @@ export class RealBookInfoRepository implements BookInfoRepository {
     bookItemId: string,
   ): TE.TaskEither<Error, O.Option<BookItem>> => {
     return FPF.pipe(
-      this.findUniqueItem({
+      this.bookItems.findUnique({
         where: {
           id: bookItemId,
         },
@@ -181,7 +133,7 @@ export class RealBookInfoRepository implements BookInfoRepository {
 
   createBookItem = (bookItem: BookItem): TE.TaskEither<Error, void> => {
     return FPF.pipe(
-      this.addItem({
+      this.bookItems.create({
         data: { ...bookItem },
       }),
       TE.map(noop),
@@ -189,7 +141,7 @@ export class RealBookInfoRepository implements BookInfoRepository {
   };
   deleteBookItem = (bookItemId: string): TE.TaskEither<Error, void> =>
     FPF.pipe(
-      this.removeItem({
+      this.bookItems.delete({
         where: {
           id: bookItemId,
         },

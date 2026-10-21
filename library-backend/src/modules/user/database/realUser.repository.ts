@@ -4,6 +4,7 @@ import { PrismaService } from "@shared/prisma/adapter/prisma.service";
 import { FPF, O, TE } from "@shared/utils/application/monads";
 import { noop } from "@shared/utils/application/noop";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
+import { prismaTasks } from "@shared/utils/database/prismaTasks";
 import { Paginated } from "@shared/utils/database/repository.port";
 import {
   loadPage,
@@ -11,7 +12,6 @@ import {
   validateRows,
 } from "@shared/utils/database/rowValidation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
-import { unknownException } from "@shared/utils/domain/shared.erros";
 import { UserRepository } from "@user/database/user.repository.port";
 import { User, UserRoleEnum } from "@user/domain/user.entity";
 import {
@@ -26,50 +26,11 @@ export class RealUserRepository implements UserRepository {
 
   private baseValidator = validateFromUnknown(User, "User");
 
-  private defaultErrorException = unknownException;
-
-  private findMany = TE.tryCatchK(
-    this.prisma.user.findMany.bind(this.prisma.user),
-    this.defaultErrorException,
-  );
-
-  private findFirst = TE.tryCatchK(
-    this.prisma.user.findFirst.bind(this.prisma.user),
-    this.defaultErrorException,
-  );
-  private findUnique = TE.tryCatchK(
-    this.prisma.user.findUnique.bind(this.prisma.user),
-    this.defaultErrorException,
-  );
-
-  private count = TE.tryCatchK(
-    this.prisma.user.count.bind(this.prisma.user),
-    this.defaultErrorException,
-  );
-
-  private deleteMany = TE.tryCatchK(
-    this.prisma.user.deleteMany.bind(this.prisma.user),
-    this.defaultErrorException,
-  );
-
-  private upsert = TE.tryCatchK(
-    this.prisma.user.upsert.bind(this.prisma.user),
-    this.defaultErrorException,
-  );
-
-  private update = TE.tryCatchK(
-    this.prisma.user.update.bind(this.prisma.user),
-    this.defaultErrorException,
-  );
-
-  private updateMany = TE.tryCatchK(
-    this.prisma.user.updateMany.bind(this.prisma.user),
-    this.defaultErrorException,
-  );
+  private users = prismaTasks(() => this.prisma.user);
 
   findAll = (): TE.TaskEither<Error, User[]> => {
     return FPF.pipe(
-      this.findMany({}),
+      this.users.findMany({}),
       TE.chainEitherK(validateRows(this.baseValidator)),
     );
   };
@@ -81,13 +42,13 @@ export class RealUserRepository implements UserRepository {
     return loadPage(
       {
         rows: ({ skip, take }) =>
-          this.findMany({
+          this.users.findMany({
             where,
             skip,
             take,
             orderBy: { createdAt: "desc" },
           }),
-        total: () => this.count({ where }),
+        total: () => this.users.count({ where }),
       },
       this.baseValidator,
     )(params);
@@ -95,7 +56,7 @@ export class RealUserRepository implements UserRepository {
 
   findById = (userId: string): TE.TaskEither<Error, O.Option<User>> => {
     return FPF.pipe(
-      this.findUnique({
+      this.users.findUnique({
         where: {
           id: userId,
         },
@@ -106,7 +67,7 @@ export class RealUserRepository implements UserRepository {
 
   findByCPF = (cpf: string): TE.TaskEither<Error, O.Option<User>> => {
     return FPF.pipe(
-      this.findFirst({
+      this.users.findFirst({
         where: {
           role: UserRoleEnum.Client,
           cpf: formatDocument(cpf),
@@ -118,7 +79,7 @@ export class RealUserRepository implements UserRepository {
 
   findByEmail = (email: string): TE.TaskEither<Error, O.Option<User>> => {
     return FPF.pipe(
-      this.findFirst({
+      this.users.findFirst({
         where: {
           email: email,
         },
@@ -132,7 +93,7 @@ export class RealUserRepository implements UserRepository {
   // tells the two failures apart
   deleteById = (userId: string): TE.TaskEither<Error, void> =>
     FPF.pipe(
-      this.deleteMany({
+      this.users.deleteMany({
         where: {
           id: userId,
           bookRentalDetails: { none: { rentalStatus: RentalStatus.rented } },
@@ -142,7 +103,7 @@ export class RealUserRepository implements UserRepository {
         count > 0
           ? TE.right(undefined)
           : FPF.pipe(
-              this.count({ where: { id: userId } }),
+              this.users.count({ where: { id: userId } }),
               TE.chain((users) =>
                 TE.left<Error>(
                   users > 0
@@ -156,7 +117,7 @@ export class RealUserRepository implements UserRepository {
 
   save = (user: User): TE.TaskEither<Error, void> => {
     return FPF.pipe(
-      this.upsert({
+      this.users.upsert({
         where: {
           id: user.id,
         },
@@ -179,7 +140,7 @@ export class RealUserRepository implements UserRepository {
   // updateMany does not fail when the user no longer exists
   incrementTokenVersion = (userId: string): TE.TaskEither<Error, void> =>
     FPF.pipe(
-      this.updateMany({
+      this.users.updateMany({
         where: { id: userId },
         data: { tokenVersion: { increment: 1 } },
       }),

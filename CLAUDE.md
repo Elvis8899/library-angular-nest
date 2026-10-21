@@ -78,7 +78,7 @@ database/        # <x>.repository.port.ts (abstract class used as DI token), rea
 dtos/            # Swagger DTO classes (validation is done by Zod in the domain, not class-validator)
 ```
 
-Modules bind the port to the real repository (`{ provide: UserRepository, useClass: RealUserRepository }`). Unit tests bind the fake instead. Fakes extend `shared/utils/database/fakeRepository.base.ts`, and they count toward the 100% coverage threshold. Prisma repositories share `loadPage`, `validateRows` and `validateMaybeRow` from `shared/utils/database/rowValidation.ts`.
+Modules bind the port to the real repository (`{ provide: UserRepository, useClass: RealUserRepository }`). Unit tests bind the fake instead. Fakes extend `shared/utils/database/fakeRepository.base.ts`, and they count toward the 100% coverage threshold. Prisma repositories get their queries from `prismaTasks(() => this.prisma.<model>)` (`shared/utils/database/prismaTasks.ts`), which returns the delegate's methods as `TaskEither`s (`this.users.findMany({ where })`), and share `loadPage`, `validateRows` and `validateMaybeRow` from `shared/utils/database/rowValidation.ts`.
 
 ### Handlers are fp-ts pipelines
 
