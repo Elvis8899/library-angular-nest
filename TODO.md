@@ -23,13 +23,9 @@ Done (2026-10-21): primary keys, unique-constraint races and the unique CPF, cas
 
 The ports, CQRS and atomic repository operations are sound; the entities are only Zod shapes, and the rules live in handlers, repositories and the Prisma schema. Most important first; 2–4 are best done together on the rental module, as the pattern new modules copy.
 
-- [x] **Bug: updating a book drops its price and image** (fixed 2026-10-21). `UpdateBookInfo` validates them, but `RealBookInfoRepository.save` writes only `name` on update.
-- [x] **Rules in the domain, not the handlers** (done 2026-10-21; `now` is still `new Date()` in `ReturnBook`, until the clock item): pure functions returning `Either` next to each entity (`startRental(id, userId, item, now)`, `finishRental(rental, now)`, a copy's `ensureAvailable`), which the handlers call. "Only an available copy can be rented/removed" is written twice now (`rentBook`, `removeBookItem`), `returnBook` builds the finished state by hand, and the owner check sits in the handler. The repositories' conditional writes stay, as the concurrency guard.
 - [ ] **No hidden clocks**: `overdueDate`'s Zod default and `getRentalFines` call `new Date()` themselves. Pass `now` in from an injected clock (like `RealUUIDGeneratorService`), and name the loan period (7 days) and the fines (20 fixed plus 5% of the price per day) as policy constants.
 - [ ] **Aggregate apart from read model**: `BookRental` carries optional `bookItem.book` and `user.name` for the list, and fines are computed in a Zod `.transform`. Keep `BookRental` bare and move `BookRentalDetails` (with fines) to the query side, so `save`/`rent` stop stripping relations.
 - [ ] **Say the aggregate boundaries**: `BookInfo` holds `bookItems`, but copies are loaded and changed on their own, and rental writes `bookItem.status` directly. Make `BookItem` its own aggregate, changed by rental only through the atomic `rent` and `finish`, and document that in `CLAUDE.md`.
-- [x] **Domain errors without HTTP** (done 2026-10-21): `DomainError` subclasses with a kind and a `code`, and `DomainErrorFilter` mapping kinds to statuses; `rental.finished` (already returned) is now a 409.
-- [x] **Small** (done 2026-10-21): `Money` (prices to the centavo, stored as `priceCents`; the `Int` column couldn't hold the centavos the form allows, and fines are rounded) and `Email` value objects; the auto-added first copy is `AddFirstBookItemSubscriber`; the unused `uuidGeneratorService` is gone from six handlers.
 - [ ] **Fines of a rental that isn't late**: `getRentalFines` returns a negative `total` (the per-day value times the negative `days`). The frontend shows it only when `overdue`, but the API returns it; it should be 0.
 
 ## Boilerplate (2026-10-21)
