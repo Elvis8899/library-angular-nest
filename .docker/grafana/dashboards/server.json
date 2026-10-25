@@ -901,7 +901,7 @@
     {
       "id": 22,
       "type": "row",
-      "title": "Site",
+      "title": "Site and files",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -948,6 +948,73 @@
       "fieldConfig": {
         "defaults": {
           "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 24,
+      "title": "File storage requests",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 40,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (type, code) (rate(SeaweedFS_s3_request_total[$__rate_interval]))",
+          "legendFormat": "{{type}} {{code}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "The API's S3 calls to SeaweedFS (Compras' files)"
+    },
+    {
+      "id": 25,
+      "title": "File storage disk",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 40,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(SeaweedFS_volumeServer_total_disk_size)",
+          "legendFormat": "stored"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
         },
         "overrides": []
       },

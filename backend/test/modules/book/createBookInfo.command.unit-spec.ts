@@ -35,10 +35,10 @@ describe("[Unit] Create BookInfo", () => {
     );
 
     //Then it should have created a bookInfo
-    await expect(resultPromise).resolves.toEqual(undefined);
+    const { id } = await resultPromise;
 
     const bookInfos = await executeTask(ctx.bookInfoRepository.findAll());
-    expect(bookInfos.length).toEqual(1);
+    expect(bookInfos.map((book) => book.id)).toEqual([id]);
   });
 
   it("Should create bookInfo without optional keys", async () => {
@@ -51,10 +51,10 @@ describe("[Unit] Create BookInfo", () => {
     );
 
     //Then it should have created a bookInfo
-    await expect(resultPromise).resolves.toEqual(undefined);
+    const { id } = await resultPromise;
 
     const bookInfos = await executeTask(ctx.bookInfoRepository.findAll());
-    expect(bookInfos.length).toEqual(1);
+    expect(bookInfos.map((book) => book.id)).toEqual([id]);
   });
 
   it("Should emit domain event when bookInfo is created", async () => {

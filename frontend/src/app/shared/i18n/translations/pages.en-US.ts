@@ -40,14 +40,26 @@ export const enUSPages: PagesTranslations = {
     form: {
       subtitle: "Fill in the book's details",
       priceInvalid: "Enter a price of 0 or more",
-      cover: "Cover image URL",
-      coverInvalid: "Enter a URL starting with http:// or https://",
+      pickCover: "Choose a cover",
+      coverHint: "The cover is optional: JPG, PNG, WEBP or GIF, up to 5 MB.",
+      coverType: "The cover must be a JPG, PNG, WEBP or GIF image.",
+      coverTooLarge: "The cover must be up to 5 MB.",
+      coverNotSaved:
+        "The book was created, but its cover wasn't sent; change it in the list.",
     },
     availability: {
       title: "Availability",
       none: "No copies",
       count: "{{available}} of {{total}} available",
       allRented: "All rented",
+    },
+    cover: {
+      title: "Cover",
+      change: "Change cover",
+      changed: "Cover changed",
+      remove: "Remove cover",
+      removeConfirm: "Remove the cover of {{book}}?",
+      removed: "Cover removed",
     },
     copies: {
       add: "Add a copy",

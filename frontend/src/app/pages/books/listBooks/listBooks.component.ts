@@ -15,6 +15,12 @@ import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIcon } from "@angular/material/icon";
 import { MatInput } from "@angular/material/input";
+import {
+  MatMenu,
+  MatMenuContent,
+  MatMenuItem,
+  MatMenuTrigger,
+} from "@angular/material/menu";
 import { MatSelectModule } from "@angular/material/select";
 import { MatTableModule } from "@angular/material/table";
 import { MatTooltip } from "@angular/material/tooltip";
@@ -23,6 +29,10 @@ import {
   BookEntity,
   BookItemStatus,
   BookQuery,
+  coverPath,
+  coverProblem,
+  coverTypes,
+  noCoverImage,
 } from "@app/pages/books/book.entity";
 import { BookService } from "@app/pages/books/book.http.service";
 import { ChooseUserDialogComponent } from "@app/pages/books/listBooks/chooseUserDialog/chooseUser.dialog.component";
@@ -43,6 +53,7 @@ import {
   RowAction,
   RowActionsComponent,
 } from "@app/shared/components/rowActions/rowActions.component";
+import { AuthSrcDirective } from "@app/shared/directives/authSrc.directive";
 import { CellDefDirective } from "@app/shared/directives/cellDef.directive";
 import {
   templateContext,
@@ -58,13 +69,17 @@ import { filter } from "rxjs";
 
 const log = new Logger("ListBooksComponent");
 
-export const noCoverImage = "images/no-image.png";
+const coverProblems = {
+  type: t("books.form.coverType"),
+  size: t("books.form.coverTooLarge"),
+};
 
 @Component({
   selector: "app-list-books",
   templateUrl: "./listBooks.component.html",
   styleUrl: "./listBooks.component.scss",
   imports: [
+    AuthSrcDirective,
     CellDefDirective,
     TemplateContextDirective,
     MoneyPipe,
@@ -77,6 +92,10 @@ export const noCoverImage = "images/no-image.png";
     MatFormFieldModule,
     MatIcon,
     MatInput,
+    MatMenu,
+    MatMenuContent,
+    MatMenuItem,
+    MatMenuTrigger,
     RowActionsComponent,
     MatSelectModule,
     MatTableModule,
@@ -101,6 +120,10 @@ export class ListBooksComponent implements OnInit {
       : ["book", "price", "availability", "actions"]
   );
   readonly noCoverImage = noCoverImage;
+  readonly coverPath = coverPath;
+  readonly coverTypes = coverTypes.join(",");
+  // The book whose cover the file picker changes
+  private _coverBook: BookEntity | null = null;
 
   private readonly _liveUpdates = inject(LiveUpdatesService);
   private readonly _destroyRef = inject(DestroyRef);
@@ -220,10 +243,53 @@ export class ListBooksComponent implements OnInit {
     return this.availableCount(book) > 0;
   }
 
-  // Shows the placeholder when a cover's URL doesn't load
-  onCoverError(event: Event) {
-    const image = event.target as HTMLImageElement;
-    if (!image.src.endsWith(noCoverImage)) image.src = noCoverImage;
+  /** Opens the file picker for the book's new cover. */
+  pickCover(book: BookEntity, input: HTMLInputElement) {
+    this._coverBook = book;
+    input.click();
+  }
+
+  uploadCover(event: Event) {
+    const input = event.target;
+    const book = this._coverBook;
+    if (!(input instanceof HTMLInputElement) || !book) return;
+    const file = input.files?.[0];
+    // Picking the same file again fires change again
+    input.value = "";
+    if (!file) return;
+    const problem = coverProblem(file);
+    if (problem) {
+      this._notify.error(coverProblems[problem]);
+      return;
+    }
+    this._bookService.changeCover(book.id, file).subscribe({
+      next: () => {
+        this._notify.success("books.cover.changed");
+        this.refresh();
+      },
+      error: this.defaultErrorHandler,
+    });
+  }
+
+  removeCover(book: BookEntity) {
+    this._confirmDialog
+      .confirm({
+        title: "books.cover.remove",
+        message: "books.cover.removeConfirm",
+        messageParams: { book: book.name },
+        confirmLabel: "common.remove",
+        destructive: true,
+      })
+      .pipe(filter(Boolean))
+      .subscribe(() =>
+        this._bookService.removeCover(book.id).subscribe({
+          next: () => {
+            this._notify.success("books.cover.removed");
+            this.refresh();
+          },
+          error: this.defaultErrorHandler,
+        })
+      );
   }
 
   goToAddBook() {

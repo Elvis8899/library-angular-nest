@@ -40,14 +40,26 @@ export const ptBRPages = {
     form: {
       subtitle: "Preencha os dados do livro",
       priceInvalid: "Informe um preço de 0 ou mais",
-      cover: "URL da imagem da capa",
-      coverInvalid: "Informe uma URL que comece com http:// ou https://",
+      pickCover: "Escolher capa",
+      coverHint: "A capa é opcional: JPG, PNG, WEBP ou GIF, até 5 MB.",
+      coverType: "A capa deve ser uma imagem JPG, PNG, WEBP ou GIF.",
+      coverTooLarge: "A capa deve ter até 5 MB.",
+      coverNotSaved:
+        "O livro foi criado, mas a capa não foi enviada; troque-a na lista.",
     },
     availability: {
       title: "Disponibilidade",
       none: "Sem exemplares",
       count: "{{available}} de {{total}} disponíveis",
       allRented: "Todos emprestados",
+    },
+    cover: {
+      title: "Capa",
+      change: "Trocar capa",
+      changed: "Capa trocada",
+      remove: "Tirar capa",
+      removeConfirm: "Tirar a capa de {{book}}?",
+      removed: "Capa removida",
     },
     copies: {
       add: "Adicionar um exemplar",

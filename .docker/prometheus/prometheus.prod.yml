@@ -25,6 +25,11 @@ scrape_configs:
     static_configs:
       - targets: ["postgres-exporter:9187"]
 
+  # SeaweedFS (-metricsPort)
+  - job_name: storage
+    static_configs:
+      - targets: ["storage:9327"]
+
   # The site as a user reaches it (DNS, the certificate, nginx, the API),
   # probed by the blackbox exporter every minute
   - job_name: site

@@ -3,6 +3,13 @@
   gap: var(--space-3);
 }
 
+.cover-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .cover {
   flex-shrink: 0;
   width: 96px;

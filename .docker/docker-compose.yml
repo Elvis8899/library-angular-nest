@@ -59,11 +59,37 @@ services:
       TRUST_PROXY: "172.18.0.0/16"
       # Overrides the one in ../.env, so the credentials live only in .docker/.env
       DATABASE_URL: &databaseUrl postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .docker/.env}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .docker/.env}@postgres:5432/${POSTGRES_DB:?Set POSTGRES_DB in .docker/.env}
+      # The storage below, overriding ../.env's, so its credentials live
+      # only in .docker/.env. For a hosted S3 instead, drop the service and
+      # these lines and set S3_* in ../.env
+      S3_ENDPOINT: http://storage:8333
+      S3_BUCKET: library
+      S3_FORCE_PATH_STYLE: "true"
+      S3_ACCESS_KEY_ID: &storageKey ${STORAGE_ACCESS_KEY:?Set STORAGE_ACCESS_KEY in .docker/.env}
+      S3_SECRET_ACCESS_KEY: &storageSecret ${STORAGE_SECRET_KEY:?Set STORAGE_SECRET_KEY in .docker/.env}
     networks:
       - "nginx_network"
     depends_on:
       postgres:
         condition: service_healthy
+      storage:
+        condition: service_started
+
+  # S3-compatible object storage (SeaweedFS) for the uploaded files (the
+  # books' covers). Only the app reaches it, on the Docker network; back its
+  # volume up with the database's
+  storage:
+    image: chrislusf/seaweedfs:4.48
+    restart: always
+    # Its Prometheus metrics on 9327, for the Docker network only
+    command: mini -dir=/data -metricsPort=9327
+    environment:
+      AWS_ACCESS_KEY_ID: *storageKey
+      AWS_SECRET_ACCESS_KEY: *storageSecret
+    volumes:
+      - library-storage:/data
+    networks:
+      - "nginx_network"
 
   postgres:
     # A major version, never latest: a new major can't read the old one's
@@ -133,6 +159,7 @@ services:
       - node-exporter
       - postgres-exporter
       - blackbox-exporter
+      - storage
 
   # The server's disk, memory, CPU and network, read from the host
   node-exporter:
@@ -217,6 +244,7 @@ networks:
 
 volumes:
   library-postgres:
+  library-storage:
   library-prometheus:
   library-grafana:
   letsencrypt:

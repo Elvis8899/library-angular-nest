@@ -7,6 +7,7 @@ import type {
   BookInfoPage,
   BookInfoRequest,
   BookItemRequest,
+  Created,
 } from "@library/contracts";
 import { Observable } from "rxjs";
 
@@ -37,8 +38,19 @@ export class BookService {
     });
   }
 
-  addBook(book: BookInfoRequest): Observable<void> {
-    return this._http.post<void>("/v1/bookInfos", book);
+  addBook(book: BookInfoRequest): Observable<Created> {
+    return this._http.post<Created>("/v1/bookInfos", book);
+  }
+
+  /** Uploads the book's cover, replacing the one it had. */
+  changeCover(bookId: string, cover: File): Observable<void> {
+    const form = new FormData();
+    form.append("file", cover);
+    return this._http.put<void>(`/v1/bookInfos/${bookId}/cover`, form);
+  }
+
+  removeCover(bookId: string): Observable<void> {
+    return this._http.delete<void>(`/v1/bookInfos/${bookId}/cover`);
   }
 
   getBook(book: BookEntity): Observable<BookEntity> {

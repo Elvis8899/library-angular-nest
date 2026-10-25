@@ -69,6 +69,22 @@ services:
         condition: service_completed_successfully
       postgres:
         condition: service_started
+      storage:
+        condition: service_started
+
+  # S3-compatible object storage (SeaweedFS) for the uploaded files; the API
+  # creates its bucket. The tests reach it on localhost:8333
+  storage:
+    image: chrislusf/seaweedfs:4.48
+    # Its Prometheus metrics on 9327
+    command: mini -dir=/data -metricsPort=9327
+    ports:
+      - 8333:8333
+    environment:
+      AWS_ACCESS_KEY_ID: "storage"
+      AWS_SECRET_ACCESS_KEY: "storage-password"
+    volumes:
+      - library-storage:/data
 
   postgres:
     image: postgres:latest
@@ -150,5 +166,6 @@ services:
 
 volumes:
   library-postgres:
+  library-storage:
   library-prometheus:
   library-grafana:

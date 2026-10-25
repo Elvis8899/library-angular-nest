@@ -42,7 +42,6 @@ export const enUS: CoreTranslations = {
     // Lending example: only its pages use these
     actions: "Actions",
     book: "Book",
-    optional: "Optional",
     remove: "Remove",
   },
   validation: {
@@ -80,6 +79,11 @@ export const enUS: CoreTranslations = {
     book: {
       notFound: "Book not found.",
       noAvailableCopy: "No copy of this book is available.",
+      coverNotFound: "The book has no cover.",
+      coverType: "The cover must be a JPG, PNG, WEBP or GIF image.",
+      coverTooLarge: "The cover must be up to 5 MB.",
+      coverChanged:
+        "The book's cover changed while this one was sent; reload and try again.",
     },
     rental: {
       notFound: "Rental not found.",

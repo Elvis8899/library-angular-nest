@@ -55,7 +55,6 @@ describe("[Integration] Database seed: books", () => {
       data: {
         id: createTestId(TableNameEnum.BookInfo, 1),
         name: "Dom Casmurro",
-        image: "",
         priceCents: 1000,
       },
     });

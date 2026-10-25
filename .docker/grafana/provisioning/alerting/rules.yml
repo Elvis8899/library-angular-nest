@@ -122,7 +122,7 @@ groups:
             datasourceUid: prometheus
             model:
               refId: A
-              expr: 'up{job=~"node|postgres|site"}'
+              expr: 'up{job=~"node|postgres|storage|site"}'
               instant: true
           - refId: B
             datasourceUid: __expr__

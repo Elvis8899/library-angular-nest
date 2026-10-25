@@ -92,12 +92,25 @@
       <th *matHeaderCellDef mat-header-cell>{{ "common.book" | translate }}</th>
       <td *matCellDef="let book; dataSource: data" mat-cell>
         <div class="book-cell">
-          <img
-            (error)="onCoverError($event)"
-            [src]="book.image || noCoverImage"
-            alt=""
-            class="cover"
-          />
+          @if (isAdmin()) {
+            <button
+              [attr.aria-label]="'books.cover.title' | translate"
+              [matMenuTriggerData]="{ $implicit: book }"
+              [matMenuTriggerFor]="coverMenu"
+              [matTooltip]="'books.cover.title' | translate"
+              class="cover-button"
+              name="coverMenu"
+              type="button"
+            >
+              <ng-container
+                *ngTemplateOutlet="coverImage; context: { $implicit: book }"
+              />
+            </button>
+          } @else {
+            <ng-container
+              *ngTemplateOutlet="coverImage; context: { $implicit: book }"
+            />
+          }
           <span class="book-text">
             <span class="book-name">{{ book.name }}</span>
             @if (isSmallScreen()) {
@@ -178,6 +191,44 @@
     </ng-container>
   </app-customized-table>
 </section>
+
+<ng-template #coverImage [appTemplateContext]="rowContext" let-book>
+  <img
+    [appAuthSrc]="coverPath(book)"
+    [fallback]="noCoverImage"
+    alt=""
+    class="cover"
+  />
+</ng-template>
+
+<!-- An admin's cover actions, from the cover's button -->
+<mat-menu #coverMenu="matMenu">
+  <ng-template [appTemplateContext]="rowContext" let-book matMenuContent>
+    <button
+      (click)="pickCover(book, coverInput)"
+      mat-menu-item
+      name="changeCover"
+    >
+      <mat-icon>image</mat-icon>
+      {{ "books.cover.change" | translate }}
+    </button>
+    @if (book.cover) {
+      <button (click)="removeCover(book)" mat-menu-item name="removeCover">
+        <mat-icon>hide_image</mat-icon>
+        {{ "books.cover.remove" | translate }}
+      </button>
+    }
+  </ng-template>
+</mat-menu>
+<input
+  #coverInput
+  (change)="uploadCover($event)"
+  [accept]="coverTypes"
+  class="visually-hidden"
+  name="cover"
+  tabindex="-1"
+  type="file"
+/>
 
 <ng-template #availability [appTemplateContext]="rowContext" let-book>
   @if (book.bookItems.length === 0) {

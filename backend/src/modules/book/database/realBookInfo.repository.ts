@@ -8,10 +8,11 @@ import {
   priceToCents,
 } from "@modules/book/database/priceColumn";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
+import { bookCoverChangedException } from "@modules/book/domain/bookInfo.errors";
 import { BookItem } from "@modules/book/domain/bookItem.entity";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@shared/prisma/prisma.service";
-import { FPF, TE } from "@shared/utils/application/monads";
+import { E, FPF, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
 import { prismaTasks } from "@shared/utils/database/prismaTasks";
 import { Paginated } from "@shared/utils/database/repository.port";
@@ -87,7 +88,6 @@ export class RealBookInfoRepository implements BookInfoRepository {
         where: { id: bookInfo.id },
         update: {
           name: bookInfo.name,
-          image: bookInfo.image,
           ...priceToCents(price),
         },
         create: { ...bookInfo, ...priceToCents(price) },
@@ -95,6 +95,21 @@ export class RealBookInfoRepository implements BookInfoRepository {
       TE.asUnit,
     );
   };
+
+  changeCover = (
+    bookId: string,
+    from: string | null,
+    to: string | null,
+  ): TE.TaskEither<Error, void> =>
+    FPF.pipe(
+      this.bookInfos.updateMany({
+        where: { id: bookId, cover: from },
+        data: { cover: to },
+      }),
+      TE.chainEitherK(({ count }) =>
+        count === 0 ? E.left(bookCoverChangedException()) : E.right(undefined),
+      ),
+    );
 
   createBookItem = (bookItem: BookItem): TE.TaskEither<Error, void> =>
     FPF.pipe(this.bookItems.create({ data: bookItem }), TE.asUnit);

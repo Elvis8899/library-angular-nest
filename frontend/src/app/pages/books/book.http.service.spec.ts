@@ -114,7 +114,24 @@ describe("BookService", () => {
 
     const req = http.expectOne({ method: "POST", url: "/v1/bookInfos" });
     expect(req.request.body).toEqual(book);
-    req.flush(null);
+    req.flush({ id: "book-1" });
+  });
+
+  it("Should upload and remove a book's cover", () => {
+    const cover = new File(["png"], "capa.png", { type: "image/png" });
+    spectator.service.changeCover("book-1", cover).subscribe();
+    spectator.service.removeCover("book-1").subscribe();
+
+    const upload = http.expectOne({
+      method: "PUT",
+      url: "/v1/bookInfos/book-1/cover",
+    });
+    expect(upload.request.body).toBeInstanceOf(FormData);
+    expect((upload.request.body as FormData).get("file")).toBe(cover);
+    upload.flush(null);
+    http
+      .expectOne({ method: "DELETE", url: "/v1/bookInfos/book-1/cover" })
+      .flush(null);
   });
 
   it("Should get a book", () => {

@@ -16,7 +16,6 @@ export const Money = z
 export const BookInfoRequest = contract(
   z.object({
     name: z.string().min(1).describe("Nome do Livro"),
-    image: z.string().optional().default("").describe("URL imagem do Livro"),
     price: Money.describe("Preço do Livro"),
   }),
   { id: "BookInfoRequest", description: "Um livro novo, ou o que muda nele" },
@@ -31,6 +30,18 @@ export const BookItemRequest = contract(
   { id: "BookItemRequest", description: "Um exemplar novo de um livro" },
 );
 export type BookItemRequest = z.input<typeof BookItemRequest>;
+
+/** The cover's multipart form, for Swagger. */
+export const BookCoverUpload = contract(
+  z.object({
+    file: z.unknown().meta({
+      type: "string",
+      format: "binary",
+      description: "A imagem (JPG, PNG, WEBP ou GIF), até 5 MB",
+    }),
+  }),
+  { id: "BookCoverUpload" },
+);
 
 /** The books list's filters and order: part of the name, the creation's
  * moments (from included, before excluded). */
@@ -77,7 +88,12 @@ export const BookInfo = contract(
   z.object({
     id: Id,
     name: z.string(),
-    image: z.string(),
+    cover: z
+      .string()
+      .nullable()
+      .describe(
+        "A versão da capa, lida em GET v1/bookInfos/{id}/cover?v={cover} (coverPath); null sem capa",
+      ),
     price: z.number(),
     bookItems: z.array(BookItem),
     createdAt: Timestamp,

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { contract } from "./registry.js";
 
 /** A record's id. */
 export const Id = z.guid();
@@ -64,3 +65,7 @@ export const page = <Item extends z.ZodType>(item: Item) =>
 
 /** What the backend sends for a contract, before JSON writes its dates. */
 export type Sent<Schema extends z.ZodType> = z.output<Schema>;
+
+/** What a create answers: the new record's id. */
+export const Created = contract(z.object({ id: Id }), { id: "Created" });
+export type Created = z.input<typeof Created>;

@@ -19,3 +19,37 @@ export class AvailableBookItemNotFoundException extends domainError(
 
 export const availableBookItemNotFoundException = () =>
   new AvailableBookItemNotFoundException();
+
+export class BookCoverNotFoundException extends domainError(
+  DomainErrorKindEnum.NotFound,
+  "book.coverNotFound",
+  "Livro sem capa.",
+) {}
+
+export const bookCoverNotFoundException = () =>
+  new BookCoverNotFoundException();
+
+export class BookCoverTypeException extends domainError(
+  DomainErrorKindEnum.Invalid,
+  "book.coverType",
+  "A capa deve ser uma imagem JPG, PNG, WEBP ou GIF.",
+) {}
+
+export const bookCoverTypeException = () => new BookCoverTypeException();
+
+export class BookCoverTooLargeException extends domainError(
+  DomainErrorKindEnum.Invalid,
+  "book.coverTooLarge",
+  "A capa deve ter até 5 MB.",
+) {}
+
+export const bookCoverTooLargeException = () =>
+  new BookCoverTooLargeException();
+
+export class BookCoverChangedException extends domainError(
+  DomainErrorKindEnum.Conflict,
+  "book.coverChanged",
+  "A capa do livro mudou enquanto esta era enviada; recarregue e tente de novo.",
+) {}
+
+export const bookCoverChangedException = () => new BookCoverChangedException();

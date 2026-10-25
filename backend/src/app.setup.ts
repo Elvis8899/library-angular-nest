@@ -1,4 +1,5 @@
 import helmet from "@fastify/helmet";
+import fastifyMultipart from "@fastify/multipart";
 import fastifyRequestContext from "@fastify/request-context";
 import { contractSchemas } from "@library/contracts";
 import { RequestJWTPayload } from "@modules/auth/guards/authenticatedRequest";
@@ -81,6 +82,9 @@ export const configureApp = async (
   await app.register(helmet, {
     contentSecurityPolicy: false,
   });
+
+  // File uploads; each route reads its file with its own limits (readUpload)
+  await app.register(fastifyMultipart);
 
   return app;
 };

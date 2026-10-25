@@ -3,6 +3,7 @@ import {
   BookInfoRepository,
 } from "@modules/book/database/bookInfo.repository.port";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
+import { bookCoverChangedException } from "@modules/book/domain/bookInfo.errors";
 import { BookItem, BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { Injectable } from "@nestjs/common";
 import { D, FPF, M, O, Ord, S, TE } from "@shared/utils/application/monads";
@@ -63,14 +64,31 @@ export class FakeBookInfoRepository
     this.first((book) => book.bookItems.some((i) => i.id === bookItemId));
 
   /** As the Prisma upsert: the book's copies are its own rows, which a save
-   * keeps (a new book starts with none). */
+   * keeps (a new book starts with none), and so is its cover
+   * (changeCover). */
   override save = (
     row: Partial<BookInfo> & Pick<BookInfo, "id">,
   ): TE.TaskEither<Error, void> => {
     const stored = this.rows.get(row.id);
     // A partial merged into the stored row; reads validate it
     const book: BookInfo = FPF.unsafeCoerce({ ...stored, ...row });
-    this.rows.set(book.id, { ...book, bookItems: stored?.bookItems ?? [] });
+    this.rows.set(book.id, {
+      ...book,
+      cover: stored ? stored.cover : book.cover,
+      bookItems: stored?.bookItems ?? [],
+    });
+    return TE.of(undefined);
+  };
+
+  /** As the Prisma conditional update. */
+  changeCover = (
+    bookId: string,
+    from: string | null,
+    to: string | null,
+  ): TE.TaskEither<Error, void> => {
+    const book = this.rows.get(bookId);
+    if (book?.cover !== from) return TE.left(bookCoverChangedException());
+    this.rows.set(bookId, { ...book, cover: to });
     return TE.of(undefined);
   };
 

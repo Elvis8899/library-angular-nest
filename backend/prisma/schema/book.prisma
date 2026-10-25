@@ -3,7 +3,8 @@
 model BookInfo {
   id    String @id
   name  String
-  image String
+  // The uploaded cover's version (FileStorage key bookCovers/<id>/<cover>)
+  cover String?
   priceCents Int // in centavos; the domain uses reais (`Money`)
 
   bookItems BookItem[]

@@ -15,7 +15,7 @@ It is also a starting point for other projects: login, users and the conventions
 
 ## Features
 
-- **Catalogue:** books (title, cover, price), each with any number of physical copies.
+- **Catalogue:** books (title, uploaded cover, price), each with any number of physical copies.
 - **Loans:** renting a copy and returning it. A copy can't be rented twice at the same time; the database enforces this with a transaction.
 - **Late fees:** loans are due 7 days after renting, at the end of the day. Returning late costs a fixed R$20 plus 5% of the book's price per day.
 - **Users and roles:**
@@ -33,7 +33,7 @@ It is also a starting point for other projects: login, users and the conventions
 
 ### Option A: Docker dev stack
 
-The dev stack runs the API and the frontend in watch mode behind nginx, together with PostgreSQL, pgAdmin, Prometheus and Grafana:
+The dev stack runs the API and the frontend in watch mode behind nginx, together with PostgreSQL, the file storage (SeaweedFS, S3-compatible, for the books' covers), pgAdmin, Prometheus and Grafana:
 
 ```bash
 make dockerDev          # from the repo root: docker compose -f .docker/docker-compose-dev.yml up --build -d
@@ -49,7 +49,7 @@ On each start, the API container installs dependencies, applies migrations and s
 | `/pgadmin4/` | pgAdmin |
 | `/grafana/`, `/prometheus/` | Metrics |
 
-Grafana (`admin`/`admin`) opens with the Prometheus data source and two dashboards in `.docker/grafana/dashboards/`: **Library API** (requests, latency and errors by route, use cases by outcome, memory and event loop) and **Library server** (the site's probe and certificate, disk, memory, CPU, the database). The alert rules (API, site or database down, certificate expiring, disk or memory running out, 5xx errors) are under Alerting; they aren't sent anywhere yet. Prometheus scrapes the API's metrics server on `app:9464` (`METRICS_PORT`), which nginx doesn't proxy.
+Grafana (`admin`/`admin`) opens with the Prometheus data source and two dashboards in `.docker/grafana/dashboards/`: **Library API** (requests, latency and errors by route, use cases by outcome, memory and event loop) and **Library server** (the site's probe and certificate, disk, memory, CPU, the database, the file storage). The alert rules (API, site or database down, certificate expiring, disk or memory running out, 5xx errors) are under Alerting; they aren't sent anywhere yet. Prometheus scrapes the API's metrics server on `app:9464` (`METRICS_PORT`), which nginx doesn't proxy.
 
 ### Option B: run the backend on the host
 
@@ -102,8 +102,8 @@ The backend suites run in parallel: before they start, each test worker gets its
 
 ## CI and deployment
 
-- **GitHub Actions** (`.github/workflows/node.js.yml`) runs on every push and pull request to `main`. It builds the backend and runs its full test suite against PostgreSQL, lints (ESLint and Stylelint), tests and builds the frontend, then publishes the coverage badges above for both apps to the `badges` branch.
-- **Deployment** is manual, to one Linux server with Docker (a VPS such as an AWS Lightsail instance; 2 GB of RAM or more, since the images are built there). The stack in `.docker/docker-compose.yml` runs the API, PostgreSQL, pgAdmin, Prometheus, Grafana, certbot and nginx, which serves the frontend build over HTTPS and proxies `/v1`, `/swagger`, `/pgadmin4` and `/grafana` to the rest. Grafana (user `admin`, `.docker/.env`'s `GRAFANA_PASSWORD`; a server set up before it needs that added, `openssl rand -hex 16`) has the same dashboards and alert rules as the dev stack; Prometheus keeps 30 days (2 GB at most) and isn't reachable from outside. It probes the site through its public address, so it notices DNS, certificate and nginx problems, but not the whole server being down: that needs a monitor outside it. Only ports 80 and 443 need to be open.
+- **GitHub Actions** (`.github/workflows/node.js.yml`) runs on every push and pull request to `main`. It builds the backend and runs its full test suite against PostgreSQL and SeaweedFS, lints (ESLint and Stylelint), tests and builds the frontend, then publishes the coverage badges above for both apps to the `badges` branch.
+- **Deployment** is manual, to one Linux server with Docker (a VPS such as an AWS Lightsail instance; 2 GB of RAM or more, since the images are built there). The stack in `.docker/docker-compose.yml` runs the API, PostgreSQL, the file storage (SeaweedFS; back its volume up with the database's, and a server set up before it needs `STORAGE_ACCESS_KEY` and `STORAGE_SECRET_KEY` in `.docker/.env`, `openssl rand -hex 32`), pgAdmin, Prometheus, Grafana, certbot and nginx, which serves the frontend build over HTTPS and proxies `/v1`, `/swagger`, `/pgadmin4` and `/grafana` to the rest. Grafana (user `admin`, `.docker/.env`'s `GRAFANA_PASSWORD`; a server set up before it needs that added, `openssl rand -hex 16`) has the same dashboards and alert rules as the dev stack; Prometheus keeps 30 days (2 GB at most) and isn't reachable from outside. It probes the site through its public address, so it notices DNS, certificate and nginx problems, but not the whole server being down: that needs a monitor outside it. Only ports 80 and 443 need to be open.
 
 ### Deploying
 

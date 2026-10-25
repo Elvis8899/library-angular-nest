@@ -1,4 +1,4 @@
-import { BookInfoRequest, Resource } from "@library/contracts";
+import { BookInfoRequest, Created, Resource, Sent } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { bookInfoCreated } from "@modules/book/domain/events/bookInfoCreated.event";
@@ -21,7 +21,7 @@ export class CreateBookInfo implements ICommand {
 @CommandHandler(CreateBookInfo)
 export class CreateBookInfoHandler implements ICommandHandler<
   CreateBookInfo,
-  void
+  Sent<typeof Created>
 > {
   constructor(
     private readonly useCase: UseCase,
@@ -29,7 +29,7 @@ export class CreateBookInfoHandler implements ICommandHandler<
     private readonly bookInfoRepository: BookInfoRepository,
   ) {}
 
-  execute(command: CreateBookInfo): Promise<void> {
+  execute(command: CreateBookInfo): Promise<Sent<typeof Created>> {
     return this.useCase.run(
       "CreateBookInfo",
       command.props,
@@ -54,7 +54,8 @@ export class CreateBookInfoHandler implements ICommandHandler<
         RTE.tap((bookInfo) =>
           changedRTE({ resource: Resource.Books, key: bookInfo.id }),
         ),
-        RTE.asUnit,
+        // The id, for its cover (PUT bookInfos/:id/cover)
+        RTE.map(({ id }) => ({ id })),
       ),
     );
   }

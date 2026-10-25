@@ -43,7 +43,6 @@ export const ptBR = {
     // Lending example: only its pages use these
     actions: "Ações",
     book: "Livro",
-    optional: "Opcional",
     remove: "Remover",
   },
   validation: {
@@ -83,6 +82,11 @@ export const ptBR = {
     book: {
       notFound: "Livro não encontrado.",
       noAvailableCopy: "Nenhum exemplar livre deste livro.",
+      coverNotFound: "Livro sem capa.",
+      coverType: "A capa deve ser uma imagem JPG, PNG, WEBP ou GIF.",
+      coverTooLarge: "A capa deve ter até 5 MB.",
+      coverChanged:
+        "A capa do livro mudou enquanto esta era enviada; recarregue e tente de novo.",
     },
     rental: {
       notFound: "Empréstimo não encontrado.",

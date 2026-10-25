@@ -10,7 +10,6 @@ export class BookInfoBuilder {
   private id = UUID.parse(createTestId(TableNameEnum.BookInfo, 0));
 
   private name = "livro 1";
-  private image = "user0@example.com";
   private price = 100;
   private bookItems = [
     {
@@ -31,7 +30,6 @@ export class BookInfoBuilder {
     this.defaultProperties = {
       id: this.id,
       name: this.name,
-      image: this.image,
       price: this.price,
       bookItems: this.bookItems,
     };
@@ -62,6 +60,11 @@ export class BookInfoBuilder {
     return this;
   }
 
+  withCover(cover: string | null) {
+    this.overrides.cover = cover;
+    return this;
+  }
+
   withCreatedAt(createdAt: Date) {
     this.overrides.createdAt = createdAt;
     return this;
@@ -83,9 +86,7 @@ export class BookInfoBuilder {
       ...this.overrides,
     };
 
-    return FPF.unsafeCoerce({
-      ...bookInfo,
-    });
+    return { name: bookInfo.name, price: bookInfo.price };
   }
 
   buildItem(): BookItem {

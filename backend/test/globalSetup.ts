@@ -1,7 +1,11 @@
+import { ListBucketsCommand } from "@aws-sdk/client-s3";
 import { PrismaClient } from "@db/generated/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { s3BucketOf } from "@shared/storage/s3FileStorage";
+import { storageConfig } from "@shared/storage/storage.config";
 import { newTestRun, testRunStart } from "@test/util/testRun";
 import { workerDatabaseUrl } from "@test/util/workerDatabase";
+import { deleteBucket } from "@test/util/workerStorage";
 import type { TestProject } from "vitest/node";
 
 const quote = (identifier: string) => `"${identifier.replaceAll('"', '""')}"`;
@@ -39,13 +43,32 @@ const dropDatabases = async (
       );
 };
 
+/** Deletes the buckets named `<bucket>-…` that `isGone` picks. */
+const deleteBuckets = async (
+  isGone: (name: string) => boolean,
+): Promise<void> => {
+  const storage = s3BucketOf(storageConfig());
+  try {
+    const { Buckets = [] } = await storage.client.send(
+      new ListBucketsCommand({ Prefix: `${storage.name}-` }),
+    );
+    for (const { Name } of Buckets)
+      if (Name !== undefined && isGone(Name))
+        await deleteBucket(storage.client, Name);
+  } finally {
+    storage.client.destroy();
+  }
+};
+
 /**
  * Copies the migrated test database (DATABASE_URL, migrated by
  * `yarn test:migrate`) to one database per Vitest worker, so the suites can
- * run in parallel. The copies carry this run's id, so runs at the same time
- * don't meet, and are dropped when the run ends; a run also drops what a
+ * run in parallel. The copies and the workers' buckets (S3_BUCKET-<run>-
+ * <worker>, created by the app) carry this run's id, so runs at the same time
+ * don't meet, and are removed when the run ends; a run also removes what a
  * killed one left a day ago or more. A fresh copy each run keeps them on the
- * latest migration. Refuses a database whose name doesn't say "test".
+ * latest migration. Refuses a database or bucket whose name doesn't say
+ * "test".
  */
 export default async function globalSetup(
   project: TestProject,
@@ -60,6 +83,9 @@ export default async function globalSetup(
     throw new Error(
       `DATABASE_URL names ${template}, which isn't a test database`,
     );
+  const bucket = storageConfig().bucket;
+  if (!bucket.includes("test"))
+    throw new Error(`S3_BUCKET names ${bucket}, which isn't a test bucket`);
 
   const run = newTestRun();
   project.provide("testRun", run);
@@ -79,6 +105,7 @@ export default async function globalSetup(
   } finally {
     await prisma.$disconnect();
   }
+  await deleteBuckets(startedBefore(bucket));
 
   return async () => {
     const teardown = maintenanceClient(baseUrl);
@@ -87,5 +114,6 @@ export default async function globalSetup(
     } finally {
       await teardown.$disconnect();
     }
+    await deleteBuckets(ofThisRun(bucket));
   };
 }

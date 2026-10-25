@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BookInfoQuery, BookInfoRequest, BookItemRequest } from "./schemas.js";
-import { inWholeCentavos } from "./values.js";
+import { coverPath, inWholeCentavos } from "./values.js";
 
 describe("book contracts", () => {
   it("Should take amounts to the centavo only", () => {
@@ -9,16 +9,23 @@ describe("book contracts", () => {
     expect(inWholeCentavos(12.345)).toBe(false);
   });
 
-  it("Should take a book without an image, and refuse a price in fractions of a centavo", () => {
+  it("Should take a book's name and price, and refuse a price in fractions of a centavo", () => {
     expect(BookInfoRequest.parse({ name: "Dom Casmurro", price: 30 })).toEqual({
       name: "Dom Casmurro",
-      image: "",
       price: 30,
     });
     expect(
       BookInfoRequest.safeParse({ name: "Dom Casmurro", price: 30.001 })
         .success,
     ).toBe(false);
+  });
+
+  it("Should read a cover at its version, none without one", () => {
+    const id = "00000000-0000-0000-0000-000000000001";
+    expect(coverPath({ id, cover: "v 1" })).toBe(
+      `/v1/bookInfos/${id}/cover?v=v%201`,
+    );
+    expect(coverPath({ id, cover: null })).toBeNull();
   });
 
   it("Should take a copy's status or leave it out", () => {

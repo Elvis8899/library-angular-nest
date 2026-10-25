@@ -22,7 +22,7 @@
     "test:inte": "env-cmd -f .env.test --no-override vitest run --project database --coverage --coverage.include='src/**/database/real*.ts' .inte-spec.ts",
     "test:unit": "env-cmd -f .env.test --no-override vitest run --project unit --coverage --coverage.include='src/**/commands/**/*.command.ts' --coverage.include='src/**/domain/**/*.ts' --coverage.include='src/**/queries/**/*.query.ts'",
     "test:module": "sh -c 'reports=$(mktemp -d); env-cmd -f .env.test --no-override vitest run test/modules/${1:?usage: yarn test:module <module>} --coverage --coverage.include=\"src/modules/$1/**\" --coverage.reportsDirectory=\"$reports\"; status=$?; rm -rf \"$reports\"; exit $status' --",
-    "test:docker:up": "docker compose -f ../.docker/docker-compose-dev.yml up postgres -d && sleep 5 && env-cmd -f .env.test --no-override yarn migrate:reset --force && env-cmd -f .env.test --no-override yarn seed",
+    "test:docker:up": "docker compose -f ../.docker/docker-compose-dev.yml up postgres storage -d && sleep 5 && env-cmd -f .env.test --no-override yarn migrate:reset --force && env-cmd -f .env.test --no-override yarn seed",
     "test:migrate": "env-cmd -f .env.test --no-override yarn migrate:deploy",
     "migrate:check": "env-cmd -f .env.test --no-override prisma migrate diff --from-config-datasource --to-schema prisma/schema --exit-code",
     "migrate": "prisma migrate dev",
@@ -35,7 +35,9 @@
     "generate": "prisma generate"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1156.0",
     "@fastify/helmet": "^13.2.0",
+    "@fastify/multipart": "^10.1.6",
     "@fastify/request-context": "^7.0.5",
     "@fastify/static": "^10.1.6",
     "@nestjs/common": "^12.2.0",

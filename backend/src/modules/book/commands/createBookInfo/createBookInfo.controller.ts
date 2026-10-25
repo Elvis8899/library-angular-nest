@@ -1,4 +1,9 @@
-import { BookInfoRequest, contractRef } from "@library/contracts";
+import {
+  BookInfoRequest,
+  contractRef,
+  Created,
+  Sent,
+} from "@library/contracts";
 import { ApiController } from "@modules/auth/decorators/apiController.decorator";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
@@ -12,7 +17,6 @@ import {
   ApiOperation,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
 
 @ApiController("Livros")
 export class CreateBookInfoController {
@@ -29,12 +33,17 @@ export class CreateBookInfoController {
     summary: "Cria um Livro.",
     description: `Dado um Livro válido, ele será criado.`,
   })
-  @ApiCreatedResponse({ description: "Livro criado com sucesso." })
+  @ApiCreatedResponse({
+    description: "Livro criado com sucesso.",
+    schema: contractRef(Created),
+  })
   @ApiUnprocessableEntityResponse({ description: "Livro inválido." })
   @ApiBody({ schema: contractRef(BookInfoRequest) })
-  async createBookInfo(@Body() book: BookInfoRequest): Promise<void> {
-    return this.commandBus
-      .execute<CreateBookInfo>(new CreateBookInfo(book))
-      .then(noop);
+  async createBookInfo(
+    @Body() book: BookInfoRequest,
+  ): Promise<Sent<typeof Created>> {
+    return this.commandBus.execute<CreateBookInfo, Sent<typeof Created>>(
+      new CreateBookInfo(book),
+    );
   }
 }

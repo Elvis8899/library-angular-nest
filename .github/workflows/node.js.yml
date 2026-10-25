@@ -70,6 +70,22 @@ jobs:
       - name: Drop the lint caches
         run: rm -rf backend/node_modules/.cache/eslint frontend/node_modules/.cache/eslint
 
+      # S3-compatible storage for the files (as in the dev compose file).
+      # A service container can't be given SeaweedFS's command, so it
+      # starts here; the API creates its buckets
+      - name: Start the file storage
+        run: |
+          docker run -d --name storage -p 8333:8333 \
+            -e AWS_ACCESS_KEY_ID=storage -e AWS_SECRET_ACCESS_KEY=storage-password \
+            chrislusf/seaweedfs:4.48 mini -dir=/data
+          for i in $(seq 1 60); do
+            # Any answer (403 without credentials) means it's up
+            curl -s -o /dev/null localhost:8333 && exit 0
+            sleep 1
+          done
+          docker logs storage
+          exit 1
+
       - name: Contracts
         working-directory: packages/contracts
         run: |

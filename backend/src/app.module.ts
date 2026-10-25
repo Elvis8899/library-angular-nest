@@ -12,6 +12,7 @@ import { LoggerModule } from "@shared/logger/logger.module";
 import { MetricsModule } from "@shared/metrics/metrics.module";
 import { PrismaModule } from "@shared/prisma/prisma.module";
 import { SocketModule } from "@shared/socket/socket.module";
+import { StorageModule } from "@shared/storage/storage.module";
 import { UseCaseModule } from "@shared/utils/application/useCase.module";
 import { AppController } from "@src/app.controller";
 
@@ -30,6 +31,7 @@ const appModules: NestModuleImport[] = [
   }),
   PrismaModule,
   SocketModule,
+  StorageModule,
   //
   AuthModule,
   //

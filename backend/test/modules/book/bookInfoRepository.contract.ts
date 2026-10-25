@@ -3,6 +3,7 @@ import {
   BookInfoSort,
 } from "@modules/book/database/bookInfo.repository.port";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
+import { BookCoverChangedException } from "@modules/book/domain/bookInfo.errors";
 import { BookItem, BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
@@ -134,26 +135,44 @@ export const bookInfoRepositoryContract = (kind: RepositoryKind) =>
       );
     });
 
-    it("Should change a saved book's name, image and price, keeping its copies", async () => {
+    it("Should change a saved book's name and price, keeping its copies and cover", async () => {
       const saved = book(1);
+      const cover = createTestId(TableNameEnum.None, 1);
       await saveBook(saved);
       await executeTask(ctx.books.createBookItem(item(1, saved.id)));
+      await executeTask(ctx.books.changeCover(saved.id, null, cover));
 
-      // What a handler saves: the book as parsed, without its copies
-      await saveBook({
-        ...saved,
-        name: "Novo nome",
-        image: "https://example.com/capa.jpg",
-        price: 49.9,
-      });
+      // What a handler saves: the book as parsed, without its copies or cover
+      await saveBook({ ...saved, name: "Novo nome", price: 49.9 });
 
       expect(await executeTask(ctx.books.findById(saved.id))).toMatchObject(
         O.some({
           name: "Novo nome",
-          image: "https://example.com/capa.jpg",
           price: 49.9,
+          cover,
           bookItems: [{ id: item(1, saved.id).id }],
         }),
+      );
+    });
+
+    it("Should change a cover from the one the book holds, and refuse with 409 book.coverChanged otherwise", async () => {
+      const saved = book(1);
+      const first = createTestId(TableNameEnum.None, 1);
+      const second = createTestId(TableNameEnum.None, 2);
+      await saveBook(saved);
+
+      await executeTask(ctx.books.changeCover(saved.id, null, first));
+      // Another upload that read no cover, then a book that isn't there
+      await expect(
+        executeTask(ctx.books.changeCover(saved.id, null, second)),
+      ).rejects.toBeInstanceOf(BookCoverChangedException);
+      await expect(
+        executeTask(ctx.books.changeCover(book(2).id, null, second)),
+      ).rejects.toBeInstanceOf(BookCoverChangedException);
+      await executeTask(ctx.books.changeCover(saved.id, first, null));
+
+      expect(await executeTask(ctx.books.findById(saved.id))).toMatchObject(
+        O.some({ cover: null }),
       );
     });
 
