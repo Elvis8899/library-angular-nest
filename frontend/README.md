@@ -11,7 +11,7 @@ Node 22.22.3+ or 24.15+, as required by Angular 22. Run `nvm use` to pick the ve
 ## Development
 
 ```bash
-yarn install
+yarn install        # at the repository root (a Yarn workspace)
 yarn start          # http://localhost:4200
 ```
 

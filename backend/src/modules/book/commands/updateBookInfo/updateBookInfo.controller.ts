@@ -1,8 +1,8 @@
+import { BookInfoRequest, contractRef } from "@library/contracts";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
 import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { UpdateBookInfo } from "@modules/book/commands/updateBookInfo/updateBookInfo.command";
-import { CreateBookInfoDto } from "@modules/book/dtos/bookInfo.dto";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import {
   Body,
@@ -16,6 +16,7 @@ import {
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -42,12 +43,11 @@ export class UpdateBookInfoController {
   @ApiUnprocessableEntityResponse({ description: "Livro inválido." })
   @ApiNotFoundResponse({ description: "Livro não encontrado." })
   @ApiOperation({ summary: "Atualizar Livro" })
+  @ApiBody({ schema: contractRef(BookInfoRequest) })
   async updateBookInfo(
-    @Body() updateModuleDto: CreateBookInfoDto,
+    @Body() book: BookInfoRequest,
     @Param("id") id: string,
   ): Promise<void> {
-    return this.commandBus
-      .execute(new UpdateBookInfo(updateModuleDto, id))
-      .then(noop);
+    return this.commandBus.execute(new UpdateBookInfo(book, id)).then(noop);
   }
 }

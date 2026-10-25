@@ -34,6 +34,11 @@ describe("[e2e] App setup", () => {
     expect(body.info.title).toBe(appInfo.title);
     expect(body.paths).toHaveProperty("/v1/users");
     expect(body.components.securitySchemes).toHaveProperty("bearer");
+    // The contracts' schemas, and the routes pointing at them
+    expect(body.components.schemas).toHaveProperty("BookInfo");
+    expect(JSON.stringify(body.paths["/v1/bookInfos"])).toContain(
+      "#/components/schemas/BookInfoRequest",
+    );
   });
 });
 

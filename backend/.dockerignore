@@ -1,6 +1,0 @@
-node_modules
-dist
-coverage
-# Settings are passed in at runtime, never built into an image
-.env*
-prisma/generated

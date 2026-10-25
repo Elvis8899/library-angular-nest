@@ -1,15 +1,12 @@
+# The dev API: the workspace is mounted at /usr/src/app (docker-compose-dev.yml)
+# and the entrypoint installs it, so the image only has the system packages.
+# Build context: the repository root.
 FROM node:24-slim
-
-WORKDIR /usr/src/app
-
-COPY package.json yarn.lock ./
-RUN yarn install
-COPY . .
-RUN npx prisma generate
 
 RUN apt-get update -y && apt-get install -y openssl procps
 
+WORKDIR /usr/src/app/backend
 
 EXPOSE 4000
 
-ENTRYPOINT [ "sh", "/usr/src/app/.docker/entrypoint.dev.sh" ]
+ENTRYPOINT [ "sh", "/usr/src/app/backend/.docker/entrypoint.dev.sh" ]

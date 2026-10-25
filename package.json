@@ -1,0 +1,21 @@
+{
+  "name": "library",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend",
+    "packages/*"
+  ],
+  "scripts": {
+    "postinstall": "yarn contracts:build",
+    "prepare": "husky frontend/.husky",
+    "contracts:build": "yarn workspace @library/contracts build",
+    "contracts:watch": "yarn workspace @library/contracts watch"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  },
+  "resolutions": {
+    "vite": "~8.3.4"
+  }
+}

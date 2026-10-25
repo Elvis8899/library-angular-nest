@@ -4,8 +4,8 @@ services:
   # Serves the frontend build and proxies the API, over HTTPS
   nginx:
     build:
-      context: ../frontend
-      dockerfile: .docker/Dockerfile
+      context: ..
+      dockerfile: frontend/.docker/Dockerfile
     restart: always
     ports:
       - "80:80"
@@ -40,11 +40,12 @@ services:
 
   app:
     build:
-      context: ../backend
-      dockerfile: .docker/Dockerfile
+      context: ..
+      dockerfile: backend/.docker/Dockerfile
     restart: always
-    # The API's settings, from the repo root's .env. Outside the build context,
-    # so they can't end up in the image
+    # The API's settings, from the repo root's .env. The root .dockerignore
+    # leaves every .env out of the build context, so they can't end up in the
+    # image
     env_file: ../.env
     # Uncomment this line in case you are in M1
     # platform: linux/amd64
@@ -93,8 +94,8 @@ services:
 
   migrate-deploy:
     build:
-      context: ../backend
-      dockerfile: .docker/Dockerfile
+      context: ..
+      dockerfile: backend/.docker/Dockerfile
       target: migrate
     # Uncomment this line in case you are in M1
     # platform: linux/amd64

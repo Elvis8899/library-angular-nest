@@ -52,10 +52,10 @@ On each start, the API container installs dependencies, applies migrations and s
 ### Option B: run the backend on the host
 
 ```bash
+yarn install            # at the repository root, once: both apps and packages/contracts
 cd backend
 docker compose -f ../.docker/docker-compose-dev.yml up postgres -d
 cp .env.example .env    # then set DATABASE_URL to localhost, see the comment in the file
-yarn install
 yarn migrate            # apply migrations
 npx prisma db seed      # demo users and books (runs automatically when migrate creates the database)
 yarn start:dev          # http://localhost:3000, Swagger at /swagger
@@ -66,9 +66,9 @@ yarn start:dev          # http://localhost:3000, Swagger at /swagger
 ### Frontend
 
 ```bash
-cd frontend
 nvm use                 # Node 24
-yarn install
+yarn install            # at the repository root, if not done yet
+cd frontend
 yarn start              # http://localhost:4200, proxies /v1 to localhost:3000
 ```
 
@@ -141,6 +141,7 @@ backend/
   test/modules/<feature>/  each module's unit, integration and e2e specs, and its own builders
   test/util/, dataBuilders/  the test harness and the core builders
   .docker/                 the API's Dockerfiles and dev entrypoint
+packages/contracts/        what the API sends and receives (Zod schemas), and the values and rules both apps use
 frontend/
   src/app/pages/           lazy-loaded routes; core: auth, home, users; example: books, rentals (with their models and services)
   src/app/services/        HTTP and auth services of the core

@@ -22,5 +22,6 @@ export const SwaggerDocumentBody = z.object({
   paths: z.record(z.string(), z.unknown()),
   components: z.object({
     securitySchemes: z.record(z.string(), z.unknown()),
+    schemas: z.record(z.string(), z.unknown()),
   }),
 });

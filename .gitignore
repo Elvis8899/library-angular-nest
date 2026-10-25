@@ -2,3 +2,8 @@ Frontend/
 # Production settings: the stack's (see .docker/.env.example) and the API's
 .docker/.env
 /.env
+
+# The workspace's dependencies (each app's own .gitignore covers its folder)
+/node_modules
+/.yarn-cache
+/.yarn-mutex

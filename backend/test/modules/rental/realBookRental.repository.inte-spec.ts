@@ -1,5 +1,5 @@
 import { RealBookInfoRepository } from "@modules/book/database/realBookInfo.repository";
-import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
+import { BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { RealBookRentalRepository } from "@modules/rental/database/realBookRental.repository";
 import {
   BookRental,
@@ -223,7 +223,7 @@ describe("[Integration] BookRental repository rent/finish", () => {
     await prismaService.bookRentalDetails.deleteMany();
     await prismaService.bookItem.update({
       where: { id: bookItemId },
-      data: { status: BookItemStatusEnum.Available },
+      data: { status: BookItemStatus.Available },
     });
   });
 
@@ -236,7 +236,7 @@ describe("[Integration] BookRental repository rent/finish", () => {
 
     await executeTask(bookRentalRepository.rent(bookRental));
 
-    expect(await getBookItemStatus()).toBe(BookItemStatusEnum.Rented);
+    expect(await getBookItemStatus()).toBe(BookItemStatus.Rented);
     expect(await prismaService.bookRentalDetails.count()).toBe(1);
   });
 
@@ -278,7 +278,7 @@ describe("[Integration] BookRental repository rent/finish", () => {
     const result = executeTask(bookRentalRepository.rent(bookRental));
 
     await expect(result).rejects.toBeInstanceOf(UnknownException);
-    expect(await getBookItemStatus()).toBe(BookItemStatusEnum.Available);
+    expect(await getBookItemStatus()).toBe(BookItemStatus.Available);
   });
 
   it("Should finish rental and make book item available", async () => {
@@ -289,7 +289,7 @@ describe("[Integration] BookRental repository rent/finish", () => {
       bookRentalRepository.finish({ ...bookRental, deliveryDate: new Date() }),
     );
 
-    expect(await getBookItemStatus()).toBe(BookItemStatusEnum.Available);
+    expect(await getBookItemStatus()).toBe(BookItemStatus.Available);
     const saved = await prismaService.bookRentalDetails.findUnique({
       where: { id: bookRental.id },
     });

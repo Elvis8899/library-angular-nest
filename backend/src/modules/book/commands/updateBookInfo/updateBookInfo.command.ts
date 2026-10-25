@@ -1,8 +1,8 @@
+import { BookInfoRequest } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { bookInfoUpdated } from "@modules/book/domain/events/bookInfoUpdated.event";
-import { CreateBookInfoDto } from "@modules/book/dtos/bookInfo.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RE, RTE } from "@shared/utils/application/monads";
@@ -12,7 +12,7 @@ import { UUID } from "@shared/uuid/uuid";
 
 export class UpdateBookInfo implements ICommand {
   constructor(
-    public readonly props: CreateBookInfoDto,
+    public readonly props: BookInfoRequest,
     public readonly id: string,
   ) {}
 }

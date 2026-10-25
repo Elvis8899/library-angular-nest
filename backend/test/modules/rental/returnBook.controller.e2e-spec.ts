@@ -2,7 +2,7 @@ import { FPF } from "@shared/utils/application/monads";
 import { createBook } from "@test/modules/book/createBook";
 import { useE2eApp } from "@test/util/e2eApp";
 
-import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
+import { BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
 import { RentalStatusEnum } from "@modules/rental/domain/bookRental.entity";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
@@ -28,12 +28,12 @@ beforeAll(async () => {
     new BookInfoBuilder().withBookItems([
       {
         id: createTestId(TableNameEnum.BookItem, 0),
-        status: BookItemStatusEnum.Rented,
+        status: BookItemStatus.Rented,
         bookId: createTestId(TableNameEnum.BookInfo, 0),
       },
       {
         id: createTestId(TableNameEnum.BookItem, 1),
-        status: BookItemStatusEnum.Available,
+        status: BookItemStatus.Available,
         bookId: createTestId(TableNameEnum.BookInfo, 0),
       },
     ]),

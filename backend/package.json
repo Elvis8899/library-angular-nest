@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "version": "0.0.1",
+  "private": true,
   "description": "Biblioteca",
   "license": "MIT",
   "scripts": {

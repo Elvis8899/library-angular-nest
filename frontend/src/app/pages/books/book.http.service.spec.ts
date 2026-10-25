@@ -3,7 +3,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
-import { BookEntity, BookItemEntity } from "@app/pages/books/book.entity";
+import { BookEntity } from "@app/pages/books/book.entity";
 import { BookService } from "@app/pages/books/book.http.service";
 import {
   createServiceFactory,
@@ -109,10 +109,11 @@ describe("BookService", () => {
   });
 
   it("Should create a book", () => {
-    spectator.service.addBook({ name: "Dom Casmurro" }).subscribe();
+    const book = { name: "Dom Casmurro", price: 30 };
+    spectator.service.addBook(book).subscribe();
 
     const req = http.expectOne({ method: "POST", url: "/v1/bookInfos" });
-    expect(req.request.body).toEqual({ name: "Dom Casmurro" });
+    expect(req.request.body).toEqual(book);
     req.flush(null);
   });
 
@@ -141,7 +142,7 @@ describe("BookService", () => {
   });
 
   it("Should add a copy of a book", () => {
-    const item = { bookInfoId: "book-1" } as Partial<BookItemEntity>;
+    const item = { bookId: "book-1" };
     spectator.service.addBookItem(item).subscribe();
 
     const req = http.expectOne({ method: "POST", url: "/v1/bookInfos/item" });

@@ -7,7 +7,7 @@ import {
   AvailableBookItemNotFoundException,
   BookInfoNotFoundException,
 } from "@modules/book/domain/bookInfo.errors";
-import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
+import { BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
@@ -51,7 +51,7 @@ describe("[Unit] Delete BookInfo", () => {
       .withBookItems([
         {
           id: createTestId(TableNameEnum.BookItem, 0),
-          status: BookItemStatusEnum.Rented,
+          status: BookItemStatus.Rented,
           bookId: createTestId(TableNameEnum.BookInfo, 0),
         },
       ])

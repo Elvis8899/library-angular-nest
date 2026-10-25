@@ -1,10 +1,7 @@
 import { BookInfoSort } from "@modules/book/database/bookInfo.repository.port";
 import { RealBookInfoRepository } from "@modules/book/database/realBookInfo.repository";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
-import {
-  BookItem,
-  BookItemStatusEnum,
-} from "@modules/book/domain/bookItem.entity";
+import { BookItem, BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { Test } from "@nestjs/testing";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -301,7 +298,7 @@ describe("[Integration] BookInfo repository", () => {
     //Given an inexisting bookItem in database
     const bookItem = BookItem.parse({
       id: createTestId(TableNameEnum.BookItem, 0),
-      status: BookItemStatusEnum.Available,
+      status: BookItemStatus.Available,
       bookId: createTestId(TableNameEnum.BookInfo, 0),
     });
     //When we save him
@@ -326,7 +323,7 @@ describe("[Integration] BookInfo repository", () => {
     //Given an existing bookItem in database
     const bookItem = BookItem.parse({
       id: createTestId(TableNameEnum.BookItem, 0),
-      status: BookItemStatusEnum.Available,
+      status: BookItemStatus.Available,
       bookId: createTestId(TableNameEnum.BookInfo, 0),
     });
 
@@ -350,7 +347,7 @@ describe("[Integration] BookInfo repository", () => {
     //Given an existing bookItem in database
     const bookItem = BookItem.parse({
       id: createTestId(TableNameEnum.BookItem, 0),
-      status: BookItemStatusEnum.Available,
+      status: BookItemStatus.Available,
       bookId: createTestId(TableNameEnum.BookInfo, 0),
     });
 

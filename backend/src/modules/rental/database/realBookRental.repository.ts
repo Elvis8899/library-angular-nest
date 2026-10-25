@@ -1,6 +1,6 @@
 import { Prisma } from "@db/generated/client";
 import { bookItemPriceFromCents } from "@modules/book/database/priceColumn";
-import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
+import { BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import {
   BookRentalFindAllQuery,
   BookRentalRepository,
@@ -120,9 +120,9 @@ export class RealBookRentalRepository implements BookRentalRepository {
           const { count } = await tx.bookItem.updateMany({
             where: {
               id: bookRental.bookItemId,
-              status: BookItemStatusEnum.Available,
+              status: BookItemStatus.Available,
             },
-            data: { status: BookItemStatusEnum.Rented },
+            data: { status: BookItemStatus.Rented },
           });
           if (count === 0) throw bookRentalNotAvailableException();
           await tx.bookRentalDetails.create({ data: bookRental });
@@ -148,7 +148,7 @@ export class RealBookRentalRepository implements BookRentalRepository {
           if (count === 0) throw bookRentalFinishedException();
           await tx.bookItem.update({
             where: { id: bookRental.bookItemId },
-            data: { status: BookItemStatusEnum.Available },
+            data: { status: BookItemStatus.Available },
           });
         }),
       this.transactionErrorException,

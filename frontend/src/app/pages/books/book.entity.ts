@@ -1,21 +1,9 @@
-import { BaseEntity } from "@app/models/utils/base.entity";
+import type { BookInfo, BookItem } from "@library/contracts";
 
-export enum BookItemStatusEnum {
-  Rented = "rented",
-  Available = "available",
-}
-
-export interface BookItemEntity extends BaseEntity {
-  status: BookItemStatusEnum;
-  bookId: string;
-}
-
-export interface BookEntity extends BaseEntity {
-  name: string;
-  image: string;
-  price: number;
-  bookItems: BookItemEntity[];
-}
+// The API's shapes and values, under the names the screens use
+export { BookItemStatus } from "@library/contracts";
+export type BookEntity = BookInfo;
+export type BookItemEntity = BookItem;
 
 export interface BookQuery {
   name?: string;

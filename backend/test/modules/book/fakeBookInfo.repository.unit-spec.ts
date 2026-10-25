@@ -1,5 +1,5 @@
 import { FakeBookInfoRepository } from "@modules/book/database/fakeBookInfo.repository";
-import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
+import { BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
@@ -15,7 +15,7 @@ describe("[Unit] Fake BookInfo repository", () => {
     await executeTask(
       repository.createBookItem({
         id: createTestId(TableNameEnum.BookItem, 1),
-        status: BookItemStatusEnum.Available,
+        status: BookItemStatus.Available,
         bookId: createTestId(TableNameEnum.BookInfo, 1),
         createdAt: new Date(),
         updatedAt: new Date(),

@@ -17,32 +17,37 @@ services:
 
   # Angular dev server, served by nginx at /. The browser calls /v1 on the
   # same origin, so nginx sends those to the API and proxy.conf.json is unused
+  # Both containers mount the whole workspace and install it on start; the
+  # mutex makes the second wait for the first
   frontend:
     image: node:24-slim
-    working_dir: /usr/src/app
+    working_dir: /usr/src/app/frontend
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     environment:
       YARN_CACHE_FOLDER: /usr/src/app/.yarn-cache
       NG_CLI_ANALYTICS: "false"
+      # No Git in the image to install the hook with
+      HUSKY: "0"
     volumes:
-      - ../frontend:/usr/src/app
-    command: sh -c "yarn install --frozen-lockfile && yarn ng serve --host 0.0.0.0 --port 4200"
+      - ..:/usr/src/app
+    command: sh -c "yarn install --frozen-lockfile --mutex file:/usr/src/app/.yarn-mutex && yarn ng serve --host 0.0.0.0 --port 4200"
 
   app:
     build:
-      context: ../backend
-      dockerfile: .docker/Dockerfile.dev
+      context: ..
+      dockerfile: backend/.docker/Dockerfile.dev
     env_file: ../backend/.env.dev
     # Run as the host user so files written to the mounted source folder
     # (node_modules, dist, migrations) are not owned by root. The default
     # matches the image's node user; set HOST_UID/HOST_GID if yours differ.
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     environment:
-      YARN_CACHE_FOLDER: /usr/src/app/.docker/.yarn-cache
+      YARN_CACHE_FOLDER: /usr/src/app/.yarn-cache
+      HUSKY: "0"
     # Uncomment this line in case you are in M1
     # platform: linux/amd64
     volumes:
-      - ../backend:/usr/src/app
+      - ..:/usr/src/app
     # ports:
     #   - "3000:3000"
     depends_on:

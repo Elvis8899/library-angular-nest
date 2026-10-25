@@ -4,10 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Library management system (book lending) for a Brazilian audience: UI text, API docs (Swagger tags/summaries) and error messages are in Portuguese. Two independent apps, each with its own `package.json`, `yarn.lock` (Yarn 1) and `node_modules`; there is no root workspace.
+Library management system (book lending) for a Brazilian audience: UI text, API docs (Swagger tags/summaries) and error messages are in Portuguese. A Yarn 1 workspace: one root `package.json` and `yarn.lock`, with two apps and the package they share.
 
 - `backend/` — NestJS 12 on Fastify, Prisma 7 + PostgreSQL, Zod, fp-ts, JWT auth.
 - `frontend/` — Angular 22 (standalone components), Angular Material, ngx-translate (pt-BR, en-US), Vitest via `@angular/build:unit-test`.
+- `packages/contracts/` — `@library/contracts`: what travels over HTTP (Zod schemas, enums) and the rules both apps apply; see "Contracts".
 
 The repository is also a seed for other projects. `shared`, `auth` and `user` (backend) and `auth`, `home`, `users` (frontend pages) are the core; `book` and `rental` (`books`, `rentals` pages) are the lending example. Everything the example owns lives in its own folders; the few lines it needs in core files are marked with a `Lending example` comment, so `git grep -i "lending example"` lists them (README, "Starting a new project"). Keep that true: example code doesn't go into core files unmarked, and core code and specs don't use the example (core specs use user routes and keys). The project's name is in the places the README lists under "Rename"; the backend's is `src/app.info.ts`.
 
@@ -16,6 +17,13 @@ Both use TypeScript 6.0. TypeScript 7 isn't supported by Angular or typescript-e
 Both apps run on Node 24 (`.nvmrc` in each); the backend Docker images and CI use it too. The frontend needs at least Node 22.22.3 or 24.15.
 
 ## Commands
+
+### Workspace (repo root)
+
+```bash
+yarn install                  # both apps and the contracts; builds the contracts and installs the Git pre-commit hook
+yarn contracts:watch          # rebuilds the contracts while you edit them (the apps import the build)
+```
 
 ### Backend (`cd backend`)
 
@@ -45,7 +53,7 @@ yarn seed                     # prisma db seed; skips a database that already ha
 yarn generate                 # prisma generate; Prisma 7 doesn't on install or migrate, so run it after either
 ```
 
-The app refuses to start unless `JWT_SECRET_KEY` and `JWT_REFRESH_SECRET` are set and at least 32 characters long (`src/modules/auth/auth.config.ts`). `.env.test` contains test values. `make dockerDev` (from the repo root) starts the dev stack behind nginx on `localhost:3000`: the frontend dev server at `/`, the API at `/v1` and `/swagger`, plus Postgres, pgAdmin, Prometheus and Grafana. The dev Docker entrypoint copies `.env.example` to `.env.dev`. The dev `app` and `frontend` containers run as uid/gid 1000 so files it writes to the mounted source folder aren't root-owned; set `HOST_UID`/`HOST_GID` if yours differ.
+The app refuses to start unless `JWT_SECRET_KEY` and `JWT_REFRESH_SECRET` are set and at least 32 characters long (`src/modules/auth/auth.config.ts`). `.env.test` contains test values. `make dockerDev` (from the repo root) starts the dev stack behind nginx on `localhost:3000`: the frontend dev server at `/`, the API at `/v1` and `/swagger`, plus Postgres, pgAdmin, Prometheus and Grafana. The dev Docker entrypoint copies `.env.example` to `.env.dev`. The dev `app` and `frontend` containers mount the whole repository, install the workspace when they start (one at a time, `--mutex`) and run as uid/gid 1000 so files it writes to the mounted source folder aren't root-owned; set `HOST_UID`/`HOST_GID` if yours differ.
 
 ### Frontend (`cd frontend`, Node 24)
 
@@ -58,13 +66,14 @@ yarn test                     # ng test: Vitest with coverage, 100% thresholds (
 npx ng test --watch=false --coverage=false --include src/app/services/authentication.service.spec.ts
 ```
 
-`yarn install` here also installs the Git pre-commit hook (Husky, `core.hooksPath` = `frontend/.husky/_`), which runs Prettier on staged frontend files.
+The root `yarn install` also installs the Git pre-commit hook (Husky, `core.hooksPath` = `frontend/.husky/_`), which runs Prettier on staged frontend files.
 
 ## Conventions enforced by lint
 
 - **No relative imports** in either app (`no-restricted-imports` bans `./` and `../`). Use path aliases:
   - backend: `@src/ @test/ @shared/ @modules/ @db/` (`@modules/user/…` is `src/modules/user/`, `@shared/` is `src/modules/shared/`, `@db/` is `prisma/`)
   - frontend: `@app/ @shared/ @pages/ @env/`
+  - the contracts: `@library/contracts` in both
 - **File and folder names are camelCase** in both apps, plus a role suffix (`createUser.command.ts`, `customizedTable.component.ts`, `bookRental.repository.port.ts`). `eslint-plugin-check-file` enforces this. The exceptions are the frontend locale files (`en-US.ts`, `pt-BR.ts`) and Prisma migrations. Selectors and CSS classes stay kebab-case.
 - Backend aliases are defined in both `tsconfig.json` and `vitest.config.mts` (`resolve.alias`). A new alias has to be added to both; a new module needs none, since `@modules/` covers it.
 - **No `as` type assertions** in the backend (`consistent-type-assertions`; `as const` is allowed). Prefer a precise type, or parsing with Zod (the e2e tests parse response bodies with the schemas in `test/util/responseBodies.ts`). A cast that's really needed goes through `FPF.unsafeCoerce`, imported from `monads.ts` like the rest of fp-ts.
@@ -82,7 +91,7 @@ commands/<name>/<name>.controller.ts   # one controller per use case; dispatches
 queries/<name>/<name>.query.ts|controller.ts   # reads via QueryBus
 domain/          # Zod schemas = entities/value objects (type and validator share a name), their rules, errors, events
 database/        # <x>.repository.port.ts (abstract class used as DI token), real<X>.repository.ts (Prisma), fake<X>.repository.ts (in-memory)
-dtos/            # Swagger DTO classes (validation is done by Zod in the domain, not class-validator)
+dtos/            # Swagger DTO classes (validation is done by Zod in the domain, not class-validator); once the module's API is in the contracts, only its query parameters'
 ```
 
 Modules bind the port to the real repository (`{ provide: UserRepository, useClass: RealUserRepository }`). Unit tests bind the fake instead. Fakes extend `shared/utils/database/fakeRepository.base.ts`, and they count toward the 100% coverage threshold. Prisma repositories get their queries from `prismaTasks(() => this.prisma.<model>)` (`shared/utils/database/prismaTasks.ts`), which returns the delegate's methods as `TaskEither`s (`this.users.findMany({ where })`), and share `loadPage`, `validateRows` and `validateMaybeRow` from `shared/utils/database/rowValidation.ts`.
@@ -156,6 +165,16 @@ Domain errors know nothing of HTTP. Each is a `DomainError` subclass (`shared/ut
 - An `@if` block isn't projected into a named content slot (`select="…"`) by itself, and the build warns (NG8011). Wrap it in an element that matches the slot (`<ng-container pageActions>`, `ngProjectAs="mat-card-subtitle"`), or, inside a `mat-form-field`, use one `mat-error` and pick its message inside it.
 - Specs use `@openng/spectator/vitest` (the maintained fork of `@ngneat/spectator`) (`createComponentFactory`, `createHostFactory`, `createServiceFactory`, `createInjectionContextFactory`, `mocks: [...]`) with `HttpTestingController`, not `TestBed` directly. To run effects or render overlays (autocomplete panels, dialogs), call `spectator.inject(ApplicationRef).tick()`.
 
+## Contracts
+
+`packages/contracts` (`@library/contracts`) is the API's promise: the shapes requests and responses have, and the values and rules both apps need. It holds only Zod: no Nest, fp-ts or Prisma; moments are `Timestamp` (an ISO string on the wire, a `Date` in the backend), lists `page(item)`. It's built to ESM in `dist/` (`yarn install` builds it; `yarn contracts:watch` while editing it), and both apps import the build.
+
+- A domain is two files: `<domain>/values.ts`, the enums as `as const` objects and the rules (`inWholeCentavos`), without Zod, since the frontend imports them at runtime and its bundle must stay free of it; and `<domain>/schemas.ts`, the requests and responses, each named for Swagger with `contract(schema, { id, description })`. A schema's exported type is the wire's (`z.input`).
+- Backend: a command's `props` is its request type. A controller takes it as its `@Body()`, returns `Promise<Sent<typeof X>>`, so a response missing a field doesn't compile, and documents them with `@ApiBody({ schema: contractRef(X) })` and `schema: contractRef(X)` in its responses (`contractList(X)` for a list); `app.setup.ts` adds every contract to the OpenAPI document. Query parameters keep their Swagger DTO class. Entities stay in the backend's domain.
+- Frontend: `import type` the shapes, under the screens' names where they differ (`BookEntity = BookInfo`), and import the values.
+- `book` is in the contracts; the others keep their `dtos/` and hand-written frontend models until they move, one at a time, so there are never three copies.
+- Its specs (`src/**/*.spec.ts`, `yarn test` in the package) keep it at 100%; its Prettier config is the backend's (`yarn format`).
+
 ## Adding a feature
 
 Copy the closest existing module and rename it: `user` for plain CRUD, `rental` for writes that must be atomic.
@@ -179,6 +198,6 @@ Frontend:
 
 - `.github/workflows/node.js.yml` runs on pushes and PRs to `main`. The backend job runs migrations, build and `test:cov` against a Postgres service. The frontend job runs lint, Stylelint, tests and build on the Node version in `frontend/.nvmrc`. Both upload their `coverage-summary.json` as artifacts, and the `badges` job, which waits for both, regenerates the coverage badges on the `badges` branch (`badges/backend/`, `badges/frontend/`, shown in the README). The `deploy` job, also after both and only on pushes, SSHes to the server and runs `make dockerDeploy REF=<tested commit>`; it's skipped while the `DEPLOY_HOST` repository variable is unset (README, "Deploying").
 - Swagger (`/swagger`) is public in production on purpose; nginx proxies it.
-- Deployment is manual, to one Docker host (README, "Deploying"). `make serverSetup` (`.docker/serverSetup.sh`, rerunnable) prepares a fresh Ubuntu server: Docker from Docker's apt repository, 2 GB of swap under 3 GB of memory, the `nginx_network`, and `.docker/.env` and the root `.env` (from `backend/.env.example`) with generated secrets. On the server, `make dockerDeploy` fast-forwards to `REF` (default `origin/main`), runs `make dockerMigrate` (applies migrations and waits for them) and then rebuilds the stack, as `make dockerProd` does after a `git pull`; all from the repo root with Docker Compose (`.docker/docker-compose.yml`: app, Postgres, pgAdmin, certbot, nginx). The compose files, nginx and Prometheus configs live in the root `.docker/`; each app's Dockerfiles stay in its own `.docker/` (`backend/.docker/`, `frontend/.docker/`), its build context. Only nginx (ports 80 and 443) is public; the app, Postgres and pgAdmin publish their ports on the `nginx_network` gateway (`172.18.0.1`), which nginx proxies to. The production backend Dockerfile starts `dist/src/main.js` and builds no `.env` into the image (`.dockerignore` excludes them): the `app` and `migrate-deploy` services get the API's settings from the repo root's `.env` (`env_file`), outside the build context.
+- Deployment is manual, to one Docker host (README, "Deploying"). `make serverSetup` (`.docker/serverSetup.sh`, rerunnable) prepares a fresh Ubuntu server: Docker from Docker's apt repository, 2 GB of swap under 3 GB of memory, the `nginx_network`, and `.docker/.env` and the root `.env` (from `backend/.env.example`) with generated secrets. On the server, `make dockerDeploy` fast-forwards to `REF` (default `origin/main`), runs `make dockerMigrate` (applies migrations and waits for them) and then rebuilds the stack, as `make dockerProd` does after a `git pull`; all from the repo root with Docker Compose (`.docker/docker-compose.yml`: app, Postgres, pgAdmin, certbot, nginx). The compose files, nginx and Prometheus configs live in the root `.docker/`; each app's Dockerfiles stay in its own `.docker/` (`backend/.docker/`, `frontend/.docker/`). Images build from the repository root (its `.dockerignore`) and install only their app and the contracts (`.docker/pruneWorkspace.js`). Only nginx (ports 80 and 443) is public; the app, Postgres and pgAdmin publish their ports on the `nginx_network` gateway (`172.18.0.1`), which nginx proxies to. The production backend Dockerfile starts `dist/src/main.js` and builds no `.env` into the image (the root `.dockerignore` excludes them): the `app` and `migrate-deploy` services get the API's settings from the repo root's `.env` (`env_file`).
 - The nginx image is built from `frontend/.docker/Dockerfile` (the Angular build in `/usr/share/nginx/html`) with `.docker/nginx.conf` mounted. Port 80 only answers Let's Encrypt challenges and redirects to HTTPS. `make dockerCertificate` issues the certificate once (certbot standalone, `--cert-name site`, so nginx's path doesn't depend on the domain); the `certbot` service renews it through the webroot, and nginx reloads every 6 hours to pick it up.
 - The stack's settings and credentials (domain, Postgres, pgAdmin) are in `.docker/.env` (gitignored; template `.docker/.env.example`), which Compose reads; a missing one fails `docker compose` with its name. The app's and `migrate-deploy`'s `DATABASE_URL` is built from them in the compose file and overrides the one in the root `.env`.

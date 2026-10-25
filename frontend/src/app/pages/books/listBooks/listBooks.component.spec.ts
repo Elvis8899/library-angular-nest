@@ -17,7 +17,7 @@ import {
 import { MatDialog } from "@angular/material/dialog";
 import { MatSelect, MatSelectChange } from "@angular/material/select";
 import { Router, RouterModule } from "@angular/router";
-import { BookEntity, BookItemStatusEnum } from "@app/pages/books/book.entity";
+import { BookEntity, BookItemStatus } from "@app/pages/books/book.entity";
 import { BookService } from "@app/pages/books/book.http.service";
 import {
   ListBooksComponent,
@@ -53,14 +53,14 @@ describe("ListBooksComponent", () => {
         {
           id: "1",
           bookId: "1",
-          status: BookItemStatusEnum.Available,
+          status: BookItemStatus.Available,
           createdAt: new Date().toDateString(),
           updatedAt: new Date().toDateString(),
         },
         {
           id: "2",
           bookId: "1",
-          status: BookItemStatusEnum.Rented,
+          status: BookItemStatus.Rented,
           createdAt: new Date().toDateString(),
           updatedAt: new Date().toDateString(),
         },
@@ -77,7 +77,7 @@ describe("ListBooksComponent", () => {
         {
           id: "3",
           bookId: "2",
-          status: BookItemStatusEnum.Rented,
+          status: BookItemStatus.Rented,
           createdAt: new Date().toDateString(),
           updatedAt: new Date().toDateString(),
         },

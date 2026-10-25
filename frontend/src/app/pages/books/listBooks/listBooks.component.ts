@@ -14,7 +14,7 @@ import { MatTooltip } from "@angular/material/tooltip";
 import { Router } from "@angular/router";
 import {
   BookEntity,
-  BookItemStatusEnum,
+  BookItemStatus,
   BookQuery,
 } from "@app/pages/books/book.entity";
 import { BookService } from "@app/pages/books/book.http.service";
@@ -154,7 +154,7 @@ export class ListBooksComponent implements OnInit {
 
   availableCount(book: BookEntity) {
     return book.bookItems.filter(
-      (item) => item.status === BookItemStatusEnum.Available
+      (item) => item.status === BookItemStatus.Available
     ).length;
   }
 
@@ -237,7 +237,7 @@ export class ListBooksComponent implements OnInit {
 
   private _availableItem(book: BookEntity) {
     return book.bookItems.find(
-      (item) => item.status === BookItemStatusEnum.Available
+      (item) => item.status === BookItemStatus.Available
     );
   }
 }

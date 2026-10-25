@@ -43,12 +43,23 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
-          cache-dependency-path: ./backend/yarn.lock
+          # The workspace's one lockfile: both jobs share the cache of its packages
+          cache-dependency-path: yarn.lock
+
+      # The workspace's one install, which also builds the contracts
+      - name: Install
+        run: yarn install --frozen-lockfile
+
+      - name: Contracts
+        working-directory: packages/contracts
+        run: |
+          yarn format:check
+          yarn test
 
       - name: run yarn commands
         working-directory: backend
         run: |
-          yarn && CI=true
+          CI=true
           yarn generate
           yarn test:migrate
           # Fails when prisma/schema has changes no migration creates
@@ -83,14 +94,17 @@ jobs:
       - name: Use Node.js from .nvmrc
         uses: actions/setup-node@v7
         with:
-          node-version-file: ./frontend/.nvmrc
+          node-version-file: .nvmrc
           cache: "yarn"
-          cache-dependency-path: ./frontend/yarn.lock
+          # The workspace's one lockfile: both jobs share the cache of its packages
+          cache-dependency-path: yarn.lock
+
+      - name: Install
+        run: yarn install --frozen-lockfile
 
       - name: Lint, test and build
         working-directory: frontend
         run: |
-          yarn install --frozen-lockfile
           yarn lint
           yarn lint:styles
           yarn test --watch=false

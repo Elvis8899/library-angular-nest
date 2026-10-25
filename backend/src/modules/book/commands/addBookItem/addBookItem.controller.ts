@@ -1,8 +1,8 @@
+import { BookItemRequest, contractRef } from "@library/contracts";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
 import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { AddBookItem } from "@modules/book/commands/addBookItem/addBookItem.command";
-import { CreateBookItemDto } from "@modules/book/dtos/bookInfo.dto";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import {
   Body,
@@ -15,6 +15,7 @@ import {
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -44,11 +45,10 @@ export class AddBookItemController {
   @ApiCreatedResponse({ description: "Exemplar do Livro criado com sucesso." })
   @ApiUnprocessableEntityResponse({ description: "Livro inválido." })
   @ApiNotFoundResponse({ description: "Livro não encontrado." })
-  async addBookItem(
-    @Body() createBookInfoDto: CreateBookItemDto,
-  ): Promise<void> {
+  @ApiBody({ schema: contractRef(BookItemRequest) })
+  async addBookItem(@Body() bookItem: BookItemRequest): Promise<void> {
     return this.commandBus
-      .execute<AddBookItem>(new AddBookItem(createBookInfoDto))
+      .execute<AddBookItem>(new AddBookItem(bookItem))
       .then(noop);
   }
 }

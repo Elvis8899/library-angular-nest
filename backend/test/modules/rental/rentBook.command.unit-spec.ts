@@ -1,5 +1,5 @@
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
-import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
+import { BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import {
   RentBookCommand,
   RentBookCommandHandler,
@@ -23,7 +23,7 @@ describe("[Unit] Update BookInfo", () => {
     .withBookItems([
       {
         id: createTestId(TableNameEnum.BookItem, 0),
-        status: BookItemStatusEnum.Available,
+        status: BookItemStatus.Available,
         bookId: createTestId(TableNameEnum.BookInfo, 0),
       },
     ])
@@ -75,7 +75,7 @@ describe("[Unit] Update BookInfo", () => {
           .withBookItems([
             {
               id: createTestId(TableNameEnum.BookItem, 0),
-              status: BookItemStatusEnum.Rented,
+              status: BookItemStatus.Rented,
               bookId: createTestId(TableNameEnum.BookInfo, 0),
             },
           ])

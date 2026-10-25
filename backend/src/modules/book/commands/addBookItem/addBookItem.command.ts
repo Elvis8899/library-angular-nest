@@ -1,8 +1,8 @@
+import { BookItemRequest } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { BookItem } from "@modules/book/domain/bookItem.entity";
 import { bookItemCreated } from "@modules/book/domain/events/bookItemCreated.event";
-import { CreateBookItemDto } from "@modules/book/dtos/bookInfo.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RE, RTE } from "@shared/utils/application/monads";
@@ -12,7 +12,7 @@ import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service
 import { UUID } from "@shared/uuid/uuid";
 
 export class AddBookItem implements ICommand {
-  constructor(public readonly props: CreateBookItemDto) {}
+  constructor(public readonly props: BookItemRequest) {}
 }
 
 @CommandHandler(AddBookItem)

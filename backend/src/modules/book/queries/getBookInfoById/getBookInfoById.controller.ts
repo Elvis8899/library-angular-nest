@@ -1,5 +1,5 @@
+import { BookInfo, Sent, contractRef } from "@library/contracts";
 import { AuthGuard } from "@modules/auth/guards/auth.guard";
-import { BookInfoDto } from "@modules/book/dtos/bookInfo.dto";
 import { GetBookInfoByIdQuery } from "@modules/book/queries/getBookInfoById/getBookInfoById.query";
 import { Controller, Get, HttpStatus, Param, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
@@ -26,11 +26,15 @@ export class GetBookInfoByIdController {
   @ApiNotFoundResponse({ description: "Livro não encontrado." })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: BookInfoDto,
+    schema: contractRef(BookInfo),
   })
-  async paginatedBookInfos(@Param("id") id: string): Promise<BookInfoDto> {
+  async paginatedBookInfos(
+    @Param("id") id: string,
+  ): Promise<Sent<typeof BookInfo>> {
     return this.queryBus
-      .execute<GetBookInfoByIdQuery, BookInfoDto>(new GetBookInfoByIdQuery(id))
+      .execute<GetBookInfoByIdQuery, Sent<typeof BookInfo>>(
+        new GetBookInfoByIdQuery(id),
+      )
       .then((result) => result);
   }
 }
