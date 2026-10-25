@@ -49,6 +49,8 @@ On each start, the API container installs dependencies, applies migrations and s
 | `/pgadmin4/` | pgAdmin |
 | `/grafana/`, `/prometheus/` | Metrics |
 
+Grafana (`admin`/`admin`) opens with the Prometheus data source and two dashboards in `.docker/grafana/dashboards/`: **Library API** (requests, latency and errors by route, use cases by outcome, memory and event loop) and **Library server** (the site's probe and certificate, disk, memory, CPU, the database). The alert rules (API, site or database down, certificate expiring, disk or memory running out, 5xx errors) are under Alerting; they aren't sent anywhere yet. Prometheus scrapes the API's metrics server on `app:9464` (`METRICS_PORT`), which nginx doesn't proxy.
+
 ### Option B: run the backend on the host
 
 ```bash
@@ -101,7 +103,7 @@ The backend suites run in parallel: before they start, each test worker gets its
 ## CI and deployment
 
 - **GitHub Actions** (`.github/workflows/node.js.yml`) runs on every push and pull request to `main`. It builds the backend and runs its full test suite against PostgreSQL, lints (ESLint and Stylelint), tests and builds the frontend, then publishes the coverage badges above for both apps to the `badges` branch.
-- **Deployment** is manual, to one Linux server with Docker (a VPS such as an AWS Lightsail instance; 2 GB of RAM or more, since the images are built there). The stack in `.docker/docker-compose.yml` runs the API, PostgreSQL, pgAdmin, certbot and nginx, which serves the frontend build over HTTPS and proxies `/v1`, `/swagger` and `/pgadmin4` to the rest. Only ports 80 and 443 need to be open.
+- **Deployment** is manual, to one Linux server with Docker (a VPS such as an AWS Lightsail instance; 2 GB of RAM or more, since the images are built there). The stack in `.docker/docker-compose.yml` runs the API, PostgreSQL, pgAdmin, Prometheus, Grafana, certbot and nginx, which serves the frontend build over HTTPS and proxies `/v1`, `/swagger`, `/pgadmin4` and `/grafana` to the rest. Grafana (user `admin`, `.docker/.env`'s `GRAFANA_PASSWORD`; a server set up before it needs that added, `openssl rand -hex 16`) has the same dashboards and alert rules as the dev stack; Prometheus keeps 30 days (2 GB at most) and isn't reachable from outside. It probes the site through its public address, so it notices DNS, certificate and nginx problems, but not the whole server being down: that needs a monitor outside it. Only ports 80 and 443 need to be open.
 
 ### Deploying
 
@@ -125,7 +127,7 @@ To have CI deploy every push to `main` once its tests pass, install the deploy h
 
 ```
 Makefile                   serverSetup, dockerDev, dockerProd, dockerMigrate, dockerCertificate
-.docker/                   compose files (dev and production), the production settings (.env.example), serverSetup.sh, nginx, Prometheus, pgAdmin
+.docker/                   compose files (dev and production), the production settings (.env.example), serverSetup.sh, the deploy hook, nginx, Prometheus, Grafana, pgAdmin
 backend/
   src/modules/<feature>/   commands, queries, domain, database; core: shared, auth, user; example: book, rental
   prisma/schema/           the Prisma schema, one file per module

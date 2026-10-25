@@ -1,6 +1,6 @@
 COMPOSE_PROD = sudo docker compose --file .docker/docker-compose.yml
 # The production stack, (re)built from the checked-out code
-PROD_UP = $(COMPOSE_PROD) up pgadmin postgres certbot nginx --build -d --quiet-pull
+PROD_UP = $(COMPOSE_PROD) up pgadmin postgres certbot prometheus grafana nginx --build -d --quiet-pull
 # The commit dockerDeploy deploys; CI passes the one it tested
 REF ?= origin/main
 

@@ -49,6 +49,7 @@ owner="${SUDO_USER:-root}"
 if [ ! -f .docker/.env ]; then
   sed -e "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -hex 32)|" \
     -e "s|^PGADMIN_PASSWORD=.*|PGADMIN_PASSWORD=$(openssl rand -hex 16)|" \
+    -e "s|^GRAFANA_PASSWORD=.*|GRAFANA_PASSWORD=$(openssl rand -hex 16)|" \
     -e "s|^DEPLOY_TOKEN=.*|DEPLOY_TOKEN=$(openssl rand -hex 32)|" \
     .docker/.env.example > .docker/.env
   chmod 600 .docker/.env
@@ -70,7 +71,7 @@ cat <<'DONE'
 
 Server ready. Next:
   1. Set DOMAIN, CERTBOT_EMAIL and PGADMIN_EMAIL in .docker/.env
-     (pgAdmin's generated password is there too)
+     (pgAdmin's and Grafana's generated passwords are there too)
   2. Point the domain's DNS at this server, and open ports 80 and 443
      (Lightsail: the instance's Networking tab)
   3. make dockerCertificate && make dockerMigrate && make dockerProd

@@ -7,6 +7,7 @@ import { ConfigModule } from "@nestjs/config";
 import { CqrsModule } from "@nestjs/cqrs";
 import { ClockModule } from "@shared/clock/clock.module";
 import { LoggerModule } from "@shared/logger/logger.module";
+import { MetricsModule } from "@shared/metrics/metrics.module";
 import { PrismaModule } from "@shared/prisma/prisma.module";
 import { UseCaseModule } from "@shared/utils/application/useCase.module";
 import { AppController } from "@src/app.controller";
@@ -19,6 +20,7 @@ const appModules: NestModuleImport[] = [
   LoggerModule,
   UseCaseModule,
   ClockModule,
+  MetricsModule,
   ConfigModule.forRoot({
     isGlobal: true,
   }),

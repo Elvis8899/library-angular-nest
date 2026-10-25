@@ -7,6 +7,7 @@ import {
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from "@nestjs/swagger";
+import { Metrics } from "@shared/metrics/metrics";
 import { FPF } from "@shared/utils/application/monads";
 import { envConfig } from "@shared/utils/config/environment.config";
 import { DomainErrorFilter } from "@shared/utils/http/domainError.filter";
@@ -35,6 +36,17 @@ export const configureApp = async (
       FPF.unsafeCoerce(req);
     request.user = request.user || {};
     next();
+  });
+  // Every answered request, by its route's pattern, for the metrics
+  const metrics = app.get(Metrics);
+  fastifyInstance.addHook("onResponse", (request, reply, done) => {
+    metrics.observeRequest(
+      request.method,
+      request.routeOptions.url,
+      reply.statusCode,
+      reply.elapsedTime / 1000,
+    );
+    done();
   });
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new DomainErrorFilter(app.getHttpAdapter()));

@@ -1,0 +1,43 @@
+# The production stack's (docker-compose.yml); the dev stack's is
+# prometheus.yml. __DOMAIN__ is replaced with DOMAIN when the container
+# starts
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Under --web.route-prefix's /prometheus
+  - job_name: prometheus
+    metrics_path: /prometheus/metrics
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # The API's metrics server (METRICS_PORT), on the Docker network only
+  - job_name: api
+    static_configs:
+      - targets: ["app:9464"]
+
+  - job_name: node
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+
+  # The site as a user reaches it (DNS, the certificate, nginx, the API),
+  # probed by the blackbox exporter every minute
+  - job_name: site
+    scrape_interval: 1m
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets: ["https://__DOMAIN__/check/status"]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115

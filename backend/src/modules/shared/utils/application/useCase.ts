@@ -1,8 +1,9 @@
 import { Injectable, Scope } from "@nestjs/common";
 import { DomainEvent } from "@shared/domainEventPublisher/domainEvent";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import { Metrics, outcomeOf } from "@shared/metrics/metrics";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { FPF, RTE } from "@shared/utils/application/monads";
+import { E, FPF, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
 import { PinoLogger } from "nestjs-pino";
 
@@ -14,14 +15,16 @@ export type UseCaseEnv = {
 
 /**
  * Runs a command or query handler's pipeline: logs the request under the
- * handler's name and turns the task into the Promise Nest expects.
- * Transient, so each handler gets its own logger and context.
+ * handler's name and turns the task into the Promise Nest expects. Each run
+ * is timed, with its outcome, for the metrics. Transient, so each handler
+ * gets its own logger and context.
  */
 @Injectable({ scope: Scope.TRANSIENT })
 export class UseCase {
   constructor(
     private readonly logger: PinoLogger,
     private readonly events: DomainEventPublisher,
+    private readonly metrics: Metrics,
   ) {}
 
   /**
@@ -36,7 +39,13 @@ export class UseCase {
     this.logger.setContext(name);
     if (input === undefined) this.logger.info(`${name} received`);
     else this.logger.info(input, `${name} received`);
-    return executeTask(task({ logger: this.logger, events: this.events }));
+    const end = this.metrics.startUseCase(name);
+    const run = task({ logger: this.logger, events: this.events });
+    return executeTask(async () => {
+      const result = await run();
+      end(E.isRight(result) ? "ok" : outcomeOf(result.left));
+      return result;
+    });
   }
 }
 

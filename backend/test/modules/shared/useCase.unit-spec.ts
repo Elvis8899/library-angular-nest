@@ -1,12 +1,15 @@
 import { userCreated } from "@modules/user/domain/events/userCreated.event";
 import { userDeleted } from "@modules/user/domain/events/userDeleted.event";
+import { userNotFoundException } from "@modules/user/domain/user.errors";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import { Metrics } from "@shared/metrics/metrics";
 import { E, FPF, O, RTE, TE } from "@shared/utils/application/monads";
 import {
   ensureAbsentRTE,
   findOrFailRTE,
 } from "@shared/utils/application/perform";
 import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import { useCaseRuns } from "@test/util/metrics";
 import { PinoLogger } from "nestjs-pino";
 
 const fakeLogger = {
@@ -29,8 +32,10 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+const metrics = new Metrics();
+
 describe("[Unit] UseCase", () => {
-  const useCase = new UseCase(logger, events);
+  const useCase = new UseCase(logger, events, metrics);
 
   it("Should log the request under the handler's name and resolve", async () => {
     await expect(
@@ -56,6 +61,25 @@ describe("[Unit] UseCase", () => {
     await expect(
       useCase.run("CreateUser", {}, RTE.left(conflict())),
     ).rejects.toThrow("conflict");
+  });
+
+  it("Should time each run with its outcome: ok, the domain error's kind or error", async () => {
+    const before = await useCaseRuns(metrics, "RenameThing");
+
+    await useCase.run("RenameThing", {}, RTE.right(1));
+    await expect(
+      useCase.run("RenameThing", {}, RTE.left(userNotFoundException())),
+    ).rejects.toThrow();
+    await expect(
+      useCase.run("RenameThing", {}, RTE.left(conflict())),
+    ).rejects.toThrow();
+
+    expect(before).toEqual({});
+    expect(await useCaseRuns(metrics, "RenameThing")).toEqual({
+      ok: 1,
+      notFound: 1,
+      error: 1,
+    });
   });
 
   it("Should give the pipeline the event publisher", async () => {

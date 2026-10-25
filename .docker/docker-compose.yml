@@ -106,6 +106,93 @@ services:
     networks:
       - "nginx_network"
 
+  # Scrapes the API's metrics server (app:9464) on the Docker network. Not
+  # published: only Grafana reads it
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    restart: always
+    volumes:
+      - ./prometheus/prometheus.prod.yml:/etc/prometheus/prometheus.prod.yml:ro
+      - library-prometheus:/prometheus
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .docker/.env}
+    # Its config can't read variables, so the site's probe gets DOMAIN from
+    # sed. --web.route-prefix is the path the dev stack serves it under, so
+    # both share Grafana's data source
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        sed "s/__DOMAIN__/$$DOMAIN/g" /etc/prometheus/prometheus.prod.yml > /prometheus/prometheus.yml &&
+        exec /bin/prometheus --config.file=/prometheus/prometheus.yml
+        --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=30d
+        --storage.tsdb.retention.size=2GB --web.route-prefix=/prometheus
+    networks:
+      - "nginx_network"
+    depends_on:
+      - node-exporter
+      - postgres-exporter
+      - blackbox-exporter
+
+  # The server's disk, memory, CPU and network, read from the host
+  node-exporter:
+    image: prom/node-exporter:v1.12.1
+    restart: always
+    command: ["--path.rootfs=/host"]
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+    networks:
+      - "nginx_network"
+
+  # The database's connections, transactions, size and locks
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.20.1
+    restart: always
+    environment:
+      DATA_SOURCE_URI: postgres:5432/${POSTGRES_DB}?sslmode=disable
+      DATA_SOURCE_USER: ${POSTGRES_USER}
+      DATA_SOURCE_PASS: ${POSTGRES_PASSWORD}
+    networks:
+      - "nginx_network"
+    depends_on:
+      - postgres
+
+  # Probes https://<DOMAIN>/check/status the way users reach it (DNS, the
+  # certificate, nginx, the API), for the "site" job
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.29.0
+    restart: always
+    networks:
+      - "nginx_network"
+
+  # At https://<DOMAIN>/grafana/, with the Prometheus data source and the
+  # dashboards in grafana/ (the same as the dev stack's)
+  grafana:
+    image: grafana/grafana:13.2.3
+    restart: always
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - library-grafana:/var/lib/grafana
+    environment:
+      GF_SERVER_ROOT_URL: https://${DOMAIN}/grafana/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      # Read only when its volume is first created; later, change it in
+      # Grafana (or `grafana cli admin reset-admin-password`)
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?Set GRAFANA_PASSWORD in .docker/.env}
+      GF_SECURITY_COOKIE_SECURE: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+    # Reachable only through nginx (/grafana/), like pgAdmin
+    ports:
+      - "172.18.0.1:3002:3000"
+    networks:
+      - "nginx_network"
+    depends_on:
+      - prometheus
+
   migrate-deploy:
     build:
       context: ..
@@ -130,5 +217,7 @@ networks:
 
 volumes:
   library-postgres:
+  library-prometheus:
+  library-grafana:
   letsencrypt:
   certbot-webroot:
