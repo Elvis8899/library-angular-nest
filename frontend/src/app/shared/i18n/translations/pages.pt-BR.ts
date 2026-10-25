@@ -2,6 +2,24 @@
 // login, the layout and the API's errors use pt-BR.ts, in the bundle. No
 // imports, so the template check (translationKeys.spec.ts) can read it too.
 export const ptBRPages = {
+  audit: {
+    title: "Auditoria",
+    help: "Quem alterou o quê: uma linha por operação que deu certo, da mais recente. A operação é o nome técnico do que foi feito; o detalhe mostra o que ela recebeu (nunca senhas).",
+    person: "Pessoa",
+    anyone: "Qualquer uma",
+    noAccount: "Sem conta",
+    useCase: "Operação",
+    useCaseExample: "ex: User, Login",
+    recordId: "Registro",
+    from: "De",
+    to: "Até",
+    search: "Filtrar",
+    clear: "Limpar",
+    periodInverted: "O início do período não pode ser depois do fim.",
+    when: "Quando",
+    input: "Detalhe",
+    showInput: "Ver",
+  },
   home: {
     welcome: "Olá, {{name}}.",
   },

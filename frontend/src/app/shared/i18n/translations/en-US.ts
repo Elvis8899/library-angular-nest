@@ -8,6 +8,7 @@ export const enUS: CoreTranslations = {
   },
   nav: {
     users: "Users",
+    audit: "Audit",
     // Lending example
     books: "Books",
     rentals: "Rentals",

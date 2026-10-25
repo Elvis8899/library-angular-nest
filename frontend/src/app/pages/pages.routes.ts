@@ -50,6 +50,12 @@ export const routes: Routes = [
           import("./users/users.routes").then((m) => m.routes),
         data: { roles: [ROLE.ADMIN] },
       },
+      {
+        path: "audit",
+        loadChildren: () =>
+          import("./audit/audit.routes").then((m) => m.routes),
+        data: { roles: [ROLE.ADMIN] },
+      },
       // Lending example
       {
         path: "books",

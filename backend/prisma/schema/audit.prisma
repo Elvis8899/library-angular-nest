@@ -1,0 +1,20 @@
+// Who changed what: one per write command that succeeded, written by
+// UseCase after it (a failed write of the entry is logged, not answered).
+// Kept for good, never edited
+model AuditEntry {
+  id         String   @id
+  // The account that asked; null without one (logging in, a script)
+  userId     String?
+  // The command's handler name, e.g. "UpdateUser"
+  useCase    String
+  // The record the command named, or the one it created
+  recordId   String?
+  // What the handler logs of the command (never passwords or tokens); a
+  // too large one is kept as { truncated: true, length }
+  input      Json?
+  recordedAt DateTime @default(now())
+
+  @@index([recordedAt])
+  @@index([userId, recordedAt])
+  @@index([recordId, recordedAt])
+}

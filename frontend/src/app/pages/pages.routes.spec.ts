@@ -87,7 +87,7 @@ describe("Routes", () => {
       expect(await navigate("/home")).toBe("/home");
     });
 
-    it.each(["/users/list", "/users/add", "/unknown"])(
+    it.each(["/users/list", "/users/add", "/audit", "/unknown"])(
       "Should send %s to the client's default page",
       async (url) => {
         const defaultPage = await navigate(defaultRolePage(ROLE.CLIENT));
@@ -127,7 +127,7 @@ describe("Routes", () => {
       expect(await navigate("/login")).toBe("/users/list");
     });
 
-    it.each(["/users/list", "/users/add", "/home"])(
+    it.each(["/users/list", "/users/add", "/audit", "/home"])(
       "Should open %s",
       async (url) => {
         expect(await navigate(url)).toBe(url);

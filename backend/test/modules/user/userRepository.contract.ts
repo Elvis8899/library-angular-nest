@@ -47,6 +47,20 @@ export const userRepositoryContract = (kind: RepositoryKind) =>
       expect([page.count, page.data.length, all.length]).toEqual([1, 1, 1]);
     });
 
+    it("Should find the users with the given ids, leaving out missing ones", async () => {
+      await saveUser(admin(1));
+      await saveUser(admin(2));
+
+      const found = await executeTask(
+        ctx.users.findByIds([
+          admin(2).id,
+          createTestId(TableNameEnum.User, 99),
+        ]),
+      );
+
+      expect(found.map(({ id }) => id)).toEqual([admin(2).id]);
+    });
+
     it("Should find a client by CPF, with or without the mask", async () => {
       const client = new UserBuilder().withCPF("52998224725").build();
       await saveUser(client);

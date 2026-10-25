@@ -1,6 +1,10 @@
 import { userCreated } from "@modules/user/domain/events/userCreated.event";
 import { userDeleted } from "@modules/user/domain/events/userDeleted.event";
 import { userNotFoundException } from "@modules/user/domain/user.errors";
+import { CommandHandler, ICommand, IQuery, QueryHandler } from "@nestjs/cqrs";
+import { AUDIT_INPUT_MAX, auditEntryOf } from "@shared/audit/auditEntry";
+import { AuditLog } from "@shared/audit/auditLog";
+import { FakeAuditLog } from "@shared/audit/fakeAuditLog";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { Metrics } from "@shared/metrics/metrics";
 import { E, FPF, O, RTE, TE } from "@shared/utils/application/monads";
@@ -32,10 +36,21 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+const auditLog = new FakeAuditLog();
 const metrics = new Metrics();
 
+class SaveThing implements ICommand {}
+
+@CommandHandler(SaveThing)
+class SaveThingHandler {}
+
+class Things implements IQuery {}
+
+@QueryHandler(Things)
+class ThingsHandler {}
+
 describe("[Unit] UseCase", () => {
-  const useCase = new UseCase(logger, events, metrics);
+  const useCase = new UseCase(logger, events, auditLog, metrics);
 
   it("Should log the request under the handler's name and resolve", async () => {
     await expect(
@@ -111,6 +126,109 @@ describe("[Unit] UseCase", () => {
       [userDeleted(user)],
       [userCreated(user)],
     ]);
+  });
+});
+
+describe("[Unit] UseCase's audit", () => {
+  const command = new UseCase(
+    logger,
+    events,
+    auditLog,
+    metrics,
+    new SaveThingHandler(),
+  );
+  const query = new UseCase(
+    logger,
+    events,
+    auditLog,
+    metrics,
+    new ThingsHandler(),
+  );
+
+  beforeEach(() => {
+    auditLog.entries.length = 0;
+  });
+
+  it("Should record a command that succeeded, with what it named", async () => {
+    const input = { id: "u1", props: { name: "Ana" } };
+
+    await command.run("UpdateUser", input, RTE.right(undefined));
+
+    expect(auditLog.entries).toHaveLength(1);
+    expect(auditLog.entries[0]?.id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(auditLog.entries).toMatchObject([
+      {
+        userId: null,
+        useCase: "UpdateUser",
+        recordId: "u1",
+        input,
+        recordedAt: auditLog.now,
+      },
+    ]);
+  });
+
+  it("Should not record a query, a refused command or one built outside a handler", async () => {
+    await query.run("Things", { id: "u1" }, RTE.right([]));
+    await expect(
+      command.run("UpdateUser", {}, RTE.left(conflict())),
+    ).rejects.toThrow("conflict");
+    await new UseCase(logger, events, auditLog, metrics).run(
+      "UpdateUser",
+      {},
+      RTE.right(1),
+    );
+
+    expect(auditLog.entries).toEqual([]);
+  });
+
+  it("Should answer though the entry couldn't be written, and log it", async () => {
+    const failing = new UseCase(
+      logger,
+      events,
+      FPF.unsafeCoerce<object, AuditLog>({
+        record: () => TE.left(new Error("down")),
+      }),
+      metrics,
+      new SaveThingHandler(),
+    );
+
+    await expect(failing.run("SaveThing", {}, RTE.right(1))).resolves.toBe(1);
+    expect(fakeLogger.error).toHaveBeenCalledWith(
+      { err: new Error("down") },
+      "SaveThing not audited",
+    );
+  });
+});
+
+describe("[Unit] auditEntryOf", () => {
+  it("Should take the record from a lone id, or from what was created", () => {
+    expect(auditEntryOf("DeleteUser", "u1", undefined, "u9")).toEqual({
+      userId: "u9",
+      useCase: "DeleteUser",
+      recordId: "u1",
+      input: "u1",
+    });
+    expect(
+      auditEntryOf("CreateUser", { name: "Ana" }, { id: "u2" }, null),
+    ).toMatchObject({ recordId: "u2" });
+    expect(auditEntryOf("Refresh", undefined, null, null)).toMatchObject({
+      recordId: null,
+      input: null,
+    });
+  });
+
+  it("Should keep the input as plain JSON, cut when too large or not JSON", () => {
+    const at = new Date("2026-10-21T12:00:00Z");
+
+    expect(auditEntryOf("X", { at }, 1, null).input).toEqual({
+      at: "2026-10-21T12:00:00.000Z",
+    });
+    expect(
+      auditEntryOf("X", { rows: "x".repeat(AUDIT_INPUT_MAX) }, 1, null).input,
+    ).toEqual({ truncated: true, length: AUDIT_INPUT_MAX + 11 });
+    expect(auditEntryOf("X", { big: BigInt(1) }, 1, null).input).toEqual({
+      truncated: true,
+    });
   });
 });
 

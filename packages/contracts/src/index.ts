@@ -1,3 +1,4 @@
+export * from "./audit/schemas.js";
 export * from "./auth/schemas.js";
 export * from "./book/schemas.js";
 export * from "./book/values.js";

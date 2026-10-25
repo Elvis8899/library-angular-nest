@@ -47,6 +47,13 @@ export class FakeUserRepository
   ): TE.TaskEither<Error, Paginated<User>> =>
     this.pageOf(() => true, newestFirst)(params);
 
+  findByIds = (ids: readonly string[]): TE.TaskEither<Error, User[]> =>
+    TE.fromEither(
+      validateRows(this.validate)(
+        this.list((user) => ids.includes(user.id)).sort(newestFirst.compare),
+      ),
+    );
+
   findByCPF = (cpf: string): TE.TaskEither<Error, O.Option<User>> =>
     this.findOne(
       (user) =>

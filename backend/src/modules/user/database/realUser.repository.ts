@@ -32,6 +32,7 @@ export class RealUserRepository implements UserRepository {
 
   findAll = this.reads.findAll;
   findById = this.reads.findById;
+  findByIds = this.reads.findByIds;
   findAllPaginated = (
     params: PaginatedQueryParams,
   ): TE.TaskEither<Error, Paginated<User>> => this.reads.findPage(params);

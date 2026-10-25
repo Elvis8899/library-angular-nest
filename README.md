@@ -145,7 +145,7 @@ frontend/
 
 ## Starting a new project
 
-Copy the repository, then rename it and remove the lending example. `shared`, `auth` and `user` are the core every project keeps; `book` (plain CRUD) and `rental` (writes that must be atomic) are the example, worth reading before you remove them.
+Copy the repository, then rename it and remove the lending example. `shared`, `auth`, `user` and `audit` are the core every project keeps; `book` (plain CRUD) and `rental` (writes that must be atomic) are the example, worth reading before you remove them.
 
 ### Rename
 

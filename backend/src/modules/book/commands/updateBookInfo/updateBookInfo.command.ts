@@ -34,7 +34,8 @@ export class UpdateBookInfoHandler implements ICommandHandler<
   execute(command: UpdateBookInfo): Promise<void> {
     return this.useCase.run(
       "UpdateBookInfo",
-      command.props,
+      // The id names the record in the audit
+      { id: command.id, ...command.props },
       FPF.pipe(
         //Data validation
         RE.of(command.props),

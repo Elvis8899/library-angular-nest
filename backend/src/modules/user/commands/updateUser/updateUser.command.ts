@@ -48,7 +48,8 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
     const { password: _, ...logged } = command.props;
     return this.useCase.run(
       "UpdateUser",
-      logged,
+      // The id names the record in the audit
+      { id: command.id, ...logged },
       FPF.pipe(
         //Data validation
         inputsRTE({

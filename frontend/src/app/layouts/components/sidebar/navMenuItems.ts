@@ -8,6 +8,12 @@ export const sidebarMenuItems: NavMenuItem[] = [
     icon: "group",
     roles: [ROLE.ADMIN],
   },
+  {
+    title: "nav.audit",
+    route: "/audit",
+    icon: "history",
+    roles: [ROLE.ADMIN],
+  },
   // Lending example
   {
     title: "nav.books",

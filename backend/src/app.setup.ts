@@ -7,6 +7,7 @@ import {
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from "@nestjs/swagger";
+import { RequesterInterceptor } from "@shared/audit/requester";
 import { Metrics } from "@shared/metrics/metrics";
 import { FPF } from "@shared/utils/application/monads";
 import { envConfig } from "@shared/utils/config/environment.config";
@@ -50,6 +51,8 @@ export const configureApp = async (
   });
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new DomainErrorFilter(app.getHttpAdapter()));
+  // Who sent each request, for the audit
+  app.useGlobalInterceptors(new RequesterInterceptor());
 
   const options = new DocumentBuilder()
     .setTitle(appInfo.title)

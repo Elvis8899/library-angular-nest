@@ -2,6 +2,24 @@ import { PagesTranslations } from "@app/shared/i18n/translations/translationKey"
 
 // Typed as pt-BR's shape, so a missing or extra key fails the build
 export const enUSPages: PagesTranslations = {
+  audit: {
+    title: "Audit",
+    help: "Who changed what: one row per operation that succeeded, newest first. The operation is the technical name of what was done; the detail shows what it received (never passwords).",
+    person: "Person",
+    anyone: "Anyone",
+    noAccount: "No account",
+    useCase: "Operation",
+    useCaseExample: "e.g. User, Login",
+    recordId: "Record",
+    from: "From",
+    to: "To",
+    search: "Filter",
+    clear: "Clear",
+    periodInverted: "The period can't start after it ends.",
+    when: "When",
+    input: "Detail",
+    showInput: "Show",
+  },
   home: {
     welcome: "Hello, {{name}}.",
   },
