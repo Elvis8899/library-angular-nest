@@ -1,4 +1,6 @@
-COMPOSE_PROD = sudo docker compose --file .docker/docker-compose.yml
+# Images build in a builder of their own (dockerBuilder), with a low CPU weight
+BUILDER = library-builder
+COMPOSE_PROD = sudo env BUILDX_BUILDER=$(BUILDER) docker compose --file .docker/docker-compose.yml
 # The production stack, (re)built from the checked-out code
 PROD_UP = $(COMPOSE_PROD) up pgadmin postgres certbot prometheus grafana nginx --build -d --quiet-pull
 # The commit dockerDeploy deploys; CI passes the one it tested
@@ -13,6 +15,7 @@ help:
 	@echo '  dockerMigrate'
 	@echo '  dockerDeploy'
 	@echo '  dockerCertificate'
+	@echo '  dockerBuilder'
 
 # Prepares a fresh Ubuntu server: Docker, swap, network, .env files with secrets
 serverSetup:
@@ -26,21 +29,33 @@ serverHook:
 dockerDev:
 	docker compose --file .docker/docker-compose-dev.yml up --build -d --quiet-pull
 
-dockerProd:
+dockerProd: dockerBuilder
 	git pull && $(PROD_UP)
 
+# The builder the production images build in, made once: a BuildKit container
+# with an eighth of a container's CPU weight (128 to the default 1024), so a
+# build takes the CPU nobody else wants and yields it to the API, Postgres and
+# nginx as soon as they need it. Its cache is its own (pruned after a deploy)
+dockerBuilder:
+	@sudo docker buildx inspect $(BUILDER) >/dev/null 2>&1 || \
+		sudo docker buildx create --name $(BUILDER) --driver docker-container --driver-opt cpu-shares=128
+
 # Applies the migrations and waits for them, failing if one does
-dockerMigrate:
+dockerMigrate: dockerBuilder
 	$(COMPOSE_PROD) run --rm --build migrate-deploy
 
 # The commit the last finished deploy went out with
 DEPLOYED = .docker/.deployed
 
 # Deploys REF: fast-forwards to it (never back), applies its migrations,
-# rebuilds and restarts the stack, then removes the previous build's images so
-# the disk doesn't fill up. CI's deploy job runs it on the server. Nothing
-# happens when REF is the commit the last finished deploy recorded (a failed
-# one records nothing, so it's tried again); FORCE=1 deploys anyway
+# rebuilds and restarts the stack, then removes the previous build's images and
+# the build cache no build used for a week (never what this one used), so the
+# disk doesn't fill up, empties Docker's default builder's cache (the builds
+# used it before; nothing should now) and stops the builder, which holds memory
+# between deploys (the next build starts it, its cache kept). CI's deploy job
+# runs it on the server. Nothing happens when REF is the commit the last
+# finished deploy recorded (a failed one records nothing, so it's tried again);
+# FORCE=1 deploys anyway
 dockerDeploy:
 	git fetch origin
 	@if [ -z "$(FORCE)" ] && [ "$$(git rev-parse '$(REF)^{commit}')" = "$$(cat $(DEPLOYED) 2>/dev/null)" ]; then \
@@ -51,6 +66,9 @@ dockerDeploy:
 		$(MAKE) dockerMigrate; \
 		$(PROD_UP); \
 		sudo docker image prune -f; \
+		sudo docker buildx prune --builder $(BUILDER) --force --filter until=168h; \
+		sudo docker builder prune --builder default --all --force; \
+		sudo docker buildx stop $(BUILDER); \
 		git rev-parse HEAD > $(DEPLOYED); \
 	fi
 

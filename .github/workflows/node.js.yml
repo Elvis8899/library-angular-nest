@@ -225,20 +225,17 @@ jobs:
       - name: ⬆️ Push badges branch
         run: git push origin badges
 
-  # Deploys the tested commit: the server's deploy hook (make serverHook) runs
-  # make dockerDeploy, which does nothing when that commit is already out.
+  # Starts deploying the tested commit and ends once the server has taken it:
+  # the server's deploy hook (make serverHook) runs make dockerDeploy in the
+  # background, one at a time, queueing a newer commit behind the running
+  # one. How it ended is at /hooks/deploy/status and in .docker/deploy.log.
   # Skipped until the repository's DEPLOY_URL variable is set
   deploy:
     needs: [build, frontend]
     if: github.event_name == 'push' && vars.DEPLOY_URL != ''
     runs-on: ubuntu-latest
     environment: production
-    # One deploy at a time: a newer push waits rather than interrupting a build
-    concurrency:
-      group: deploy
-      cancel-in-progress: false
-    # Building on a small instance is slow
-    timeout-minutes: 60
+    timeout-minutes: 5
     permissions: {}
 
     steps:
@@ -247,15 +244,5 @@ jobs:
           URL: ${{ vars.DEPLOY_URL }}
           TOKEN: ${{ secrets.DEPLOY_TOKEN }}
         run: |
-          auth="Authorization: Bearer $TOKEN"
-          curl -fsS -X POST -H "$auth" "$URL/hooks/deploy?ref=$GITHUB_SHA"
+          curl -fsS -X POST -H "Authorization: Bearer $TOKEN" "$URL/hooks/deploy?ref=$GITHUB_SHA"
           echo
-          # Until it's done; nginx restarts during a deploy, so a failed
-          # check is tried again
-          while sleep 15; do
-            status=$(curl -fsS -H "$auth" "$URL/hooks/deploy/status") || continue
-            busy=$(echo "$status" | jq -r '.running or .queued != null')
-            [ "$busy" = "false" ] && break
-          done
-          echo "$status" | jq -r '.log'
-          [ "$(echo "$status" | jq -r '.result')" = "ok" ]

@@ -122,7 +122,7 @@ groups:
             datasourceUid: prometheus
             model:
               refId: A
-              expr: 'up{job=~"node|postgres|storage|site"}'
+              expr: 'up{job=~"node|postgres|storage|site|deploy"}'
               instant: true
           - refId: B
             datasourceUid: __expr__
@@ -165,6 +165,63 @@ groups:
           severity: warning
         annotations:
           summary: "The HTTPS certificate expires in {{ humanize $values.A.Value }} days; certbot should have renewed it 30 days before."
+  - orgId: 1
+    name: deploy
+    folder: Library
+    interval: 1m
+    rules:
+      - uid: deploy-failed
+        title: Deploy failed
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'deploy_last_success{job="deploy"}'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: critical
+        annotations:
+          summary: "The last deploy failed, so the site still runs the commit before it; .docker/deploy.log on the server (or /hooks/deploy/status) has why. The next deploy that succeeds clears it."
+      - uid: deploy-stuck
+        title: Deploy stuck
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: '(time() - deploy_started_timestamp_seconds{job="deploy"}) / 60'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [60] }
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: "A deploy has been running for {{ humanize $values.A.Value }} minutes: the build is likely swapping on the server, or a step hangs; .docker/deploy.log shows where it is."
   - orgId: 1
     name: server
     folder: Library

@@ -17,6 +17,12 @@ scrape_configs:
     static_configs:
       - targets: ["app:9464"]
 
+  # The deploy hook (deployHook.py), a service on the host that listens on
+  # the Docker network's gateway, as nginx reaches it
+  - job_name: deploy
+    static_configs:
+      - targets: ["172.18.0.1:9010"]
+
   - job_name: node
     static_configs:
       - targets: ["node-exporter:9100"]

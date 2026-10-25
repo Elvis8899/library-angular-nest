@@ -12,8 +12,14 @@ doesn't stop it (installed by `make serverHook`). Both routes need
   winning. Answers 202 at once.
 - GET /hooks/deploy/status: whether a deploy is running or queued, how the
   last one ended and the end of the log (.docker/deploy.log).
+
+And for Prometheus, without a token: GET /metrics, the same state as metrics
+(Grafana's "Deploy failed" and "Deploy stuck" alerts). Not under /hooks/, so
+nginx never sends it here: only the Docker network reaches it, like the API's
+metrics port.
 """
 
+import calendar
 import hmac
 import http.server
 import json
@@ -31,6 +37,8 @@ DEPLOYED = REPO / ".docker" / ".deployed"
 # The Docker network's gateway, which nginx reaches and the internet doesn't
 HOST, PORT = os.environ.get("DEPLOY_HOOK_ADDRESS", "172.18.0.1:9010").split(":")
 COMMIT = re.compile(r"[0-9a-f]{40}")
+# The line a deploy ends with in the log
+FINISHED = re.compile(r"^=== (\S+) exit (-?\d+)$")
 # The log keeps about its last 200 kB once it passes 1 MB
 LOG_LIMIT, LOG_KEEP = 1_000_000, 200_000
 
@@ -68,6 +76,52 @@ def log_tail(lines=60):
     if not LOG.exists():
         return ""
     return "\n".join(LOG.read_text(errors="replace").splitlines()[-lines:])
+
+
+def last_finished():
+    """How the last deploy in the log ended, so a restart of the hook (the
+    server rebooting) doesn't forget a failure: (result, finished) or Nones."""
+    if not LOG.exists():
+        return None, None
+    for line in reversed(LOG.read_text(errors="replace").splitlines()):
+        match = FINISHED.match(line)
+        if match:
+            return ("ok" if match[2] == "0" else "failed"), match[1]
+    return None, None
+
+
+def epoch(timestamp):
+    return calendar.timegm(time.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ"))
+
+
+def metrics():
+    """The state in Prometheus' text format; a value not known yet is left out."""
+    with lock:
+        current = dict(state)
+    lines = [
+        "# HELP deploy_running Whether a deploy is running (1) or not (0).",
+        "# TYPE deploy_running gauge",
+        f"deploy_running {int(current['running'])}",
+    ]
+    if current["running"] and current["started"]:
+        lines += [
+            "# HELP deploy_started_timestamp_seconds When the running deploy started.",
+            "# TYPE deploy_started_timestamp_seconds gauge",
+            f"deploy_started_timestamp_seconds {epoch(current['started'])}",
+        ]
+    if current["result"]:
+        lines += [
+            "# HELP deploy_last_success Whether the last finished deploy succeeded (1) or failed (0).",
+            "# TYPE deploy_last_success gauge",
+            f"deploy_last_success {int(current['result'] == 'ok')}",
+        ]
+    if current["finished"]:
+        lines += [
+            "# HELP deploy_last_finished_timestamp_seconds When the last deploy finished.",
+            "# TYPE deploy_last_finished_timestamp_seconds gauge",
+            f"deploy_last_finished_timestamp_seconds {epoch(current['finished'])}",
+        ]
+    return "\n".join(lines) + "\n"
 
 
 def deploy(ref):
@@ -133,7 +187,16 @@ class Hook(http.server.BaseHTTPRequestHandler):
         return self.answer(202, {"started": ref})
 
     def do_GET(self):
-        if urllib.parse.urlparse(self.path).path != "/hooks/deploy/status":
+        path = urllib.parse.urlparse(self.path).path
+        if path == "/metrics":
+            data = metrics().encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; version=0.0.4")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
+        if path != "/hooks/deploy/status":
             return self.answer(404, {"error": "not found"})
         if not self.authorized():
             return self.answer(401, {"error": "unauthorized"})
@@ -148,4 +211,6 @@ class Hook(http.server.BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    state["result"], state["finished"] = last_finished()
+    state["deployed"] = DEPLOYED.read_text().strip() if DEPLOYED.exists() else None
     http.server.ThreadingHTTPServer((HOST, int(PORT)), Hook).serve_forever()

@@ -18,16 +18,18 @@ COPY packages/contracts/package.json packages/contracts/
 RUN node pruneWorkspace.js backend && rm pruneWorkspace.js
 
 # Build the contracts, generate the Prisma client into prisma/generated, then
-# compile it with the app into backend/dist/
+# compile it with the app into backend/dist/ with SWC, which skips the type
+# check: CI's typecheck has run before any deploy, and tsc's build needed
+# more memory than the server could spare from the running stack
 FROM manifests AS builder
-RUN yarn install --frozen-lockfile
+# The build runs at a low CPU weight (make dockerBuilder), so on a busy server a
+# download can wait well past yarn's 30 s timeout: allow 10 minutes
+RUN yarn install --frozen-lockfile --network-timeout 600000
 COPY packages/contracts packages/contracts
 COPY backend backend
 RUN yarn workspace @library/contracts build
 WORKDIR /app/backend
-# Node sizes its heap from the machine's memory, without the swap: on a 2 GB
-# server the TypeScript build ran out of it, so it may grow into the swap
-RUN npx prisma generate && NODE_OPTIONS=--max-old-space-size=2048 yarn build
+RUN npx prisma generate && yarn build:unchecked
 
 # One-shot migration runner (docker-compose service `migrate-deploy`)
 FROM builder AS migrate
@@ -35,7 +37,8 @@ ENTRYPOINT ["yarn", "migrate:deploy"]
 
 # Runtime dependencies only, plus the Prisma CLI
 FROM manifests AS prod-deps
-RUN yarn install --frozen-lockfile --production=true && yarn cache clean
+RUN yarn install --frozen-lockfile --production=true --network-timeout 600000 \
+  && yarn cache clean
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 
 FROM base AS runtime

@@ -60,6 +60,9 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "unchecked": {
+              "tsConfig": "tsconfig.unchecked.json"
             }
           },
           "defaultConfiguration": "production"

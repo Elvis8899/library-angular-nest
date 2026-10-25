@@ -1,0 +1,12 @@
+/* The Docker image's build (yarn build:unchecked): the app's, without the type
+   and template checks, which `yarn build` keeps for CI. */
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "noCheck": true
+  },
+  "angularCompilerOptions": {
+    "strictTemplates": false,
+    "fullTemplateTypeCheck": false
+  }
+}
