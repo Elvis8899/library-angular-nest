@@ -2,7 +2,7 @@ import { Injectable, Scope } from "@nestjs/common";
 import { DomainEvent } from "@shared/domainEventPublisher/domainEvent";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
-import { RTE } from "@shared/utils/application/monads";
+import { FPF, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
 import { PinoLogger } from "nestjs-pino";
 
@@ -42,15 +42,22 @@ export class UseCase {
 
 /**
  * Publishes the event built from the pipeline's value, which it keeps:
- * `RTE.tap(publishRTE(userCreated))`.
+ * `RTE.tap(publishRTE(userCreated))`. A factory may build several (a write
+ * that changes more than one record), published in order.
  */
 export const publishRTE =
-  <A>(toEvent: (data: A) => DomainEvent) =>
+  <A>(toEvent: (data: A) => DomainEvent | readonly DomainEvent[]) =>
   (data: A): RTE.ReaderTaskEither<UseCaseEnv, Error, void> =>
     RTE.asksReaderTaskEither(({ events }) => {
-      const event = toEvent(data);
-      return performRTE(
-        events.publishEvent,
-        `publish ${event.eventKey} event`,
-      )(event);
+      const built = toEvent(data);
+      return FPF.pipe(
+        "eventKey" in built ? [built] : built,
+        RTE.traverseSeqArray((event) =>
+          performRTE(
+            events.publishEvent,
+            `publish ${event.eventKey} event`,
+          )(event),
+        ),
+        RTE.asUnit,
+      );
     });

@@ -5,6 +5,7 @@ import {
   Sent,
 } from "@library/contracts";
 import { LoginCommand } from "@modules/auth/commands/login/login.command";
+import { WrongAuthException } from "@modules/auth/domain/auth.errors";
 import { LoginThrottlerGuard } from "@modules/auth/guards/loginThrottler.guard";
 import {
   Body,
@@ -21,8 +22,8 @@ import {
   ApiOperation,
   ApiTags,
   ApiTooManyRequestsResponse,
-  ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
+import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @Controller("v1/")
 @ApiTags("Login")
@@ -33,6 +34,7 @@ export class LoginController {
   ) {}
 
   @Post("login")
+  @ApiErrors(WrongAuthException)
   @HttpCode(HttpStatus.OK)
   @UseGuards(LoginThrottlerGuard)
   @ApiBody({ schema: contractRef(LoginRequest) })
@@ -41,7 +43,6 @@ export class LoginController {
     description:
       "Authentication a user with email and password credentials and return token",
   })
-  @ApiUnauthorizedResponse({ description: "Forbidden" })
   @ApiTooManyRequestsResponse({
     description: "Muitas tentativas de login para este email.",
   })

@@ -1,11 +1,14 @@
+import { ApiController } from "@modules/auth/decorators/apiController.decorator";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
-import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { AuthenticatedRequest } from "@modules/auth/guards/authenticatedRequest";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { ReturnBookCommand } from "@modules/rental/commands/returnBook/returnBook.command";
+import {
+  BookRentalFinishedException,
+  BookRentalNotFoundException,
+} from "@modules/rental/domain/bookRental.errors";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import {
-  Controller,
   HttpCode,
   HttpStatus,
   Param,
@@ -14,31 +17,23 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiNotFoundResponse,
-  ApiOperation,
-  ApiTags,
-} from "@nestjs/swagger";
+import { ApiCreatedResponse, ApiOperation } from "@nestjs/swagger";
 import { noop } from "@shared/utils/application/noop";
+import { ApiErrors } from "@shared/utils/http/apiErrors";
 
-@Controller("v1/bookRentals")
-@ApiTags("Empréstimos")
-@ApiBearerAuth()
-@UseGuards(AuthGuard)
+@ApiController("Empréstimos")
 export class ReturnBookController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
 
-  @Put("return/:id")
+  @Put("bookRentals/return/:id")
+  @ApiErrors(BookRentalNotFoundException, BookRentalFinishedException)
   @HttpCode(HttpStatus.OK)
   @UseGuards(RolesGuard)
   @Roles(UserRoleEnum.Admin, UserRoleEnum.Client)
   @ApiCreatedResponse({ description: "Empréstimo finalizado com sucesso." })
-  @ApiNotFoundResponse({ description: "Empréstimo não encontrado." })
   @ApiOperation({
     summary: "Retornar Livro",
     description:

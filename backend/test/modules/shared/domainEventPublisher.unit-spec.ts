@@ -6,7 +6,7 @@ import { UnknownException } from "@shared/utils/domain/shared.errors";
 
 let domainEvent: DomainEventPublisher;
 const eventEmitter2Mock = {
-  emit: vi.fn(() => true),
+  emitAsync: vi.fn(() => Promise.resolve([])),
 };
 beforeEach(() => {
   domainEvent = new DomainEventPublisher(FPF.unsafeCoerce(eventEmitter2Mock));
@@ -27,13 +27,13 @@ describe("[Unit] DomainEventPublisher", () => {
         },
       }),
     );
-    expect(eventEmitter2Mock.emit).toHaveBeenCalled();
+    expect(eventEmitter2Mock.emitAsync).toHaveBeenCalled();
   });
 
   it("If emit fails, should get error", async () => {
-    eventEmitter2Mock.emit.mockImplementationOnce(() => {
-      throw new Error();
-    });
+    eventEmitter2Mock.emitAsync.mockImplementationOnce(() =>
+      Promise.reject(new Error()),
+    );
     await expect(
       executeTask(
         domainEvent.publishEvent({

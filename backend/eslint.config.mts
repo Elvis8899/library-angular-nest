@@ -94,7 +94,7 @@ export default defineConfig(
   {
     // Files and folders are named in camelCase; suffixes like .command or
     // .unit-spec are ignored.
-    files: ["src/**/*.ts", "test/**/*.ts", "prisma/**/*.ts"],
+    files: ["src/**/*.ts", "test/**/*.ts", "prisma/**/*.ts", "scripts/**/*.ts"],
     plugins: { "check-file": checkFile },
     rules: {
       "check-file/filename-naming-convention": [
@@ -108,13 +108,14 @@ export default defineConfig(
           "src/**/": "CAMEL_CASE",
           "test/**/": "CAMEL_CASE",
           "prisma/**/": "CAMEL_CASE",
+          "scripts/**/": "CAMEL_CASE",
         },
       ],
     },
   },
   {
-    // The seed is a command-line script: it reports its progress
-    files: ["prisma/seed.ts"],
+    // The seed and the scripts are command-line tools: they report progress
+    files: ["prisma/seed.ts", "scripts/**/*.ts"],
     rules: { "no-console": "off" },
   },
 );

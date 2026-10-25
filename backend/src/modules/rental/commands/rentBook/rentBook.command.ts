@@ -3,6 +3,7 @@ import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.p
 import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
 import {
   BookRental,
+  dueDateOf,
   startRental,
 } from "@modules/rental/domain/bookRental.entity";
 import { bookRentalNotAvailableException } from "@modules/rental/domain/bookRental.errors";
@@ -10,8 +11,9 @@ import { bookRented } from "@modules/rental/domain/events/bookRented.event";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userNotFoundException } from "@modules/user/domain/user.errors";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
-import { Apply, FPF, RE, RTE } from "@shared/utils/application/monads";
+import { Clock } from "@shared/clock/clock";
+import { fromInputRE, inputsRTE } from "@shared/utils/application/fromInput";
+import { FPF, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
 import { publishRTE, UseCase } from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
@@ -28,6 +30,7 @@ export class RentBookCommandHandler implements ICommandHandler<
 > {
   constructor(
     private readonly useCase: UseCase,
+    private readonly clock: Clock,
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly bookRentalRepository: BookRentalRepository,
     private readonly bookInfoRepository: BookInfoRepository,
@@ -40,16 +43,16 @@ export class RentBookCommandHandler implements ICommandHandler<
       command.props,
       FPF.pipe(
         //Data validation
-        Apply.sequenceS(RE.Applicative)({
-          bookItemId: fromInputRE(UUID, "bookItemId")(command.props.bookItemId),
-          userId: fromInputRE(UUID, "userId")(command.props.userId),
-          id: fromInputRE(
-            UUID,
-            "uuid",
-          )(this.uuidGeneratorService.generateUUID()),
+        inputsRTE({
+          bookItemId: [UUID, "bookItemId", command.props.bookItemId],
+          userId: [UUID, "userId", command.props.userId],
+          id: [UUID, "uuid", this.uuidGeneratorService.generateUUID()],
         }),
-        RE.chain(fromInputRE(BookRental, "BookRental")),
-        RTE.fromReaderEither,
+        RTE.map((inputs) => ({
+          ...inputs,
+          overdueDate: dueDateOf(this.clock.now()),
+        })),
+        RTE.chainReaderEitherKW(fromInputRE(BookRental, "BookRental")),
 
         //Validate User exists
         RTE.tap((rental) =>

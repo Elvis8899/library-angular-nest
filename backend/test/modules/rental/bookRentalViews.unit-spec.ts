@@ -1,11 +1,11 @@
 import { BookRental } from "@library/contracts";
-import { BookRentalDetails } from "@modules/rental/domain/bookRental.entity";
+import { rentalDetailsOf } from "@modules/rental/domain/bookRental.entity";
 import { toBookRentalResponse } from "@modules/rental/domain/bookRentalViews";
 import { BookRentalBuilder } from "@test/modules/rental/bookRentalBuilder";
 
 describe("[Unit] toBookRentalResponse", () => {
   const details = (deliveryDate?: Date) =>
-    BookRentalDetails.parse({
+    rentalDetailsOf(new Date("2026-10-21T12:00:00Z"))({
       ...new BookRentalBuilder()
         .withUser({ name: "Ana" })
         .withBookItem({ book: { name: "Dom Casmurro", price: 30 } })

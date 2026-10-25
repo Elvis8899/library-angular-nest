@@ -13,8 +13,9 @@ import {
   userNotFoundException,
 } from "@modules/user/domain/user.errors";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
-import { Apply, FPF, O, RE, RTE, T } from "@shared/utils/application/monads";
+import { Clock } from "@shared/clock/clock";
+import { inputsRTE } from "@shared/utils/application/fromInput";
+import { FPF, O, RTE, T } from "@shared/utils/application/monads";
 import {
   ensureAbsentRTE,
   findOrFailRTE,
@@ -34,6 +35,7 @@ export class UpdateUser implements ICommand {
 export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
   constructor(
     private readonly useCase: UseCase,
+    private readonly clock: Clock,
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
   ) {}
@@ -45,11 +47,10 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
       logged,
       FPF.pipe(
         //Data validation
-        Apply.sequenceS(RE.Applicative)({
-          id: fromInputRE(UUID, "uuid")(command.id),
-          changes: fromInputRE(UserChangesInput, "user")(command.props),
+        inputsRTE({
+          id: [UUID, "uuid", command.id],
+          changes: [UserChangesInput, "user", command.props],
         }),
-        RTE.fromReaderEither,
 
         //Validate User exists
         RTE.bind("before", ({ id }) =>
@@ -90,7 +91,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
           ),
         ),
         RTE.let("after", ({ before, changes, password }) =>
-          changeUserDetails(changes, password, new Date())(before),
+          changeUserDetails(changes, password, this.clock.now())(before),
         ),
 
         //Store entity

@@ -11,7 +11,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "NODE_ENV=production node dist/src/main.js",
-    "lint": "eslint \"{src,apps,libs,test,prisma}/**/*.ts\"",
+    "lint": "eslint \"{src,apps,libs,test,prisma,scripts}/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "test:watch": "env-cmd -f .env.test vitest",
     "test:debug": "env-cmd -f .env.test vitest --inspect-brk --no-file-parallelism",
@@ -26,6 +26,7 @@
     "migrate:init": "prisma migrate dev --name init",
     "migrate:reset": "prisma migrate reset",
     "migrate:deploy": "prisma migrate deploy",
+    "scaffold": "ts-node -r tsconfig-paths/register --transpile-only scripts/scaffold/cli.ts",
     "seed": "prisma db seed",
     "docker:dev": "docker compose --file ../.docker/docker-compose-dev.yml up --build -d",
     "generate": "prisma generate"

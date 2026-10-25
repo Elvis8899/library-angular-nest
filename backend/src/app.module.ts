@@ -5,6 +5,7 @@ import { UserModule } from "@modules/user/user.module";
 import { DynamicModule, ForwardReference, Module, Type } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { CqrsModule } from "@nestjs/cqrs";
+import { ClockModule } from "@shared/clock/clock.module";
 import { LoggerModule } from "@shared/logger/logger.module";
 import { PrismaModule } from "@shared/prisma/prisma.module";
 import { UseCaseModule } from "@shared/utils/application/useCase.module";
@@ -17,6 +18,7 @@ const appModules: NestModuleImport[] = [
   CqrsModule,
   LoggerModule,
   UseCaseModule,
+  ClockModule,
   ConfigModule.forRoot({
     isGlobal: true,
   }),

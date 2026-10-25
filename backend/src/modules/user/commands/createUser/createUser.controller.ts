@@ -1,33 +1,25 @@
 import { contractRef, UserRequest } from "@library/contracts";
+import { ApiController } from "@modules/auth/decorators/apiController.decorator";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
-import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { CreateUser } from "@modules/user/commands/createUser/createUser.command";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  UseGuards,
-} from "@nestjs/common";
+  UserCPFAlreadyExistsException,
+  UserEmailAlreadyExistsException,
+} from "@modules/user/domain/user.errors";
+import { Body, HttpCode, HttpStatus, Post, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
-  ApiBearerAuth,
   ApiBody,
-  ApiConflictResponse,
   ApiCreatedResponse,
   ApiOperation,
-  ApiTags,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/application/noop";
+import { ApiErrors } from "@shared/utils/http/apiErrors";
 
-@Controller("v1/")
-@ApiBearerAuth()
-@UseGuards(AuthGuard)
-@ApiTags("Usuários")
+@ApiController("Usuários")
 export class CreateUserController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -35,6 +27,7 @@ export class CreateUserController {
   ) {}
 
   @Post("users")
+  @ApiErrors(UserCPFAlreadyExistsException, UserEmailAlreadyExistsException)
   @UseGuards(RolesGuard)
   @Roles(UserRoleEnum.Admin)
   @HttpCode(HttpStatus.CREATED)
@@ -45,7 +38,6 @@ export class CreateUserController {
   })
   @ApiCreatedResponse({ description: "Usuário criado com sucesso." })
   @ApiUnprocessableEntityResponse({ description: "Usuário inválido." })
-  @ApiConflictResponse({ description: "Usuário já existe." })
   async createUser(@Body() createUserDto: UserRequest): Promise<void> {
     return this.commandBus
       .execute<CreateUser>(new CreateUser(createUserDto))

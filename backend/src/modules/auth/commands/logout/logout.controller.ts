@@ -1,28 +1,16 @@
 import { LogoutCommand } from "@modules/auth/commands/logout/logout.command";
-import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { ApiController } from "@modules/auth/decorators/apiController.decorator";
 import { AuthenticatedRequest } from "@modules/auth/guards/authenticatedRequest";
-import {
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Request,
-  UseGuards,
-} from "@nestjs/common";
+import { HttpCode, HttpStatus, Post, Request } from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
 import {
-  ApiBearerAuth,
   ApiNoContentResponse,
   ApiOperation,
-  ApiTags,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/application/noop";
 
-@Controller("v1/")
-@ApiTags("Login")
-@ApiBearerAuth()
-@UseGuards(AuthGuard)
+@ApiController("Login")
 export class LogoutController {
   constructor(private readonly commandBus: CommandBus) {}
 

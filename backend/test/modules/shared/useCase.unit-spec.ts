@@ -1,4 +1,5 @@
 import { userCreated } from "@modules/user/domain/events/userCreated.event";
+import { userDeleted } from "@modules/user/domain/events/userDeleted.event";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { E, FPF, O, RTE, TE } from "@shared/utils/application/monads";
 import {
@@ -65,6 +66,27 @@ describe("[Unit] UseCase", () => {
     );
 
     expect(publishEvent).toHaveBeenCalledWith(userCreated(user));
+  });
+
+  it("Should publish every event a factory builds, in order", async () => {
+    await useCase.run(
+      "ReplaceUser",
+      {},
+      FPF.pipe(
+        RTE.right(user),
+        RTE.tap(
+          publishRTE((created: typeof user) => [
+            userDeleted(created),
+            userCreated(created),
+          ]),
+        ),
+      ),
+    );
+
+    expect(publishEvent.mock.calls).toEqual([
+      [userDeleted(user)],
+      [userCreated(user)],
+    ]);
   });
 });
 

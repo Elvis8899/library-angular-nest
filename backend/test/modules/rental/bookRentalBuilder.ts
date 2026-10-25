@@ -2,10 +2,13 @@ import { RentBookRequest } from "@library/contracts";
 import {
   BookRental,
   BookRentalDetails,
+  dueDateOf,
+  rentalDetailsOf,
   RentalStatusEnum,
 } from "@modules/rental/domain/bookRental.entity";
 import { FPF } from "@shared/utils/application/monads";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { FakeClock } from "@test/util/fakeClock";
 import { z } from "zod";
 
 export class BookRentalBuilder {
@@ -15,8 +18,6 @@ export class BookRentalBuilder {
   private bookItemId = createTestId(TableNameEnum.BookItem, 0);
   private userId = createTestId(TableNameEnum.User, 0);
 
-  // private overdueDate = undefined;
-  // private deliveryDate = undefined;
   private bookItem = undefined;
   private user = undefined;
 
@@ -30,6 +31,8 @@ export class BookRentalBuilder {
       rentalStatus: this.rentalStatus,
       bookItemId: this.bookItemId,
       userId: this.userId,
+      // Rented at the FakeClock's instant
+      overdueDate: dueDateOf(new FakeClock().now()),
       bookItem: this.bookItem,
       user: this.user,
     };
@@ -97,11 +100,10 @@ export class BookRentalBuilder {
     });
   }
 
+  /** The rental as the list shows it, with its fines at the FakeClock's
+   * instant. */
   buildRentalDetails(): BookRentalDetails {
-    return BookRentalDetails.parse({
-      ...this.defaultProperties,
-      ...this.overrides,
-    });
+    return rentalDetailsOf(new FakeClock().now())(this.build());
   }
   buildCreateDTO(): RentBookRequest {
     const rental = {

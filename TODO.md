@@ -1,11 +1,5 @@
 # TODO
 
-## Domain model review (2026-10-21)
-
-The ports, CQRS and atomic repository operations are sound; the entities are only Zod shapes, and the rules live in handlers, repositories and the Prisma schema. Most important first; 2–4 are best done together on the rental module, as the pattern new modules copy.
-
-- [ ] **No hidden clocks**: `overdueDate`'s Zod default and `getRentalFines` call `new Date()` themselves. Pass `now` in from an injected clock (like `RealUUIDGeneratorService`), and name the loan period (7 days) and the fines (20 fixed plus 5% of the price per day) as policy constants.
-
 ## User and auth domain review (2026-10-21)
 
 Most important first.

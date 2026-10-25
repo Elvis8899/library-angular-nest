@@ -5,7 +5,7 @@ import {
   QueryString,
   Sent,
 } from "@library/contracts";
-import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { ApiController } from "@modules/auth/decorators/apiController.decorator";
 import { AuthenticatedRequest } from "@modules/auth/guards/authenticatedRequest";
 import {
   BookRentalDetails,
@@ -14,35 +14,20 @@ import {
 import { toBookRentalResponse } from "@modules/rental/domain/bookRentalViews";
 import { PaginatedBookRentalsQuery } from "@modules/rental/queries/paginatedBookRentals/paginatedBookRentals.query";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
-import {
-  Controller,
-  Get,
-  HttpStatus,
-  Query,
-  Request,
-  UseGuards,
-} from "@nestjs/common";
+import { Get, HttpStatus, Query, Request } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from "@nestjs/swagger";
+import { ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { Paginated } from "@shared/utils/database/repository.port";
 import { ApiQueryContract } from "@shared/utils/http/apiQueryContract";
 
-@Controller("v1/bookRentals")
-@ApiBearerAuth()
-@UseGuards(AuthGuard)
-@ApiTags("Empréstimos")
+@ApiController("Empréstimos")
 export class PaginatedBookRentalsController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
 
-  @Get("")
+  @Get("bookRentals")
   @ApiOperation({ summary: "Listar Empréstimos de livros" })
   @ApiQueryContract(PageQuery)
   @ApiResponse({

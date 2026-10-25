@@ -1,31 +1,23 @@
+import { ApiController } from "@modules/auth/decorators/apiController.decorator";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
-import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { RemoveBookItem } from "@modules/book/commands/removeBookItem/removeBookItem.command";
-import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import {
-  Controller,
-  Delete,
-  HttpCode,
-  HttpStatus,
-  Param,
-  UseGuards,
-} from "@nestjs/common";
+  AvailableBookItemNotFoundException,
+  BookInfoNotFoundException,
+} from "@modules/book/domain/bookInfo.errors";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
+import { Delete, HttpCode, HttpStatus, Param, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
-  ApiBearerAuth,
   ApiCreatedResponse,
-  ApiNotFoundResponse,
   ApiOperation,
-  ApiTags,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/application/noop";
+import { ApiErrors } from "@shared/utils/http/apiErrors";
 
-@Controller("v1/")
-@ApiTags("Livros")
-@ApiBearerAuth()
-@UseGuards(AuthGuard)
+@ApiController("Livros")
 export class RemoveBookItemController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -33,6 +25,7 @@ export class RemoveBookItemController {
   ) {}
 
   @Delete("bookInfos/item/:id")
+  @ApiErrors(BookInfoNotFoundException, AvailableBookItemNotFoundException)
   @UseGuards(RolesGuard)
   @Roles(UserRoleEnum.Admin)
   @HttpCode(HttpStatus.OK)
@@ -44,7 +37,6 @@ export class RemoveBookItemController {
     description: "Exemplar do Livro removido com sucesso.",
   })
   @ApiUnprocessableEntityResponse({ description: "Livro inválido." })
-  @ApiNotFoundResponse({ description: "Livro não encontrado." })
   async removeBookItem(@Param("id") bookInfoId: string): Promise<void> {
     return this.commandBus
       .execute<RemoveBookItem>(new RemoveBookItem(bookInfoId))

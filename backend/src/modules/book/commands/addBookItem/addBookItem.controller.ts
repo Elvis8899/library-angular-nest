@@ -1,33 +1,22 @@
 import { BookItemRequest, contractRef } from "@library/contracts";
+import { ApiController } from "@modules/auth/decorators/apiController.decorator";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
-import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { AddBookItem } from "@modules/book/commands/addBookItem/addBookItem.command";
+import { BookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  UseGuards,
-} from "@nestjs/common";
+import { Body, HttpCode, HttpStatus, Post, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
-  ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
-  ApiNotFoundResponse,
   ApiOperation,
-  ApiTags,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/application/noop";
+import { ApiErrors } from "@shared/utils/http/apiErrors";
 
-@Controller("v1/")
-@ApiTags("Livros")
-@ApiBearerAuth()
-@UseGuards(AuthGuard)
+@ApiController("Livros")
 export class AddBookItemController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -35,6 +24,7 @@ export class AddBookItemController {
   ) {}
 
   @Post("bookInfos/item")
+  @ApiErrors(BookInfoNotFoundException)
   @UseGuards(RolesGuard)
   @Roles(UserRoleEnum.Admin)
   @HttpCode(HttpStatus.CREATED)
@@ -44,7 +34,6 @@ export class AddBookItemController {
   })
   @ApiCreatedResponse({ description: "Exemplar do Livro criado com sucesso." })
   @ApiUnprocessableEntityResponse({ description: "Livro inválido." })
-  @ApiNotFoundResponse({ description: "Livro não encontrado." })
   @ApiBody({ schema: contractRef(BookItemRequest) })
   async addBookItem(@Body() bookItem: BookItemRequest): Promise<void> {
     return this.commandBus

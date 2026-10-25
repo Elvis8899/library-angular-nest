@@ -6,24 +6,16 @@ import {
   QueryString,
   Sent,
 } from "@library/contracts";
-import { AuthGuard } from "@modules/auth/guards/auth.guard";
+import { ApiController } from "@modules/auth/decorators/apiController.decorator";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { PaginatedBookInfosQuery } from "@modules/book/queries/paginatedBookInfos/paginatedBookInfos.query";
-import { Controller, Get, HttpStatus, Query, UseGuards } from "@nestjs/common";
+import { Get, HttpStatus, Query } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from "@nestjs/swagger";
+import { ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { Paginated } from "@shared/utils/database/repository.port";
 import { ApiQueryContract } from "@shared/utils/http/apiQueryContract";
 
-@Controller("v1/")
-@ApiBearerAuth()
-@UseGuards(AuthGuard)
-@ApiTags("Livros")
+@ApiController("Livros")
 export class PaginatedBookInfoController {
   constructor(
     private readonly commandBus: CommandBus,

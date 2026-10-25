@@ -31,6 +31,7 @@ export default defineConfig({
       "@shared": `${root}/src/modules/shared`,
       "@modules": `${root}/src/modules`,
       "@db": `${root}/prisma`,
+      "@scripts": `${root}/scripts`,
     },
   },
   test: {

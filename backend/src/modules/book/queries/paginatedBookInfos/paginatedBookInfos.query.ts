@@ -2,8 +2,8 @@ import { BookInfoQuery, PageQuery, QueryString } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
-import { FPF, RE, RTE } from "@shared/utils/application/monads";
+import { inputsRTE } from "@shared/utils/application/fromInput";
+import { FPF, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
 import { UseCase } from "@shared/utils/application/useCase";
 import { Paginated } from "@shared/utils/database/repository.port";
@@ -49,12 +49,11 @@ export class PaginatedBookInfosQueryHandler implements IQueryHandler<
       "PaginatedBookInfos",
       query,
       FPF.pipe(
-        query.params,
-        fromInputRE(PageRequestSchema, "PaginatedBookInfosQuery"),
-        RE.bind("query", () =>
-          fromInputRE(BookInfoListFilters, "filters")(query.filters),
-        ),
-        RTE.fromReaderEither,
+        inputsRTE({
+          window: [PageRequestSchema, "PaginatedBookInfosQuery", query.params],
+          filters: [BookInfoListFilters, "filters", query.filters],
+        }),
+        RTE.map(({ window, filters }) => ({ ...window, query: filters })),
         RTE.chain(
           performRTE(
             this.bookInfoRepository.findAllPaginated,
