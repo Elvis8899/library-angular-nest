@@ -115,7 +115,7 @@ describe("[Unit] Create User", () => {
   it("Should not create a user if cpf already exists", async () => {
     //Given an existing user
     const user = new UserBuilder().buildCreateDTO();
-    const cpf = user.cpf;
+    const cpf = user.cpf ?? "";
     //When we create two users with the same name
     await ctx.createUserHandler.execute(new CreateUser(user));
     const userCopy = new UserBuilder().withCPF(cpf).buildCreateDTO();

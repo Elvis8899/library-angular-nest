@@ -1,3 +1,4 @@
+import { UserChangesRequest } from "@library/contracts";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userUpdated } from "@modules/user/domain/events/userUpdated.event";
 import { PasswordHasher } from "@modules/user/domain/passwordHasher.port";
@@ -11,7 +12,6 @@ import {
   userEmailAlreadyExistsException,
   userNotFoundException,
 } from "@modules/user/domain/user.errors";
-import { UpdateUserDto } from "@modules/user/dtos/user.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { Apply, FPF, O, RE, RTE, T } from "@shared/utils/application/monads";
@@ -25,7 +25,7 @@ import { UUID } from "@shared/uuid/uuid";
 
 export class UpdateUser implements ICommand {
   constructor(
-    public readonly props: UpdateUserDto,
+    public readonly props: UserChangesRequest,
     public readonly id: string,
   ) {}
 }

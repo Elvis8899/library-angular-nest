@@ -3,6 +3,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
+import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
 import { UserService } from "@app/services/user.http.service";
 import {
@@ -26,14 +27,6 @@ describe("UserService", () => {
 
   afterEach(() => {
     http.verify();
-  });
-
-  it("Should register a user", () => {
-    spectator.service.register(user).subscribe();
-
-    const req = http.expectOne({ method: "POST", url: "/v1/users" });
-    expect(req.request.body).toEqual(user);
-    req.flush(user);
   });
 
   it("Should log in", () => {
@@ -79,10 +72,16 @@ describe("UserService", () => {
   });
 
   it("Should create a user", () => {
-    spectator.service.addUser({ name: "João da Silva" }).subscribe();
+    const request = {
+      name: "João da Silva",
+      email: "joao@example.com",
+      password: "1234",
+      role: ROLE.CLIENT,
+    };
+    spectator.service.addUser(request).subscribe();
 
     const req = http.expectOne({ method: "POST", url: "/v1/users" });
-    expect(req.request.body).toEqual({ name: "João da Silva" });
+    expect(req.request.body).toEqual(request);
     req.flush(null);
   });
 

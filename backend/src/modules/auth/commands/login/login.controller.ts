@@ -1,6 +1,10 @@
+import {
+  AuthResponse,
+  contractRef,
+  LoginRequest,
+  Sent,
+} from "@library/contracts";
 import { LoginCommand } from "@modules/auth/commands/login/login.command";
-import { AuthResponseDto } from "@modules/auth/dtos/authResponse.dto";
-import { LoginDto } from "@modules/auth/dtos/login.dto";
 import { LoginThrottlerGuard } from "@modules/auth/guards/loginThrottler.guard";
 import {
   Body,
@@ -12,6 +16,7 @@ import {
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiBody,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -30,6 +35,7 @@ export class LoginController {
   @Post("login")
   @HttpCode(HttpStatus.OK)
   @UseGuards(LoginThrottlerGuard)
+  @ApiBody({ schema: contractRef(LoginRequest) })
   @ApiOperation({ summary: "Login a user" })
   @ApiOkResponse({
     description:
@@ -39,8 +45,10 @@ export class LoginController {
   @ApiTooManyRequestsResponse({
     description: "Muitas tentativas de login para este email.",
   })
-  public async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
-    return this.commandBus.execute<LoginCommand, AuthResponseDto>(
+  public async login(
+    @Body() loginDto: LoginRequest,
+  ): Promise<Sent<typeof AuthResponse>> {
+    return this.commandBus.execute<LoginCommand, Sent<typeof AuthResponse>>(
       new LoginCommand(loginDto),
     );
   }

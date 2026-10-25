@@ -1,8 +1,12 @@
-export enum ROLE {
-  ADMIN = "admin",
-  CLIENT = "client",
-  GUEST = "guest",
-}
+import type { AuthResponse } from "@library/contracts";
+import { UserRole } from "@library/contracts";
+/** The API's roles, and the guest's: who isn't logged in. */
+export const ROLE = {
+  ADMIN: UserRole.Admin,
+  CLIENT: UserRole.Client,
+  GUEST: "guest",
+} as const;
+export type ROLE = (typeof ROLE)[keyof typeof ROLE];
 
 /**
  * Enum for permissions
@@ -31,17 +35,8 @@ export enum PERMISSIONS {
   ACCESS_USER = "access.user",
 }
 
-export interface Credentials {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: ROLE;
-  };
-
-  accessToken: string;
-  refreshToken: string;
-}
+/** The login's answer, as stored. */
+export type Credentials = AuthResponse;
 
 /**
  * The `appSetting` object contains the role-based permissions for the application.

@@ -1,9 +1,9 @@
+import { contractRef, UserChangesRequest } from "@library/contracts";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
 import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { UpdateUser } from "@modules/user/commands/updateUser/updateUser.command";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
-import { UpdateUserDto } from "@modules/user/dtos/user.dto";
 import {
   Body,
   Controller,
@@ -16,6 +16,7 @@ import {
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -42,8 +43,9 @@ export class UpdateUserController {
   @ApiUnprocessableEntityResponse({ description: "Usuário inválido." })
   @ApiNotFoundResponse({ description: "Usuário não encontrado." })
   @ApiOperation({ summary: "Atualizar Usuário" })
+  @ApiBody({ schema: contractRef(UserChangesRequest) })
   async updateUser(
-    @Body() updateModuleDto: UpdateUserDto,
+    @Body() updateModuleDto: UserChangesRequest,
     @Param("id") id: string,
   ): Promise<void> {
     return this.commandBus

@@ -30,7 +30,6 @@ describe("ListUsersComponent", () => {
       email: "test@example.com",
       cpf: "test",
       role: ROLE.ADMIN,
-      password: "test",
       createdAt: new Date().toDateString(),
       updatedAt: new Date().toDateString(),
     },

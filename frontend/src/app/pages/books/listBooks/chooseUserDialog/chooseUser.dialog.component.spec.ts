@@ -19,13 +19,16 @@ Logger.level = 0;
 
 describe("ChooseUserDialogComponent", () => {
   let spectator: Spectator<ChooseUserDialogComponent>;
-  const user = (id: string, name: string, role = ROLE.CLIENT): UserEntity => ({
+  const user = (
+    id: string,
+    name: string,
+    role: UserEntity["role"] = ROLE.CLIENT
+  ): UserEntity => ({
     id,
     name,
     email: `${name.toLowerCase().split(" ")[0]}@example.com`,
     cpf: "529.982.247-25",
     role,
-    password: "",
     createdAt: new Date().toDateString(),
     updatedAt: new Date().toDateString(),
   });

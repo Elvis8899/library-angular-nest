@@ -1,11 +1,10 @@
+import { AuthResponse, RefreshTokenRequest } from "@library/contracts";
 import { RefreshSessionRepository } from "@modules/auth/database/refreshSession.repository.port";
 import { invalidRefreshTokenException } from "@modules/auth/domain/auth.errors";
 import {
   RefreshTokenClaims,
   RefreshTokenInput,
 } from "@modules/auth/domain/credentials";
-import { AuthResponseDto } from "@modules/auth/dtos/authResponse.dto";
-import { RefreshTokenDto } from "@modules/auth/dtos/refreshToken.dto";
 import {
   generateTokens,
   refreshSessionExpiry,
@@ -22,13 +21,13 @@ import { UseCase } from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 
 export class RefreshTokenCommand implements ICommand {
-  constructor(public readonly props: RefreshTokenDto) {}
+  constructor(public readonly props: RefreshTokenRequest) {}
 }
 
 @CommandHandler(RefreshTokenCommand)
 export class RefreshTokenCommandHandler implements ICommandHandler<
   RefreshTokenCommand,
-  AuthResponseDto
+  AuthResponse
 > {
   constructor(
     private readonly useCase: UseCase,
@@ -38,7 +37,7 @@ export class RefreshTokenCommandHandler implements ICommandHandler<
     private readonly jwtService: JwtService,
   ) {}
 
-  execute(command: RefreshTokenCommand): Promise<AuthResponseDto> {
+  execute(command: RefreshTokenCommand): Promise<AuthResponse> {
     // The refresh token is not logged
     return this.useCase.run(
       "RefreshTokenCommand",

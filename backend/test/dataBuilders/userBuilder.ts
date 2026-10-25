@@ -1,6 +1,6 @@
+import { UserRequest } from "@library/contracts";
 import { formatDocument } from "@modules/user/domain/document";
 import { User, UserRoleEnum } from "@modules/user/domain/user.entity";
-import { CreateUserDto } from "@modules/user/dtos/user.dto";
 import { FPF } from "@shared/utils/application/monads";
 import { UUID } from "@shared/uuid/uuid";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
@@ -79,7 +79,7 @@ export class UserBuilder {
       ...this.overrides,
     });
   }
-  buildCreateDTO(): CreateUserDto {
+  buildCreateDTO(): UserRequest {
     const user = {
       ...this.defaultProperties,
       ...this.overrides,

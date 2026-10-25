@@ -1,3 +1,4 @@
+import { UserRequest } from "@library/contracts";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userCreated } from "@modules/user/domain/events/userCreated.event";
 import { PasswordHasher } from "@modules/user/domain/passwordHasher.port";
@@ -6,7 +7,6 @@ import {
   userCPFAlreadyExistsException,
   userEmailAlreadyExistsException,
 } from "@modules/user/domain/user.errors";
-import { CreateUserDto } from "@modules/user/dtos/user.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { Apply, FPF, RE, RTE } from "@shared/utils/application/monads";
@@ -16,7 +16,7 @@ import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service
 import { UUID } from "@shared/uuid/uuid";
 
 export class CreateUser implements ICommand {
-  constructor(public readonly props: CreateUserDto) {}
+  constructor(public readonly props: UserRequest) {}
 }
 
 @CommandHandler(CreateUser)

@@ -1,5 +1,5 @@
+import { AuthResponse } from "@library/contracts";
 import { authConfig } from "@modules/auth/auth.config";
-import { AuthResponseDto } from "@modules/auth/dtos/authResponse.dto";
 import { User } from "@modules/user/domain/user.entity";
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from "@nestjs/jwt";
 
@@ -49,7 +49,7 @@ export const generateTokens =
   async (
     user: User,
     { sessionId, jti }: RefreshTokenRef,
-  ): Promise<AuthResponseDto> => {
+  ): Promise<AuthResponse> => {
     const { payload, signOptions, refreshOptions } = getSignTokenParams(
       user.id,
       {
