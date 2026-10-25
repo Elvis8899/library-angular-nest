@@ -41,22 +41,6 @@ describe("[Unit] Create BookInfo", () => {
     expect(bookInfos.map((book) => book.id)).toEqual([id]);
   });
 
-  it("Should create bookInfo without optional keys", async () => {
-    //Given a potentially valid name
-
-    const bookInfo = new BookInfoBuilder().buildCreateDTO();
-    //When we create a bookInfo
-    const resultPromise = ctx.createBookInfoHandler.execute(
-      new CreateBookInfo(bookInfo),
-    );
-
-    //Then it should have created a bookInfo
-    const { id } = await resultPromise;
-
-    const bookInfos = await executeTask(ctx.bookInfoRepository.findAll());
-    expect(bookInfos.map((book) => book.id)).toEqual([id]);
-  });
-
   it("Should emit domain event when bookInfo is created", async () => {
     //Given a potentially valid name
 

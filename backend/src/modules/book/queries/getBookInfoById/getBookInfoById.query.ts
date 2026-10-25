@@ -2,7 +2,7 @@ import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.p
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
+import { inputsRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE } from "@shared/utils/application/perform";
 import { UseCase } from "@shared/utils/application/useCase";
@@ -33,15 +33,13 @@ export class GetBookInfoByIdQueryHandler implements IQueryHandler<
       "GetBookInfoById",
       query,
       FPF.pipe(
-        query.id,
-        fromInputRE(UUID, "UUID"),
-        RTE.fromReaderEither,
-        RTE.chain(
+        inputsRTE({ id: [UUID, "id", query.id] }),
+        RTE.chain(({ id }) =>
           findOrFailRTE(
             this.bookInfoRepository.findById,
             "get bookInfo in storage system.",
             bookInfoNotFoundException,
-          ),
+          )(id),
         ),
       ),
     );

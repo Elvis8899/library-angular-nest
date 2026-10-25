@@ -11,6 +11,14 @@ export class BookInfoNotFoundException extends domainError(
 
 export const bookInfoNotFoundException = () => new BookInfoNotFoundException();
 
+export class BookItemNotFoundException extends domainError(
+  DomainErrorKindEnum.NotFound,
+  "book.copyNotFound",
+  "Exemplar não encontrado.",
+) {}
+
+export const bookItemNotFoundException = () => new BookItemNotFoundException();
+
 export class AvailableBookItemNotFoundException extends domainError(
   DomainErrorKindEnum.NotFound,
   "book.noAvailableCopy",

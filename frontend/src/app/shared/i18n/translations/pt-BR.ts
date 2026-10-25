@@ -82,6 +82,7 @@ export const ptBR = {
     book: {
       notFound: "Livro não encontrado.",
       noAvailableCopy: "Nenhum exemplar livre deste livro.",
+      copyNotFound: "Exemplar não encontrado.",
       coverNotFound: "Livro sem capa.",
       coverType: "A capa deve ser uma imagem JPG, PNG, WEBP ou GIF.",
       coverTooLarge: "A capa deve ter até 5 MB.",

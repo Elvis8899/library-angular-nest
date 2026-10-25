@@ -79,6 +79,7 @@ export const enUS: CoreTranslations = {
     book: {
       notFound: "Book not found.",
       noAvailableCopy: "No copy of this book is available.",
+      copyNotFound: "Copy not found.",
       coverNotFound: "The book has no cover.",
       coverType: "The cover must be a JPG, PNG, WEBP or GIF image.",
       coverTooLarge: "The cover must be up to 5 MB.",

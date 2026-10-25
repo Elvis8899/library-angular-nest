@@ -1,11 +1,15 @@
 import { BookInfoRequest, Resource } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
-import { BookInfo } from "@modules/book/domain/bookInfo.entity";
+import {
+  BookDetails,
+  changeBookDetails,
+} from "@modules/book/domain/bookInfo.entity";
 import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { bookInfoUpdated } from "@modules/book/domain/events/bookInfoUpdated.event";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
-import { FPF, RE, RTE } from "@shared/utils/application/monads";
+import { Clock } from "@shared/clock/clock";
+import { inputsRTE } from "@shared/utils/application/fromInput";
+import { FPF, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
 import {
   changedRTE,
@@ -28,6 +32,7 @@ export class UpdateBookInfoHandler implements ICommandHandler<
 > {
   constructor(
     private readonly useCase: UseCase,
+    private readonly clock: Clock,
     private readonly bookInfoRepository: BookInfoRepository,
   ) {}
 
@@ -38,18 +43,21 @@ export class UpdateBookInfoHandler implements ICommandHandler<
       { id: command.id, ...command.props },
       FPF.pipe(
         //Data validation
-        RE.of(command.props),
-        RE.bind("id", () => fromInputRE(UUID, "uuid")(command.id)),
-        RE.chain(fromInputRE(BookInfo, "bookInfo")),
-        RTE.fromReaderEither,
+        inputsRTE({
+          id: [UUID, "uuid", command.id],
+          changes: [BookDetails, "BookInfo", command.props],
+        }),
 
-        //Validate BookInfo exists
-        RTE.tap((bookInfo) =>
+        //Validate BookInfo exists, then apply the changes
+        RTE.bind("before", ({ id }) =>
           findOrFailRTE(
             this.bookInfoRepository.findById,
             "get bookInfo by id",
             bookInfoNotFoundException,
-          )(bookInfo.id),
+          )(id),
+        ),
+        RTE.map(({ before, changes }) =>
+          changeBookDetails(changes, this.clock.now())(before),
         ),
 
         //Store entity

@@ -2,8 +2,8 @@ import { RentBookRequest, Resource } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
 import {
-  BookRental,
-  dueDateOf,
+  newRental,
+  RentalInput,
   startRental,
 } from "@modules/rental/domain/bookRental.entity";
 import { bookRentalNotAvailableException } from "@modules/rental/domain/bookRental.errors";
@@ -12,7 +12,7 @@ import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userNotFoundException } from "@modules/user/domain/user.errors";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { Clock } from "@shared/clock/clock";
-import { fromInputRE, inputsRTE } from "@shared/utils/application/fromInput";
+import { inputsRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
 import {
@@ -48,15 +48,10 @@ export class RentBookCommandHandler implements ICommandHandler<
       FPF.pipe(
         //Data validation
         inputsRTE({
-          bookItemId: [UUID, "bookItemId", command.props.bookItemId],
-          userId: [UUID, "userId", command.props.userId],
           id: [UUID, "uuid", this.uuidGeneratorService.generateUUID()],
+          input: [RentalInput, "BookRental", command.props],
         }),
-        RTE.map((inputs) => ({
-          ...inputs,
-          overdueDate: dueDateOf(this.clock.now()),
-        })),
-        RTE.chainReaderEitherKW(fromInputRE(BookRental, "BookRental")),
+        RTE.map(({ id, input }) => newRental(id, input, this.clock.now())),
 
         //Validate User exists
         RTE.tap((rental) =>

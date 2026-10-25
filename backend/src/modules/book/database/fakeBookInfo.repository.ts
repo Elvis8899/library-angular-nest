@@ -3,7 +3,10 @@ import {
   BookInfoRepository,
 } from "@modules/book/database/bookInfo.repository.port";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
-import { bookCoverChangedException } from "@modules/book/domain/bookInfo.errors";
+import {
+  availableBookItemNotFoundException,
+  bookCoverChangedException,
+} from "@modules/book/domain/bookInfo.errors";
 import { BookItem, BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { Injectable } from "@nestjs/common";
 import { D, FPF, M, O, Ord, S, TE } from "@shared/utils/application/monads";
@@ -134,9 +137,12 @@ export class FakeBookInfoRepository
     return true;
   };
 
+  /** As the Prisma conditional delete. */
   deleteBookItem = (bookItemId: string): TE.TaskEither<Error, void> => {
     const book = O.toUndefined(this.bookHoldingItem(bookItemId));
-    if (!book) return TE.left(missing("BookItem", bookItemId));
+    const item = book?.bookItems.find(({ id }) => id === bookItemId);
+    if (!book || item?.status !== BookItemStatus.Available)
+      return TE.left(availableBookItemNotFoundException());
     book.bookItems = book.bookItems.filter((i) => i.id !== bookItemId);
     return TE.of(undefined);
   };

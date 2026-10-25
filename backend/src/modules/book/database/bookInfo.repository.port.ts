@@ -42,5 +42,7 @@ export abstract class BookInfoRepository implements RepositoryDefaultPort<BookIn
     bookItemId: string,
   ) => TE.TaskEither<Error, O.Option<BookItem>>;
   createBookItem!: (bookItem: BookItem) => TE.TaskEither<Error, void>;
+  /** Removes a copy that's on the shelf, refused with 404
+   * book.noAvailableCopy when it isn't (rented meanwhile, or gone). */
   deleteBookItem!: (bookItemId: string) => TE.TaskEither<Error, void>;
 }

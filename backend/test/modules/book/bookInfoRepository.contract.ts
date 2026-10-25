@@ -3,7 +3,10 @@ import {
   BookInfoSort,
 } from "@modules/book/database/bookInfo.repository.port";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
-import { BookCoverChangedException } from "@modules/book/domain/bookInfo.errors";
+import {
+  AvailableBookItemNotFoundException,
+  BookCoverChangedException,
+} from "@modules/book/domain/bookInfo.errors";
 import { BookItem, BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
@@ -230,18 +233,30 @@ export const bookInfoRepositoryContract = (kind: RepositoryKind) =>
       ).rejects.toThrow();
     });
 
-    it("Should refuse a copy of a book that isn't there, and removing a copy that isn't", async () => {
+    it("Should refuse a copy of a book that isn't there, and with 404 book.noAvailableCopy removing a copy that isn't on the shelf", async () => {
+      const saved = book(1);
+      await saveBook(saved);
+      const rented = { ...item(1, saved.id), status: BookItemStatus.Rented };
+      await executeTask(ctx.books.createBookItem(rented));
+
       await expect(
         executeTask(
           ctx.books.createBookItem(
-            item(1, createTestId(TableNameEnum.BookInfo, 9)),
+            item(2, createTestId(TableNameEnum.BookInfo, 9)),
           ),
         ),
       ).rejects.toThrow();
+      // Rented meanwhile, or gone
+      await expect(
+        executeTask(ctx.books.deleteBookItem(rented.id)),
+      ).rejects.toBeInstanceOf(AvailableBookItemNotFoundException);
       await expect(
         executeTask(
           ctx.books.deleteBookItem(createTestId(TableNameEnum.BookItem, 9)),
         ),
-      ).rejects.toThrow();
+      ).rejects.toBeInstanceOf(AvailableBookItemNotFoundException);
+      expect(
+        await executeTask(ctx.books.findBookItemById(rented.id)),
+      ).toMatchObject(O.some({ status: BookItemStatus.Rented }));
     });
   });

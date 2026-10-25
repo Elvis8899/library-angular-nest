@@ -12,6 +12,7 @@ export const errorCodes = [
   // book (Lending example)
   "book.notFound",
   "book.noAvailableCopy",
+  "book.copyNotFound",
   "book.coverNotFound",
   "book.coverType",
   "book.coverTooLarge",

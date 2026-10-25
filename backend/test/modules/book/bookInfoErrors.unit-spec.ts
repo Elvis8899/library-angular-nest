@@ -5,6 +5,7 @@ import {
   bookCoverTooLargeException,
   bookCoverTypeException,
   bookInfoNotFoundException,
+  bookItemNotFoundException,
 } from "@modules/book/domain/bookInfo.errors";
 import { HttpStatus } from "@nestjs/common";
 import { itAnswersWithErrorCodes } from "@test/util/errorCodes";
@@ -24,6 +25,13 @@ describe("[Unit] Book error codes", () => {
       HttpStatus.NOT_FOUND,
       "Not Found",
       "book.noAvailableCopy",
+    ],
+    [
+      "bookItemNotFoundException",
+      bookItemNotFoundException,
+      HttpStatus.NOT_FOUND,
+      "Not Found",
+      "book.copyNotFound",
     ],
     [
       "bookCoverNotFoundException",

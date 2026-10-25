@@ -62,6 +62,7 @@ import {
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
 import { t } from "@app/shared/i18n/translations/translationKey";
 import { MoneyPipe } from "@app/shared/pipes/number.pipes";
+import { injectSaving } from "@app/shared/utils/saving.utility";
 import { injectIsSmallScreen } from "@app/shared/utils/smallScreen.utility";
 import { TypedDialog } from "@app/shared/utils/typedDialog.utility";
 import { TranslatePipe } from "@ngx-translate/core";
@@ -119,6 +120,9 @@ export class ListBooksComponent implements OnInit {
       ? ["book", "actions"]
       : ["book", "price", "availability", "actions"]
   );
+  // The row actions' requests, one at a time, with the API's message on a
+  // failure
+  readonly saving = injectSaving(log);
   readonly noCoverImage = noCoverImage;
   readonly coverPath = coverPath;
   readonly coverTypes = coverTypes.join(",");
@@ -262,12 +266,9 @@ export class ListBooksComponent implements OnInit {
       this._notify.error(coverProblems[problem]);
       return;
     }
-    this._bookService.changeCover(book.id, file).subscribe({
-      next: () => {
-        this._notify.success("books.cover.changed");
-        this.refresh();
-      },
-      error: this.defaultErrorHandler,
+    this.saving.run(this._bookService.changeCover(book.id, file), () => {
+      this._notify.success("books.cover.changed");
+      this.refresh();
     });
   }
 
@@ -282,12 +283,9 @@ export class ListBooksComponent implements OnInit {
       })
       .pipe(filter(Boolean))
       .subscribe(() =>
-        this._bookService.removeCover(book.id).subscribe({
-          next: () => {
-            this._notify.success("books.cover.removed");
-            this.refresh();
-          },
-          error: this.defaultErrorHandler,
+        this.saving.run(this._bookService.removeCover(book.id), () => {
+          this._notify.success("books.cover.removed");
+          this.refresh();
         })
       );
   }
@@ -297,22 +295,16 @@ export class ListBooksComponent implements OnInit {
   }
 
   rentBook(book: BookRentEntity) {
-    this._rentalService.rentBook(book).subscribe({
-      next: () => {
-        this._notify.success("rentals.rent.done");
-        this.refresh();
-      },
-      error: this.defaultErrorHandler,
+    this.saving.run(this._rentalService.rentBook(book), () => {
+      this._notify.success("rentals.rent.done");
+      this.refresh();
     });
   }
 
   addBookItem(book: BookEntity) {
-    this._bookService.addBookItem({ bookId: book.id }).subscribe({
-      next: () => {
-        this._notify.success("books.copies.added");
-        this.refresh();
-      },
-      error: this.defaultErrorHandler,
+    this.saving.run(this._bookService.addBookItem({ bookId: book.id }), () => {
+      this._notify.success("books.copies.added");
+      this.refresh();
     });
   }
 
@@ -332,21 +324,12 @@ export class ListBooksComponent implements OnInit {
       })
       .pipe(filter(Boolean))
       .subscribe(() =>
-        this._bookService.deleteBookItem(bookItem.id).subscribe({
-          next: () => {
-            this._notify.success("books.copies.removed");
-            this.refresh();
-          },
-          error: this.defaultErrorHandler,
+        this.saving.run(this._bookService.deleteBookItem(bookItem.id), () => {
+          this._notify.success("books.copies.removed");
+          this.refresh();
         })
       );
   }
-
-  // An arrow function, so `this` is still the component when RxJS calls it
-  readonly defaultErrorHandler = (error: Error) => {
-    this._notify.errorMessage(error?.message);
-    log.error(error);
-  };
 
   isAdmin() {
     return this._credentialsService.isAdmin();
