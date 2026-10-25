@@ -4,8 +4,8 @@ import {
   GetBookInfoByIdQuery,
   GetBookInfoByIdQueryHandler,
 } from "@modules/book/queries/getBookInfoById/getBookInfoById.query";
-import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
+import { seedBook } from "@test/modules/book/createBook";
 import { useHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
@@ -26,7 +26,7 @@ describe("[Unit] List BookInfos", () => {
     const query = new GetBookInfoByIdQuery(bookInfo.id);
 
     //With bookInfos in database
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
 
     //When we get bookInfo id
     const result = await ctx.getBookInfoByIdQueryHandler.execute(query);
@@ -42,7 +42,7 @@ describe("[Unit] List BookInfos", () => {
 
     //With bookInfos in database
     const bookInfo = new BookInfoBuilder(1).build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
 
     //When get bookInfo
     const resultPromise = ctx.getBookInfoByIdQueryHandler.execute(query);

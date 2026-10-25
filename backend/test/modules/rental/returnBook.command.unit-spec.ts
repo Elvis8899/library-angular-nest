@@ -15,6 +15,7 @@ import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPu
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
+import { seedBook } from "@test/modules/book/createBook";
 import { BookRentalBuilder } from "@test/modules/rental/bookRentalBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
@@ -46,7 +47,7 @@ describe("[Unit] Update BookInfo", () => {
   );
 
   beforeEach(async () => {
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     await executeTask(ctx.userRepository.save(user));
     bookRentalBuilder.reset();
   });

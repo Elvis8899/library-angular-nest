@@ -8,6 +8,7 @@ import { UnprocessableEntityException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
+import { seedBook } from "@test/modules/book/createBook";
 import { useHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
@@ -29,7 +30,7 @@ describe("[Unit] Update BookInfo", () => {
     bookInfoBuilder.reset();
     const originalBookInfo = bookInfoBuilder.build();
     originalBookInfoId = originalBookInfo.id;
-    await executeTask(ctx.bookInfoRepository.save(originalBookInfo));
+    await seedBook(ctx.bookInfoRepository, originalBookInfo);
   });
 
   it("Should update bookInfo if bookInfo is valid", async () => {

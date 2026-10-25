@@ -4,8 +4,8 @@ import {
   PaginatedBookInfosQueryHandler,
 } from "@modules/book/queries/paginatedBookInfos/paginatedBookInfos.query";
 import { UnprocessableEntityException } from "@nestjs/common";
-import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
+import { seedBook } from "@test/modules/book/createBook";
 import { useHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
@@ -30,7 +30,7 @@ describe("[Unit] List BookInfos", () => {
 
     //With bookInfos in database
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
 
     //When we list bookInfos
     const result = await ctx.paginatedBookInfosQueryHandler.execute(query);
@@ -53,7 +53,7 @@ describe("[Unit] List BookInfos", () => {
 
     //With bookInfos in database
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
 
     //When we list bookInfos
     const result = await ctx.paginatedBookInfosQueryHandler.execute(query);
@@ -67,11 +67,15 @@ describe("[Unit] List BookInfos", () => {
   describe("Searching by name", () => {
     const saveBooks = async () => {
       const book = (index: number, name: string) =>
-        new BookInfoBuilder(index).withName(name).build();
-      const domCasmurro = book(1, "Dom Casmurro");
-      const cortico = book(2, "O Cortiço");
-      await executeTask(ctx.bookInfoRepository.save(domCasmurro));
-      await executeTask(ctx.bookInfoRepository.save(cortico));
+        new BookInfoBuilder(index).withName(name).withBookItems([]).build();
+      const domCasmurro = await seedBook(
+        ctx.bookInfoRepository,
+        book(1, "Dom Casmurro"),
+      );
+      const cortico = await seedBook(
+        ctx.bookInfoRepository,
+        book(2, "O Cortiço"),
+      );
       return { domCasmurro, cortico };
     };
 
@@ -124,7 +128,10 @@ describe("[Unit] List BookInfos", () => {
   describe("Filtering by creation date", () => {
     const saveBooksCreatedOn = async () => {
       const book = (index: number, createdAt: string) =>
-        new BookInfoBuilder(index).withCreatedAt(new Date(createdAt)).build();
+        new BookInfoBuilder(index)
+          .withCreatedAt(new Date(createdAt))
+          .withBookItems([])
+          .build();
       const books = {
         before: book(1, "2026-10-12T23:59:59.999Z"),
         start: book(2, "2026-10-13T00:00:00.000Z"),
@@ -132,7 +139,7 @@ describe("[Unit] List BookInfos", () => {
         after: book(4, "2026-10-14T00:00:00.000Z"),
       };
       for (const b of Object.values(books)) {
-        await executeTask(ctx.bookInfoRepository.save(b));
+        await seedBook(ctx.bookInfoRepository, b);
       }
       return books;
     };
@@ -191,6 +198,7 @@ describe("[Unit] List BookInfos", () => {
         new BookInfoBuilder(index)
           .withName(name)
           .withCreatedAt(new Date(2026, 9, index))
+          .withBookItems([])
           .build();
       const books = [
         book(1, "O Cortiço"),
@@ -199,7 +207,7 @@ describe("[Unit] List BookInfos", () => {
         book(4, "Dom Casmurro"),
       ];
       for (const b of books) {
-        await executeTask(ctx.bookInfoRepository.save(b));
+        await seedBook(ctx.bookInfoRepository, b);
       }
       return books.map((b) => b.id);
     };

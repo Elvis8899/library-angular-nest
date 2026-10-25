@@ -9,6 +9,7 @@ import { AddFirstBookItemSubscriber } from "@modules/book/subscribers/addFirstBo
 import { CqrsModule } from "@nestjs/cqrs";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
+import { seedBook } from "@test/modules/book/createBook";
 import { useHandlerModule } from "@test/util/handlerModule";
 
 describe("[Unit] Add first book item", () => {
@@ -31,7 +32,7 @@ describe("[Unit] Add first book item", () => {
   it("Should add a copy to a new book", async () => {
     // Given a valid saved book
     const book = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(book));
+    await seedBook(ctx.bookInfoRepository, book);
 
     // And a valid event
     const responseWatcherEvent = BookInfoCreatedEvent.parse({

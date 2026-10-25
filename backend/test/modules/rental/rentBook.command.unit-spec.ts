@@ -11,6 +11,7 @@ import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPu
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
+import { seedBook } from "@test/modules/book/createBook";
 import { BookRentalBuilder } from "@test/modules/rental/bookRentalBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
@@ -42,7 +43,7 @@ describe("[Unit] Update BookInfo", () => {
   );
 
   beforeEach(async () => {
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     await executeTask(ctx.userRepository.save(user));
     bookRentalBuilder.reset();
   });
@@ -69,23 +70,23 @@ describe("[Unit] Update BookInfo", () => {
     // Given a potentially valid book rental
     const bookRental = bookRentalBuilder.buildCreateDTO();
     // and book is not available
-    await executeTask(
-      ctx.bookInfoRepository.save(
-        new BookInfoBuilder()
-          .withBookItems([
-            {
-              id: createTestId(TableNameEnum.BookItem, 0),
-              status: BookItemStatus.Rented,
-              bookId: createTestId(TableNameEnum.BookInfo, 0),
-            },
-          ])
-          .build(),
-      ),
+    const rentedCopy = createTestId(TableNameEnum.BookItem, 1);
+    await seedBook(
+      ctx.bookInfoRepository,
+      new BookInfoBuilder(1)
+        .withBookItems([
+          {
+            id: rentedCopy,
+            status: BookItemStatus.Rented,
+            bookId: createTestId(TableNameEnum.BookInfo, 1),
+          },
+        ])
+        .build(),
     );
     //When we try renting it
     const resultPromise = ctx.rentBookCommandHandler.execute(
       new RentBookCommand({
-        bookItemId: bookRental.bookItemId,
+        bookItemId: rentedCopy,
         userId: bookRental.userId,
       }),
     );
@@ -117,11 +118,12 @@ describe("[Unit] Update BookInfo", () => {
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
-  it("Should not rent book item that already has an active rental", async () => {
-    // Given a book item that was rented concurrently, before its status changed
+  it("Should not rent a copy another rent took first", async () => {
+    // Given a copy someone else rented (the race itself is the repository
+    // contract's: of two rents at once, one gets the copy)
     const bookRental = bookRentalBuilder.buildCreateDTO();
     await executeTask(
-      ctx.bookRentalRepository.save(new BookRentalBuilder(1).build()),
+      ctx.bookRentalRepository.rent(new BookRentalBuilder(1).build()),
     );
 
     //When we try renting it

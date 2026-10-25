@@ -11,6 +11,7 @@ import { BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
+import { seedBook } from "@test/modules/book/createBook";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
 
@@ -30,7 +31,7 @@ describe("[Unit] Delete BookInfo", () => {
     //Given a valid id
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     const id = createTestId(TableNameEnum.BookItem, 0);
 
     //When we delete a bookInfo
@@ -56,7 +57,7 @@ describe("[Unit] Delete BookInfo", () => {
         },
       ])
       .build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     const id = createTestId(TableNameEnum.BookItem, 0);
 
     //When we delete a bookInfo
@@ -76,7 +77,7 @@ describe("[Unit] Delete BookInfo", () => {
     //Given a valid id
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     const newId = createTestId(TableNameEnum.None, 0);
 
     //When we delete a bookInfo
@@ -97,7 +98,7 @@ describe("[Unit] Delete BookInfo", () => {
     const spy = vi.spyOn(ctx.eventModule, "publishEvent");
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     const id = createTestId(TableNameEnum.BookItem, 0);
 
     //When we delete a bookInfo
@@ -113,7 +114,7 @@ describe("[Unit] Delete BookInfo", () => {
     const spy = vi.spyOn(ctx.eventModule, "publishEvent");
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
 
     const newId = createTestId(TableNameEnum.None, 0);
     //When we delete a bookInfo

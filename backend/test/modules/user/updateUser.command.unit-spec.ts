@@ -119,17 +119,17 @@ describe("[Unit] Update User", () => {
   });
 
   it("Should not update an user if cpf already exists", async () => {
-    // Given a potentially valid name
-    // When an user with the same name exists
-    const user = new UserBuilder(2).build();
+    // Given another user with a CPF of their own
+    const other = new UserBuilder(2)
+      .withEmail("usertwo@example.com")
+      .withCPF("11144477735")
+      .build();
+    await executeTask(ctx.userRepository.save(other));
 
-    const repeatCPF = user.cpf;
-    await executeTask(ctx.userRepository.save(user));
-
-    //When we update the user to have same name
-    const userDTO = userBuilder.withCPF(repeatCPF).buildCreateDTO();
+    //When we update the user to have the other's CPF
+    const userDTO = userBuilder.withCPF(other.cpf).buildCreateDTO();
     const resultPromise = ctx.updateUserHandler.execute(
-      new UpdateUser(userDTO, user.id),
+      new UpdateUser(userDTO, userBuilder.build().id),
     );
 
     //Then it should have thrown an error and not have updated the user
