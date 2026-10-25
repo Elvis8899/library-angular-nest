@@ -25,3 +25,20 @@ export const contractList = (schema: z.ZodType) => ({
   type: "array" as const,
   items: contractRef(schema),
 });
+
+/** A query string's parameters, one per field of the schema, for Swagger's
+ * `ApiQuery`. */
+export const contractQuery = (schema: z.ZodObject) =>
+  Object.entries(schema.shape).map(([name, field]) => {
+    const { description, ...json } = z.toJSONSchema(field, {
+      target: "openapi-3.0",
+      io: "input",
+      unrepresentable: "any",
+    });
+    return {
+      name,
+      required: !field.safeParse(undefined).success,
+      ...(description && { description }),
+      schema: json,
+    };
+  });

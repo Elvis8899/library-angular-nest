@@ -1,3 +1,4 @@
+import { RentBookRequest } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
 import {
@@ -6,7 +7,6 @@ import {
 } from "@modules/rental/domain/bookRental.entity";
 import { bookRentalNotAvailableException } from "@modules/rental/domain/bookRental.errors";
 import { bookRented } from "@modules/rental/domain/events/bookRented.event";
-import { CreateBookRentalDto } from "@modules/rental/dtos/bookRental.dto";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userNotFoundException } from "@modules/user/domain/user.errors";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
@@ -18,7 +18,7 @@ import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service
 import { UUID } from "@shared/uuid/uuid";
 
 export class RentBookCommand implements ICommand {
-  constructor(public readonly props: CreateBookRentalDto) {}
+  constructor(public readonly props: RentBookRequest) {}
 }
 
 @CommandHandler(RentBookCommand)

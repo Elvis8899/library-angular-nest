@@ -1,3 +1,4 @@
+import { RentalStatus } from "@library/contracts";
 import {
   BookItem,
   ensureAvailable,
@@ -14,10 +15,9 @@ import { DateType } from "@shared/utils/domain/dateType";
 import { UUID } from "@shared/uuid/uuid";
 import { z } from "zod";
 
-export enum RentalStatusEnum {
-  Rented = "rented",
-  Finished = "finished",
-}
+// The contracts' RentalStatus, under the backend's name
+export const RentalStatusEnum = RentalStatus;
+export type RentalStatusEnum = RentalStatus;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

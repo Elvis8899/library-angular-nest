@@ -1,3 +1,4 @@
+import { PageQuery, QueryString } from "@library/contracts";
 import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
 import {
   BookRentalDetails,
@@ -19,7 +20,8 @@ import { z } from "zod";
 
 export class PaginatedBookRentalsQuery implements IQuery {
   constructor(
-    public readonly params: PageRequest,
+    // The query string's, or numbers from a caller in the code
+    public readonly params: PageRequest | QueryString<typeof PageQuery>,
     public readonly status: RentalStatusEnum | undefined,
     public readonly userId: string | undefined,
   ) {}

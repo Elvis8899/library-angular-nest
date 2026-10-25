@@ -51,4 +51,4 @@ yarn test:watch               # reruns the suites a change affects
 
 ## Code organisation
 
-Each feature in `src/modules/` (the core `auth` and `user`, and the lending example `book` and `rental`) is split into `commands/` (writes), `queries/` (reads), `domain/` (Zod entities, errors, events), `database/` (repository port with Prisma and in-memory implementations) and `dtos/`. Imports use path aliases (`@modules/user/`, `@shared/`, …); relative imports are rejected by lint. See [`CLAUDE.md`](../CLAUDE.md) for details.
+Each feature in `src/modules/` (the core `auth` and `user`, and the lending example `book` and `rental`) is split into `commands/` (writes), `queries/` (reads), `domain/` (Zod entities, errors, events), `database/` (repository port with Prisma and in-memory implementations); what the API sends and receives is in `packages/contracts`. Imports use path aliases (`@modules/user/`, `@shared/`, …); relative imports are rejected by lint. See [`CLAUDE.md`](../CLAUDE.md) for details.

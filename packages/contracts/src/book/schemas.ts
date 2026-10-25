@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Id, page, Timestamp } from "../common.js";
+import { Id, optionalParam, page, Timestamp } from "../common.js";
 import { contract } from "../registry.js";
 import { BookItemStatus, inWholeCentavos } from "./values.js";
 
@@ -31,6 +31,33 @@ export const BookItemRequest = contract(
   { id: "BookItemRequest", description: "Um exemplar novo de um livro" },
 );
 export type BookItemRequest = z.input<typeof BookItemRequest>;
+
+/** The books list's filters and order: part of the name, the creation's
+ * moments (from included, before excluded). */
+export const BookInfoQuery = z
+  .object({
+    name: optionalParam(z.string().trim().max(200)).describe(
+      "Filtra pelos livros cujo nome contém este texto, sem diferenciar maiúsculas",
+    ),
+    createdFrom: optionalParam(Timestamp).describe(
+      "Só livros criados a partir deste instante (inclusive), em ISO 8601",
+    ),
+    createdBefore: optionalParam(Timestamp).describe(
+      "Só livros criados antes deste instante (exclusive), em ISO 8601",
+    ),
+    sortBy: optionalParam(z.enum(["name", "createdAt"]))
+      .transform((by) => by ?? "createdAt")
+      .describe("Campo de ordenação (createdAt se nenhum)"),
+    order: optionalParam(z.enum(["asc", "desc"]))
+      .transform((order) => order ?? "desc")
+      .describe("Direção da ordenação (desc se nenhuma)"),
+  })
+  .refine(
+    ({ createdFrom, createdBefore }) =>
+      !createdFrom || !createdBefore || createdFrom < createdBefore,
+    "createdFrom deve ser anterior a createdBefore",
+  );
+export type BookInfoQuery = z.input<typeof BookInfoQuery>;
 
 // Responses
 

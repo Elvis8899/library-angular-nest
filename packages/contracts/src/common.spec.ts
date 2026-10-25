@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { BusinessDate, page, Timestamp } from "./common.js";
+import {
+  BusinessDate,
+  optionalParam,
+  page,
+  PageQuery,
+  Timestamp,
+} from "./common.js";
 
 describe("common", () => {
   it("Should take a yyyy-MM-dd day and refuse anything else", () => {
@@ -26,5 +32,19 @@ describe("common", () => {
     expect(
       names.safeParse({ data: [1], count: 1, limit: 1, page: 0 }).success,
     ).toBe(false);
+  });
+
+  it("Should fall back to the first page of 20 on a missing or odd page", () => {
+    expect(PageQuery.parse({})).toEqual({ page: 0, limit: 20 });
+    expect(PageQuery.parse({ page: "2", limit: "x" })).toEqual({
+      page: 2,
+      limit: 20,
+    });
+  });
+
+  it("Should take a blank parameter as none", () => {
+    const text = optionalParam(z.string());
+    expect(text.parse("")).toBeUndefined();
+    expect(text.parse("a")).toBe("a");
   });
 });

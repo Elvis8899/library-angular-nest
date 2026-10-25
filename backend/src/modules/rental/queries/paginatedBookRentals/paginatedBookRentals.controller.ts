@@ -1,10 +1,17 @@
+import {
+  BookRentalPage,
+  contractRef,
+  PageQuery,
+  QueryString,
+  Sent,
+} from "@library/contracts";
 import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { AuthenticatedRequest } from "@modules/auth/guards/authenticatedRequest";
 import {
   BookRentalDetails,
   RentalStatusEnum,
 } from "@modules/rental/domain/bookRental.entity";
-import { PaginatedBookRentalResponseDto } from "@modules/rental/dtos/bookRental.dto";
+import { toBookRentalResponse } from "@modules/rental/domain/bookRentalViews";
 import { PaginatedBookRentalsQuery } from "@modules/rental/queries/paginatedBookRentals/paginatedBookRentals.query";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import {
@@ -23,7 +30,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { Paginated } from "@shared/utils/database/repository.port";
-import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginatedQuery.request.dto";
+import { ApiQueryContract } from "@shared/utils/http/apiQueryContract";
 
 @Controller("v1/bookRentals")
 @ApiBearerAuth()
@@ -37,21 +44,28 @@ export class PaginatedBookRentalsController {
 
   @Get("")
   @ApiOperation({ summary: "Listar Empréstimos de livros" })
+  @ApiQueryContract(PageQuery)
   @ApiResponse({
     status: HttpStatus.OK,
-    type: PaginatedBookRentalResponseDto,
+    schema: contractRef(BookRentalPage),
   })
   async paginatedBookRentals(
-    @Query() queryParams: PaginatedQueryRequestDto,
+    // Parsed by the handler
+    @Query() { page, limit }: QueryString<typeof PageQuery>,
     @Request() req: AuthenticatedRequest,
-  ): Promise<PaginatedBookRentalResponseDto> {
+  ): Promise<Sent<typeof BookRentalPage>> {
     const { user } = req;
     const userId = user.role === UserRoleEnum.Admin ? undefined : user.sub;
     const status = RentalStatusEnum.Rented;
     return this.queryBus
       .execute<PaginatedBookRentalsQuery, Paginated<BookRentalDetails>>(
-        new PaginatedBookRentalsQuery(queryParams, status, userId),
+        new PaginatedBookRentalsQuery({ page, limit }, status, userId),
       )
-      .then((result) => new PaginatedBookRentalResponseDto(result));
+      .then((result) => ({
+        count: result.count,
+        limit: result.limit,
+        page: result.page,
+        data: result.data.map(toBookRentalResponse),
+      }));
   }
 }

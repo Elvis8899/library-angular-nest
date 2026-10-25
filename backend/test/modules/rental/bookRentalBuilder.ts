@@ -1,9 +1,9 @@
+import { RentBookRequest } from "@library/contracts";
 import {
   BookRental,
   BookRentalDetails,
   RentalStatusEnum,
 } from "@modules/rental/domain/bookRental.entity";
-import { CreateBookRentalDto } from "@modules/rental/dtos/bookRental.dto";
 import { FPF } from "@shared/utils/application/monads";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { z } from "zod";
@@ -103,7 +103,7 @@ export class BookRentalBuilder {
       ...this.overrides,
     });
   }
-  buildCreateDTO(): CreateBookRentalDto {
+  buildCreateDTO(): RentBookRequest {
     const rental = {
       ...this.defaultProperties,
       ...this.overrides,

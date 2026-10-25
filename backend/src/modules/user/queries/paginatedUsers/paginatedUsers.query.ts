@@ -1,3 +1,4 @@
+import { PageQuery, QueryString } from "@library/contracts";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { User } from "@modules/user/domain/user.entity";
 import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
@@ -12,7 +13,10 @@ import {
 } from "@shared/utils/domain/query.base";
 
 export class PaginatedUsersQuery implements IQuery {
-  constructor(public readonly params: PageRequest) {}
+  constructor(
+    // The query string's, or numbers from a caller in the code
+    public readonly params: PageRequest | QueryString<typeof PageQuery>,
+  ) {}
 }
 
 @QueryHandler(PaginatedUsersQuery)

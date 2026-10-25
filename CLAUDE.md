@@ -83,7 +83,7 @@ The root `yarn install` also installs the Git pre-commit hook (Husky, `core.hook
 
 ### Module layout
 
-Each feature module (`user`, `book`, `rental`, `auth`) under `src/modules/` is laid out as hexagonal/CQRS. Modules use another module's entity, repository port or exported providers, not its DTOs or handlers (`auth` gets `UserRepository` by importing `UserModule`, which exports it):
+Each feature module (`user`, `book`, `rental`, `auth`) under `src/modules/` is laid out as hexagonal/CQRS. Modules use another module's entity, repository port or exported providers, not its handlers (`auth` gets `UserRepository` by importing `UserModule`, which exports it):
 
 ```
 commands/<name>/<name>.command.ts      # ICommand + @CommandHandler (writes)
@@ -91,7 +91,6 @@ commands/<name>/<name>.controller.ts   # one controller per use case; dispatches
 queries/<name>/<name>.query.ts|controller.ts   # reads via QueryBus
 domain/          # Zod schemas = entities/value objects (type and validator share a name), their rules, errors, events
 database/        # <x>.repository.port.ts (abstract class used as DI token), real<X>.repository.ts (Prisma), fake<X>.repository.ts (in-memory)
-dtos/            # Swagger DTO classes (validation is done by Zod in the domain, not class-validator); once the module's API is in the contracts, only its query parameters'
 ```
 
 Modules bind the port to the real repository (`{ provide: UserRepository, useClass: RealUserRepository }`). Unit tests bind the fake instead. Fakes extend `shared/utils/database/fakeRepository.base.ts`, and they count toward the 100% coverage threshold. Prisma repositories get their queries from `prismaTasks(() => this.prisma.<model>)` (`shared/utils/database/prismaTasks.ts`), which returns the delegate's methods as `TaskEither`s (`this.users.findMany({ where })`), and share `loadPage`, `validateRows` and `validateMaybeRow` from `shared/utils/database/rowValidation.ts`.
@@ -107,7 +106,7 @@ Command and query handlers inject `UseCase` (`shared/utils/application/useCase.t
 - `publishRTE(userCreated)`, the step that ends a command: `RTE.tap(publishRTE(userCreated))` builds the event from the pipeline's value with the factory next to the event's schema and publishes it.
 - Business rules are pure functions next to their entity: `registerUser`, `changeUserDetails` and `endsSessions` in `user.entity.ts`, and (returning `Either`, called with `RTE.chainEitherK`) `startRental`, `finishRental`, `ensureOwnedBy` in `bookRental.entity.ts` and `ensureAvailable` in `bookItem.entity.ts`, so a rule is written once and unit-tested without Nest. A handler only looks data up, applies the rules and stores the result. A rule the database must also enforce against concurrent requests is checked again by the repository's conditional write (`rent`, `finish`).
 
-Domain errors know nothing of HTTP. Each is a `DomainError` subclass (`shared/utils/domain/shared.errors.ts`) in `domain/*.errors.ts`, with a small factory function, built with a kind, a `code` and a message: `super(DomainErrorKindEnum.Conflict, "user.cpfTaken", "…")`. `DomainErrorFilter` (`shared/utils/http/domainError.filter.ts`, registered in `app.setup.ts`) answers a rejected task with the kind's status (not found 404, conflict 409, unauthorized 401, unknown 500) and Nest's usual body plus the `code`; other errors, such as the 422 from `fromInputRE` and the guards' 401, stay Nest exceptions. The `code` is what the frontend translates, so a new error needs a code, and the frontend's `errors.<code>` translations (its `translationKeys.spec.ts` reads the codes from these files and fails otherwise). A new kind needs its status in the filter.
+Domain errors know nothing of HTTP. Each is one class in `domain/*.errors.ts`, `export class UserCPFAlreadyExistsException extends domainError(DomainErrorKindEnum.Conflict, "user.cpfTaken", "…") {}` (`shared/utils/domain/shared.errors.ts`), with a small factory function (`userCPFAlreadyExistsException = () => new …()`, passing `{ details }` when the client needs data to act on). `DomainErrorFilter` (`shared/utils/http/domainError.filter.ts`, registered in `app.setup.ts`) answers a rejected task with the kind's status (not found 404, conflict 409, invalid 422 for input that breaks a business rule, unauthorized 401, forbidden 403, unknown 500) and Nest's usual body plus the `code` and any `details`; other errors, such as the 422 from `fromInputRE` and the guards' 401, stay Nest exceptions. A refusal the frontend shouldn't log out on is a `Forbidden` domain error, never a guard (it logs out on a 403 without a code). A new code goes in the contracts' `errorCodes` (`errors.ts`), with what it sends in `ErrorDetailsOf` when it sends details: `domainError` takes only listed codes and checks the details against them, and `contractErrorCodes.unit-spec.ts` fails on a listed code no error uses. Every code needs its frontend `errors.<code>` translation (`translationKeys.spec.ts` checks). A new kind needs its status in the filter.
 
 ### Domain events
 
@@ -136,7 +135,7 @@ Domain errors know nothing of HTTP. Each is a `DomainError` subclass (`shared/ut
 - Refresh tokens also carry the user's `tokenVersion`. `POST /v1/logout` and a user update that changes the password, email or role increment it (`UserRepository.incrementTokenVersion`), which revokes every refresh token issued before. Access tokens remain stateless and valid until they expire.
 - `POST /v1/login` is rate-limited per client IP and email (`LoginThrottlerGuard`; `LOGIN_RATE_LIMIT` and `LOGIN_RATE_WINDOW_SECONDS`). Client IPs come from `X-Forwarded-For` only when `TRUST_PROXY` lists the proxy.
 - Ownership checks: clients rent for themselves and may return only their own rentals; someone else's rental is reported as 404.
-- User responses must go through `toUserResponse` (`user/dtos/user.dto.ts`) so `password` and `tokenVersion` are never returned.
+- User responses must go through `toUserResponse` (`user/domain/userViews.ts`) so `password` and `tokenVersion` are never returned.
 
 ### Tests
 
@@ -158,7 +157,7 @@ Domain errors know nothing of HTTP. Each is a `DomainError` subclass (`shared/ut
   - `errorHandlerInterceptor`: on a 401 it refreshes the token once and retries the request; it logs out on 403 or when the refresh fails.
 - The app is zoneless (`provideZonelessChangeDetection()` in `app.config.ts`, no zone.js). State that changes outside template events (timers, promises, subscriptions) must go through signals, the `async` pipe or `markForCheck()`, or the view won't update.
 - Components use OnPush, which is the default since Angular 22: leave `changeDetection` out. The `prefer-on-push-component-change-detection` lint rule rejects `Eager`. A component whose template reads state changed outside its own template events (router events, other services) must call `markForCheck()` or use signals or the `async` pipe; see the `NavigationEnd` handler in `sidebar.component.ts`.
-- Translations (ngx-translate): `shared/i18n/translations/pt-BR.ts` is the source, nested by area (`books.list.title`, `common.cancel`); `TranslationKey` is derived from it, and `en-US.ts` must have the same shape or the build fails. Templates use `"books.list.title" | translate`; TypeScript passes keys typed `TranslationKey` or wrapped in `t()` (`translate.instant(t("books.created"))`). `translationKeys.spec.ts` reads the templates and code and fails on unknown or unused keys, and checks `errors.<code>` against the backend's error codes, which the error interceptor translates.
+- Translations (ngx-translate): `shared/i18n/translations/pt-BR.ts` is the source, nested by area (`books.list.title`, `common.cancel`); `TranslationKey` is derived from it, and `en-US.ts` must have the same shape or the build fails. Templates use `"books.list.title" | translate`; TypeScript passes keys typed `TranslationKey` or wrapped in `t()` (`translate.instant(t("books.created"))`). `translationKeys.spec.ts` reads the templates and code and fails on unknown or unused keys, and checks `errors.<code>` against the contracts' `errorCodes`, which the error interceptor translates.
 - State that templates read is a signal (`signal`, `computed`, `input()`, `viewChild()`/`contentChildren()`, `toSignal`); request pipelines stay RxJS (services, interceptors, `PaginatedDataSource`, where `switchMap` cancels a stale request). Unsubscribe with `takeUntilDestroyed()`.
 - Shared building blocks in `shared/components/`: `app-page-header` (page title and actions), `app-form-card` (form pages), `customizedTable` with `PaginatedDataSource` (lists), `ConfirmDialog.confirm()` (destructive actions) and `app-theme-toggle`. Messages go through `NotificationService` (`services/`): `success(key)` and `error(key)` take translation keys, `errorMessage(text)` takes text that's already translated, like the API's errors, and `persistent(key, actionKey)` stays until its action is picked, coming back after other messages (the update alert). Colors come from Material's `--mat-sys-*` variables and spacing from `--space-1`…`--space-6` (`theme/_variables.scss`), so both light and dark schemes work.
 - Small screens are below 768px (`smallScreenQuery` and `injectIsSmallScreen()` in `shared/utils/smallScreen.utility.ts`; SCSS uses `@media (width < 768px)`). There the sidebar becomes a menu opened from the header, and the lists pass fewer columns to `customizedTable` through `[columns]`, moving the rest under the main cell.
@@ -170,9 +169,10 @@ Domain errors know nothing of HTTP. Each is a `DomainError` subclass (`shared/ut
 `packages/contracts` (`@library/contracts`) is the API's promise: the shapes requests and responses have, and the values and rules both apps need. It holds only Zod: no Nest, fp-ts or Prisma; moments are `Timestamp` (an ISO string on the wire, a `Date` in the backend), lists `page(item)`. It's built to ESM in `dist/` (`yarn install` builds it; `yarn contracts:watch` while editing it), and both apps import the build.
 
 - A domain is two files: `<domain>/values.ts`, the enums as `as const` objects and the rules (`inWholeCentavos`), without Zod, since the frontend imports them at runtime and its bundle must stay free of it; and `<domain>/schemas.ts`, the requests and responses, each named for Swagger with `contract(schema, { id, description })`. A schema's exported type is the wire's (`z.input`).
-- Backend: a command's `props` is its request type. A controller takes it as its `@Body()`, returns `Promise<Sent<typeof X>>`, so a response missing a field doesn't compile, and documents them with `@ApiBody({ schema: contractRef(X) })` and `schema: contractRef(X)` in its responses (`contractList(X)` for a list); `app.setup.ts` adds every contract to the OpenAPI document. Query parameters keep their Swagger DTO class. Entities stay in the backend's domain.
+- Shared building blocks: `common.ts` (`Id`, `BusinessDate`, `Timestamp`, `page(item)`, `PageQuery`, `optionalParam`, `QueryString`), `errors.ts` (every error code and its details) and `openapi.ts` (`contractRef`, `contractList`, `contractQuery`).
+- Backend: a command's `props` is its request type. A controller takes it as its `@Body()`, returns `Promise<Sent<typeof X>>`, so a response missing a field doesn't compile, and documents them with `@ApiBody({ schema: contractRef(X) })` and `schema: contractRef(X)` in its responses (`contractList(X)` for a list); `app.setup.ts` adds every contract to the OpenAPI document. A query string is a contract too, read by the handler and documented with `@ApiQueryContract(X)` (`shared/utils/http/apiQueryContract.ts`; `PageQuery` for a list's page, `optionalParam` for a filter left blank), and the controller types it `QueryString<typeof X>` (strings, as they arrive). An enum the backend names differently re-exports the contract's (`RentalStatusEnum = RentalStatus`). Entities stay in the backend's domain: a contract is what the API promises, an entity how the backend models it, and the views map one to the other (`toUserResponse`, `toBookRentalResponse`).
 - Frontend: `import type` the shapes, under the screens' names where they differ (`BookEntity = BookInfo`), and import the values.
-- `book` is in the contracts; the others keep their `dtos/` and hand-written frontend models until they move, one at a time, so there are never three copies.
+- Every module's API is in the contracts: there are no DTO classes, and the frontend's models are aliases of the contracts, so a shape is written once.
 - Its specs (`src/**/*.spec.ts`, `yarn test` in the package) keep it at 100%; its Prettier config is the backend's (`yarn format`).
 
 ## Adding a feature
@@ -182,17 +182,18 @@ Copy the closest existing module and rename it: `user` for plain CRUD, `rental` 
 Backend (`src/modules/<name>/`, imported as `@modules/<name>/…`):
 
 1. **Model**: add `prisma/schema/<name>.prisma`, run `yarn migrate --name <change>` and `yarn generate`. Add its `TableNameEnum` entry and id prefix in `test/util/defaultIds.ts`. `resetDatabase` empties the new table by itself.
-2. **Domain**: the Zod entity in `domain/<name>.entity.ts`; errors in `domain/<name>.errors.ts`, each a `DomainError` with a kind and a code, and a case in `test/modules/<name>/<name>Errors.unit-spec.ts` (`itAnswersWithErrorCodes`); events in `domain/events/`, each with its factory, exported as `All<Name>Events` and spread into `DomainEvent` (`shared/domainEventPublisher/domainEvent.ts`), or publishing fails validation.
+2. **Domain**: the Zod entity in `domain/<name>.entity.ts`; errors in `domain/<name>.errors.ts`, each a `domainError(kind, code, message)` class with its code in the contracts' `errorCodes`, and a case in `test/modules/<name>/<name>Errors.unit-spec.ts` (`itAnswersWithErrorCodes`); events in `domain/events/`, each with its factory, exported as `All<Name>Events` and spread into `DomainEvent` (`shared/domainEventPublisher/domainEvent.ts`), or publishing fails validation.
 3. **Repository**: the port, the Prisma repository and the fake (`database/`). Bind the port in `<name>.module.ts`, and the fake in `test/util/handlerModule.ts` (`fakeRepository(Port, Fake)`) so unit tests get it.
-4. **Use cases**: a `commands/` or `queries/` folder per use case, each controller with `AuthGuard` (and `RolesGuard` with `@Roles` when restricted). A public route goes in `publicRoutes` (`routeProtection.e2e-spec.ts`).
-5. **Register** the module in `src/app.module.ts`.
-6. **Tests**, in `test/modules/<name>/`: its builder, unit specs for the handlers, an integration spec for the Prisma repository and e2e specs for the routes. `yarn test:cov` requires 100% coverage, fakes included.
+4. **Contracts**: the requests and responses in `packages/contracts/src/<name>/` (`values.ts` and `schemas.ts`) with their spec.
+5. **Use cases**: a `commands/` or `queries/` folder per use case, each controller with `AuthGuard` (and `RolesGuard` with `@Roles` when restricted). A public route goes in `publicRoutes` (`routeProtection.e2e-spec.ts`).
+6. **Register** the module in `src/app.module.ts`.
+7. **Tests**, in `test/modules/<name>/`: its builder, unit specs for the handlers, an integration spec for the Prisma repository and e2e specs for the routes. `yarn test:cov` requires 100% coverage, fakes included.
 
 Frontend:
 
 1. **Data**: the model and `<name>.http.service.ts` in `pages/<name>/`, with a spec that pins each URL and method.
 2. **Pages**: `pages/<name>/<name>.routes.ts`, loaded from `pages/pages.routes.ts` with `data: { roles }`, plus cases in `pages.routes.spec.ts`; the sidebar entry in `layouts/components/sidebar/navMenuItems.ts`. Build them from the shared components (`app-page-header`, `app-form-card`, `customizedTable`).
-3. **Text**: keys in `pt-BR.ts` and the same shape in `en-US.ts`, including `errors.<code>` for each new backend error code (`translationKeys.spec.ts`).
+3. **Text**: keys in `pt-BR.ts` and the same shape in `en-US.ts`, including `errors.<code>` for each new error code (`translationKeys.spec.ts`).
 
 ## CI and deployment
 

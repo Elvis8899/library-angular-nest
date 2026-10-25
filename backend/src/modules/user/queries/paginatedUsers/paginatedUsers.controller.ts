@@ -1,4 +1,10 @@
-import { contractRef, Sent, UserPage } from "@library/contracts";
+import {
+  contractRef,
+  PageQuery,
+  QueryString,
+  Sent,
+  UserPage,
+} from "@library/contracts";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
 import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
@@ -14,7 +20,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { Paginated } from "@shared/utils/database/repository.port";
-import { PaginatedQueryRequestDto } from "@shared/utils/dtos/paginatedQuery.request.dto";
+import { ApiQueryContract } from "@shared/utils/http/apiQueryContract";
 
 @Controller("v1/")
 @ApiTags("Usuários")
@@ -30,16 +36,18 @@ export class PaginatedUserController {
   @UseGuards(RolesGuard)
   @Roles(UserRoleEnum.Admin)
   @ApiOperation({ summary: "Listar Usuários" })
+  @ApiQueryContract(PageQuery)
   @ApiResponse({
     status: HttpStatus.OK,
     schema: contractRef(UserPage),
   })
   async paginatedUsers(
-    @Query() queryParams: PaginatedQueryRequestDto,
+    // Parsed by the handler
+    @Query() { page, limit }: QueryString<typeof PageQuery>,
   ): Promise<Sent<typeof UserPage>> {
     return this.queryBus
       .execute<PaginatedUsersQuery, Paginated<User>>(
-        new PaginatedUsersQuery(queryParams),
+        new PaginatedUsersQuery({ page, limit }),
       )
       .then((result) => ({
         count: result.count,

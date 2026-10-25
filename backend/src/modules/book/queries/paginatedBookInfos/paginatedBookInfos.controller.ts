@@ -1,7 +1,13 @@
-import { BookInfoPage, Sent, contractRef } from "@library/contracts";
+import {
+  BookInfoPage,
+  BookInfoQuery,
+  contractRef,
+  PageQuery,
+  QueryString,
+  Sent,
+} from "@library/contracts";
 import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
-import { PaginatedBookInfoQueryRequestDto } from "@modules/book/dtos/bookInfoQuery.dto";
 import { PaginatedBookInfosQuery } from "@modules/book/queries/paginatedBookInfos/paginatedBookInfos.query";
 import { Controller, Get, HttpStatus, Query, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
@@ -12,6 +18,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { Paginated } from "@shared/utils/database/repository.port";
+import { ApiQueryContract } from "@shared/utils/http/apiQueryContract";
 
 @Controller("v1/")
 @ApiBearerAuth()
@@ -25,22 +32,24 @@ export class PaginatedBookInfoController {
 
   @Get("bookInfos")
   @ApiOperation({ summary: "Listar Livros" })
+  @ApiQueryContract(PageQuery)
+  @ApiQueryContract(BookInfoQuery)
   @ApiResponse({
     status: HttpStatus.OK,
     schema: contractRef(BookInfoPage),
   })
   async paginatedBookInfos(
-    @Query() queryParams: PaginatedBookInfoQueryRequestDto,
+    // Parsed by the handler
+    @Query()
+    {
+      page,
+      limit,
+      ...filters
+    }: QueryString<typeof PageQuery> & QueryString<typeof BookInfoQuery>,
   ): Promise<Sent<typeof BookInfoPage>> {
     return this.queryBus
       .execute<PaginatedBookInfosQuery, Paginated<BookInfo>>(
-        new PaginatedBookInfosQuery(queryParams, {
-          name: queryParams.name,
-          createdFrom: queryParams.createdFrom,
-          createdBefore: queryParams.createdBefore,
-          sortBy: queryParams.sortBy,
-          order: queryParams.order,
-        }),
+        new PaginatedBookInfosQuery({ page, limit }, filters),
       )
       .then(({ count, limit, page, data }) => ({ count, limit, page, data }));
   }

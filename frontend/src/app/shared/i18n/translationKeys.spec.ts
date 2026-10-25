@@ -1,6 +1,7 @@
 import { enUS } from "@app/shared/i18n/translations/en-US";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { errorCodes } from "@library/contracts";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 // Keys from TypeScript are checked by the compiler (TranslationKey, t()).
@@ -46,26 +47,8 @@ const usedKeys = new Set(
   )
 );
 
-// The codes the API's errors carry, super(DomainErrorKindEnum.X,
-// "user.cpfTaken", …) in backend's domain/*.errors.ts; CI checks out both apps
-const backendModules = "../backend/src/modules";
-const backendErrorCodes = readdirSync(backendModules).flatMap((module) => {
-  const domain = join(backendModules, module, "domain");
-  const files = existsSync(domain) ? readdirSync(domain) : [];
-  return files
-    .filter((file) => file.endsWith(".errors.ts"))
-    .flatMap((file) =>
-      [
-        ...readFileSync(join(domain, file), "utf8").matchAll(
-          /DomainErrorKindEnum\.\w+,\s*"([\w.]+)"/g
-        ),
-      ].map((match) => match[1])
-    );
-});
-// errors.unknown is the interceptor's own, for errors without a body
-const apiErrorKeys = keys.filter(
-  (key) => key.startsWith("errors.") && key !== "errors.unknown"
-);
+// errors.unknown is also the interceptor's own, for errors without a body
+const apiErrorKeys = keys.filter((key) => key.startsWith("errors."));
 
 describe("Translation keys", () => {
   it("Should find the templates and the code", () => {
@@ -85,9 +68,8 @@ describe("Translation keys", () => {
   });
 
   it("Should translate every API error code, and only those", () => {
-    expect(backendErrorCodes.length).toBeGreaterThan(0);
     expect([...apiErrorKeys].sort()).toEqual(
-      backendErrorCodes.map((code) => `errors.${code}`).sort()
+      errorCodes.map((code) => `errors.${code}`).sort()
     );
   });
 

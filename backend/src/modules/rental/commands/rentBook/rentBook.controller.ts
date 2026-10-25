@@ -1,9 +1,9 @@
+import { contractRef, RentBookRequest } from "@library/contracts";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
 import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { AuthenticatedRequest } from "@modules/auth/guards/authenticatedRequest";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { RentBookCommand } from "@modules/rental/commands/rentBook/rentBook.command";
-import { BookRentalDto } from "@modules/rental/dtos/bookRental.dto";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import {
   Body,
@@ -17,6 +17,7 @@ import {
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiOperation,
@@ -46,15 +47,20 @@ export class RentBookController {
   @ApiCreatedResponse({ description: "Empréstimo criado com sucesso." })
   @ApiUnprocessableEntityResponse({ description: "Livro inválido." })
   @ApiConflictResponse({ description: "Livro já está emprestado." })
+  @ApiBody({ schema: contractRef(RentBookRequest) })
   async createBookInfo(
-    @Body() bookRentalInput: BookRentalDto,
+    @Body() bookRentalInput: RentBookRequest,
     @Request() req: AuthenticatedRequest,
   ): Promise<void> {
-    if (req.user.role !== UserRoleEnum.Admin) {
-      bookRentalInput.userId = req.user.sub;
-    }
+    // A client rents for themselves
+    const userId =
+      req.user.role === UserRoleEnum.Admin
+        ? bookRentalInput.userId
+        : req.user.sub;
     return this.commandBus
-      .execute<RentBookCommand>(new RentBookCommand(bookRentalInput))
+      .execute<RentBookCommand>(
+        new RentBookCommand({ ...bookRentalInput, userId }),
+      )
       .then(noop);
   }
 }

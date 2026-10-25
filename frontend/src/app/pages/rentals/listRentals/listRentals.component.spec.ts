@@ -32,6 +32,8 @@ describe("ListRentalsComponent", () => {
     fines: BookRentalEntity["fines"]
   ): BookRentalEntity => ({
     id,
+    bookItemId: "item-1",
+    userId: "user-1",
     userName: "Ana Souza",
     bookName,
     rentalStatus: BookRentalStatusEnum.Rented,

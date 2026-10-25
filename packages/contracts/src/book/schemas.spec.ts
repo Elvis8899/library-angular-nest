@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BookInfoRequest, BookItemRequest } from "./schemas.js";
+import { BookInfoQuery, BookInfoRequest, BookItemRequest } from "./schemas.js";
 import { inWholeCentavos } from "./values.js";
 
 describe("book contracts", () => {
@@ -27,5 +27,34 @@ describe("book contracts", () => {
     expect(BookItemRequest.safeParse({ bookId, status: "lost" }).success).toBe(
       false,
     );
+  });
+
+  it("Should read the list's filters, blank ones as none, and order by the newest", () => {
+    expect(BookInfoQuery.parse({ name: " dom ", createdFrom: "" })).toEqual({
+      name: "dom",
+      sortBy: "createdAt",
+      order: "desc",
+    });
+    expect(
+      BookInfoQuery.parse({
+        createdFrom: "2026-10-13T03:00:00.000Z",
+        sortBy: "name",
+        order: "asc",
+      }),
+    ).toEqual({
+      createdFrom: new Date("2026-10-13T03:00:00.000Z"),
+      sortBy: "name",
+      order: "asc",
+    });
+  });
+
+  it("Should refuse a period that ends before it starts, or an unknown order", () => {
+    expect(
+      BookInfoQuery.safeParse({
+        createdFrom: "2026-10-14T03:00:00.000Z",
+        createdBefore: "2026-10-13T03:00:00.000Z",
+      }).success,
+    ).toBe(false);
+    expect(BookInfoQuery.safeParse({ sortBy: "price" }).success).toBe(false);
   });
 });

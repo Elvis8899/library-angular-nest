@@ -156,7 +156,7 @@ export const ptBR = {
       invalid: "CPF ou CNPJ inválido",
     },
   },
-  // The API's error codes (errorBody in backend's shared.errors.ts);
+  // The API's error codes (the contracts' errorCodes);
   // the error interceptor shows these instead of the API's message
   errors: {
     unknown: "Algo deu errado. Tente novamente.",

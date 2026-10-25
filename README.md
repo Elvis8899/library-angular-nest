@@ -135,7 +135,7 @@ Then, in the repository's Settings → Secrets and variables → Actions: the se
 Makefile                   serverSetup, dockerDev, dockerProd, dockerMigrate, dockerCertificate
 .docker/                   compose files (dev and production), the production settings (.env.example), serverSetup.sh, nginx, Prometheus, pgAdmin
 backend/
-  src/modules/<feature>/   commands, queries, domain, database, dtos; core: shared, auth, user; example: book, rental
+  src/modules/<feature>/   commands, queries, domain, database; core: shared, auth, user; example: book, rental
   prisma/schema/           the Prisma schema, one file per module
   prisma/                  migrations, seed
   test/modules/<feature>/  each module's unit, integration and e2e specs, and its own builders
