@@ -46,16 +46,10 @@
     </mat-autocomplete>
   </mat-form-field>
 </mat-dialog-content>
-<mat-dialog-actions align="end">
-  <button [mat-dialog-close]="undefined" matButton name="cancelDialog">
-    {{ "common.cancel" | translate }}
-  </button>
-  <button
-    [disabled]="!selectedClient()"
-    [mat-dialog-close]="selectedClient()?.id"
-    matButton="filled"
-    name="confirmDialog"
-  >
-    {{ "rentals.rent.action" | translate }}
-  </button>
-</mat-dialog-actions>
+<app-dialog-actions
+  (accept)="rent()"
+  [cancelResult]="undefined"
+  [disabled]="!selectedClient()"
+  label="rentals.rent.action"
+  name="confirmDialog"
+/>

@@ -260,15 +260,6 @@
   resolved "https://registry.yarnpkg.com/@angular/language-service/-/language-service-22.2.3.tgz#e32f938aba2989b58a9cb8116f34b94c354f1805"
   integrity sha512-n7LJ7NaHiC+NMHscCInhHTAvCsBLi8WfF47KuVv1eGj6rgFn1ZMpE81OBIWdJbSdytarwSU3KInaYESjao0ItA==
 
-"@angular/localize@22.2.3":
-  version "22.2.3"
-  resolved "https://registry.yarnpkg.com/@angular/localize/-/localize-22.2.3.tgz#d363b9adcee262c85537765df5ec224d423aae6f"
-  integrity sha512-PAiV/k8ps4Qosu0VFk5/HIhjfQa0w4Y28+rx3aPIFei3d+kSak4yG5X9SiPWJQaSXr+YamS5pE/BipLYLNvwqA==
-  dependencies:
-    "@babel/core" "8.0.1"
-    tinyglobby "^0.2.12"
-    yargs "^18.0.0"
-
 "@angular/material@^22.2.3":
   version "22.2.3"
   resolved "https://registry.yarnpkg.com/@angular/material/-/material-22.2.3.tgz#e7ccfef5d87ed10bac1c8f93c74415a6eead34d1"
@@ -4343,11 +4334,6 @@ fastq@^1.17.1, fastq@^1.6.0:
   dependencies:
     reusify "^1.0.4"
 
-fdir@^6.4.4:
-  version "6.4.6"
-  resolved "https://registry.yarnpkg.com/fdir/-/fdir-6.4.6.tgz#2b268c0232697063111bbf3f64810a2a741ba281"
-  integrity sha512-hiFoqpyZcfNm1yc4u8oWCf9A2c4D3QjCrks3zmoVKVxpQRzmPNar1hUJcBG2RQHvEVGDN+Jm81ZheVLAQMK6+w==
-
 fdir@^6.5.0:
   version "6.5.0"
   resolved "https://registry.yarnpkg.com/fdir/-/fdir-6.5.0.tgz#ed2ab967a331ade62f18d077dae192684d50d350"
@@ -6127,7 +6113,7 @@ real-require@^1.0.0:
   resolved "https://registry.yarnpkg.com/real-require/-/real-require-1.0.0.tgz#e4f0a3737e8060c513b60c2652c58b8ef56bc8a9"
   integrity sha512-P4nbQYQfePJxRSmY+v/KINxVucm4NF3p3s7pJveMTtom52FR4YGltUQLB8idDXwDDWW+eYrWDFbuzUnjoWHF7g==
 
-reflect-metadata@^0.2.0, reflect-metadata@^0.2.1, reflect-metadata@^0.2.2:
+reflect-metadata@^0.2.0, reflect-metadata@^0.2.2:
   version "0.2.2"
   resolved "https://registry.npmjs.org/reflect-metadata/-/reflect-metadata-0.2.2.tgz"
   integrity sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q==
@@ -6879,14 +6865,6 @@ tinyglobby@0.2.17, tinyglobby@^0.2.17:
   dependencies:
     fdir "^6.5.0"
     picomatch "^4.0.4"
-
-tinyglobby@^0.2.12:
-  version "0.2.14"
-  resolved "https://registry.yarnpkg.com/tinyglobby/-/tinyglobby-0.2.14.tgz#5280b0cf3f972b050e74ae88406c0a6a58f4079d"
-  integrity sha512-tX5e7OM1HnYr2+a2C/4V0htOcSQcoSTH9KgJnVvNm5zm/cyEWKJ7j7YutsH9CxMdtOkkLFy2AHrMci9IM8IPZQ==
-  dependencies:
-    fdir "^6.4.4"
-    picomatch "^4.0.2"
 
 tinyglobby@^0.2.15:
   version "0.2.15"

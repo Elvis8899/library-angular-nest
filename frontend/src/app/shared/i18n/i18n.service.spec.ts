@@ -1,7 +1,14 @@
 import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { Logger } from "@app/services/logger.service";
-import { I18nService } from "@app/shared/i18n/i18n.service";
-import { LangChangeEvent, TranslateService } from "@ngx-translate/core";
+import { I18nService, textFiles } from "@app/shared/i18n/i18n.service";
+import { enUS } from "@app/shared/i18n/translations/en-US";
+import { enUSPages } from "@app/shared/i18n/translations/pages.en-US";
+import { ptBRPages } from "@app/shared/i18n/translations/pages.pt-BR";
+import {
+  LangChangeEvent,
+  TranslateService,
+  TranslationObject,
+} from "@ngx-translate/core";
 import {
   createServiceFactory,
   SpectatorService,
@@ -64,22 +71,22 @@ describe("I18nService", () => {
   });
 
   describe("init", () => {
-    it("should init with default language", () => {
+    it("should init with default language", async () => {
       // Act
-      spectator.service.init(defaultLanguage, supportedLanguages);
+      await spectator.service.init(defaultLanguage, supportedLanguages);
 
       // Assert
       expect(translateService.use).toHaveBeenCalledWith(defaultLanguage);
       expect(onLangChangeSpy).toHaveBeenCalledWith(defaultLanguage);
     });
 
-    it("should init with save language", () => {
+    it("should init with save language", async () => {
       // Arrange
       const savedLanguage = "eo";
       localStorage.setItem("language", savedLanguage);
 
       // Act
-      spectator.service.init(defaultLanguage, supportedLanguages);
+      await spectator.service.init(defaultLanguage, supportedLanguages);
 
       // Assert
       expect(translateService.use).toHaveBeenCalledWith(savedLanguage);
@@ -88,52 +95,52 @@ describe("I18nService", () => {
   });
 
   describe("set language", () => {
-    it("should change current language", () => {
+    it("should change current language", async () => {
       // Arrange
       const newLanguage = "eo";
-      spectator.service.init(defaultLanguage, supportedLanguages);
+      await spectator.service.init(defaultLanguage, supportedLanguages);
 
       // Act
-      spectator.service.setLanguage(newLanguage);
+      await spectator.service.setLanguage(newLanguage);
 
       // Assert
       expect(translateService.use).toHaveBeenCalledWith(newLanguage);
       expect(onLangChangeSpy).toHaveBeenCalledWith(newLanguage);
     });
 
-    it("should change current language without a region match", () => {
+    it("should change current language without a region match", async () => {
       // Arrange
       const newLanguage = "fr-CA";
-      spectator.service.init(defaultLanguage, supportedLanguages);
+      await spectator.service.init(defaultLanguage, supportedLanguages);
 
       // Act
-      spectator.service.setLanguage(newLanguage);
+      await spectator.service.setLanguage(newLanguage);
 
       // Assert
       expect(translateService.use).toHaveBeenCalledWith("fr-FR");
       expect(onLangChangeSpy).toHaveBeenCalledWith("fr-FR");
     });
 
-    it("should change current language to default if unsupported", () => {
+    it("should change current language to default if unsupported", async () => {
       // Arrange
       const newLanguage = "es";
-      spectator.service.init(defaultLanguage, supportedLanguages);
+      await spectator.service.init(defaultLanguage, supportedLanguages);
 
       // Act
-      spectator.service.setLanguage(newLanguage);
+      await spectator.service.setLanguage(newLanguage);
 
       // Assert
       expect(translateService.use).toHaveBeenCalledWith(defaultLanguage);
       expect(onLangChangeSpy).toHaveBeenCalledWith(defaultLanguage);
     });
 
-    it("should change current language", () => {
+    it("should change current language", async () => {
       // Arrange
-      spectator.service.init("", supportedLanguages);
+      await spectator.service.init("", supportedLanguages);
       localStorage.clear();
 
       // Act
-      spectator.service.setLanguage("");
+      await spectator.service.setLanguage("");
 
       // Assert
       expect(translateService.use).toHaveBeenCalledWith("");
@@ -142,9 +149,9 @@ describe("I18nService", () => {
   });
 
   describe("set title", () => {
-    it("Pipe should be activated on Router NavigationEnd", () => {
+    it("Pipe should be activated on Router NavigationEnd", async () => {
       // Arrange
-      spectator.service.init(defaultLanguage, supportedLanguages);
+      await spectator.service.init(defaultLanguage, supportedLanguages);
       const spy = vi.spyOn(spectator.service, "setTitle");
       const router = spectator.inject(Router);
       const event = new NavigationEnd(1703, `/users/list`, "/");
@@ -157,9 +164,9 @@ describe("I18nService", () => {
   });
 
   describe("get language", () => {
-    it("should return current language", () => {
+    it("should return current language", async () => {
       // Arrange
-      spectator.service.init(defaultLanguage, supportedLanguages);
+      await spectator.service.init(defaultLanguage, supportedLanguages);
 
       // Act
       const currentLanguage = spectator.service.language;
@@ -168,9 +175,9 @@ describe("I18nService", () => {
       expect(currentLanguage).toEqual(defaultLanguage);
     });
 
-    it("should return the default language before one is in use", () => {
+    it("should return the default language before one is in use", async () => {
       // Arrange
-      spectator.service.init(defaultLanguage, supportedLanguages);
+      await spectator.service.init(defaultLanguage, supportedLanguages);
       vi.spyOn(translateService, "getCurrentLang").mockReturnValue(null);
 
       // Act
@@ -201,27 +208,27 @@ describe("I18nService", () => {
   });
 
   describe("setTitle", () => {
-    it("should set title", () => {
+    it("should set title", async () => {
       // Arrange
-      spectator.service.init(defaultLanguage, supportedLanguages);
+      await spectator.service.init(defaultLanguage, supportedLanguages);
       const spy = vi.spyOn(spectator.service, "getTitle");
       spy.mockReturnValueOnce(["title", "title1", "title2"]);
       // Act
       spectator.service.setTitle();
     });
 
-    it("should set title", () => {
+    it("should set title", async () => {
       // Arrange
-      spectator.service.init(defaultLanguage, supportedLanguages);
+      await spectator.service.init(defaultLanguage, supportedLanguages);
       const spy = vi.spyOn(spectator.service, "getTitle");
       spy.mockReturnValueOnce([]);
       // Act
       spectator.service.setTitle();
     });
 
-    it("should set title without fn", () => {
+    it("should set title without fn", async () => {
       // Arrange
-      spectator.service.init(defaultLanguage, supportedLanguages);
+      await spectator.service.init(defaultLanguage, supportedLanguages);
       const spy = vi.spyOn(spectator.service, "getTitle");
       const newTitle = "Test1";
       spy.mockReturnValueOnce([newTitle]);
@@ -232,13 +239,82 @@ describe("I18nService", () => {
     });
   });
 
-  it("Should remember the selected language", () => {
+  it("Should remember the selected language", async () => {
     // Arrange
-    spectator.service.init(defaultLanguage, supportedLanguages);
+    await spectator.service.init(defaultLanguage, supportedLanguages);
     // Act
-    spectator.service.setLanguage("fr-FR");
+    await spectator.service.setLanguage("fr-FR");
     // Assert
     expect(localStorage.getItem("language")).toBe("fr-FR");
     expect(document.documentElement.lang).toBe("fr-FR");
+  });
+
+  describe("texts", () => {
+    const languages = ["pt-BR", "en-US"];
+
+    beforeEach(() => vi.spyOn(translateService, "setTranslation"));
+
+    it("Should load a language's core texts once, before using it", async () => {
+      // The service started in pt-BR, which loaded its core
+      await spectator.service.init("pt-BR", languages);
+      await spectator.service.setLanguage("en-US");
+      await spectator.service.setLanguage("en-US");
+
+      expect(translateService.setTranslation).toHaveBeenCalledExactlyOnceWith(
+        "en-US",
+        enUS,
+        true
+      );
+      expect(translateService.use).toHaveBeenLastCalledWith("en-US");
+    });
+
+    it("Should load the pages' texts once, and with a language picked later", async () => {
+      await spectator.service.init("pt-BR", languages);
+      await spectator.service.loadPages();
+      await spectator.service.loadPages();
+      await spectator.service.setLanguage("en-US");
+
+      expect(translateService.setTranslation).toHaveBeenCalledWith(
+        "pt-BR",
+        ptBRPages,
+        true
+      );
+      expect(translateService.setTranslation).toHaveBeenCalledWith(
+        "en-US",
+        enUSPages,
+        true
+      );
+      // pt-BR's pages, en-US's core and pages
+      expect(translateService.setTranslation).toHaveBeenCalledTimes(3);
+    });
+
+    it("Should keep the language picked last", async () => {
+      await spectator.service.init("pt-BR", languages);
+      let loaded: (texts: TranslationObject) => void = noop;
+      vi.spyOn(textFiles["en-US"], "core").mockReturnValueOnce(
+        new Promise((resolve) => (loaded = resolve))
+      );
+      const slower = spectator.service.setLanguage("en-US");
+      await spectator.service.setLanguage("pt-BR");
+      loaded(enUS);
+      await slower;
+
+      expect(translateService.use).toHaveBeenLastCalledWith("pt-BR");
+    });
+
+    it("Should try a part that failed to load again", async () => {
+      await spectator.service.init("pt-BR", languages);
+      const error = new Error("Failed to fetch dynamically imported module");
+      vi.spyOn(textFiles["pt-BR"], "pages").mockRejectedValueOnce(error);
+
+      await expect(spectator.service.loadPages()).rejects.toBe(error);
+      await spectator.service.loadPages();
+
+      expect(translateService.setTranslation).toHaveBeenCalledWith(
+        "pt-BR",
+        ptBRPages,
+        true
+      );
+    });
   });
 });

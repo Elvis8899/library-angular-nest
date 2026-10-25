@@ -3,14 +3,14 @@ import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { MatButton } from "@angular/material/button";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInput } from "@angular/material/input";
-import { MatProgressSpinner } from "@angular/material/progress-spinner";
 import { Router, RouterLink } from "@angular/router";
 import { BookService } from "@app/pages/books/book.http.service";
 import { Logger } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { FormCardComponent } from "@app/shared/components/formCard/formCard.component";
+import { BusyDirective } from "@app/shared/directives/busy.directive";
+import { injectSaving } from "@app/shared/utils/saving.utility";
 import { TranslatePipe } from "@ngx-translate/core";
-import { finalize } from "rxjs";
 
 const log = new Logger("AddBookComponent");
 
@@ -26,7 +26,7 @@ const noImage = "images/no-image.png";
     MatButton,
     MatFormFieldModule,
     MatInput,
-    MatProgressSpinner,
+    BusyDirective,
     FormCardComponent,
     TranslatePipe,
   ],
@@ -47,7 +47,7 @@ export class AddBooksComponent {
     ]),
   });
 
-  readonly saving = signal(false);
+  readonly saving = injectSaving(log);
   // Set when the cover's URL doesn't load
   readonly imageFailed = signal(false);
 
@@ -70,22 +70,14 @@ export class AddBooksComponent {
       this.addBookForm.markAllAsTouched();
       return;
     }
-    if (this.saving()) return;
-    this.saving.set(true);
     const book = this.addBookForm.getRawValue();
-    this._bookService
+    this.saving.run(
       // A valid form has a price
-      .addBook({ ...book, price: Number(book.price) })
-      .pipe(finalize(() => this.saving.set(false)))
-      .subscribe({
-        next: () => {
-          this._notify.success("books.created");
-          this._router.navigate(["/books/list"]);
-        },
-        error: (error: Error) => {
-          this._notify.errorMessage(error?.message);
-          log.error(error);
-        },
-      });
+      this._bookService.addBook({ ...book, price: Number(book.price) }),
+      () => {
+        this._notify.success("books.created");
+        this._router.navigate(["/books/list"]);
+      }
+    );
   }
 }

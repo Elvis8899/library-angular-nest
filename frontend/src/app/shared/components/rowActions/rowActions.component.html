@@ -1,0 +1,25 @@
+<button
+  [attr.aria-label]="label() | translate"
+  [matMenuTriggerFor]="menu"
+  [matTooltip]="label() | translate"
+  mat-icon-button
+  name="more"
+  type="button"
+>
+  <mat-icon>more_vert</mat-icon>
+</button>
+<mat-menu #menu="matMenu">
+  @for (action of actions(); track action.name) {
+    @if (!action.shown || action.shown(row())) {
+      <button
+        (click)="action.run(row())"
+        [name]="action.name"
+        mat-menu-item
+        type="button"
+      >
+        <mat-icon>{{ action.icon }}</mat-icon>
+        {{ action.label | translate }}
+      </button>
+    }
+  }
+</mat-menu>

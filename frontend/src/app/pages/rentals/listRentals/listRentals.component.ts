@@ -1,10 +1,5 @@
-import {
-  CurrencyPipe,
-  DatePipe,
-  formatCurrency,
-  NgTemplateOutlet,
-} from "@angular/common";
-import { Component, computed, inject, LOCALE_ID, OnInit } from "@angular/core";
+import { DatePipe, NgTemplateOutlet } from "@angular/common";
+import { Component, computed, inject, OnInit } from "@angular/core";
 import { MatIconButton } from "@angular/material/button";
 import { MatIcon } from "@angular/material/icon";
 import { MatTableModule } from "@angular/material/table";
@@ -18,7 +13,14 @@ import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dial
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { PaginatedDataSource } from "@app/shared/components/customizedTable/paginatedDataSource";
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
+import { CellDefDirective } from "@app/shared/directives/cellDef.directive";
+import {
+  templateContext,
+  TemplateContextDirective,
+} from "@app/shared/directives/templateContext.directive";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
+import { MoneyPipe } from "@app/shared/pipes/number.pipes";
+import { moneyFormat } from "@app/shared/utils/numberFormat.utility";
 import { injectIsSmallScreen } from "@app/shared/utils/smallScreen.utility";
 import { TranslatePipe } from "@ngx-translate/core";
 import { filter } from "rxjs";
@@ -31,7 +33,9 @@ const log = new Logger("ListRentalsComponent");
   templateUrl: "./listRentals.component.html",
   styleUrl: "./listRentals.component.scss",
   imports: [
-    CurrencyPipe,
+    CellDefDirective,
+    TemplateContextDirective,
+    MoneyPipe,
     DatePipe,
     NgTemplateOutlet,
     MatIconButton,
@@ -45,6 +49,8 @@ const log = new Logger("ListRentalsComponent");
 })
 export class ListRentalsComponent implements OnInit {
   data!: PaginatedDataSource<BookRentalEntity, object>;
+  // Types the row templates' let-rental
+  readonly rowContext = templateContext<{ $implicit: BookRentalEntity }>();
 
   readonly locale = injectCurrentLocale();
   readonly isSmallScreen = injectIsSmallScreen();
@@ -58,7 +64,6 @@ export class ListRentalsComponent implements OnInit {
   // Clients only see their own rentals, so only admins see who rented
   readonly showClient = inject(CredentialsService).isAdmin();
 
-  private readonly _defaultLocale = inject(LOCALE_ID);
   private readonly _rentalService = inject(RentalService);
   private readonly _confirmDialog = inject(ConfirmDialog);
   private readonly _notify = inject(NotificationService);
@@ -83,8 +88,7 @@ export class ListRentalsComponent implements OnInit {
   }
 
   fineDetailsParams(rental: BookRentalEntity) {
-    const locale = this.locale() ?? this._defaultLocale;
-    const money = (value: number) => formatCurrency(value, locale, "R$", "BRL");
+    const money = moneyFormat(this.locale());
     return {
       fixed: money(rental.fines.fixed),
       perDay: money(rental.fines.perDayValue),

@@ -449,7 +449,7 @@ describe("ListBooksComponent", () => {
       // Assert
       expect(spectator.query("button[name='addBook']")).toBeNull();
       // Act
-      spectator.click("button[name='moreActions']");
+      spectator.click("button[name='more']");
       spectator.inject(ApplicationRef).tick();
       spectator.click(
         spectator.query("button[name='addBook']", { root: true })!
@@ -459,7 +459,7 @@ describe("ListBooksComponent", () => {
         bookId: "1",
       });
       // Act
-      spectator.click("button[name='moreActions']");
+      spectator.click("button[name='more']");
       spectator.inject(ApplicationRef).tick();
       spectator.click(
         spectator.query("button[name='removeBook']", { root: true })!
@@ -468,6 +468,22 @@ describe("ListBooksComponent", () => {
       expect(bookServiceMock.deleteBookItem).toHaveBeenCalledExactlyOnceWith(
         "1"
       );
+    });
+
+    it("Should leave removing out of the menu of a book with no available copy", () => {
+      // Arrange
+      breakpoints.next({ matches: true, breakpoints: {} });
+      spectator.detectChanges();
+      // Act: the second book's menu
+      spectator.click(spectator.queryAll("button[name='more']")[1]!);
+      spectator.inject(ApplicationRef).tick();
+      // Assert
+      expect(
+        spectator.query("button[name='addBook']", { root: true })
+      ).toExist();
+      expect(
+        spectator.query("button[name='removeBook']", { root: true })
+      ).toBeNull();
     });
 
     it("Should not remove a copy when none is available", () => {

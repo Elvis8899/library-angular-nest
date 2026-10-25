@@ -90,7 +90,7 @@
   <app-customized-table [columns]="columns()" [data]="data">
     <ng-container matColumnDef="book">
       <th *matHeaderCellDef mat-header-cell>{{ "common.book" | translate }}</th>
-      <td *matCellDef="let book" mat-cell>
+      <td *matCellDef="let book; dataSource: data" mat-cell>
         <div class="book-cell">
           <img
             (error)="onCoverError($event)"
@@ -101,9 +101,7 @@
           <span class="book-text">
             <span class="book-name">{{ book.name }}</span>
             @if (isSmallScreen()) {
-              <span class="secondary">{{
-                book.price | currency: "BRL" : "symbol" : undefined : locale()
-              }}</span>
+              <span class="secondary">{{ book.price | money }}</span>
               <ng-container
                 *ngTemplateOutlet="availability; context: { $implicit: book }"
               />
@@ -117,8 +115,8 @@
       <th *matHeaderCellDef class="numeric" mat-header-cell>
         {{ "books.price" | translate }}
       </th>
-      <td *matCellDef="let book" class="numeric" mat-cell>
-        {{ book.price | currency: "BRL" : "symbol" : undefined : locale() }}
+      <td *matCellDef="let book; dataSource: data" class="numeric" mat-cell>
+        {{ book.price | money }}
       </td>
     </ng-container>
 
@@ -126,7 +124,7 @@
       <th *matHeaderCellDef mat-header-cell>
         {{ "books.availability.title" | translate }}
       </th>
-      <td *matCellDef="let book" mat-cell>
+      <td *matCellDef="let book; dataSource: data" mat-cell>
         <ng-container
           *ngTemplateOutlet="availability; context: { $implicit: book }"
         />
@@ -137,7 +135,7 @@
       <th *matHeaderCellDef class="actions-header" mat-header-cell>
         <span class="visually-hidden">{{ "common.actions" | translate }}</span>
       </th>
-      <td *matCellDef="let book" mat-cell>
+      <td *matCellDef="let book; dataSource: data" mat-cell>
         <div class="table-actions">
           <button
             (click)="openRentBookDialog(book)"
@@ -152,33 +150,7 @@
           @if (isAdmin()) {
             @if (isSmallScreen()) {
               <!-- The copy actions in a menu, so the row fits a phone -->
-              <button
-                [attr.aria-label]="'common.moreActions' | translate"
-                [matMenuTriggerFor]="copyMenu"
-                mat-icon-button
-                name="moreActions"
-              >
-                <mat-icon>more_vert</mat-icon>
-              </button>
-              <mat-menu #copyMenu>
-                <button
-                  (click)="addBookItem(book)"
-                  mat-menu-item
-                  name="addBook"
-                >
-                  <mat-icon>library_add</mat-icon>
-                  {{ "books.copies.add" | translate }}
-                </button>
-                <button
-                  (click)="removeBookItem(book)"
-                  [disabled]="!isBookAvailable(book)"
-                  mat-menu-item
-                  name="removeBook"
-                >
-                  <mat-icon>remove_circle_outline</mat-icon>
-                  {{ "books.copies.remove" | translate }}
-                </button>
-              </mat-menu>
+              <app-row-actions [actions]="copyActions" [row]="book" />
             } @else {
               <button
                 (click)="addBookItem(book)"
@@ -207,7 +179,7 @@
   </app-customized-table>
 </section>
 
-<ng-template #availability let-book>
+<ng-template #availability [appTemplateContext]="rowContext" let-book>
   @if (book.bookItems.length === 0) {
     <span class="chip">{{ "books.availability.none" | translate }}</span>
   } @else if (isBookAvailable(book)) {

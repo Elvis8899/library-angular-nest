@@ -7,5 +7,6 @@ export * from "./openapi.js";
 export * from "./registry.js";
 export * from "./rental/schemas.js";
 export * from "./rental/values.js";
+export * from "./text.js";
 export * from "./user/schemas.js";
 export * from "./user/values.js";

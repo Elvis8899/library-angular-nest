@@ -1,4 +1,4 @@
-import { CurrencyPipe, NgTemplateOutlet } from "@angular/common";
+import { NgTemplateOutlet } from "@angular/common";
 import { Component, computed, effect, inject, OnInit } from "@angular/core";
 import { MatButton, MatIconButton } from "@angular/material/button";
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
@@ -7,7 +7,6 @@ import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIcon } from "@angular/material/icon";
 import { MatInput } from "@angular/material/input";
-import { MatMenuModule } from "@angular/material/menu";
 import { MatSelectModule } from "@angular/material/select";
 import { MatTableModule } from "@angular/material/table";
 import { MatTooltip } from "@angular/material/tooltip";
@@ -28,7 +27,18 @@ import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dial
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { PaginatedDataSource } from "@app/shared/components/customizedTable/paginatedDataSource";
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
+import {
+  RowAction,
+  RowActionsComponent,
+} from "@app/shared/components/rowActions/rowActions.component";
+import { CellDefDirective } from "@app/shared/directives/cellDef.directive";
+import {
+  templateContext,
+  TemplateContextDirective,
+} from "@app/shared/directives/templateContext.directive";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
+import { t } from "@app/shared/i18n/translations/translationKey";
+import { MoneyPipe } from "@app/shared/pipes/number.pipes";
 import { injectIsSmallScreen } from "@app/shared/utils/smallScreen.utility";
 import { TypedDialog } from "@app/shared/utils/typedDialog.utility";
 import { TranslatePipe } from "@ngx-translate/core";
@@ -43,7 +53,9 @@ export const noCoverImage = "images/no-image.png";
   templateUrl: "./listBooks.component.html",
   styleUrl: "./listBooks.component.scss",
   imports: [
-    CurrencyPipe,
+    CellDefDirective,
+    TemplateContextDirective,
+    MoneyPipe,
     NgTemplateOutlet,
     MatButton,
     MatIconButton,
@@ -53,7 +65,7 @@ export const noCoverImage = "images/no-image.png";
     MatFormFieldModule,
     MatIcon,
     MatInput,
-    MatMenuModule,
+    RowActionsComponent,
     MatSelectModule,
     MatTableModule,
     MatTooltip,
@@ -64,6 +76,8 @@ export const noCoverImage = "images/no-image.png";
 })
 export class ListBooksComponent implements OnInit {
   data!: PaginatedDataSource<BookEntity, BookQuery>;
+  // Types the row templates' let-book
+  readonly rowContext = templateContext<{ $implicit: BookEntity }>();
 
   readonly dialog = inject(TypedDialog);
   readonly locale = injectCurrentLocale();
@@ -164,6 +178,24 @@ export class ListBooksComponent implements OnInit {
       total: book.bookItems.length,
     };
   }
+
+  // The copy actions, in the row's ⋮ menu on small screens
+  readonly copyActions: readonly RowAction<BookEntity>[] = [
+    {
+      name: "addBook",
+      icon: "library_add",
+      label: t("books.copies.add"),
+      run: (book) => this.addBookItem(book),
+    },
+    {
+      name: "removeBook",
+      icon: "remove_circle_outline",
+      label: t("books.copies.remove"),
+      run: (book) => this.removeBookItem(book),
+      // Only an available copy can go
+      shown: (book) => this.isBookAvailable(book),
+    },
+  ];
 
   isBookAvailable(book: BookEntity) {
     return this.availableCount(book) > 0;

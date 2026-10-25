@@ -15,7 +15,7 @@ import {
   Spectator,
   SpyObject,
 } from "@openng/spectator/vitest";
-import { of, Subject, throwError } from "rxjs";
+import { defer, of, Subject, throwError } from "rxjs";
 
 Logger.level = 0;
 
@@ -158,13 +158,20 @@ describe("AddUsersComponent", () => {
   it("Should show a spinner and ignore new submits while saving", () => {
     // Arrange
     const response = new Subject<void>();
-    userServiceMock.addUser.mockReturnValueOnce(response);
+    // Counts the requests that go out, not the ones built
+    let sent = 0;
+    userServiceMock.addUser.mockImplementation(() =>
+      defer(() => {
+        sent++;
+        return response;
+      })
+    );
     fillIn();
     // Act
     spectator.click("button[name='save']");
     spectator.component.onSubmit();
     // Assert
-    expect(userServiceMock.addUser).toHaveBeenCalledTimes(1);
+    expect(sent).toBe(1);
     expect(spectator.query("button[name='save']")).toBeDisabled();
     expect(spectator.query("mat-progress-spinner")).toBeTruthy();
     // Act

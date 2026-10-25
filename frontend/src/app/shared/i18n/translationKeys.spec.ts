@@ -1,7 +1,9 @@
 import { enUS } from "@app/shared/i18n/translations/en-US";
+import { enUSPages } from "@app/shared/i18n/translations/pages.en-US";
+import { ptBRPages } from "@app/shared/i18n/translations/pages.pt-BR";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import { errorCodes } from "@library/contracts";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 // Keys from TypeScript are checked by the compiler (TranslationKey, t()).
@@ -31,23 +33,33 @@ const sourceFiles = (dir: string): string[] =>
     return isSource && !entry.name.endsWith(".spec.ts") ? [path] : [];
   });
 
-const keys = keysOf(ptBR);
-const namespaces = Object.keys(ptBR).join("|");
+const keys = keysOf({ ...ptBR, ...ptBRPages });
+const namespaces = [...Object.keys(ptBR), ...Object.keys(ptBRPages)].join("|");
 // A quoted string starting with a namespace: "common.cancel", 'nav.users'
 const keyPattern = new RegExp(
   `["'\`]((?:${namespaces})(?:\\.\\w+)+)["'\`]`,
   "g"
 );
 
-const usedKeys = new Set(
-  sourceFiles("src/app").flatMap((file) =>
-    [...readFileSync(file, "utf8").matchAll(keyPattern)].map(
-      (match) => match[1]
-    )
-  )
-);
+const keysIn = (file: string) =>
+  [...readFileSync(file, "utf8").matchAll(keyPattern)].map((match) => match[1]);
 
-// errors.unknown is also the interceptor's own, for errors without a body
+const usedKeys = new Set(sourceFiles("src/app").flatMap(keysIn));
+
+// What shows outside the layout's pages, before the pages' texts are loaded
+const outsidePages = [
+  "src/app/app.component.html",
+  "src/app/app.component.ts",
+  "src/app/app.config.ts",
+  ...sourceFiles("src/app/layouts"),
+  ...sourceFiles("src/app/pages/auth"),
+  ...sourceFiles("src/app/services"),
+  ...sourceFiles("src/app/shared/interceptors"),
+  ...sourceFiles("src/app/shared/i18n"),
+].filter((file) => existsSync(file));
+
+// errors.unknown is both the API's code for what it didn't expect and the
+// interceptor's own, for errors without a body
 const apiErrorKeys = keys.filter((key) => key.startsWith("errors."));
 
 describe("Translation keys", () => {
@@ -74,6 +86,23 @@ describe("Translation keys", () => {
   });
 
   it("Should have the same keys in every language", () => {
-    expect(keysOf(enUS)).toEqual(keys);
+    expect(keysOf({ ...enUS, ...enUSPages })).toEqual(keys);
+  });
+
+  it("Should keep each namespace in one part", () => {
+    expect(
+      Object.keys(ptBRPages).filter((namespace) => namespace in ptBR)
+    ).toEqual([]);
+  });
+
+  it("Should find the core's texts outside the pages", () => {
+    const pageNamespaces = Object.keys(ptBRPages);
+    const pageKeys = outsidePages.flatMap((file) =>
+      keysIn(file)
+        .filter((key) => pageNamespaces.includes(key.split(".")[0]))
+        .map((key) => `${file}: ${key}`)
+    );
+    expect(outsidePages.length).toBeGreaterThan(10);
+    expect(pageKeys).toEqual([]);
   });
 });

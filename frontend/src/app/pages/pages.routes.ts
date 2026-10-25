@@ -9,6 +9,7 @@ import {
   authenticationGuard,
 } from "@app/shared/guards/authentication.guard";
 import { permissionGuard } from "@app/shared/guards/permission.guard";
+import { I18nService } from "@app/shared/i18n/i18n.service";
 import { t } from "@app/shared/i18n/translations/translationKey";
 
 export const routes: Routes = [
@@ -33,6 +34,8 @@ export const routes: Routes = [
         (m) => m.LayoutComponent
       );
     },
+    // The pages' texts, which aren't in the bundle (I18nService)
+    resolve: { texts: () => inject(I18nService).loadPages() },
     children: [
       // Where a role with no pages lands (defaultRolePage)
       {

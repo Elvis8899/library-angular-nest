@@ -1,0 +1,23 @@
+<mat-dialog-actions align="end">
+  <button
+    [mat-dialog-close]="cancelResult()"
+    matButton
+    name="cancel"
+    type="button"
+  >
+    {{ "common.cancel" | translate }}
+  </button>
+  <ng-content />
+  <button
+    (click)="form() ? undefined : accept.emit()"
+    [attr.form]="form() ?? null"
+    [class.destructive]="destructive()"
+    [disabled]="busy() || disabled()"
+    [name]="name()"
+    [type]="form() ? 'submit' : 'button'"
+    matButton="filled"
+    [appBusy]="busy()"
+  >
+    {{ label() | translate }}
+  </button>
+</mat-dialog-actions>

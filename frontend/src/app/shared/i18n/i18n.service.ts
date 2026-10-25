@@ -3,18 +3,39 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { Logger } from "@app/services/logger.service";
-import { enUS, ptBR } from "@app/shared/i18n/translations";
-import {
-  LanguagesEnum,
-  t,
-  Translations,
-} from "@app/shared/i18n/translations/translationKey";
+import { ptBR } from "@app/shared/i18n/translations/pt-BR";
+import { LanguagesEnum, t } from "@app/shared/i18n/translations/translationKey";
 import { environment } from "@env/environment";
-import { TranslateService } from "@ngx-translate/core";
+import { TranslateService, TranslationObject } from "@ngx-translate/core";
 import { filter, merge } from "rxjs";
 
 const log = new Logger("I18nService");
 const languageKey = "language";
+
+// A language's texts come in two parts: core (the login, the layout, the API's
+// errors) and pages, loaded with the layout. Only pt-BR's core is in the
+// bundle; the rest are chunks loaded when needed.
+type Part = "core" | "pages";
+export const textFiles: Record<
+  string,
+  Record<Part, () => Promise<TranslationObject>>
+> = {
+  [LanguagesEnum.PT_BR]: {
+    core: async () => ptBR,
+    pages: () =>
+      import("@app/shared/i18n/translations/pages.pt-BR").then(
+        (m) => m.ptBRPages
+      ),
+  },
+  [LanguagesEnum.EN_US]: {
+    core: () =>
+      import("@app/shared/i18n/translations/en-US").then((m) => m.enUS),
+    pages: () =>
+      import("@app/shared/i18n/translations/pages.en-US").then(
+        (m) => m.enUSPages
+      ),
+  },
+};
 
 @Injectable({
   providedIn: "root",
@@ -22,6 +43,14 @@ const languageKey = "language";
 export class I18nService {
   defaultLanguage!: string;
   readonly supportedLanguages = signal<string[]>([]);
+  /** Settles when the saved language's core texts are in use. */
+  readonly ready: Promise<void>;
+
+  // "pt-BR/core" → its load, so each part is loaded once
+  private readonly _loads = new Map<string, Promise<void>>();
+  private _pagesNeeded = false;
+  // The latest setLanguage, so an earlier one that loads slower doesn't win
+  private _languageRequest = 0;
 
   private readonly _translateService = inject(TranslateService);
   private readonly _router = inject(Router);
@@ -37,15 +66,10 @@ export class I18nService {
         localStorage.setItem(languageKey, event.lang);
         this._document.documentElement.lang = event.lang;
       });
-    // Embed languages to avoid extra HTTP requests
-    const translations: [LanguagesEnum, Translations][] = [
-      [LanguagesEnum.PT_BR, ptBR],
-      [LanguagesEnum.EN_US, enUS],
-    ];
-    translations.forEach(([lang, translations]) => {
-      this._translateService.setTranslation(lang, translations);
-    });
-    this.init(environment.defaultLanguage, environment.supportedLanguages);
+    this.ready = this.init(
+      environment.defaultLanguage,
+      environment.supportedLanguages
+    );
 
     const onNavigationEnd = this._router.events.pipe(
       filter((event) => event instanceof NavigationEnd)
@@ -82,9 +106,10 @@ export class I18nService {
    * Sets the current language.
    * Note: The current language is saved to the local storage.
    * If no parameter is specified, the language is loaded from local storage (if present).
+   * Its texts are loaded first, so the screen never shows the keys.
    * @param language The IETF language code to set.
    */
-  setLanguage(language: string) {
+  async setLanguage(language: string): Promise<void> {
     let newLanguage =
       language ||
       localStorage.getItem(languageKey) ||
@@ -106,8 +131,44 @@ export class I18nService {
       newLanguage = this.defaultLanguage;
     }
 
-    log.debug(`Language set to ${newLanguage}`);
-    this._translateService.use(newLanguage);
+    const request = ++this._languageRequest;
+    await this.load(newLanguage, "core");
+    if (this._pagesNeeded) {
+      await this.load(newLanguage, "pages");
+    }
+    if (request === this._languageRequest) {
+      log.debug(`Language set to ${newLanguage}`);
+      this._translateService.use(newLanguage);
+    }
+  }
+
+  /**
+   * Loads the pages' texts, in the current language and in any picked later.
+   * The layout route resolves it, so a page never shows the keys.
+   */
+  loadPages(): Promise<void> {
+    this._pagesNeeded = true;
+    return this.load(this.language, "pages");
+  }
+
+  private load(language: string, part: Part): Promise<void> {
+    const key = `${language}/${part}`;
+    const loading =
+      this._loads.get(key) ??
+      (textFiles[language]?.[part]() ?? Promise.resolve(null)).then(
+        (texts) => {
+          if (texts) {
+            this._translateService.setTranslation(language, texts, true);
+          }
+        },
+        (error: unknown) => {
+          // Tried again next time, as a failed chunk is (a new deploy, offline)
+          this._loads.delete(key);
+          throw error;
+        }
+      );
+    this._loads.set(key, loading);
+    return loading;
   }
 
   /**
@@ -116,11 +177,11 @@ export class I18nService {
    * @param defaultLanguage The default language to use.
    * @param supportedLanguages The list of supported languages.
    */
-  init(defaultLanguage: string, supportedLanguages: string[]) {
+  init(defaultLanguage: string, supportedLanguages: string[]): Promise<void> {
     this.defaultLanguage = defaultLanguage;
     this.supportedLanguages.set(supportedLanguages);
     log.debug(`Initializing with default language: ${defaultLanguage}`);
-    this.setLanguage("");
+    return this.setLanguage("");
   }
 
   setTitle() {

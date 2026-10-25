@@ -4,7 +4,8 @@ import { LayoutComponent } from "@app/layouts/layout.component";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { provideTranslateService } from "@ngx-translate/core";
+import { usePtBR } from "@app/shared/utils/test/translations";
+import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 
 Logger.level = 0;
@@ -27,7 +28,12 @@ describe("LayoutComponent", () => {
     ],
   });
 
-  beforeEach(() => (spectator = createComponent()));
+  beforeEach(() => {
+    spectator = createComponent();
+    usePtBR(spectator.inject(TranslateService));
+    usePtBR(spectator.inject(TranslateService));
+    spectator.detectChanges();
+  });
 
   const shell = () => spectator.query(".shell");
 

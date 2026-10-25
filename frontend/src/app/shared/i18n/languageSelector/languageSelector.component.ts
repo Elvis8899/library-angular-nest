@@ -35,6 +35,6 @@ export class LanguageSelectorComponent {
   }
 
   setLanguage(language: string) {
-    this._i18nService.setLanguage(language);
+    void this._i18nService.setLanguage(language);
   }
 }

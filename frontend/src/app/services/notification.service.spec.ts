@@ -1,7 +1,7 @@
 import { ApplicationRef } from "@angular/core";
 import { MatSnackBar, MatSnackBarDismiss } from "@angular/material/snack-bar";
 import { NotificationService } from "@app/services/notification.service";
-import { ptBR } from "@app/shared/i18n/translations/pt-BR";
+import { usePtBR } from "@app/shared/utils/test/translations";
 import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import {
   createServiceFactory,
@@ -19,8 +19,7 @@ describe("NotificationService", () => {
   beforeEach(() => {
     spectator = createService();
     const translate = spectator.inject(TranslateService);
-    translate.setTranslation("pt-BR", ptBR);
-    translate.use("pt-BR");
+    usePtBR(translate);
   });
 
   // The real snackbar, in the overlay; the newest one, since earlier tests'

@@ -48,17 +48,14 @@
       {{ "common.cancel" | translate }}
     </a>
     <button
+      [appBusy]="saving()"
       [disabled]="saving()"
       formActions
       matButton="filled"
       name="save"
       type="submit"
     >
-      @if (saving()) {
-        <mat-progress-spinner diameter="20" mode="indeterminate" />
-      } @else {
-        {{ "common.save" | translate }}
-      }
+      {{ "common.save" | translate }}
     </button>
   </app-form-card>
 </form>

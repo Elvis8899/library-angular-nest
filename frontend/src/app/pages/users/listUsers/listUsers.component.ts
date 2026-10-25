@@ -11,6 +11,7 @@ import { UserService } from "@app/services/user.http.service";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { PaginatedDataSource } from "@app/shared/components/customizedTable/paginatedDataSource";
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
+import { CellDefDirective } from "@app/shared/directives/cellDef.directive";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
 import { injectIsSmallScreen } from "@app/shared/utils/smallScreen.utility";
 import { TranslatePipe } from "@ngx-translate/core";
@@ -22,6 +23,7 @@ const log = new Logger("ListUsersComponent");
   templateUrl: "./listUsers.component.html",
   styleUrl: "./listUsers.component.scss",
   imports: [
+    CellDefDirective,
     DatePipe,
     MatButton,
     MatIcon,

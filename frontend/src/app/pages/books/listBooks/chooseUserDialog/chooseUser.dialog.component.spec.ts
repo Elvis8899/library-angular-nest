@@ -135,6 +135,10 @@ describe("ChooseUserDialogComponent", () => {
     search("BRU");
     // Assert
     expect(optionTexts()).toEqual(["Bruno Lima bruno@example.com"]);
+    // Act: accents and extra spaces don't matter
+    search("  brúno  lima ");
+    // Assert
+    expect(optionTexts()).toEqual(["Bruno Lima bruno@example.com"]);
     // Act
     search("nobody");
     // Assert
@@ -176,7 +180,7 @@ describe("ChooseUserDialogComponent", () => {
     // Arrange
     spectator = createComponent();
     // Act
-    spectator.click("button[name='cancelDialog']");
+    spectator.click("button[name='cancel']");
     // Assert
     expect(dialogRefMock.close).toHaveBeenCalledExactlyOnceWith(undefined);
   });
