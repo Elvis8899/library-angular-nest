@@ -5,6 +5,10 @@ import {
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import {
+  Resource,
+  RESOURCE_CHANGED,
+} from "@shared/domainEventPublisher/resourceChanged.event";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
 import { useHandlerModule } from "@test/util/handlerModule";
@@ -63,7 +67,13 @@ describe("[Unit] Create BookInfo", () => {
     await ctx.createBookInfoHandler.execute(new CreateBookInfo(bookInfo));
 
     //Then it should have created a bookInfo and emitted an event
-    expect(spy).toHaveBeenCalledTimes(1);
+    // Its event, then the screens' reload
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(
+      spy.mock.calls.slice(1).map(([event]) => ({
+        resource: event.eventKey === RESOURCE_CHANGED && event.payload.resource,
+      })),
+    ).toEqual([{ resource: Resource.Books }]);
   });
 
   it.each([-1, 12.345])(

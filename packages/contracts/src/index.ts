@@ -3,6 +3,7 @@ export * from "./book/schemas.js";
 export * from "./book/values.js";
 export * from "./common.js";
 export * from "./errors.js";
+export * from "./liveUpdates.js";
 export * from "./openapi.js";
 export * from "./registry.js";
 export * from "./rental/schemas.js";

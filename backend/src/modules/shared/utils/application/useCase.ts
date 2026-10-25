@@ -1,6 +1,10 @@
 import { Injectable, Scope } from "@nestjs/common";
 import { DomainEvent } from "@shared/domainEventPublisher/domainEvent";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import {
+  ResourceChange,
+  resourceChanged,
+} from "@shared/domainEventPublisher/resourceChanged.event";
 import { Metrics, outcomeOf } from "@shared/metrics/metrics";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { E, FPF, RTE } from "@shared/utils/application/monads";
@@ -70,3 +74,14 @@ export const publishRTE =
         RTE.asUnit,
       );
     });
+
+/**
+ * Ends a write command, after its transaction committed: tells the screens
+ * that show what it changed to reload (`resource.changed`, one per change).
+ * `RTE.tap((book) => changedRTE({ resource: Resource.Books, key: book.id }))`
+ * keeps the pipeline's value.
+ */
+export const changedRTE = (
+  ...changes: ResourceChange[]
+): RTE.ReaderTaskEither<UseCaseEnv, Error, void> =>
+  publishRTE(() => changes.map(resourceChanged))(undefined);

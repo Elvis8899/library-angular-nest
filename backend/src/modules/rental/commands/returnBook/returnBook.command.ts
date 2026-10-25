@@ -1,3 +1,4 @@
+import { Resource } from "@library/contracts";
 import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
 import {
   ensureOwnedBy,
@@ -10,7 +11,11 @@ import { Clock } from "@shared/clock/clock";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  changedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
 export class ReturnBookCommand implements ICommand {
@@ -64,6 +69,13 @@ export class ReturnBookCommandHandler implements ICommandHandler<
         ),
 
         RTE.tap(publishRTE(bookReturned)),
+        RTE.tap(() =>
+          changedRTE(
+            { resource: Resource.Rentals },
+            // The copy is available again
+            { resource: Resource.Books },
+          ),
+        ),
         RTE.asUnit,
       ),
     );

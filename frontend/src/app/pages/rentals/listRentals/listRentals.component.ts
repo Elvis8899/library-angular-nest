@@ -1,5 +1,6 @@
 import { DatePipe, NgTemplateOutlet } from "@angular/common";
-import { Component, computed, inject, OnInit } from "@angular/core";
+import { Component, computed, DestroyRef, inject, OnInit } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { MatIconButton } from "@angular/material/button";
 import { MatIcon } from "@angular/material/icon";
 import { MatTableModule } from "@angular/material/table";
@@ -7,6 +8,10 @@ import { MatTooltip } from "@angular/material/tooltip";
 import { BookRentalEntity } from "@app/pages/rentals/bookRental.entity";
 import { RentalService } from "@app/pages/rentals/rental.http.service";
 import { CredentialsService } from "@app/services/credentials.service";
+import {
+  LiveUpdatesService,
+  RESOURCE,
+} from "@app/services/liveUpdates.service";
 import { Logger } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
@@ -64,6 +69,8 @@ export class ListRentalsComponent implements OnInit {
   // Clients only see their own rentals, so only admins see who rented
   readonly showClient = inject(CredentialsService).isAdmin();
 
+  private readonly _liveUpdates = inject(LiveUpdatesService);
+  private readonly _destroyRef = inject(DestroyRef);
   private readonly _rentalService = inject(RentalService);
   private readonly _confirmDialog = inject(ConfirmDialog);
   private readonly _notify = inject(NotificationService);
@@ -81,6 +88,11 @@ export class ListRentalsComponent implements OnInit {
         displayedColumns: ["book", "rentedOn", "dueDate", "fine", "actions"],
       }
     );
+    // What someone else changes shows here too
+    this._liveUpdates
+      .changes(RESOURCE.RENTALS)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe(() => this.refresh());
   }
 
   refresh() {

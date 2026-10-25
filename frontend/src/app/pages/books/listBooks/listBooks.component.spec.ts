@@ -25,6 +25,11 @@ import {
 } from "@app/pages/books/listBooks/listBooks.component";
 import { RentalService } from "@app/pages/rentals/rental.http.service";
 import { CredentialsService } from "@app/services/credentials.service";
+import {
+  LiveUpdatesService,
+  RESOURCE,
+  ResourceChange,
+} from "@app/services/liveUpdates.service";
 import { Logger } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { UserService } from "@app/services/user.http.service";
@@ -36,7 +41,7 @@ import {
   Spectator,
   SpyObject,
 } from "@openng/spectator/vitest";
-import { BehaviorSubject, of, throwError } from "rxjs";
+import { BehaviorSubject, of, Subject, throwError } from "rxjs";
 
 Logger.level = 0;
 
@@ -101,12 +106,16 @@ describe("ListBooksComponent", () => {
   const confirmDialogMock = { confirm: vi.fn(() => of(true)) };
   // A new one per test, so components from earlier tests don't hold it
   let breakpoints: BehaviorSubject<BreakpointState>;
+  // What the socket says changed elsewhere
+  const changed = new Subject<ResourceChange>();
+  const liveUpdatesMock = { changes: vi.fn(() => changed.asObservable()) };
   const createComponent = createComponentFactory({
     component: ListBooksComponent,
     imports: [RouterModule.forRoot([])],
     providers: [
       provideTranslateService(),
       provideHttpClientTesting(),
+      { provide: LiveUpdatesService, useValue: liveUpdatesMock },
       { provide: BookService, useValue: bookServiceMock },
       { provide: MatDialog, useValue: matDialogMock },
       { provide: ConfirmDialog, useValue: confirmDialogMock },
@@ -147,6 +156,16 @@ describe("ListBooksComponent", () => {
   });
 
   const rows = () => spectator.queryAll("tr.mat-mdc-row");
+
+  it("Should reload when someone else changes the list", () => {
+    // Arrange: the list has loaded
+    const loads = bookServiceMock.getPaginatedBooks.mock.calls.length;
+    // Act
+    changed.next({ resource: RESOURCE.BOOKS });
+    // Assert
+    expect(liveUpdatesMock.changes).toHaveBeenCalledWith(RESOURCE.BOOKS);
+    expect(bookServiceMock.getPaginatedBooks).toHaveBeenCalledTimes(loads + 1);
+  });
 
   it("Should have a title and a row per book", () => {
     // Assert

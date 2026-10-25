@@ -1,4 +1,4 @@
-import { UserRequest } from "@library/contracts";
+import { Resource, UserRequest } from "@library/contracts";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userCreated } from "@modules/user/domain/events/userCreated.event";
 import { PasswordHasher } from "@modules/user/domain/passwordHasher.port";
@@ -12,7 +12,11 @@ import { Clock } from "@shared/clock/clock";
 import { inputsRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { ensureAbsentRTE, performRTE } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  changedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
 
@@ -72,6 +76,9 @@ export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
         ),
 
         RTE.tap(publishRTE(userCreated)),
+        RTE.tap((user) =>
+          changedRTE({ resource: Resource.Users, key: user.id }),
+        ),
         RTE.asUnit,
       ),
     );

@@ -1,5 +1,13 @@
 import { NgTemplateOutlet } from "@angular/common";
-import { Component, computed, effect, inject, OnInit } from "@angular/core";
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  OnInit,
+} from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { MatButton, MatIconButton } from "@angular/material/button";
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
 import { DateAdapter, MatNativeDateModule } from "@angular/material/core";
@@ -21,6 +29,10 @@ import { ChooseUserDialogComponent } from "@app/pages/books/listBooks/chooseUser
 import { BookRentEntity } from "@app/pages/rentals/bookRental.entity";
 import { RentalService } from "@app/pages/rentals/rental.http.service";
 import { CredentialsService } from "@app/services/credentials.service";
+import {
+  LiveUpdatesService,
+  RESOURCE,
+} from "@app/services/liveUpdates.service";
 import { Logger } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
@@ -90,6 +102,8 @@ export class ListBooksComponent implements OnInit {
   );
   readonly noCoverImage = noCoverImage;
 
+  private readonly _liveUpdates = inject(LiveUpdatesService);
+  private readonly _destroyRef = inject(DestroyRef);
   private readonly _bookService = inject(BookService);
   private readonly _rentalService = inject(RentalService);
   private readonly _router = inject(Router);
@@ -119,6 +133,11 @@ export class ListBooksComponent implements OnInit {
         displayedColumns: ["book", "price", "availability", "actions"],
       }
     );
+    // What someone else changes shows here too, a rental's copy included
+    this._liveUpdates
+      .changes(RESOURCE.BOOKS)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe(() => this.refresh());
   }
 
   openRentBookDialog(book: BookEntity) {

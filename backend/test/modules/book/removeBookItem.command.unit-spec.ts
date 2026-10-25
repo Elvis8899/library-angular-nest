@@ -9,6 +9,10 @@ import {
 } from "@modules/book/domain/bookInfo.errors";
 import { BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import {
+  Resource,
+  RESOURCE_CHANGED,
+} from "@shared/domainEventPublisher/resourceChanged.event";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
 import { seedBook } from "@test/modules/book/createBook";
@@ -105,7 +109,13 @@ describe("[Unit] Delete BookInfo", () => {
     await ctx.removeBookItemHandler.execute(new RemoveBookItem(id));
 
     //Then it should have deleted a bookInfo and emitted an event
-    expect(spy).toHaveBeenCalledTimes(1);
+    // Its event, then the screens' reload
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(
+      spy.mock.calls.slice(1).map(([event]) => ({
+        resource: event.eventKey === RESOURCE_CHANGED && event.payload.resource,
+      })),
+    ).toEqual([{ resource: Resource.Books }]);
   });
 
   it("Should not emit domain event when bookInfo is not deleted", async () => {

@@ -7,6 +7,11 @@ import { RouterModule } from "@angular/router";
 import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
 import { ListUsersComponent } from "@app/pages/users/listUsers/listUsers.component";
+import {
+  LiveUpdatesService,
+  RESOURCE,
+  ResourceChange,
+} from "@app/services/liveUpdates.service";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
@@ -16,7 +21,7 @@ import {
   createSpyObject,
   Spectator,
 } from "@openng/spectator/vitest";
-import { BehaviorSubject, of, throwError } from "rxjs";
+import { BehaviorSubject, of, Subject, throwError } from "rxjs";
 
 Logger.level = 0;
 
@@ -40,6 +45,9 @@ describe("ListUsersComponent", () => {
   );
   // A new one per test, so components from earlier tests don't hold it
   let breakpoints: BehaviorSubject<BreakpointState>;
+  // What the socket says changed elsewhere
+  const changed = new Subject<ResourceChange>();
+  const liveUpdatesMock = { changes: vi.fn(() => changed.asObservable()) };
   const createComponent = createComponentFactory({
     component: ListUsersComponent,
     imports: [
@@ -47,6 +55,7 @@ describe("ListUsersComponent", () => {
     ],
     providers: [
       provideTranslateService(),
+      { provide: LiveUpdatesService, useValue: liveUpdatesMock },
       { provide: UserService, useValue: userServiceMock },
       {
         provide: BreakpointObserver,
@@ -71,6 +80,16 @@ describe("ListUsersComponent", () => {
 
   afterEach(() => {
     httpMock.verify();
+  });
+
+  it("Should reload when someone else changes the list", () => {
+    // Arrange: the list has loaded
+    const loads = userServiceMock.getPaginatedUsers.mock.calls.length;
+    // Act
+    changed.next({ resource: RESOURCE.USERS });
+    // Assert
+    expect(liveUpdatesMock.changes).toHaveBeenCalledWith(RESOURCE.USERS);
+    expect(userServiceMock.getPaginatedUsers).toHaveBeenCalledTimes(loads + 1);
   });
 
   it("Should list the users", () => {

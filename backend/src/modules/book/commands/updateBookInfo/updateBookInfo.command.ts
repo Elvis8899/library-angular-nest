@@ -1,4 +1,4 @@
-import { BookInfoRequest } from "@library/contracts";
+import { BookInfoRequest, Resource } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
@@ -7,7 +7,11 @@ import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RE, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  changedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
 export class UpdateBookInfo implements ICommand {
@@ -56,6 +60,9 @@ export class UpdateBookInfoHandler implements ICommandHandler<
         ),
 
         RTE.tap(publishRTE(bookInfoUpdated)),
+        RTE.tap((bookInfo) =>
+          changedRTE({ resource: Resource.Books, key: bookInfo.id }),
+        ),
         RTE.asUnit,
       ),
     );

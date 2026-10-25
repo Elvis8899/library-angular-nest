@@ -6,6 +6,10 @@ import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.p
 import { BookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import {
+  Resource,
+  RESOURCE_CHANGED,
+} from "@shared/domainEventPublisher/resourceChanged.event";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
 import { seedBook } from "@test/modules/book/createBook";
@@ -77,7 +81,13 @@ describe("[Unit] Update BookInfo", () => {
     );
 
     //Then it should have updated the bookInfo and emitted an event
-    expect(spy).toHaveBeenCalledTimes(1);
+    // Its event, then the screens' reload
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(
+      spy.mock.calls.slice(1).map(([event]) => ({
+        resource: event.eventKey === RESOURCE_CHANGED && event.payload.resource,
+      })),
+    ).toEqual([{ resource: Resource.Books }]);
   });
 
   it("Should not update an bookInfo if it doesn't exist", async () => {

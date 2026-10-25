@@ -5,6 +5,10 @@ import {
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { UserNotFoundException } from "@modules/user/domain/user.errors";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import {
+  Resource,
+  RESOURCE_CHANGED,
+} from "@shared/domainEventPublisher/resourceChanged.event";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { useHandlerModule } from "@test/util/handlerModule";
@@ -61,6 +65,12 @@ describe("[Unit] Delete User", () => {
     await ctx.deleteUserHandler.execute(new DeleteUser(id));
 
     //Then it should have deleted a user and emitted an event
-    expect(spy).toHaveBeenCalledTimes(1);
+    // Its event, then the screens' reload
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(
+      spy.mock.calls.slice(1).map(([event]) => ({
+        resource: event.eventKey === RESOURCE_CHANGED && event.payload.resource,
+      })),
+    ).toEqual([{ resource: Resource.Users }]);
   });
 });

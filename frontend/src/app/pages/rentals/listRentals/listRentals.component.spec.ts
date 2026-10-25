@@ -11,6 +11,11 @@ import {
 import { ListRentalsComponent } from "@app/pages/rentals/listRentals/listRentals.component";
 import { RentalService } from "@app/pages/rentals/rental.http.service";
 import { CredentialsService } from "@app/services/credentials.service";
+import {
+  LiveUpdatesService,
+  RESOURCE,
+  ResourceChange,
+} from "@app/services/liveUpdates.service";
 import { Logger } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
@@ -18,7 +23,7 @@ import { ptBR } from "@app/shared/i18n/translations/pt-BR";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
 import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
-import { BehaviorSubject, of, throwError } from "rxjs";
+import { BehaviorSubject, of, Subject, throwError } from "rxjs";
 
 Logger.level = 0;
 
@@ -70,6 +75,9 @@ describe("ListRentalsComponent", () => {
   let breakpoints: BehaviorSubject<BreakpointState>;
   let isAdmin = true;
   const credentialsServiceMock = { isAdmin: () => isAdmin };
+  // What the socket says changed elsewhere
+  const changed = new Subject<ResourceChange>();
+  const liveUpdatesMock = { changes: vi.fn(() => changed.asObservable()) };
   const createComponent = createComponentFactory({
     component: ListRentalsComponent,
     imports: [
@@ -78,6 +86,7 @@ describe("ListRentalsComponent", () => {
     mocks: [NotificationService],
     providers: [
       provideTranslateService(),
+      { provide: LiveUpdatesService, useValue: liveUpdatesMock },
       { provide: RentalService, useValue: rentalServiceMock },
       { provide: ConfirmDialog, useValue: confirmDialogMock },
       {
@@ -117,6 +126,19 @@ describe("ListRentalsComponent", () => {
     spectator
       .queryAll("th.mat-mdc-header-cell")
       .map((header) => header.textContent?.trim());
+
+  it("Should reload when someone else changes the list", () => {
+    // Arrange
+    create();
+    const loads = rentalServiceMock.getPaginatedBookRentals.mock.calls.length;
+    // Act
+    changed.next({ resource: RESOURCE.RENTALS });
+    // Assert
+    expect(liveUpdatesMock.changes).toHaveBeenCalledWith(RESOURCE.RENTALS);
+    expect(rentalServiceMock.getPaginatedBookRentals).toHaveBeenCalledTimes(
+      loads + 1
+    );
+  });
 
   it("Should list the rentals with the client for admins", () => {
     // Act

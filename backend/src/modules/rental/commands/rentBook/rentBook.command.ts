@@ -1,4 +1,4 @@
-import { RentBookRequest } from "@library/contracts";
+import { RentBookRequest, Resource } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
 import {
@@ -15,7 +15,11 @@ import { Clock } from "@shared/clock/clock";
 import { fromInputRE, inputsRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  changedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
 
@@ -80,6 +84,13 @@ export class RentBookCommandHandler implements ICommandHandler<
         RTE.tap(performRTE(this.bookRentalRepository.rent, "rent book item.")),
 
         RTE.tap(publishRTE(bookRented)),
+        RTE.tap(() =>
+          changedRTE(
+            { resource: Resource.Rentals },
+            // A copy is no longer available
+            { resource: Resource.Books },
+          ),
+        ),
         RTE.asUnit,
       ),
     );

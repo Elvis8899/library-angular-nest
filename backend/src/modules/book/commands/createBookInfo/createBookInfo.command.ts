@@ -1,4 +1,4 @@
-import { BookInfoRequest } from "@library/contracts";
+import { BookInfoRequest, Resource } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { bookInfoCreated } from "@modules/book/domain/events/bookInfoCreated.event";
@@ -6,7 +6,11 @@ import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RE, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  changedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
 
@@ -47,6 +51,9 @@ export class CreateBookInfoHandler implements ICommandHandler<
         ),
 
         RTE.tap(publishRTE(bookInfoCreated)),
+        RTE.tap((bookInfo) =>
+          changedRTE({ resource: Resource.Books, key: bookInfo.id }),
+        ),
         RTE.asUnit,
       ),
     );

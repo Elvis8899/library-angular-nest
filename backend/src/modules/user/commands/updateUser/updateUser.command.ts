@@ -1,4 +1,4 @@
-import { UserChangesRequest } from "@library/contracts";
+import { Resource, UserChangesRequest } from "@library/contracts";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userUpdated } from "@modules/user/domain/events/userUpdated.event";
 import { PasswordHasher } from "@modules/user/domain/passwordHasher.port";
@@ -21,7 +21,11 @@ import {
   findOrFailRTE,
   performRTE,
 } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  changedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
 export class UpdateUser implements ICommand {
@@ -115,6 +119,9 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
 
         RTE.map(({ after }) => after),
         RTE.tap(publishRTE(userUpdated)),
+        RTE.tap((user) =>
+          changedRTE({ resource: Resource.Users, key: user.id }),
+        ),
         RTE.asUnit,
       ),
     );

@@ -9,6 +9,7 @@ import { ClockModule } from "@shared/clock/clock.module";
 import { LoggerModule } from "@shared/logger/logger.module";
 import { MetricsModule } from "@shared/metrics/metrics.module";
 import { PrismaModule } from "@shared/prisma/prisma.module";
+import { SocketModule } from "@shared/socket/socket.module";
 import { UseCaseModule } from "@shared/utils/application/useCase.module";
 import { AppController } from "@src/app.controller";
 
@@ -25,6 +26,7 @@ const appModules: NestModuleImport[] = [
     isGlobal: true,
   }),
   PrismaModule,
+  SocketModule,
   //
   AuthModule,
   //
