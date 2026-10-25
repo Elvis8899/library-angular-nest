@@ -7,19 +7,21 @@
     "start": "ng serve",
     "serve": "ng serve --host 0.0.0.0",
     "build": "ng build",
+    "build:unchecked": "ng build --configuration production,unchecked",
     "build:serve": "npx http-server -p 8080 -c-1 dist/frontend/browser",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint",
-    "lint:fix": "eslint \"**/*.ts\" --fix",
+    "test:module": "sh -c 'ng test --watch=false --include \"src/app/pages/${1:?usage: yarn test:module <page>}/**/*.spec.ts\" --include src/app/pages/pages.routes.spec.ts --coverage-include \"src/app/pages/$1/**/*.(ts|html)\"' --",
+    "lint": "ng lint --fix",
+    "lint:check": "ng lint",
+    "lint:changed": "sh -c 'files=$({ git diff --name-only --relative --diff-filter=d HEAD -- \"*.ts\" \"*.html\"; git ls-files --others --exclude-standard -- \"*.ts\" \"*.html\"; } | sort -u); if [ -n \"$files\" ]; then eslint --cache --cache-location node_modules/.cache/eslint/ $files; else echo No changed files.; fi'",
     "lint:styles": "stylelint \"src/**/*.scss\"",
     "format-staged": "pretty-quick --staged --pattern \"frontend/**\"",
     "write:env": "ngx-scripts env npm_package_version",
     "prettier": "prettier --write \"./src/**/*.{ts,js,html,scss}\"",
     "prettier:check": "prettier --list-different \"./src/**/*.{ts,js,html,scss}\"",
     "style:format": "prettier -w ./src --ignore-unknown",
-    "postinstall": "npm run prettier -s",
-    "prepare": "cd .. && husky frontend/.husky"
+    "postinstall": "npm run prettier -s"
   },
   "private": true,
   "dependencies": {
@@ -37,6 +39,7 @@
     "@ngx-translate/core": "^18.0.0",
     "rxjs": "^7.8.2",
     "sanitize.css": "^13.0.0",
+    "socket.io-client": "^4.8.4",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
@@ -44,7 +47,6 @@
     "@angular/cli": "^22.2.3",
     "@angular/compiler-cli": "^22.2.3",
     "@angular/language-service": "^22.2.3",
-    "@angular/localize": "22.2.3",
     "@eslint/js": "^10.0.1",
     "@ngx-rocket/scripts": "^5.2.3",
     "@openng/spectator": "^1.0.2",
@@ -56,14 +58,12 @@
     "eslint-plugin-check-file": "^3.3.2",
     "eslint-plugin-prettier": "^5.5.7",
     "globals": "^17.13.0",
-    "husky": "^9.1.7",
+    "happy-dom": "^21.0.4",
     "jiti": "^2.7.0",
-    "jsdom": "^30.1.3",
     "postcss": "^8.5.31",
     "prettier": "3.9.10",
     "prettier-plugin-organize-imports": "^4.3.0",
     "pretty-quick": "4.2.2",
-    "reflect-metadata": "^0.2.1",
     "stylelint": "~17.16.0",
     "stylelint-config-recommended-scss": "~17.0.1",
     "stylelint-config-standard": "~40.0.0",
@@ -71,8 +71,5 @@
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.0",
     "vitest": "^5.0.5"
-  },
-  "resolutions": {
-    "vite": "~8.3.4"
   }
 }

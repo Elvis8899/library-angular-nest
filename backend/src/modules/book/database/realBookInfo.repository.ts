@@ -8,18 +8,16 @@ import {
   priceToCents,
 } from "@modules/book/database/priceColumn";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
+import { bookCoverChangedException } from "@modules/book/domain/bookInfo.errors";
 import { BookItem } from "@modules/book/domain/bookItem.entity";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@shared/prisma/prisma.service";
-import { FPF, O, TE } from "@shared/utils/application/monads";
+import { E, FPF, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
 import { prismaTasks } from "@shared/utils/database/prismaTasks";
 import { Paginated } from "@shared/utils/database/repository.port";
-import {
-  loadPage,
-  validateMaybeRow,
-  validateRows,
-} from "@shared/utils/database/rowValidation";
+import { rowReads } from "@shared/utils/database/rowReads";
+import { loadPage } from "@shared/utils/database/rowValidation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 import { z } from "zod";
 
@@ -39,12 +37,17 @@ export class RealBookInfoRepository implements BookInfoRepository {
   private includeAll: Prisma.BookInfoInclude = {
     bookItems: true,
   };
+  private reads = rowReads(() => this.prisma.bookInfo, this.baseValidator, {
+    include: this.includeAll,
+  });
+  private itemReads = rowReads(
+    () => this.prisma.bookItem,
+    this.bookItemValidator,
+  );
 
-  findAll = (): TE.TaskEither<Error, BookInfo[]> =>
-    FPF.pipe(
-      this.bookInfos.findMany({ include: this.includeAll }),
-      TE.chainEitherK(validateRows(this.baseValidator)),
-    );
+  findAll = this.reads.findAll;
+  findById = this.reads.findById;
+  findBookItemById = this.itemReads.findById;
 
   findAllPaginated = (
     params: PaginatedQueryParams<BookInfoFindAllQuery>,
@@ -75,15 +78,6 @@ export class RealBookInfoRepository implements BookInfoRepository {
     )(params);
   };
 
-  findById = (bookInfoId: string): TE.TaskEither<Error, O.Option<BookInfo>> =>
-    FPF.pipe(
-      this.bookInfos.findUnique({
-        where: { id: bookInfoId },
-        include: this.includeAll,
-      }),
-      TE.chainEitherK(validateMaybeRow(this.baseValidator)),
-    );
-
   deleteById = (bookInfoId: string): TE.TaskEither<Error, void> =>
     FPF.pipe(this.bookInfos.delete({ where: { id: bookInfoId } }), TE.asUnit);
 
@@ -94,7 +88,6 @@ export class RealBookInfoRepository implements BookInfoRepository {
         where: { id: bookInfo.id },
         update: {
           name: bookInfo.name,
-          image: bookInfo.image,
           ...priceToCents(price),
         },
         create: { ...bookInfo, ...priceToCents(price) },
@@ -103,12 +96,19 @@ export class RealBookInfoRepository implements BookInfoRepository {
     );
   };
 
-  findBookItemById = (
-    bookItemId: string,
-  ): TE.TaskEither<Error, O.Option<BookItem>> =>
+  changeCover = (
+    bookId: string,
+    from: string | null,
+    to: string | null,
+  ): TE.TaskEither<Error, void> =>
     FPF.pipe(
-      this.bookItems.findUnique({ where: { id: bookItemId } }),
-      TE.chainEitherK(validateMaybeRow(this.bookItemValidator)),
+      this.bookInfos.updateMany({
+        where: { id: bookId, cover: from },
+        data: { cover: to },
+      }),
+      TE.chainEitherK(({ count }) =>
+        count === 0 ? E.left(bookCoverChangedException()) : E.right(undefined),
+      ),
     );
 
   createBookItem = (bookItem: BookItem): TE.TaskEither<Error, void> =>

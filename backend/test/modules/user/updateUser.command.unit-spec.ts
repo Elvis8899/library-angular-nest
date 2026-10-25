@@ -11,6 +11,10 @@ import {
 } from "@modules/user/domain/user.errors";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import {
+  Resource,
+  RESOURCE_CHANGED,
+} from "@shared/domainEventPublisher/resourceChanged.event";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { useHandlerModule } from "@test/util/handlerModule";
@@ -81,7 +85,13 @@ describe("[Unit] Update User", () => {
     );
 
     //Then it should have updated the user and emitted an event
-    expect(spy).toHaveBeenCalledTimes(1);
+    // Its event, then the screens' reload
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(
+      spy.mock.calls.slice(1).map(([event]) => ({
+        resource: event.eventKey === RESOURCE_CHANGED && event.payload.resource,
+      })),
+    ).toEqual([{ resource: Resource.Users }]);
   });
 
   it("Should not update an user if it doesn't exist", async () => {
@@ -119,17 +129,17 @@ describe("[Unit] Update User", () => {
   });
 
   it("Should not update an user if cpf already exists", async () => {
-    // Given a potentially valid name
-    // When an user with the same name exists
-    const user = new UserBuilder(2).build();
+    // Given another user with a CPF of their own
+    const other = new UserBuilder(2)
+      .withEmail("usertwo@example.com")
+      .withCPF("11144477735")
+      .build();
+    await executeTask(ctx.userRepository.save(other));
 
-    const repeatCPF = user.cpf;
-    await executeTask(ctx.userRepository.save(user));
-
-    //When we update the user to have same name
-    const userDTO = userBuilder.withCPF(repeatCPF).buildCreateDTO();
+    //When we update the user to have the other's CPF
+    const userDTO = userBuilder.withCPF(other.cpf).buildCreateDTO();
     const resultPromise = ctx.updateUserHandler.execute(
-      new UpdateUser(userDTO, user.id),
+      new UpdateUser(userDTO, userBuilder.build().id),
     );
 
     //Then it should have thrown an error and not have updated the user

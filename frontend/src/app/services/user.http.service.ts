@@ -5,6 +5,7 @@ import { UserEntity } from "@app/models/user.entity";
 import { PageRequest } from "@app/models/utils/pageRequest.entity";
 import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
 import { PageRequestUtility } from "@app/shared/utils/pageRequest.utility";
+import type { LoginRequest, UserRequest } from "@library/contracts";
 import { Observable } from "rxjs";
 
 @Injectable({
@@ -13,14 +14,7 @@ import { Observable } from "rxjs";
 export class UserService {
   private readonly _http = inject(HttpClient);
 
-  register(user: UserEntity): Observable<UserEntity> {
-    return this._http.post<UserEntity>("/v1/users", user);
-  }
-
-  login(credentials: {
-    email: string;
-    password: string;
-  }): Observable<Credentials> {
+  login(credentials: LoginRequest): Observable<Credentials> {
     return this._http.post<Credentials>("/v1/login", credentials);
   }
 
@@ -45,7 +39,7 @@ export class UserService {
     });
   }
 
-  addUser(user: Partial<UserEntity>): Observable<void> {
+  addUser(user: UserRequest): Observable<void> {
     return this._http.post<void>("/v1/users", user);
   }
 

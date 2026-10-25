@@ -1,15 +1,7 @@
+import { PlainPassword } from "@library/contracts";
 import { z } from "zod";
 
-// The frontend asks for the same
-export const MIN_PASSWORD_LENGTH = 4;
-
-/** A password as a user chooses it, before it is hashed. */
-export const PlainPassword = z
-  .string()
-  .min(
-    MIN_PASSWORD_LENGTH,
-    `A senha deve ter pelo menos ${MIN_PASSWORD_LENGTH.toString()} caracteres`,
-  );
+export { PlainPassword } from "@library/contracts";
 
 export type PlainPassword = z.infer<typeof PlainPassword>;
 

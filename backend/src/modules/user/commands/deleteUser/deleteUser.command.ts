@@ -1,3 +1,4 @@
+import { Resource } from "@library/contracts";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userDeleted } from "@modules/user/domain/events/userDeleted.event";
 import { userNotFoundException } from "@modules/user/domain/user.errors";
@@ -5,7 +6,11 @@ import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  changedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
 export class DeleteUser implements ICommand {
@@ -47,6 +52,7 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUser, void> {
         ),
 
         RTE.tap(publishRTE(userDeleted)),
+        RTE.tap(() => changedRTE({ resource: Resource.Users })),
         RTE.asUnit,
       ),
     );

@@ -1,9 +1,6 @@
+import { BookInfoRequest } from "@library/contracts";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
-import {
-  BookItem,
-  BookItemStatusEnum,
-} from "@modules/book/domain/bookItem.entity";
-import { CreateBookInfoDto } from "@modules/book/dtos/bookInfo.dto";
+import { BookItem, BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { FPF } from "@shared/utils/application/monads";
 import { UUID } from "@shared/uuid/uuid";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
@@ -13,12 +10,11 @@ export class BookInfoBuilder {
   private id = UUID.parse(createTestId(TableNameEnum.BookInfo, 0));
 
   private name = "livro 1";
-  private image = "user0@example.com";
   private price = 100;
   private bookItems = [
     {
       id: createTestId(TableNameEnum.BookItem, 0),
-      status: BookItemStatusEnum.Available,
+      status: BookItemStatus.Available,
       bookId: this.id,
     },
   ];
@@ -34,7 +30,6 @@ export class BookInfoBuilder {
     this.defaultProperties = {
       id: this.id,
       name: this.name,
-      image: this.image,
       price: this.price,
       bookItems: this.bookItems,
     };
@@ -65,6 +60,11 @@ export class BookInfoBuilder {
     return this;
   }
 
+  withCover(cover: string | null) {
+    this.overrides.cover = cover;
+    return this;
+  }
+
   withCreatedAt(createdAt: Date) {
     this.overrides.createdAt = createdAt;
     return this;
@@ -80,15 +80,13 @@ export class BookInfoBuilder {
       ...this.overrides,
     });
   }
-  buildCreateDTO(): CreateBookInfoDto {
+  buildCreateDTO(): BookInfoRequest {
     const bookInfo = {
       ...this.defaultProperties,
       ...this.overrides,
     };
 
-    return FPF.unsafeCoerce({
-      ...bookInfo,
-    });
+    return { name: bookInfo.name, price: bookInfo.price };
   }
 
   buildItem(): BookItem {

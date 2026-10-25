@@ -8,6 +8,8 @@ import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
 export abstract class UserRepository implements RepositoryDefaultPort<User> {
   findById!: (id: string) => TE.TaskEither<Error, O.Option<User>>;
+  /** The users with these ids; missing ones are left out. */
+  findByIds!: (ids: readonly string[]) => TE.TaskEither<Error, User[]>;
   findByEmail!: (email: string) => TE.TaskEither<Error, O.Option<User>>;
   findByCPF!: (cpf: string) => TE.TaskEither<Error, O.Option<User>>;
   findAll!: () => TE.TaskEither<Error, User[]>;

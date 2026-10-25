@@ -1,11 +1,11 @@
 #!/bin/bash
 
-cd /usr/src/app
+cd /usr/src/app/backend
 if [ ! -f '.env.dev' ]; then
   cp .env.example .env.dev
 fi
 
-yarn
+# The compose file's install service has installed the workspace
 # Prisma 7 generates the client only when asked, not on install or migrate
 yarn generate
 yarn migrate:init

@@ -13,6 +13,37 @@
   --space-5: 32px;
   --space-6: 48px;
 
+  // Cards, panels and tables: a step lighter than the page in the light
+  // scheme, so their edges show (in the dark scheme, a step above it)
+  --card-background: light-dark(
+    var(--mat-sys-surface-container-lowest),
+    var(--mat-sys-surface-container-low)
+  );
+
+  // Tables: the header band, the lines and the row under the pointer
+  --table-header-background: var(--mat-sys-surface-container);
+  --table-border: var(--mat-sys-outline-variant);
+  --table-hover: color-mix(in srgb, var(--mat-sys-on-surface) 5%, transparent);
+  // Room under a table's last row, so the box's border and rounded corners
+  // don't crowd it
+  --table-end-space: 3px;
+
+  // Row heights, the same on every table and list: compact for dense grids
+  // and small lists in dialogs, standard for the rest (a 40px button fits),
+  // and a row with form fields (a 48px field, its label above it)
+  --row-height-compact: 32px;
+  --row-height: 48px;
+  --row-height-form: 64px;
+  --cell-padding: var(--space-1) 12px;
+
+  // A button's height, which a field beside buttons takes too
+  --control-height: 40px;
+
+  // Done, available, active: the brand's teal
+  --success: var(--mat-sys-primary);
+  --success-container: var(--mat-sys-primary-container);
+  --on-success-container: var(--mat-sys-on-primary-container);
+
   // The sidebar is a dark panel in both schemes
   --sidebar-background: light-dark(
     #393b3d,

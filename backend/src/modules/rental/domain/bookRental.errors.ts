@@ -1,43 +1,31 @@
 import {
-  DomainError,
   DomainErrorKindEnum,
+  domainError,
 } from "@shared/utils/domain/shared.errors";
 
-export class BookRentalNotFoundException extends DomainError {
-  constructor() {
-    super(
-      DomainErrorKindEnum.NotFound,
-      "rental.notFound",
-      "Empréstimo não encontrado.",
-    );
-  }
-}
+export class BookRentalNotFoundException extends domainError(
+  DomainErrorKindEnum.NotFound,
+  "rental.notFound",
+  "Empréstimo não encontrado.",
+) {}
 
 export const bookRentalNotFoundException = () =>
   new BookRentalNotFoundException();
 
-export class BookRentalFinishedException extends DomainError {
-  constructor() {
-    super(
-      DomainErrorKindEnum.Conflict,
-      "rental.finished",
-      "Empréstimo finalizado.",
-    );
-  }
-}
+export class BookRentalFinishedException extends domainError(
+  DomainErrorKindEnum.Conflict,
+  "rental.finished",
+  "Empréstimo finalizado.",
+) {}
 
 export const bookRentalFinishedException = () =>
   new BookRentalFinishedException();
 
-export class BookRentalNotAvailableException extends DomainError {
-  constructor() {
-    super(
-      DomainErrorKindEnum.Conflict,
-      "rental.unavailable",
-      "Livro indisponível.",
-    );
-  }
-}
+export class BookRentalNotAvailableException extends domainError(
+  DomainErrorKindEnum.Conflict,
+  "rental.unavailable",
+  "Livro indisponível.",
+) {}
 
 export const bookRentalNotAvailableException = () =>
   new BookRentalNotAvailableException();

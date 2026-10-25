@@ -1,0 +1,109 @@
+<section class="main-container">
+  <app-page-header title="audit.title" />
+
+  <p class="small-note">{{ "audit.help" | translate }}</p>
+
+  <form
+    (ngSubmit)="search()"
+    [formGroup]="filters"
+    class="compact-fields filters"
+  >
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>{{ "audit.person" | translate }}</mat-label>
+      <mat-select formControlName="userId" name="userId">
+        <mat-option value="">{{ "audit.anyone" | translate }}</mat-option>
+        @for (user of users(); track user.id) {
+          <mat-option [value]="user.id">{{ user.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>{{ "audit.useCase" | translate }}</mat-label>
+      <input
+        [placeholder]="'audit.useCaseExample' | translate"
+        autocomplete="off"
+        formControlName="useCase"
+        matInput
+        name="useCase"
+      />
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>{{ "audit.recordId" | translate }}</mat-label>
+      <input
+        autocomplete="off"
+        formControlName="recordId"
+        matInput
+        name="recordId"
+      />
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>{{ "audit.from" | translate }}</mat-label>
+      <input formControlName="from" matInput name="from" type="date" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>{{ "audit.to" | translate }}</mat-label>
+      <input formControlName="to" matInput name="to" type="date" />
+    </mat-form-field>
+    <div class="filter-actions">
+      <button matButton="filled" name="search" type="submit">
+        {{ "audit.search" | translate }}
+      </button>
+      <button (click)="clear()" matButton name="clear" type="button">
+        {{ "audit.clear" | translate }}
+      </button>
+    </div>
+  </form>
+  @if (periodInverted()) {
+    <p class="error" role="alert">{{ "audit.periodInverted" | translate }}</p>
+  }
+
+  <app-customized-table [columns]="columns()" [data]="data">
+    <ng-container matColumnDef="recordedAt">
+      <th *matHeaderCellDef mat-header-cell>{{ "audit.when" | translate }}</th>
+      <td *matCellDef="let entry; dataSource: data" mat-cell class="when">
+        {{ entry.recordedAt | date: "short" : undefined : locale() }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="user">
+      <th *matHeaderCellDef mat-header-cell>
+        {{ "audit.person" | translate }}
+      </th>
+      <td *matCellDef="let entry; dataSource: data" mat-cell>
+        {{ entry.userName ?? ("audit.noAccount" | translate) }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="useCase">
+      <th *matHeaderCellDef mat-header-cell>
+        {{ "audit.useCase" | translate }}
+      </th>
+      <td *matCellDef="let entry; dataSource: data" mat-cell>
+        <code>{{ entry.useCase }}</code>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="recordId">
+      <th *matHeaderCellDef mat-header-cell>
+        {{ "audit.recordId" | translate }}
+      </th>
+      <td *matCellDef="let entry; dataSource: data" mat-cell class="record">
+        {{ entry.recordId ?? "—" }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="input">
+      <th *matHeaderCellDef mat-header-cell>{{ "audit.input" | translate }}</th>
+      <td *matCellDef="let entry; dataSource: data" mat-cell>
+        @if (inputText(entry.input); as text) {
+          <details>
+            <summary>{{ "audit.showInput" | translate }}</summary>
+            <pre>{{ text }}</pre>
+          </details>
+        } @else {
+          —
+        }
+      </td>
+    </ng-container>
+  </app-customized-table>
+</section>

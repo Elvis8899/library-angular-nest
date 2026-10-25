@@ -1,13 +1,14 @@
+import { contractRef, RentBookRequest } from "@library/contracts";
+import { ApiController } from "@modules/auth/decorators/apiController.decorator";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
-import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { AuthenticatedRequest } from "@modules/auth/guards/authenticatedRequest";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { RentBookCommand } from "@modules/rental/commands/rentBook/rentBook.command";
-import { BookRentalDto } from "@modules/rental/dtos/bookRental.dto";
+import { BookRentalNotAvailableException } from "@modules/rental/domain/bookRental.errors";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
+import { UserNotFoundException } from "@modules/user/domain/user.errors";
 import {
   Body,
-  Controller,
   HttpCode,
   HttpStatus,
   Post,
@@ -16,26 +17,23 @@ import {
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
-  ApiBearerAuth,
-  ApiConflictResponse,
+  ApiBody,
   ApiCreatedResponse,
   ApiOperation,
-  ApiTags,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
 import { noop } from "@shared/utils/application/noop";
+import { ApiErrors } from "@shared/utils/http/apiErrors";
 
-@Controller("v1/bookRentals")
-@ApiTags("Empréstimos")
-@ApiBearerAuth()
-@UseGuards(AuthGuard)
+@ApiController("Empréstimos")
 export class RentBookController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
 
-  @Post("rent")
+  @Post("bookRentals/rent")
+  @ApiErrors(UserNotFoundException, BookRentalNotAvailableException)
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(RolesGuard)
   @Roles(UserRoleEnum.Admin, UserRoleEnum.Client)
@@ -45,16 +43,20 @@ export class RentBookController {
   })
   @ApiCreatedResponse({ description: "Empréstimo criado com sucesso." })
   @ApiUnprocessableEntityResponse({ description: "Livro inválido." })
-  @ApiConflictResponse({ description: "Livro já está emprestado." })
+  @ApiBody({ schema: contractRef(RentBookRequest) })
   async createBookInfo(
-    @Body() bookRentalInput: BookRentalDto,
+    @Body() bookRentalInput: RentBookRequest,
     @Request() req: AuthenticatedRequest,
   ): Promise<void> {
-    if (req.user.role !== UserRoleEnum.Admin) {
-      bookRentalInput.userId = req.user.sub;
-    }
+    // A client rents for themselves
+    const userId =
+      req.user.role === UserRoleEnum.Admin
+        ? bookRentalInput.userId
+        : req.user.sub;
     return this.commandBus
-      .execute<RentBookCommand>(new RentBookCommand(bookRentalInput))
+      .execute<RentBookCommand>(
+        new RentBookCommand({ ...bookRentalInput, userId }),
+      )
       .then(noop);
   }
 }

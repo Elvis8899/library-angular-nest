@@ -3,7 +3,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
-import { BookEntity, BookItemEntity } from "@app/pages/books/book.entity";
+import { BookEntity } from "@app/pages/books/book.entity";
 import { BookService } from "@app/pages/books/book.http.service";
 import {
   createServiceFactory,
@@ -109,11 +109,29 @@ describe("BookService", () => {
   });
 
   it("Should create a book", () => {
-    spectator.service.addBook({ name: "Dom Casmurro" }).subscribe();
+    const book = { name: "Dom Casmurro", price: 30 };
+    spectator.service.addBook(book).subscribe();
 
     const req = http.expectOne({ method: "POST", url: "/v1/bookInfos" });
-    expect(req.request.body).toEqual({ name: "Dom Casmurro" });
-    req.flush(null);
+    expect(req.request.body).toEqual(book);
+    req.flush({ id: "book-1" });
+  });
+
+  it("Should upload and remove a book's cover", () => {
+    const cover = new File(["png"], "capa.png", { type: "image/png" });
+    spectator.service.changeCover("book-1", cover).subscribe();
+    spectator.service.removeCover("book-1").subscribe();
+
+    const upload = http.expectOne({
+      method: "PUT",
+      url: "/v1/bookInfos/book-1/cover",
+    });
+    expect(upload.request.body).toBeInstanceOf(FormData);
+    expect((upload.request.body as FormData).get("file")).toBe(cover);
+    upload.flush(null);
+    http
+      .expectOne({ method: "DELETE", url: "/v1/bookInfos/book-1/cover" })
+      .flush(null);
   });
 
   it("Should get a book", () => {
@@ -141,7 +159,7 @@ describe("BookService", () => {
   });
 
   it("Should add a copy of a book", () => {
-    const item = { bookInfoId: "book-1" } as Partial<BookItemEntity>;
+    const item = { bookId: "book-1" };
     spectator.service.addBookItem(item).subscribe();
 
     const req = http.expectOne({ method: "POST", url: "/v1/bookInfos/item" });

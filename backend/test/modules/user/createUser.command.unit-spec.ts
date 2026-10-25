@@ -11,6 +11,10 @@ import {
 import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { UnprocessableEntityException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import {
+  Resource,
+  RESOURCE_CHANGED,
+} from "@shared/domainEventPublisher/resourceChanged.event";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { useHandlerModule } from "@test/util/handlerModule";
@@ -67,7 +71,13 @@ describe("[Unit] Create User", () => {
     await ctx.createUserHandler.execute(new CreateUser(user));
 
     //Then it should have created a user and emitted an event
-    expect(spy).toHaveBeenCalledTimes(1);
+    // Its event, then the screens' reload
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(
+      spy.mock.calls.slice(1).map(([event]) => ({
+        resource: event.eventKey === RESOURCE_CHANGED && event.payload.resource,
+      })),
+    ).toEqual([{ resource: Resource.Users }]);
   });
 
   it("Should not create a user if name is invalid", async () => {
@@ -115,7 +125,7 @@ describe("[Unit] Create User", () => {
   it("Should not create a user if cpf already exists", async () => {
     //Given an existing user
     const user = new UserBuilder().buildCreateDTO();
-    const cpf = user.cpf;
+    const cpf = user.cpf ?? "";
     //When we create two users with the same name
     await ctx.createUserHandler.execute(new CreateUser(user));
     const userCopy = new UserBuilder().withCPF(cpf).buildCreateDTO();

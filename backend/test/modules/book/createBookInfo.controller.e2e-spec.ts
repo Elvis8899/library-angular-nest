@@ -1,3 +1,4 @@
+import { Created } from "@library/contracts";
 import { HttpStatus } from "@nestjs/common";
 import { FPF } from "@shared/utils/application/monads";
 import { useE2eApp } from "@test/util/e2eApp";
@@ -16,6 +17,8 @@ describe("[e2e] POST /v1/bookInfos", () => {
     const bookInfo = new BookInfoBuilder(0).withName("Test").buildCreateDTO();
     const response = await e2e.http().post(v1Route).send(bookInfo);
     expect(response.status).toBe(HttpStatus.CREATED);
+    // Its id, for the cover
+    expect(Created.parse(response.body).id).toEqual(expect.any(String));
   });
 
   it.each([

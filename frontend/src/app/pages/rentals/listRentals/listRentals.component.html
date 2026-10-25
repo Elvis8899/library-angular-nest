@@ -7,7 +7,7 @@
   <app-customized-table [columns]="columns()" [data]="data">
     <ng-container matColumnDef="book">
       <th *matHeaderCellDef mat-header-cell>{{ "common.book" | translate }}</th>
-      <td *matCellDef="let rental" mat-cell>
+      <td *matCellDef="let rental; dataSource: data" mat-cell>
         <span class="book-name">{{ rental.bookName }}</span>
         @if (showClient) {
           <span class="client">{{ rental.userName }}</span>
@@ -19,7 +19,7 @@
       <th *matHeaderCellDef mat-header-cell>
         {{ "rentals.list.rentedOn" | translate }}
       </th>
-      <td *matCellDef="let rental" mat-cell>
+      <td *matCellDef="let rental; dataSource: data" mat-cell>
         {{ rental.createdAt | date: "shortDate" : undefined : locale() }}
       </td>
     </ng-container>
@@ -28,7 +28,7 @@
       <th *matHeaderCellDef mat-header-cell>
         {{ "rentals.list.dueOn" | translate }}
       </th>
-      <td *matCellDef="let rental" mat-cell>
+      <td *matCellDef="let rental; dataSource: data" mat-cell>
         <span class="due-date">
           {{ rental.overdueDate | date: "shortDate" : undefined : locale() }}
           @if (rental.fines.overdue) {
@@ -50,7 +50,7 @@
       <th *matHeaderCellDef class="numeric" mat-header-cell>
         {{ "rentals.fine.title" | translate }}
       </th>
-      <td *matCellDef="let rental" class="numeric" mat-cell>
+      <td *matCellDef="let rental; dataSource: data" class="numeric" mat-cell>
         <ng-container
           *ngTemplateOutlet="fine; context: { $implicit: rental }"
         />
@@ -61,7 +61,7 @@
       <th *matHeaderCellDef mat-header-cell>
         <span class="visually-hidden">{{ "common.actions" | translate }}</span>
       </th>
-      <td *matCellDef="let rental" mat-cell>
+      <td *matCellDef="let rental; dataSource: data" mat-cell>
         <div class="table-actions">
           <button
             (click)="returnBook(rental)"
@@ -78,7 +78,7 @@
   </app-customized-table>
 </section>
 
-<ng-template #fine let-rental>
+<ng-template #fine [appTemplateContext]="rowContext" let-rental>
   @if (rental.fines.overdue) {
     <span
       [matTooltip]="
@@ -87,9 +87,7 @@
       class="fine"
       tabindex="0"
     >
-      {{
-        rental.fines.total | currency: "BRL" : "symbol" : undefined : locale()
-      }}
+      {{ rental.fines.total | money }}
     </span>
   } @else {
     <span class="no-fine">—</span>

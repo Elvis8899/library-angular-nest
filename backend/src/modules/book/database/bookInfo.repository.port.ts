@@ -28,7 +28,16 @@ export abstract class BookInfoRepository implements RepositoryDefaultPort<BookIn
     params: PaginatedQueryParams<BookInfoFindAllQuery>,
   ) => TE.TaskEither<Error, Paginated<BookInfo>>;
   deleteById!: (id: string) => TE.TaskEither<Error, void>;
+  /** Saves the book's details; a book already saved keeps its cover. */
   save!: (bookInfo: BookInfo) => TE.TaskEither<Error, void>;
+  /** Moves the book's cover from one version to another (null: none),
+   * refused with 409 book.coverChanged when the book isn't holding `from`
+   * (another upload came first, or the book is gone). */
+  changeCover!: (
+    bookId: string,
+    from: string | null,
+    to: string | null,
+  ) => TE.TaskEither<Error, void>;
   findBookItemById!: (
     bookItemId: string,
   ) => TE.TaskEither<Error, O.Option<BookItem>>;

@@ -4,8 +4,8 @@ services:
   # Serves the frontend build and proxies the API, over HTTPS
   nginx:
     build:
-      context: ../frontend
-      dockerfile: .docker/Dockerfile
+      context: ..
+      dockerfile: frontend/.docker/Dockerfile
     restart: always
     ports:
       - "80:80"
@@ -40,11 +40,12 @@ services:
 
   app:
     build:
-      context: ../backend
-      dockerfile: .docker/Dockerfile
+      context: ..
+      dockerfile: backend/.docker/Dockerfile
     restart: always
-    # The API's settings, from the repo root's .env. Outside the build context,
-    # so they can't end up in the image
+    # The API's settings, from the repo root's .env. The root .dockerignore
+    # leaves every .env out of the build context, so they can't end up in the
+    # image
     env_file: ../.env
     # Uncomment this line in case you are in M1
     # platform: linux/amd64
@@ -58,13 +59,42 @@ services:
       TRUST_PROXY: "172.18.0.0/16"
       # Overrides the one in ../.env, so the credentials live only in .docker/.env
       DATABASE_URL: &databaseUrl postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .docker/.env}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .docker/.env}@postgres:5432/${POSTGRES_DB:?Set POSTGRES_DB in .docker/.env}
+      # The storage below, overriding ../.env's, so its credentials live
+      # only in .docker/.env. For a hosted S3 instead, drop the service and
+      # these lines and set S3_* in ../.env
+      S3_ENDPOINT: http://storage:8333
+      S3_BUCKET: library
+      S3_FORCE_PATH_STYLE: "true"
+      S3_ACCESS_KEY_ID: &storageKey ${STORAGE_ACCESS_KEY:?Set STORAGE_ACCESS_KEY in .docker/.env}
+      S3_SECRET_ACCESS_KEY: &storageSecret ${STORAGE_SECRET_KEY:?Set STORAGE_SECRET_KEY in .docker/.env}
     networks:
       - "nginx_network"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      storage:
+        condition: service_started
+
+  # S3-compatible object storage (SeaweedFS) for the uploaded files (the
+  # books' covers). Only the app reaches it, on the Docker network; back its
+  # volume up with the database's
+  storage:
+    image: chrislusf/seaweedfs:4.48
+    restart: always
+    # Its Prometheus metrics on 9327, for the Docker network only
+    command: mini -dir=/data -metricsPort=9327
+    environment:
+      AWS_ACCESS_KEY_ID: *storageKey
+      AWS_SECRET_ACCESS_KEY: *storageSecret
+    volumes:
+      - library-storage:/data
+    networks:
+      - "nginx_network"
 
   postgres:
-    image: postgres:latest
+    # A major version, never latest: a new major can't read the old one's
+    # data without pg_upgrade
+    image: postgres:18
     restart: always
     # Not reachable from outside the server: the app uses the Docker
     # network, and admins can connect from the server or an SSH tunnel
@@ -75,9 +105,20 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - library-postgres:/var/lib/postgresql/data
+      # The parent of the data folder, as the image wants from 18 on (it
+      # keeps each major's data in a folder of its own, and refuses to start
+      # with a volume on /var/lib/postgresql/data)
+      - library-postgres:/var/lib/postgresql
     networks:
       - "nginx_network"
+    # Ready once it accepts connections over TCP (the first start runs a
+    # temporary server on the socket only), so the migrations and the API wait
+    # for it instead of failing on its first start
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   pgadmin:
     image: dpage/pgadmin4
@@ -91,10 +132,98 @@ services:
     networks:
       - "nginx_network"
 
+  # Scrapes the API's metrics server (app:9464) on the Docker network. Not
+  # published: only Grafana reads it
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    restart: always
+    volumes:
+      - ./prometheus/prometheus.prod.yml:/etc/prometheus/prometheus.prod.yml:ro
+      - library-prometheus:/prometheus
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .docker/.env}
+    # Its config can't read variables, so the site's probe gets DOMAIN from
+    # sed. --web.route-prefix is the path the dev stack serves it under, so
+    # both share Grafana's data source
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        sed "s/__DOMAIN__/$$DOMAIN/g" /etc/prometheus/prometheus.prod.yml > /prometheus/prometheus.yml &&
+        exec /bin/prometheus --config.file=/prometheus/prometheus.yml
+        --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=30d
+        --storage.tsdb.retention.size=2GB --web.route-prefix=/prometheus
+    networks:
+      - "nginx_network"
+    depends_on:
+      - node-exporter
+      - postgres-exporter
+      - blackbox-exporter
+      - storage
+
+  # The server's disk, memory, CPU and network, read from the host
+  node-exporter:
+    image: prom/node-exporter:v1.12.1
+    restart: always
+    command: ["--path.rootfs=/host"]
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+    networks:
+      - "nginx_network"
+
+  # The database's connections, transactions, size and locks
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.20.1
+    restart: always
+    environment:
+      DATA_SOURCE_URI: postgres:5432/${POSTGRES_DB}?sslmode=disable
+      DATA_SOURCE_USER: ${POSTGRES_USER}
+      DATA_SOURCE_PASS: ${POSTGRES_PASSWORD}
+    networks:
+      - "nginx_network"
+    depends_on:
+      - postgres
+
+  # Probes https://<DOMAIN>/check/status the way users reach it (DNS, the
+  # certificate, nginx, the API), for the "site" job
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.29.0
+    restart: always
+    networks:
+      - "nginx_network"
+
+  # At https://<DOMAIN>/grafana/, with the Prometheus data source and the
+  # dashboards in grafana/ (the same as the dev stack's)
+  grafana:
+    image: grafana/grafana:13.2.3
+    restart: always
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - library-grafana:/var/lib/grafana
+    environment:
+      GF_SERVER_ROOT_URL: https://${DOMAIN}/grafana/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      # Read only when its volume is first created; later, change it in
+      # Grafana (or `grafana cli admin reset-admin-password`)
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?Set GRAFANA_PASSWORD in .docker/.env}
+      GF_SECURITY_COOKIE_SECURE: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+    # Reachable only through nginx (/grafana/), like pgAdmin
+    ports:
+      - "172.18.0.1:3002:3000"
+    networks:
+      - "nginx_network"
+    depends_on:
+      - prometheus
+
   migrate-deploy:
     build:
-      context: ../backend
-      dockerfile: .docker/Dockerfile
+      context: ..
+      dockerfile: backend/.docker/Dockerfile
       target: migrate
     # Uncomment this line in case you are in M1
     # platform: linux/amd64
@@ -106,7 +235,8 @@ services:
     networks:
       - "nginx_network"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
 networks:
   nginx_network:
@@ -114,5 +244,8 @@ networks:
 
 volumes:
   library-postgres:
+  library-storage:
+  library-prometheus:
+  library-grafana:
   letsencrypt:
   certbot-webroot:

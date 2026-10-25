@@ -4,6 +4,7 @@ import { ROLE } from "@app/models/credentials.entity";
 import { routes } from "@app/pages/pages.routes";
 import { CredentialsService } from "@app/services/credentials.service";
 import { Logger } from "@app/services/logger.service";
+import { I18nService } from "@app/shared/i18n/i18n.service";
 import {
   createServiceFactory,
   SpectatorService,
@@ -33,10 +34,13 @@ describe("Routes", () => {
     return router.url;
   };
 
+  const i18nServiceMock = { loadPages: vi.fn(() => Promise.resolve()) };
+
   const createService = createServiceFactory({
     service: Router,
     providers: [
       provideRouter(routes),
+      { provide: I18nService, useValue: i18nServiceMock },
       { provide: CredentialsService, useValue: credentialsServiceMock },
     ],
   });
@@ -68,6 +72,12 @@ describe("Routes", () => {
       role = ROLE.CLIENT;
     });
 
+    it("Should load the pages' texts with the layout", async () => {
+      i18nServiceMock.loadPages.mockClear();
+      await navigate(defaultRolePage(ROLE.CLIENT));
+      expect(i18nServiceMock.loadPages).toHaveBeenCalled();
+    });
+
     it("Should leave the login page for the client's default page", async () => {
       const defaultPage = await navigate(defaultRolePage(ROLE.CLIENT));
       expect(await navigate("/login")).toBe(defaultPage);
@@ -77,7 +87,7 @@ describe("Routes", () => {
       expect(await navigate("/home")).toBe("/home");
     });
 
-    it.each(["/users/list", "/users/add", "/unknown"])(
+    it.each(["/users/list", "/users/add", "/audit", "/unknown"])(
       "Should send %s to the client's default page",
       async (url) => {
         const defaultPage = await navigate(defaultRolePage(ROLE.CLIENT));
@@ -117,7 +127,7 @@ describe("Routes", () => {
       expect(await navigate("/login")).toBe("/users/list");
     });
 
-    it.each(["/users/list", "/users/add", "/home"])(
+    it.each(["/users/list", "/users/add", "/audit", "/home"])(
       "Should open %s",
       async (url) => {
         expect(await navigate(url)).toBe(url);

@@ -1,3 +1,4 @@
+import { Resource, UserRequest } from "@library/contracts";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userCreated } from "@modules/user/domain/events/userCreated.event";
 import { PasswordHasher } from "@modules/user/domain/passwordHasher.port";
@@ -6,23 +7,28 @@ import {
   userCPFAlreadyExistsException,
   userEmailAlreadyExistsException,
 } from "@modules/user/domain/user.errors";
-import { CreateUserDto } from "@modules/user/dtos/user.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
-import { Apply, FPF, RE, RTE } from "@shared/utils/application/monads";
+import { Clock } from "@shared/clock/clock";
+import { inputsRTE } from "@shared/utils/application/fromInput";
+import { FPF, RTE } from "@shared/utils/application/monads";
 import { ensureAbsentRTE, performRTE } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  changedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
 
 export class CreateUser implements ICommand {
-  constructor(public readonly props: CreateUserDto) {}
+  constructor(public readonly props: UserRequest) {}
 }
 
 @CommandHandler(CreateUser)
 export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
   constructor(
     private readonly useCase: UseCase,
+    private readonly clock: Clock,
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
@@ -35,14 +41,10 @@ export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
       logged,
       FPF.pipe(
         //Data validation
-        Apply.sequenceS(RE.Applicative)({
-          id: fromInputRE(
-            UUID,
-            "uuid",
-          )(this.uuidGeneratorService.generateUUID()),
-          input: fromInputRE(NewUserInput, "User")(command.props),
+        inputsRTE({
+          id: [UUID, "uuid", this.uuidGeneratorService.generateUUID()],
+          input: [NewUserInput, "User", command.props],
         }),
-        RTE.fromReaderEither,
 
         //Check cpf and email unicity
         RTE.tap(({ input }) =>
@@ -65,7 +67,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
           RTE.fromTask(() => this.passwordHasher.hash(input.password)),
         ),
         RTE.map(({ id, input, password }) =>
-          registerUser(id, input, password, new Date()),
+          registerUser(id, input, password, this.clock.now()),
         ),
 
         //Store entity
@@ -74,6 +76,9 @@ export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
         ),
 
         RTE.tap(publishRTE(userCreated)),
+        RTE.tap((user) =>
+          changedRTE({ resource: Resource.Users, key: user.id }),
+        ),
         RTE.asUnit,
       ),
     );

@@ -1,26 +1,8 @@
-import { BaseEntity } from "@app/models/utils/base.entity";
+import type { BookRental, RentBookRequest } from "@library/contracts";
+import { RentalStatus } from "@library/contracts";
 
-export interface BookRentEntity {
-  bookItemId: string;
-  userId: string;
-}
-
-export enum BookRentalStatusEnum {
-  Rented = "rented",
-  Finished = "finished",
-}
-
-export interface BookRentalEntity extends BaseEntity {
-  userName: string;
-  bookName: string;
-  rentalStatus: BookRentalStatusEnum;
-  overdueDate: Date | string;
-  deliveryDate: Date | string | null;
-  fines: {
-    overdue: boolean;
-    fixed: number;
-    days: number;
-    perDayValue: number;
-    total: number;
-  };
-}
+// The API's shapes and values, under the names the screens use
+export const BookRentalStatusEnum = RentalStatus;
+export type BookRentalStatusEnum = RentalStatus;
+export type BookRentEntity = RentBookRequest;
+export type BookRentalEntity = BookRental;

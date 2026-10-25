@@ -1,19 +1,15 @@
-import {
-  CheckedDocumentType,
-  DocumentType,
-  formatDocument,
-} from "@modules/user/domain/document";
+import { UserChangesRequest, UserRequest, UserRole } from "@library/contracts";
+import { DocumentType } from "@modules/user/domain/document";
 import { Email } from "@modules/user/domain/email";
-import { PasswordHash, PlainPassword } from "@modules/user/domain/password";
+import { PasswordHash } from "@modules/user/domain/password";
 import { O } from "@shared/utils/application/monads";
 import { BaseDateEntity } from "@shared/utils/domain/dateEntity.base";
 import { UUID } from "@shared/uuid/uuid";
 import { z } from "zod";
 
-export enum UserRoleEnum {
-  Admin = "admin",
-  Client = "client",
-}
+// The contracts' UserRole, under the backend's name
+export const UserRoleEnum = UserRole;
+export type UserRoleEnum = UserRole;
 
 // Clients must have a CPF or CNPJ; admins may leave it empty
 const hasRequiredDocument = (user: { role: UserRoleEnum; cpf: string }) =>
@@ -41,30 +37,23 @@ export const User = z
 export type User = z.infer<typeof User>;
 
 // What an admin gives for a user. Unlike User, which also validates stored
-// rows, a new document must have valid check digits
-const userDetails = z.object({
-  name: z.string().min(1),
-  email: Email,
-  cpf: CheckedDocumentType.nullish().transform((cpf) =>
-    cpf ? formatDocument(cpf) : "",
-  ),
-  role: z.enum(UserRoleEnum),
-});
-
-export const NewUserInput = userDetails
-  .extend({ password: PlainPassword })
-  .refine(hasRequiredDocument, "CPF ou CNPJ inválido");
+// rows, a new document must have valid check digits (the request checks them)
+export const NewUserInput = UserRequest.refine(
+  hasRequiredDocument,
+  "CPF ou CNPJ inválido",
+);
 
 export type NewUserInput = z.infer<typeof NewUserInput>;
 
 /** An update: the password changes only when one is given. */
-export const UserChangesInput = userDetails
-  .extend({ password: PlainPassword.optional() })
-  .refine(hasRequiredDocument, "CPF ou CNPJ inválido");
+export const UserChangesInput = UserChangesRequest.refine(
+  hasRequiredDocument,
+  "CPF ou CNPJ inválido",
+);
 
 export type UserChangesInput = z.infer<typeof UserChangesInput>;
 
-type UserDetails = z.infer<typeof userDetails>;
+type UserDetails = Omit<NewUserInput, "password">;
 
 export const registerUser = (
   id: UUID,

@@ -2,6 +2,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
+import { ApplicationRef } from "@angular/core";
 import { Router, RouterModule } from "@angular/router";
 import { AddBooksComponent } from "@app/pages/books/addBook/addBook.component";
 import { BookService } from "@app/pages/books/book.http.service";
@@ -14,7 +15,7 @@ import {
   Spectator,
   SpyObject,
 } from "@openng/spectator/vitest";
-import { of, Subject, throwError } from "rxjs";
+import { defer, of, Subject, throwError } from "rxjs";
 
 Logger.level = 0;
 
@@ -22,7 +23,7 @@ describe("AddBooksComponent", () => {
   let spectator: Spectator<AddBooksComponent>;
   let httpMock: HttpTestingController;
   let bookServiceMock: SpyObject<BookService>;
-  let inputs: Record<"name" | "image" | "price", HTMLInputElement>;
+  let inputs: Record<"name" | "price" | "cover", HTMLInputElement>;
   const createComponent = createComponentFactory({
     component: AddBooksComponent,
     imports: [
@@ -36,42 +37,58 @@ describe("AddBooksComponent", () => {
     spectator = createComponent();
     httpMock = spectator.inject(HttpTestingController);
     bookServiceMock = spectator.inject(BookService);
-    bookServiceMock.addBook.mockReturnValue(of(undefined));
+    bookServiceMock.addBook.mockReturnValue(of({ id: "b1" }));
+    bookServiceMock.changeCover.mockReturnValue(of(undefined));
     inputs = {
       name: spectator.query("input[name='name']") as HTMLInputElement,
-      image: spectator.query("input[name='image']") as HTMLInputElement,
       price: spectator.query("input[name='price']") as HTMLInputElement,
+      cover: spectator.query("input[name='cover']") as HTMLInputElement,
     };
   });
 
   afterEach(() => {
     httpMock.verify();
+    vi.restoreAllMocks();
   });
 
-  function fillIn(name: string, price: string, image = "") {
+  function fillIn(name: string, price: string) {
     spectator.typeInElement(name, inputs.name);
     spectator.typeInElement(price, inputs.price);
-    spectator.typeInElement(image, inputs.image);
   }
+
+  const png = new File(["png"], "capa.png", { type: "image/png" });
+  function pick(file: File | null) {
+    Object.defineProperty(inputs.cover, "files", {
+      value: file ? [file] : [],
+      configurable: true,
+    });
+    spectator.dispatchFakeEvent(inputs.cover, "change");
+  }
+  const cover = () => spectator.query("img.cover") as HTMLImageElement;
 
   it("Should have a title", () => {
     // Assert
     expect(spectator.query("h1")).toHaveText("books.create");
   });
 
-  it("Should add the book and go back to the list", () => {
+  it("Should add the book, then its cover, and go back to the list", () => {
     // Arrange
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:capa");
     const navigateSpy = vi.spyOn(spectator.inject(Router), "navigate");
     const notifications = spectator.inject(NotificationService);
-    fillIn("Dom Casmurro", "39.9", "https://example.com/cover.jpg");
+    fillIn("Dom Casmurro", "39.9");
+    pick(png);
     // Act
     spectator.click("button[name='save']");
     // Assert
     expect(bookServiceMock.addBook).toHaveBeenCalledExactlyOnceWith({
       name: "Dom Casmurro",
-      image: "https://example.com/cover.jpg",
       price: 39.9,
     });
+    expect(bookServiceMock.changeCover).toHaveBeenCalledExactlyOnceWith(
+      "b1",
+      png
+    );
     expect(notifications.success).toHaveBeenCalledExactlyOnceWith(
       "books.created"
     );
@@ -87,9 +104,75 @@ describe("AddBooksComponent", () => {
     // Assert
     expect(bookServiceMock.addBook).toHaveBeenCalledWith({
       name: "Dom Casmurro",
-      image: "",
       price: 0,
     });
+    expect(bookServiceMock.changeCover).not.toHaveBeenCalled();
+  });
+
+  it("Should keep the book and say so when its cover doesn't go", () => {
+    // Arrange
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:capa");
+    const navigateSpy = vi.spyOn(spectator.inject(Router), "navigate");
+    const notifications = spectator.inject(NotificationService);
+    bookServiceMock.changeCover.mockReturnValue(
+      throwError(() => new Error("A capa deve ter até 5 MB."))
+    );
+    fillIn("Dom Casmurro", "10");
+    pick(png);
+    // Act
+    spectator.click("button[name='save']");
+    // Assert
+    expect(notifications.error).toHaveBeenCalledExactlyOnceWith(
+      "books.form.coverNotSaved"
+    );
+    expect(notifications.success).not.toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(["/books/list"]);
+  });
+
+  it("Should preview the picked cover, and drop it", () => {
+    // Arrange
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:capa");
+    const revoked = vi.spyOn(URL, "revokeObjectURL").mockReturnValue();
+    expect(cover().getAttribute("src")).toBe("images/no-image.png");
+    expect(spectator.query("button[name='pickCover']")).toHaveText(
+      "books.form.pickCover"
+    );
+    // Act
+    pick(png);
+    spectator.detectChanges();
+    // Assert
+    expect(cover().getAttribute("src")).toBe("blob:capa");
+    expect(spectator.query("button[name='pickCover']")).toHaveText(
+      "books.cover.change"
+    );
+    // Act
+    spectator.click("button[name='clearCover']");
+    spectator.inject(ApplicationRef).tick();
+    // Assert
+    expect(cover().getAttribute("src")).toBe("images/no-image.png");
+    expect(revoked).toHaveBeenCalledWith("blob:capa");
+    expect(spectator.query("button[name='clearCover']")).toBeNull();
+  });
+
+  it("Should open the file picker, and refuse a file the API would", () => {
+    // Arrange
+    const clicked = vi.spyOn(inputs.cover, "click");
+    const notifications = spectator.inject(NotificationService);
+    // Act
+    spectator.click("button[name='pickCover']");
+    pick(null);
+    pick(
+      new File([new Uint8Array(6 * 1024 * 1024)], "big.png", {
+        type: "image/png",
+      })
+    );
+    spectator.component.pickCover(new Event("change"));
+    // Assert
+    expect(clicked).toHaveBeenCalledOnce();
+    expect(notifications.error).toHaveBeenCalledExactlyOnceWith(
+      "books.form.coverTooLarge"
+    );
+    expect(spectator.component.cover()).toBeNull();
   });
 
   it("Should show the error when adding fails", () => {
@@ -118,56 +201,35 @@ describe("AddBooksComponent", () => {
     ]);
   });
 
-  it("Should reject a negative price and a cover that isn't a URL", () => {
+  it("Should reject a negative price", () => {
     // Arrange
-    fillIn("Dom Casmurro", "-1", "cover.jpg");
+    fillIn("Dom Casmurro", "-1");
     // Act
     spectator.click("button[name='save']");
     // Assert
     expect(bookServiceMock.addBook).not.toHaveBeenCalled();
     expect(
       spectator.queryAll("mat-error").map((e) => e.textContent?.trim())
-    ).toEqual(["books.form.priceInvalid", "books.form.coverInvalid"]);
-  });
-
-  it("Should preview the cover and fall back when it doesn't load", () => {
-    // Assert
-    const cover = () => spectator.query("img.cover") as HTMLImageElement;
-    expect(cover().getAttribute("src")).toBe("images/no-image.png");
-    // Act
-    spectator.typeInElement("https://example.com/cover.jpg", inputs.image);
-    // Assert
-    expect(cover().getAttribute("src")).toBe("https://example.com/cover.jpg");
-    // Act
-    spectator.dispatchFakeEvent(cover(), "error");
-    // Assert
-    expect(cover().getAttribute("src")).toBe("images/no-image.png");
-    // Act: a new URL gets another try
-    spectator.typeInElement("https://example.com/other.jpg", inputs.image);
-    // Assert
-    expect(cover().getAttribute("src")).toBe("https://example.com/other.jpg");
-  });
-
-  it("Should not preview an invalid URL", () => {
-    // Act
-    spectator.typeInElement("cover.jpg", inputs.image);
-    // Assert
-    expect(spectator.query("img.cover")).toHaveAttribute(
-      "src",
-      "images/no-image.png"
-    );
+    ).toEqual(["books.form.priceInvalid"]);
   });
 
   it("Should show a spinner and ignore new submits while saving", () => {
     // Arrange
-    const response = new Subject<void>();
-    bookServiceMock.addBook.mockReturnValueOnce(response);
+    const response = new Subject<{ id: string }>();
+    // Counts the requests that go out, not the ones built
+    let sent = 0;
+    bookServiceMock.addBook.mockImplementation(() =>
+      defer(() => {
+        sent++;
+        return response;
+      })
+    );
     fillIn("Dom Casmurro", "100");
     // Act
     spectator.click("button[name='save']");
     spectator.component.onSubmit();
     // Assert
-    expect(bookServiceMock.addBook).toHaveBeenCalledTimes(1);
+    expect(sent).toBe(1);
     expect(spectator.query("button[name='save']")).toBeDisabled();
     expect(spectator.query("mat-progress-spinner")).toBeTruthy();
     // Act

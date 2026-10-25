@@ -1,4 +1,13 @@
 Frontend/
 # Production settings: the stack's (see .docker/.env.example) and the API's
 .docker/.env
+# The commit the last deploy went out with (make dockerDeploy), and the deploy
+# hook's log
+.docker/.deployed
+.docker/deploy.log
 /.env
+
+# The workspace's dependencies (each app's own .gitignore covers its folder)
+/node_modules
+/.yarn-cache
+/.yarn-mutex

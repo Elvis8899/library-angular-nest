@@ -1,0 +1,28 @@
+{
+  "name": "library",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend",
+    "packages/*"
+  ],
+  "scripts": {
+    "postinstall": "yarn contracts:build",
+    "prepare": "husky frontend/.husky",
+    "build": "yarn contracts:build && yarn workspace backend build && yarn workspace frontend build",
+    "lint": "yarn workspace backend lint && yarn workspace frontend lint",
+    "lint:check": "yarn workspace backend lint:check && yarn workspace frontend lint:check && yarn workspace frontend lint:styles",
+    "typecheck": "yarn contracts:build && yarn workspace backend typecheck",
+    "test": "yarn workspace @library/contracts test && yarn workspace backend test:cov && yarn workspace frontend test",
+    "contracts:build": "yarn workspace @library/contracts build",
+    "contracts:watch": "yarn workspace @library/contracts watch"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  },
+  "resolutions": {
+    "vite": "~8.3.4",
+    "@csstools/css-parser-algorithms": "^4.0.2",
+    "@csstools/css-tokenizer": "^4.0.2"
+  }
+}

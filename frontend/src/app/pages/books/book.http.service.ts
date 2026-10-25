@@ -1,13 +1,14 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { PageRequest } from "@app/models/utils/pageRequest.entity";
-import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
-import {
-  BookEntity,
-  BookItemEntity,
-  BookQuery,
-} from "@app/pages/books/book.entity";
+import { BookEntity, BookQuery } from "@app/pages/books/book.entity";
 import { PageRequestUtility } from "@app/shared/utils/pageRequest.utility";
+import type {
+  BookInfoPage,
+  BookInfoRequest,
+  BookItemRequest,
+  Created,
+} from "@library/contracts";
 import { Observable } from "rxjs";
 
 @Injectable({
@@ -18,7 +19,7 @@ export class BookService {
 
   getPaginatedBooks(
     req?: PageRequest<BookEntity, BookQuery>
-  ): Observable<PaginatedResponse<BookEntity>> {
+  ): Observable<BookInfoPage> {
     let params = PageRequestUtility.toHttpParams(req);
     const name = req?.query?.name?.trim();
     if (name) params = params.append("name", name);
@@ -32,13 +33,24 @@ export class BookService {
         .append("createdFrom", start.toISOString())
         .append("createdBefore", end.toISOString());
     }
-    return this._http.get<PaginatedResponse<BookEntity>>("/v1/bookInfos", {
+    return this._http.get<BookInfoPage>("/v1/bookInfos", {
       params,
     });
   }
 
-  addBook(book: Partial<BookEntity>): Observable<void> {
-    return this._http.post<void>("/v1/bookInfos", book);
+  addBook(book: BookInfoRequest): Observable<Created> {
+    return this._http.post<Created>("/v1/bookInfos", book);
+  }
+
+  /** Uploads the book's cover, replacing the one it had. */
+  changeCover(bookId: string, cover: File): Observable<void> {
+    const form = new FormData();
+    form.append("file", cover);
+    return this._http.put<void>(`/v1/bookInfos/${bookId}/cover`, form);
+  }
+
+  removeCover(bookId: string): Observable<void> {
+    return this._http.delete<void>(`/v1/bookInfos/${bookId}/cover`);
   }
 
   getBook(book: BookEntity): Observable<BookEntity> {
@@ -53,7 +65,7 @@ export class BookService {
     return this._http.delete<null>(`/v1/bookInfos/${book.id}`);
   }
 
-  addBookItem(bookItem: Partial<BookItemEntity>): Observable<void> {
+  addBookItem(bookItem: BookItemRequest): Observable<void> {
     return this._http.post<void>("/v1/bookInfos/item", bookItem);
   }
 

@@ -1,0 +1,40 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  margin-block: var(--space-3);
+
+  mat-form-field {
+    flex: 1 1 180px;
+  }
+}
+
+.filter-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.error {
+  color: var(--mat-sys-error);
+}
+
+.when,
+.record {
+  white-space: nowrap;
+}
+
+.record {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+pre {
+  max-width: 480px;
+  max-height: 240px;
+  overflow: auto;
+  margin: var(--space-1) 0 0;
+  font: var(--mat-sys-body-small);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

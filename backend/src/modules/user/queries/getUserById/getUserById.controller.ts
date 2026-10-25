@@ -1,23 +1,17 @@
+import { contractRef, Sent, UserResponse } from "@library/contracts";
+import { ApiController } from "@modules/auth/decorators/apiController.decorator";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
-import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { User, UserRoleEnum } from "@modules/user/domain/user.entity";
-import { toUserResponse, UserResponseDto } from "@modules/user/dtos/user.dto";
+import { UserNotFoundException } from "@modules/user/domain/user.errors";
+import { toUserResponse } from "@modules/user/domain/userViews";
 import { GetUserByIdQuery } from "@modules/user/queries/getUserById/getUserById.query";
-import { Controller, Get, HttpStatus, Param, UseGuards } from "@nestjs/common";
+import { Get, HttpStatus, Param, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import {
-  ApiBearerAuth,
-  ApiNotFoundResponse,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from "@nestjs/swagger";
+import { ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { ApiErrors } from "@shared/utils/http/apiErrors";
 
-@Controller("v1/")
-@ApiTags("Usuários")
-@ApiBearerAuth()
-@UseGuards(AuthGuard)
+@ApiController("Usuários")
 export class GetUserByIdController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -25,15 +19,17 @@ export class GetUserByIdController {
   ) {}
 
   @Get("users/:id")
+  @ApiErrors(UserNotFoundException)
   @UseGuards(RolesGuard)
   @Roles(UserRoleEnum.Admin)
   @ApiOperation({ summary: "Encontrar um usuário pelo ID" })
-  @ApiNotFoundResponse({ description: "Usuário não encontrado." })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: UserResponseDto,
+    schema: contractRef(UserResponse),
   })
-  async paginatedUsers(@Param("id") id: string): Promise<UserResponseDto> {
+  async paginatedUsers(
+    @Param("id") id: string,
+  ): Promise<Sent<typeof UserResponse>> {
     return this.queryBus
       .execute<GetUserByIdQuery, User>(new GetUserByIdQuery(id))
       .then(toUserResponse);

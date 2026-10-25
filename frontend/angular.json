@@ -22,7 +22,6 @@
             "outputPath": "dist/frontend",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "polyfills": ["@angular/localize/init", "reflect-metadata"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -61,6 +60,9 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "unchecked": {
+              "tsConfig": "tsconfig.unchecked.json"
             }
           },
           "defaultConfiguration": "production"
@@ -104,7 +106,10 @@
               "branches": 100,
               "functions": 100,
               "lines": 100
-            }
+            },
+            "setupFiles": ["src/testSetup.ts"],
+            "quiet": true,
+            "runnerConfig": "vitest.config.mts"
           }
         },
         "lint": {
@@ -118,6 +123,9 @@
   },
   "cli": {
     "analytics": false,
+    "cache": {
+      "environment": "all"
+    },
     "schematicCollections": ["@angular-eslint/schematics"]
   },
   "schematics": {

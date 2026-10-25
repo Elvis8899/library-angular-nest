@@ -1,5 +1,5 @@
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
-import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
+import { BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import {
   ReturnBookCommand,
   ReturnBookCommandHandler,
@@ -12,9 +12,14 @@ import {
 } from "@modules/rental/domain/bookRental.errors";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import {
+  Resource,
+  RESOURCE_CHANGED,
+} from "@shared/domainEventPublisher/resourceChanged.event";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
+import { seedBook } from "@test/modules/book/createBook";
 import { BookRentalBuilder } from "@test/modules/rental/bookRentalBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
@@ -27,7 +32,7 @@ describe("[Unit] Update BookInfo", () => {
     .withBookItems([
       {
         id: createTestId(TableNameEnum.BookItem, 0),
-        status: BookItemStatusEnum.Available,
+        status: BookItemStatus.Available,
         bookId: createTestId(TableNameEnum.BookInfo, 0),
       },
     ])
@@ -46,7 +51,7 @@ describe("[Unit] Update BookInfo", () => {
   );
 
   beforeEach(async () => {
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     await executeTask(ctx.userRepository.save(user));
     bookRentalBuilder.reset();
   });
@@ -123,7 +128,13 @@ describe("[Unit] Update BookInfo", () => {
     await expect(resultPromise).resolves.toEqual(undefined);
 
     //And it should have emitted an event
-    expect(spy).toHaveBeenCalledTimes(1);
+    // Its event, then the screens' reload
+    expect(spy).toHaveBeenCalledTimes(3);
+    expect(
+      spy.mock.calls.slice(1).map(([event]) => ({
+        resource: event.eventKey === RESOURCE_CHANGED && event.payload.resource,
+      })),
+    ).toEqual([{ resource: Resource.Rentals }, { resource: Resource.Books }]);
   });
 
   it("Should return book if it belongs to the given owner", async () => {

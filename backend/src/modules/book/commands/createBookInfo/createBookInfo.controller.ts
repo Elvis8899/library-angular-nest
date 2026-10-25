@@ -1,32 +1,24 @@
+import {
+  BookInfoRequest,
+  contractRef,
+  Created,
+  Sent,
+} from "@library/contracts";
+import { ApiController } from "@modules/auth/decorators/apiController.decorator";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
-import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { CreateBookInfo } from "@modules/book/commands/createBookInfo/createBookInfo.command";
-import { CreateBookInfoDto } from "@modules/book/dtos/bookInfo.dto";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  UseGuards,
-} from "@nestjs/common";
+import { Body, HttpCode, HttpStatus, Post, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
-  ApiBearerAuth,
-  ApiConflictResponse,
+  ApiBody,
   ApiCreatedResponse,
   ApiOperation,
-  ApiTags,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
 
-@Controller("v1/")
-@ApiTags("Livros")
-@ApiBearerAuth()
-@UseGuards(AuthGuard)
+@ApiController("Livros")
 export class CreateBookInfoController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -41,14 +33,17 @@ export class CreateBookInfoController {
     summary: "Cria um Livro.",
     description: `Dado um Livro válido, ele será criado.`,
   })
-  @ApiCreatedResponse({ description: "Livro criado com sucesso." })
+  @ApiCreatedResponse({
+    description: "Livro criado com sucesso.",
+    schema: contractRef(Created),
+  })
   @ApiUnprocessableEntityResponse({ description: "Livro inválido." })
-  @ApiConflictResponse({ description: "Livro já existe." })
+  @ApiBody({ schema: contractRef(BookInfoRequest) })
   async createBookInfo(
-    @Body() createBookInfoDto: CreateBookInfoDto,
-  ): Promise<void> {
-    return this.commandBus
-      .execute<CreateBookInfo>(new CreateBookInfo(createBookInfoDto))
-      .then(noop);
+    @Body() book: BookInfoRequest,
+  ): Promise<Sent<typeof Created>> {
+    return this.commandBus.execute<CreateBookInfo, Sent<typeof Created>>(
+      new CreateBookInfo(book),
+    );
   }
 }

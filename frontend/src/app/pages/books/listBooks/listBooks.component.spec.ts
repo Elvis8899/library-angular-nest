@@ -17,14 +17,20 @@ import {
 import { MatDialog } from "@angular/material/dialog";
 import { MatSelect, MatSelectChange } from "@angular/material/select";
 import { Router, RouterModule } from "@angular/router";
-import { BookEntity, BookItemStatusEnum } from "@app/pages/books/book.entity";
-import { BookService } from "@app/pages/books/book.http.service";
 import {
-  ListBooksComponent,
+  BookEntity,
+  BookItemStatus,
   noCoverImage,
-} from "@app/pages/books/listBooks/listBooks.component";
+} from "@app/pages/books/book.entity";
+import { BookService } from "@app/pages/books/book.http.service";
+import { ListBooksComponent } from "@app/pages/books/listBooks/listBooks.component";
 import { RentalService } from "@app/pages/rentals/rental.http.service";
 import { CredentialsService } from "@app/services/credentials.service";
+import {
+  LiveUpdatesService,
+  RESOURCE,
+  ResourceChange,
+} from "@app/services/liveUpdates.service";
 import { Logger } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { UserService } from "@app/services/user.http.service";
@@ -36,7 +42,7 @@ import {
   Spectator,
   SpyObject,
 } from "@openng/spectator/vitest";
-import { BehaviorSubject, of, throwError } from "rxjs";
+import { BehaviorSubject, of, Subject, throwError } from "rxjs";
 
 Logger.level = 0;
 
@@ -47,20 +53,20 @@ describe("ListBooksComponent", () => {
     {
       id: "1",
       name: "Book Name",
-      image: "bookimage.jpg",
+      cover: null,
       price: 100,
       bookItems: [
         {
           id: "1",
           bookId: "1",
-          status: BookItemStatusEnum.Available,
+          status: BookItemStatus.Available,
           createdAt: new Date().toDateString(),
           updatedAt: new Date().toDateString(),
         },
         {
           id: "2",
           bookId: "1",
-          status: BookItemStatusEnum.Rented,
+          status: BookItemStatus.Rented,
           createdAt: new Date().toDateString(),
           updatedAt: new Date().toDateString(),
         },
@@ -71,13 +77,13 @@ describe("ListBooksComponent", () => {
     {
       id: "2",
       name: "Book Name",
-      image: "",
+      cover: null,
       price: 100,
       bookItems: [
         {
           id: "3",
           bookId: "2",
-          status: BookItemStatusEnum.Rented,
+          status: BookItemStatus.Rented,
           createdAt: new Date().toDateString(),
           updatedAt: new Date().toDateString(),
         },
@@ -101,12 +107,16 @@ describe("ListBooksComponent", () => {
   const confirmDialogMock = { confirm: vi.fn(() => of(true)) };
   // A new one per test, so components from earlier tests don't hold it
   let breakpoints: BehaviorSubject<BreakpointState>;
+  // What the socket says changed elsewhere
+  const changed = new Subject<ResourceChange>();
+  const liveUpdatesMock = { changes: vi.fn(() => changed.asObservable()) };
   const createComponent = createComponentFactory({
     component: ListBooksComponent,
     imports: [RouterModule.forRoot([])],
     providers: [
       provideTranslateService(),
       provideHttpClientTesting(),
+      { provide: LiveUpdatesService, useValue: liveUpdatesMock },
       { provide: BookService, useValue: bookServiceMock },
       { provide: MatDialog, useValue: matDialogMock },
       { provide: ConfirmDialog, useValue: confirmDialogMock },
@@ -147,6 +157,16 @@ describe("ListBooksComponent", () => {
   });
 
   const rows = () => spectator.queryAll("tr.mat-mdc-row");
+
+  it("Should reload when someone else changes the list", () => {
+    // Arrange: the list has loaded
+    const loads = bookServiceMock.getPaginatedBooks.mock.calls.length;
+    // Act
+    changed.next({ resource: RESOURCE.BOOKS });
+    // Assert
+    expect(liveUpdatesMock.changes).toHaveBeenCalledWith(RESOURCE.BOOKS);
+    expect(bookServiceMock.getPaginatedBooks).toHaveBeenCalledTimes(loads + 1);
+  });
 
   it("Should have a title and a row per book", () => {
     // Assert
@@ -191,25 +211,24 @@ describe("ListBooksComponent", () => {
     );
   });
 
-  it("Should show the cover, or the placeholder without one", () => {
+  it("Should show the cover the API sends, or the placeholder without one", () => {
+    // Arrange
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:cover");
+    spectator.component.data.data$.next([
+      { ...books[0], cover: "v1" },
+      books[1],
+    ]);
+    spectator.detectChanges();
+    // Act
+    httpMock.expectOne("/v1/bookInfos/1/cover?v=v1").flush(new Blob(["png"]));
+    spectator.detectChanges();
     // Assert
     const covers = spectator.queryAll<HTMLImageElement>("img.cover");
-    expect(covers[0]).toHaveAttribute("src", "bookimage.jpg");
+    expect(covers[0]).toHaveAttribute("src", "blob:cover");
     expect(covers[1]).toHaveAttribute("src", noCoverImage);
-  });
-
-  it("Should show the placeholder when a cover doesn't load", () => {
-    // Arrange
-    const cover = spectator.query<HTMLImageElement>("img.cover")!;
-    // Act
-    spectator.dispatchFakeEvent(cover, "error");
-    // Assert
-    expect(cover.src).toContain(noCoverImage);
-    // Act: the placeholder failing too doesn't loop
-    const src = cover.src;
-    spectator.dispatchFakeEvent(cover, "error");
-    // Assert
-    expect(cover.src).toBe(src);
+    // A client's cover is no button
+    expect(spectator.query("button[name='coverMenu']")).toBeNull();
+    vi.restoreAllMocks();
   });
 
   it("Should set the date picker's language", () => {
@@ -364,6 +383,121 @@ describe("ListBooksComponent", () => {
       spectator.detectChanges();
     });
 
+    describe("covers", () => {
+      const png = new File(["png"], "capa.png", { type: "image/png" });
+      const coverInput = () =>
+        spectator.query<HTMLInputElement>("input[name='cover']")!;
+      const openMenu = () => {
+        spectator.click("button[name='coverMenu']");
+        spectator.inject(ApplicationRef).tick();
+      };
+      const pick = (file: File | null) => {
+        Object.defineProperty(coverInput(), "files", {
+          value: file ? [file] : [],
+          configurable: true,
+        });
+        spectator.dispatchFakeEvent(coverInput(), "change");
+      };
+
+      beforeEach(() => {
+        bookServiceMock.changeCover.mockReset();
+        bookServiceMock.changeCover.mockReturnValue(of(undefined));
+        bookServiceMock.removeCover.mockReset();
+        bookServiceMock.removeCover.mockReturnValue(of(undefined));
+      });
+
+      it("Should upload the cover picked from the cover's menu", () => {
+        // Arrange
+        const clicked = vi.spyOn(coverInput(), "click");
+        const notifications = spectator.inject(NotificationService);
+        // Act
+        openMenu();
+        spectator.click(
+          spectator.query("button[name='changeCover']", { root: true })!
+        );
+        pick(png);
+        // Assert
+        expect(clicked).toHaveBeenCalledOnce();
+        expect(bookServiceMock.changeCover).toHaveBeenCalledExactlyOnceWith(
+          "1",
+          png
+        );
+        expect(notifications.success).toHaveBeenCalledWith(
+          "books.cover.changed"
+        );
+        // Without a cover there's none to remove
+        openMenu();
+        expect(
+          spectator.query("button[name='removeCover']", { root: true })
+        ).toBeNull();
+      });
+
+      it("Should refuse a file the API would, and pick nothing without a book or a file", () => {
+        // Arrange
+        const notifications = spectator.inject(NotificationService);
+        // Act: no book picked for yet, then no file
+        spectator.component.uploadCover(new Event("change"));
+        pick(png);
+        spectator.component.pickCover(books[0], coverInput());
+        pick(null);
+        pick(new File(["%PDF"], "capa.pdf", { type: "application/pdf" }));
+        // Assert
+        expect(notifications.error).toHaveBeenCalledExactlyOnceWith(
+          "books.form.coverType"
+        );
+        expect(bookServiceMock.changeCover).not.toHaveBeenCalled();
+      });
+
+      it("Should show the API's message when the upload fails", () => {
+        // Arrange
+        const notifications = spectator.inject(NotificationService);
+        bookServiceMock.changeCover.mockReturnValue(
+          throwError(() => new Error("A capa deve ter até 5 MB."))
+        );
+        // Act
+        spectator.component.pickCover(books[0], coverInput());
+        pick(png);
+        // Assert
+        expect(notifications.errorMessage).toHaveBeenCalledWith(
+          "A capa deve ter até 5 MB."
+        );
+      });
+
+      it("Should remove a cover once confirmed", () => {
+        // Arrange
+        vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:cover");
+        const notifications = spectator.inject(NotificationService);
+        spectator.component.data.data$.next([{ ...books[0], cover: "v1" }]);
+        spectator.detectChanges();
+        httpMock.expectOne("/v1/bookInfos/1/cover?v=v1").flush(new Blob([]));
+        // Act
+        openMenu();
+        spectator.click(
+          spectator.query("button[name='removeCover']", { root: true })!
+        );
+        // Assert
+        expect(confirmDialogMock.confirm).toHaveBeenCalledWith(
+          expect.objectContaining({ message: "books.cover.removeConfirm" })
+        );
+        expect(bookServiceMock.removeCover).toHaveBeenCalledExactlyOnceWith(
+          "1"
+        );
+        expect(notifications.success).toHaveBeenCalledWith(
+          "books.cover.removed"
+        );
+        // Act: a failure shows the API's message
+        bookServiceMock.removeCover.mockReturnValue(
+          throwError(() => new Error("Livro sem capa."))
+        );
+        spectator.component.removeCover(books[0]);
+        // Assert
+        expect(notifications.errorMessage).toHaveBeenCalledWith(
+          "Livro sem capa."
+        );
+        vi.restoreAllMocks();
+      });
+    });
+
     it("Should rent for the client picked in the dialog", () => {
       // Act
       spectator.click("button[name='rentBook']");
@@ -449,7 +583,7 @@ describe("ListBooksComponent", () => {
       // Assert
       expect(spectator.query("button[name='addBook']")).toBeNull();
       // Act
-      spectator.click("button[name='moreActions']");
+      spectator.click("button[name='more']");
       spectator.inject(ApplicationRef).tick();
       spectator.click(
         spectator.query("button[name='addBook']", { root: true })!
@@ -459,7 +593,7 @@ describe("ListBooksComponent", () => {
         bookId: "1",
       });
       // Act
-      spectator.click("button[name='moreActions']");
+      spectator.click("button[name='more']");
       spectator.inject(ApplicationRef).tick();
       spectator.click(
         spectator.query("button[name='removeBook']", { root: true })!
@@ -468,6 +602,22 @@ describe("ListBooksComponent", () => {
       expect(bookServiceMock.deleteBookItem).toHaveBeenCalledExactlyOnceWith(
         "1"
       );
+    });
+
+    it("Should leave removing out of the menu of a book with no available copy", () => {
+      // Arrange
+      breakpoints.next({ matches: true, breakpoints: {} });
+      spectator.detectChanges();
+      // Act: the second book's menu
+      spectator.click(spectator.queryAll("button[name='more']")[1]!);
+      spectator.inject(ApplicationRef).tick();
+      // Assert
+      expect(
+        spectator.query("button[name='addBook']", { root: true })
+      ).toExist();
+      expect(
+        spectator.query("button[name='removeBook']", { root: true })
+      ).toBeNull();
     });
 
     it("Should not remove a copy when none is available", () => {

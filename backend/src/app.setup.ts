@@ -1,11 +1,15 @@
 import helmet from "@fastify/helmet";
+import fastifyMultipart from "@fastify/multipart";
 import fastifyRequestContext from "@fastify/request-context";
+import { contractSchemas } from "@library/contracts";
 import { RequestJWTPayload } from "@modules/auth/guards/authenticatedRequest";
 import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { DocumentBuilder, OpenAPIObject, SwaggerModule } from "@nestjs/swagger";
+import { RequesterInterceptor } from "@shared/audit/requester";
+import { Metrics } from "@shared/metrics/metrics";
 import { FPF } from "@shared/utils/application/monads";
 import { envConfig } from "@shared/utils/config/environment.config";
 import { DomainErrorFilter } from "@shared/utils/http/domainError.filter";
@@ -35,8 +39,21 @@ export const configureApp = async (
     request.user = request.user || {};
     next();
   });
+  // Every answered request, by its route's pattern, for the metrics
+  const metrics = app.get(Metrics);
+  fastifyInstance.addHook("onResponse", (request, reply, done) => {
+    metrics.observeRequest(
+      request.method,
+      request.routeOptions.url,
+      reply.statusCode,
+      reply.elapsedTime / 1000,
+    );
+    done();
+  });
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new DomainErrorFilter(app.getHttpAdapter()));
+  // Who sent each request, for the audit
+  app.useGlobalInterceptors(new RequesterInterceptor());
 
   const options = new DocumentBuilder()
     .setTitle(appInfo.title)
@@ -47,12 +64,27 @@ export const configureApp = async (
     })
     .build();
   const document = SwaggerModule.createDocument(app, options);
+  // The contracts' schemas, which controllers reference by name. JSON Schema
+  // and OpenAPI's SchemaObject describe the same JSON
+  document.components = {
+    ...document.components,
+    schemas: {
+      ...document.components?.schemas,
+      ...FPF.unsafeCoerce<
+        Record<string, object>,
+        NonNullable<OpenAPIObject["components"]>["schemas"]
+      >(contractSchemas()),
+    },
+  };
   SwaggerModule.setup("swagger", app, document);
 
   await app.register(fastifyRequestContext);
   await app.register(helmet, {
     contentSecurityPolicy: false,
   });
+
+  // File uploads; each route reads its file with its own limits (readUpload)
+  await app.register(fastifyMultipart);
 
   return app;
 };

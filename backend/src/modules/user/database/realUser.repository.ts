@@ -14,11 +14,8 @@ import { FPF, O, TE } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
 import { prismaTasks } from "@shared/utils/database/prismaTasks";
 import { Paginated } from "@shared/utils/database/repository.port";
-import {
-  loadPage,
-  validateMaybeRow,
-  validateRows,
-} from "@shared/utils/database/rowValidation";
+import { rowReads } from "@shared/utils/database/rowReads";
+import { validateMaybeRow } from "@shared/utils/database/rowValidation";
 import { mapUniqueViolations } from "@shared/utils/database/uniqueViolation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
@@ -29,30 +26,16 @@ export class RealUserRepository implements UserRepository {
   private baseValidator = validateFromUnknown(User, "User");
 
   private users = prismaTasks(() => this.prisma.user);
+  private reads = rowReads(() => this.prisma.user, this.baseValidator, {
+    orderBy: { createdAt: "desc" },
+  });
 
-  findAll = (): TE.TaskEither<Error, User[]> =>
-    FPF.pipe(
-      this.users.findMany(),
-      TE.chainEitherK(validateRows(this.baseValidator)),
-    );
-
+  findAll = this.reads.findAll;
+  findById = this.reads.findById;
+  findByIds = this.reads.findByIds;
   findAllPaginated = (
     params: PaginatedQueryParams,
-  ): TE.TaskEither<Error, Paginated<User>> =>
-    loadPage(
-      {
-        rows: ({ skip, take }) =>
-          this.users.findMany({ skip, take, orderBy: { createdAt: "desc" } }),
-        total: () => this.users.count(),
-      },
-      this.baseValidator,
-    )(params);
-
-  findById = (userId: string): TE.TaskEither<Error, O.Option<User>> =>
-    FPF.pipe(
-      this.users.findUnique({ where: { id: userId } }),
-      TE.chainEitherK(validateMaybeRow(this.baseValidator)),
-    );
+  ): TE.TaskEither<Error, Paginated<User>> => this.reads.findPage(params);
 
   findByCPF = (cpf: string): TE.TaskEither<Error, O.Option<User>> =>
     FPF.pipe(

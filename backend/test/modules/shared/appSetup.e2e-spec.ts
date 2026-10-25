@@ -1,7 +1,9 @@
 import { authConfig } from "@modules/auth/auth.config";
 import { HttpStatus } from "@nestjs/common";
+import { Metrics } from "@shared/metrics/metrics";
 import { appInfo } from "@src/app.info";
 import { buildE2eApp, closeE2eApp, E2eApp, useE2eApp } from "@test/util/e2eApp";
+import { requestsTo } from "@test/util/metrics";
 import { SwaggerDocumentBody } from "@test/util/responseBodies";
 
 // Checks the setup that main.ts gets from app.setup.ts: helmet, Swagger
@@ -34,6 +36,27 @@ describe("[e2e] App setup", () => {
     expect(body.info.title).toBe(appInfo.title);
     expect(body.paths).toHaveProperty("/v1/users");
     expect(body.components.securitySchemes).toHaveProperty("bearer");
+    // The contracts' schemas, and the routes pointing at them
+    expect(body.components.schemas).toHaveProperty("UserResponse");
+    expect(JSON.stringify(body.paths["/v1/users"])).toContain(
+      "#/components/schemas/UserRequest",
+    );
+  });
+
+  it("Should count each request by its route's pattern for the metrics", async () => {
+    const metrics = e2e.get(Metrics);
+    const statusBefore = await requestsTo(metrics, "GET", "/check/status");
+    const unmatchedBefore = await requestsTo(metrics, "GET", "unmatched");
+
+    await e2e.http().get("/check/status");
+    await e2e.http().get("/nowhere/123");
+
+    expect(await requestsTo(metrics, "GET", "/check/status")).toEqual({
+      "200": (statusBefore["200"] ?? 0) + 1,
+    });
+    expect(await requestsTo(metrics, "GET", "unmatched")).toEqual({
+      "404": (unmatchedBefore["404"] ?? 0) + 1,
+    });
   });
 });
 

@@ -1,8 +1,7 @@
+import { AuthResponse, LoginRequest } from "@library/contracts";
 import { RefreshSessionRepository } from "@modules/auth/database/refreshSession.repository.port";
 import { wrongAuthException } from "@modules/auth/domain/auth.errors";
 import { LoginInput } from "@modules/auth/domain/credentials";
-import { AuthResponseDto } from "@modules/auth/dtos/authResponse.dto";
-import { LoginDto } from "@modules/auth/dtos/login.dto";
 import {
   generateTokens,
   refreshSessionExpiry,
@@ -19,13 +18,13 @@ import { UseCase } from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 
 export class LoginCommand implements ICommand {
-  constructor(public readonly props: LoginDto) {}
+  constructor(public readonly props: LoginRequest) {}
 }
 
 @CommandHandler(LoginCommand)
 export class LoginCommandHandler implements ICommandHandler<
   LoginCommand,
-  AuthResponseDto
+  AuthResponse
 > {
   constructor(
     private readonly useCase: UseCase,
@@ -36,7 +35,7 @@ export class LoginCommandHandler implements ICommandHandler<
     private readonly jwtService: JwtService,
   ) {}
 
-  execute(command: LoginCommand): Promise<AuthResponseDto> {
+  execute(command: LoginCommand): Promise<AuthResponse> {
     return this.useCase.run(
       "LoginCommand",
       { email: command.props.email },

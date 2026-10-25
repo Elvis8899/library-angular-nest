@@ -3,7 +3,7 @@ import { createBook } from "@test/modules/book/createBook";
 import { useE2eApp } from "@test/util/e2eApp";
 
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
-import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
+import { BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { HttpStatus } from "@nestjs/common";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -63,7 +63,7 @@ describe("[e2e] POST /v1/bookRentals/rent", () => {
           .withBookItems([
             {
               id: createTestId(TableNameEnum.BookItem, 1),
-              status: BookItemStatusEnum.Rented,
+              status: BookItemStatus.Rented,
               bookId: createTestId(TableNameEnum.BookInfo, 1),
             },
           ])

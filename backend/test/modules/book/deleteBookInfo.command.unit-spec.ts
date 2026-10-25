@@ -5,8 +5,13 @@ import {
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { BookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import {
+  Resource,
+  RESOURCE_CHANGED,
+} from "@shared/domainEventPublisher/resourceChanged.event";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
+import { seedBook } from "@test/modules/book/createBook";
 import { useHandlerModule } from "@test/util/handlerModule";
 
 //Adapters
@@ -25,7 +30,7 @@ describe("[Unit] Delete BookInfo", () => {
     //Given a valid id
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     const id = bookInfo.id;
 
     //When we delete a bookInfo
@@ -42,7 +47,7 @@ describe("[Unit] Delete BookInfo", () => {
     //Given a valid id
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     const newId = "00000000-0000-0000-0000-000000000000";
 
     //When we delete a bookInfo
@@ -63,13 +68,19 @@ describe("[Unit] Delete BookInfo", () => {
     const spy = vi.spyOn(ctx.eventModule, "publishEvent");
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     const id = bookInfo.id;
 
     //When we delete a bookInfo
     await ctx.deleteBookInfoHandler.execute(new DeleteBookInfo(id));
 
     //Then it should have deleted a bookInfo and emitted an event
-    expect(spy).toHaveBeenCalledTimes(1);
+    // Its event, then the screens' reload
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(
+      spy.mock.calls.slice(1).map(([event]) => ({
+        resource: event.eventKey === RESOURCE_CHANGED && event.payload.resource,
+      })),
+    ).toEqual([{ resource: Resource.Books }]);
   });
 });

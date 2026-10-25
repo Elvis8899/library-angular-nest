@@ -1,3 +1,4 @@
+import { RentalStatus } from "@library/contracts";
 import {
   BookItem,
   ensureAvailable,
@@ -14,12 +15,20 @@ import { DateType } from "@shared/utils/domain/dateType";
 import { UUID } from "@shared/uuid/uuid";
 import { z } from "zod";
 
-export enum RentalStatusEnum {
-  Rented = "rented",
-  Finished = "finished",
-}
+// The contracts' RentalStatus, under the backend's name
+export const RentalStatusEnum = RentalStatus;
+export type RentalStatusEnum = RentalStatus;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** How long a loan lasts, and what a late return costs. */
+export const rentalPolicy = {
+  loanDays: 7,
+  // Charged once, when the book is late
+  fixedFine: 20,
+  // Of the book's price, per day late
+  dailyFineRate: 0.05,
+} as const;
 
 // Returns a copy of date set to the last second of that day
 const endOfDay = (date: Date) => {
@@ -40,14 +49,16 @@ export const BookRental = z
       .optional(),
     user: z.object({ name: z.string() }).optional(),
     userId: z.string(),
-    overdueDate: DateType.default(
-      () => new Date(endOfDay(new Date()).getTime() + 7 * DAY_MS),
-    ),
+    overdueDate: DateType,
     deliveryDate: DateType.optional(),
   })
   .and(BaseDateEntity);
 
 export type BookRental = z.infer<typeof BookRental>;
+
+// Due at the end of the day, the loan's days after it was rented
+export const dueDateOf = (rentedAt: Date): Date =>
+  new Date(endOfDay(rentedAt).getTime() + rentalPolicy.loanDays * DAY_MS);
 
 // The rules below decide from what was read. The repository's `rent` and
 // `finish` check again in one conditional write, for changes made meanwhile.
@@ -87,15 +98,17 @@ export const ensureOwnedBy =
       ? E.right(rental)
       : E.left(bookRentalNotFoundException());
 
-export const getRentalFines = (rental: BookRental) => {
+// What a rental owes at `now`: days late are counted from the start of
+// today
+export const getRentalFines = (now: Date) => (rental: BookRental) => {
   const days = Math.ceil(
-    (new Date().setHours(0, 0, 0, 0) - rental.overdueDate.getTime()) / DAY_MS,
+    (new Date(now).setHours(0, 0, 0, 0) - rental.overdueDate.getTime()) /
+      DAY_MS,
   );
   const overdue = days > 0;
-  const fixed = overdue ? 20 : 0;
-  // 5% book value per day
+  const fixed = overdue ? rentalPolicy.fixedFine : 0;
   const perDayValue = roundToCentavo(
-    (rental.bookItem?.book?.price || 0) * 0.05,
+    (rental.bookItem?.book?.price || 0) * rentalPolicy.dailyFineRate,
   );
   const total = roundToCentavo(fixed + perDayValue * days);
   return {
@@ -107,11 +120,12 @@ export const getRentalFines = (rental: BookRental) => {
   };
 };
 
-export const BookRentalDetails = BookRental.transform((rental) => ({
+// A rental with the names of its user and book, and its fines at `now`
+export const rentalDetailsOf = (now: Date) => (rental: BookRental) => ({
   ...rental,
   userName: rental.user?.name || "",
   bookName: rental.bookItem?.book?.name || "",
-  fines: getRentalFines(rental),
-}));
+  fines: getRentalFines(now)(rental),
+});
 
-export type BookRentalDetails = z.infer<typeof BookRentalDetails>;
+export type BookRentalDetails = ReturnType<ReturnType<typeof rentalDetailsOf>>;

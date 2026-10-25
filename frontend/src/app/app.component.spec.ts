@@ -1,4 +1,3 @@
-/// <reference types="@angular/localize" />
 import { RouterModule } from "@angular/router";
 import { AppComponent } from "@app/app.component";
 import { Logger } from "@app/services/logger.service";

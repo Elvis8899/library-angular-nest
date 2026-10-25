@@ -1,8 +1,12 @@
 import { NestFactory } from "@nestjs/core";
 import { NestFastifyApplication } from "@nestjs/platform-fastify";
+import { Metrics } from "@shared/metrics/metrics";
+import { startMetricsServer } from "@shared/metrics/metricsServer";
 import { AppModule } from "@src/app.module";
 import { configureApp, createAdapter } from "@src/app.setup";
+import { get } from "env-var";
 import { Logger } from "nestjs-pino";
+import { collectDefaultMetrics } from "prom-client";
 
 // Everything except listening lives in app.setup.ts, which the e2e tests use
 async function bootstrap() {
@@ -18,7 +22,19 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port, host);
 
+  // Prometheus scrapes it on the Docker network; nginx never proxies it
+  const metrics = app.get(Metrics);
+  collectDefaultMetrics({ register: metrics.registry });
+  const metricsPort = get("METRICS_PORT").default(9464).asPortNumber();
+  const metricsServer = await startMetricsServer(
+    metrics.registry,
+    metricsPort,
+    host,
+  );
+  process.once("SIGTERM", () => metricsServer.close());
+
   app.get(Logger).log(`API-Gateway is listening on port ${port.toString()}`);
+  app.get(Logger).log(`Metrics are on port ${String(metricsPort)}`);
 }
 
 bootstrap().catch((error: unknown) => {

@@ -1,4 +1,5 @@
 import { UserRepository } from "@modules/user/database/user.repository.port";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import {
   PaginatedUsersQuery,
   PaginatedUsersQueryHandler,
@@ -73,21 +74,24 @@ describe("[Unit] List Users", () => {
       page,
     });
 
-    //With three users in database
-    const users = [1, 2, 3].map((n) =>
-      new UserBuilder()
+    //With three users in database, created a day apart
+    const users = [1, 2, 3].map((n) => ({
+      ...new UserBuilder()
         .withId(createTestId(TableNameEnum.User, n))
         .withEmail(`user${String(n)}@email.com`)
+        .withCPF("")
+        .withRole(UserRoleEnum.Admin)
         .build(),
-    );
+      createdAt: new Date(`2026-10-0${String(n)}T12:00:00Z`),
+    }));
     for (const user of users) {
       await executeTask(ctx.userRepository.save(user));
     }
 
     //When we list users
     const result = await ctx.paginatedUsersQueryHandler.execute(query);
-    //Then it should show only the third user
-    expect(result.data).toStrictEqual([users[2]]);
+    //Then it should show only the oldest, as the newest come first
+    expect(result.data).toStrictEqual([users[0]]);
     expect(result.count).toBe(3);
     expect(result.page).toBe(page);
     expect(result.limit).toBe(limit);

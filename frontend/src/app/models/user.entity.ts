@@ -1,10 +1,4 @@
-import { ROLE } from "@app/models/credentials.entity";
-import { BaseEntity } from "@app/models/utils/base.entity";
+import type { UserResponse } from "@library/contracts";
 
-export interface UserEntity extends BaseEntity {
-  name: string;
-  email: string;
-  cpf: string;
-  role: ROLE;
-  password: string;
-}
+/** A user as the API answers it, without the password. */
+export type UserEntity = UserResponse;

@@ -1,0 +1,364 @@
+# Grafana's alert rules, read when it starts (edit this file, not the UI).
+# They show in Alerting → Alert rules; none is sent anywhere yet: a contact
+# point (email) is in TODO.md
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: availability
+    folder: Library
+    interval: 1m
+    rules:
+      - uid: api-down
+        title: API down
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'up{job="api"}'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 2m
+        noDataState: Alerting
+        execErrState: Error
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus can't reach the API's metrics server: the app container is down or restarting."
+      - uid: api-restarting
+        title: API restarting
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 3600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'changes(process_start_time_seconds{job="api"}[1h])'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [3] }
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: critical
+        annotations:
+          summary: "The API started {{ humanize $values.A.Value }} times in the last hour: it's crashing and coming back (API down misses restarts this quick); its logs have the error."
+      - uid: site-down
+        title: Site unreachable
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'probe_success{job="site"}'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 5m
+        noDataState: Alerting
+        execErrState: Error
+        labels:
+          severity: critical
+        annotations:
+          summary: "https://<DOMAIN>/check/status doesn't answer 2xx through nginx (DNS, certificate, nginx or the API)."
+      - uid: database-down
+        title: Database down
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'pg_up'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 2m
+        noDataState: Alerting
+        execErrState: Error
+        labels:
+          severity: critical
+        annotations:
+          summary: "The exporter can't reach PostgreSQL."
+      - uid: exporter-down
+        title: Monitoring target down
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'up{job=~"node|postgres|storage|site|deploy"}'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus can't scrape {{ $labels.job }}: that part of the stack is down, or only its exporter is."
+      - uid: certificate-expiring
+        title: Certificate expiring
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: '(probe_ssl_earliest_cert_expiry{job="site"} - time()) / 86400'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [14] }
+        for: 1h
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: "The HTTPS certificate expires in {{ humanize $values.A.Value }} days; certbot should have renewed it 30 days before."
+  - orgId: 1
+    name: deploy
+    folder: Library
+    interval: 1m
+    rules:
+      - uid: deploy-failed
+        title: Deploy failed
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'deploy_last_success{job="deploy"}'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: critical
+        annotations:
+          summary: "The last deploy failed, so the site still runs the commit before it; .docker/deploy.log on the server (or /hooks/deploy/status) has why. The next deploy that succeeds clears it."
+      - uid: deploy-stuck
+        title: Deploy stuck
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: '(time() - deploy_started_timestamp_seconds{job="deploy"}) / 60'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [60] }
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: "A deploy has been running for {{ humanize $values.A.Value }} minutes: the build is likely swapping on the server, or a step hangs; .docker/deploy.log shows where it is."
+  - orgId: 1
+    name: server
+    folder: Library
+    interval: 1m
+    rules:
+      - uid: disk-filling
+        title: Disk almost full
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: '1 - node_filesystem_avail_bytes{job="node",mountpoint="/"} / node_filesystem_size_bytes{job="node",mountpoint="/"}'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [0.8] }
+        for: 10m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: "The server's disk is {{ humanizePercentage $values.A.Value }} full (database, files, Prometheus and Docker images)."
+      - uid: memory-low
+        title: Memory low
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'node_memory_MemAvailable_bytes{job="node"} / node_memory_MemTotal_bytes{job="node"}'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [0.1] }
+        for: 10m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: "Only {{ humanizePercentage $values.A.Value }} of the server's memory is available."
+      - uid: database-connections
+        title: Database connections near the limit
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'sum(pg_stat_database_numbackends) / max(pg_settings_max_connections)'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [0.8] }
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ humanizePercentage $values.A.Value }} of PostgreSQL's connections are in use."
+  - orgId: 1
+    name: api
+    folder: Library
+    interval: 1m
+    rules:
+      - uid: server-errors
+        title: Server errors
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'sum(increase(http_request_duration_seconds_count{job="api",status=~"5.."}[10m]))'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [5] }
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ humanize $values.A.Value }} requests answered 5xx in the last 10 minutes; the API's logs have the errors."
+      - uid: event-loop-blocked
+        title: API event loop blocked
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'nodejs_eventloop_lag_p99_seconds{job="api"}'
+              instant: true
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [0.5] }
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: "Requests wait {{ humanizeDuration $values.A.Value }} for the API's single thread: something blocks it."

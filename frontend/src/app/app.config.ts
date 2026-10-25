@@ -59,7 +59,7 @@ export const appConfig: ApplicationConfig = {
     ),
 
     provideAppInitializer(() => {
-      inject(I18nService);
+      const i18n = inject(I18nService);
       // Applies a stored light or dark choice before the first page renders
       inject(ThemeService);
       inject(AppUpdateService);
@@ -68,6 +68,8 @@ export const appConfig: ApplicationConfig = {
         // Setup logger
         Logger.enableProductionMode();
       }
+      // The saved language's texts, before the first page renders
+      return i18n.ready;
     }),
     // provideHttpClient is required for Angular's HttpClient with additional configuration, which includes interceptors from DI (dependency injection) , means to use class based interceptors
     provideHttpClient(

@@ -8,19 +8,12 @@ import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
     in a respective repository.
 */
 
-export class Paginated<T> {
+export type Paginated<T> = {
   count: number;
   limit: number;
   page: number;
   data: T[];
-
-  constructor(props: Paginated<T>) {
-    this.count = props.count;
-    this.limit = props.limit;
-    this.page = props.page;
-    this.data = props.data;
-  }
-}
+};
 
 export interface RepositoryFindAllPort<Entity> {
   findAll(): TE.TaskEither<Error, Entity[]>;

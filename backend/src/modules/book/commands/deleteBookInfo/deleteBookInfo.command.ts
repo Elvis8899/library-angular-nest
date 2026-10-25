@@ -1,11 +1,19 @@
+import { Resource } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
+import { storedCoverKey } from "@modules/book/domain/bookCover";
 import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { bookInfoDeleted } from "@modules/book/domain/events/bookInfoDeleted.event";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
+import { FileStorage } from "@shared/storage/fileStorage";
+import { removeUnusedRTE } from "@shared/storage/storedFiles";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  changedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
 export class DeleteBookInfo implements ICommand {
@@ -20,6 +28,7 @@ export class DeleteBookInfoHandler implements ICommandHandler<
   constructor(
     private readonly useCase: UseCase,
     private readonly bookInfoRepository: BookInfoRepository,
+    private readonly storage: FileStorage,
   ) {}
 
   execute(command: DeleteBookInfo): Promise<void> {
@@ -49,7 +58,13 @@ export class DeleteBookInfoHandler implements ICommandHandler<
           )(bookInfo.id),
         ),
 
+        // Its cover, which nothing reads any more
+        RTE.tap((bookInfo) =>
+          removeUnusedRTE(this.storage, storedCoverKey(bookInfo)),
+        ),
+
         RTE.tap(publishRTE(bookInfoDeleted)),
+        RTE.tap(() => changedRTE({ resource: Resource.Books })),
         RTE.asUnit,
       ),
     );

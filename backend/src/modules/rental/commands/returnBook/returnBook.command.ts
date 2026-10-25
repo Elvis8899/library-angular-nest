@@ -1,3 +1,4 @@
+import { Resource } from "@library/contracts";
 import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
 import {
   ensureOwnedBy,
@@ -6,10 +7,15 @@ import {
 import { bookRentalNotFoundException } from "@modules/rental/domain/bookRental.errors";
 import { bookReturned } from "@modules/rental/domain/events/bookReturned.event";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
+import { Clock } from "@shared/clock/clock";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  changedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
 export class ReturnBookCommand implements ICommand {
@@ -30,6 +36,7 @@ export class ReturnBookCommandHandler implements ICommandHandler<
 > {
   constructor(
     private readonly useCase: UseCase,
+    private readonly clock: Clock,
     private readonly bookRentalRepository: BookRentalRepository,
   ) {}
 
@@ -54,7 +61,7 @@ export class ReturnBookCommandHandler implements ICommandHandler<
         RTE.chainEitherK(ensureOwnedBy(command.ownerId)),
 
         //Finish the rental, which must be active
-        RTE.chainEitherK(finishRental(new Date())),
+        RTE.chainEitherK(finishRental(this.clock.now())),
 
         //Store it and make book item available atomically
         RTE.tap(
@@ -62,6 +69,13 @@ export class ReturnBookCommandHandler implements ICommandHandler<
         ),
 
         RTE.tap(publishRTE(bookReturned)),
+        RTE.tap(() =>
+          changedRTE(
+            { resource: Resource.Rentals },
+            // The copy is available again
+            { resource: Resource.Books },
+          ),
+        ),
         RTE.asUnit,
       ),
     );

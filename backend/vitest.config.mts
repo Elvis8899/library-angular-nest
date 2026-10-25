@@ -31,6 +31,7 @@ export default defineConfig({
       "@shared": `${root}/src/modules/shared`,
       "@modules": `${root}/src/modules`,
       "@db": `${root}/prisma`,
+      "@scripts": `${root}/scripts`,
     },
   },
   test: {
@@ -40,6 +41,9 @@ export default defineConfig({
     // More workers gain little: each loads the app again, and the database
     // suites copy the test database once per worker
     maxWorkers: "50%",
+    // Each spec builds its own Nest module or app, so the files of a worker
+    // share its imports instead of loading them again: 2-5x faster
+    isolate: false,
     projects: [
       {
         extends: true,

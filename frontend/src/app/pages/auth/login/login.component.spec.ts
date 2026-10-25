@@ -9,7 +9,8 @@ import { AuthenticationService } from "@app/services/authentication.service";
 import { Logger } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
-import { provideTranslateService } from "@ngx-translate/core";
+import { usePtBR } from "@app/shared/utils/test/translations";
+import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import {
   createComponentFactory,
   createSpyObject,
@@ -54,6 +55,8 @@ describe("LoginComponent", () => {
   beforeEach(() => {
     localStorage.removeItem("language");
     spectator = createComponent();
+    usePtBR(spectator.inject(TranslateService));
+    spectator.detectChanges();
     httpMock = spectator.inject(HttpTestingController);
     authenticationServiceMock.login.mockClear();
     inputs = {

@@ -18,9 +18,10 @@ describe("LanguageSelectorComponent", () => {
     detectChanges: false,
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     localStorage.removeItem("language");
     spectator = createComponent();
+    await spectator.inject(I18nService).ready;
     spectator.detectChanges();
   });
 
@@ -54,7 +55,7 @@ describe("LanguageSelectorComponent", () => {
     expect(options()[1]).toHaveAttribute("lang", "en-US");
   });
 
-  it("Should switch the language", () => {
+  it("Should switch the language", async () => {
     // Arrange
     const setLanguageSpy = vi.spyOn(
       spectator.inject(I18nService),
@@ -63,6 +64,8 @@ describe("LanguageSelectorComponent", () => {
     openMenu();
     // Act
     spectator.click(options()[1]);
+    // Once en-US's texts are loaded
+    await setLanguageSpy.mock.results[0].value;
     spectator.detectChanges();
     // Assert
     expect(setLanguageSpy).toHaveBeenCalledWith("en-US");

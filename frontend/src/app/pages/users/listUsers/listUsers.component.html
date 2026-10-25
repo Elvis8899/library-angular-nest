@@ -15,7 +15,7 @@
   <app-customized-table [columns]="columns()" [data]="data">
     <ng-container matColumnDef="name">
       <th *matHeaderCellDef mat-header-cell>{{ "common.name" | translate }}</th>
-      <td *matCellDef="let user" mat-cell>
+      <td *matCellDef="let user; dataSource: data" mat-cell>
         <span class="user-name">{{ user.name }}</span>
         <span class="user-email">{{ user.email }}</span>
       </td>
@@ -25,7 +25,7 @@
       <th *matHeaderCellDef mat-header-cell>
         {{ "users.list.role" | translate }}
       </th>
-      <td *matCellDef="let user" mat-cell>
+      <td *matCellDef="let user; dataSource: data" mat-cell>
         @if (user.role === ROLE.ADMIN) {
           <span class="chip chip-accent">{{ "roles.admin" | translate }}</span>
         } @else {
@@ -40,7 +40,7 @@
       <th *matHeaderCellDef mat-header-cell>
         {{ "users.document.label" | translate }}
       </th>
-      <td *matCellDef="let user" class="document" mat-cell>
+      <td *matCellDef="let user; dataSource: data" class="document" mat-cell>
         <!-- Admins may have none -->
         {{ user.cpf || "—" }}
       </td>
@@ -50,7 +50,7 @@
       <th *matHeaderCellDef mat-header-cell>
         {{ "common.createdOn" | translate }}
       </th>
-      <td *matCellDef="let user" mat-cell>
+      <td *matCellDef="let user; dataSource: data" mat-cell>
         {{ user.createdAt | date: "shortDate" : undefined : locale() }}
       </td>
     </ng-container>

@@ -1,5 +1,6 @@
 import { DOCUMENT } from "@angular/common";
 import { ThemeService } from "@app/services/theme.service";
+import { blockStorage } from "@app/shared/utils/test/storage";
 import {
   createServiceFactory,
   SpectatorService,
@@ -38,6 +39,8 @@ describe("ThemeService", () => {
     systemDark = false;
     onSystemChange = undefined;
   });
+
+  afterEach(() => vi.unstubAllGlobals());
 
   it("Should follow the system without a stored choice", () => {
     // Arrange
@@ -107,9 +110,7 @@ describe("ThemeService", () => {
   it("Should still toggle when storage is blocked", () => {
     // Arrange
     spectator = createService();
-    vi.spyOn(Storage.prototype, "setItem").mockImplementationOnce(() => {
-      throw new Error("blocked");
-    });
+    blockStorage();
     // Act
     spectator.service.toggle();
     // Assert
@@ -118,13 +119,10 @@ describe("ThemeService", () => {
 
   it("Should treat unreadable storage as no choice", () => {
     // Arrange
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
-      throw new Error("blocked");
-    });
+    blockStorage();
     // Act
     spectator = createService();
     // Assert
     expect(spectator.service.colorScheme()).toBe("light");
-    vi.restoreAllMocks();
   });
 });

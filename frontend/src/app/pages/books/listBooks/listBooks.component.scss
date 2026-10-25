@@ -22,6 +22,16 @@
   padding: var(--space-2) 0;
 }
 
+.cover-button {
+  display: flex;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--mat-sys-corner-extra-small);
+  background: none;
+  cursor: pointer;
+}
+
 .cover {
   flex-shrink: 0;
   width: 40px;

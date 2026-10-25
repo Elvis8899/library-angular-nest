@@ -7,10 +7,15 @@ import {
   AvailableBookItemNotFoundException,
   BookInfoNotFoundException,
 } from "@modules/book/domain/bookInfo.errors";
-import { BookItemStatusEnum } from "@modules/book/domain/bookItem.entity";
+import { BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import {
+  Resource,
+  RESOURCE_CHANGED,
+} from "@shared/domainEventPublisher/resourceChanged.event";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
+import { seedBook } from "@test/modules/book/createBook";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
 
@@ -30,7 +35,7 @@ describe("[Unit] Delete BookInfo", () => {
     //Given a valid id
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     const id = createTestId(TableNameEnum.BookItem, 0);
 
     //When we delete a bookInfo
@@ -51,12 +56,12 @@ describe("[Unit] Delete BookInfo", () => {
       .withBookItems([
         {
           id: createTestId(TableNameEnum.BookItem, 0),
-          status: BookItemStatusEnum.Rented,
+          status: BookItemStatus.Rented,
           bookId: createTestId(TableNameEnum.BookInfo, 0),
         },
       ])
       .build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     const id = createTestId(TableNameEnum.BookItem, 0);
 
     //When we delete a bookInfo
@@ -76,7 +81,7 @@ describe("[Unit] Delete BookInfo", () => {
     //Given a valid id
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     const newId = createTestId(TableNameEnum.None, 0);
 
     //When we delete a bookInfo
@@ -97,14 +102,20 @@ describe("[Unit] Delete BookInfo", () => {
     const spy = vi.spyOn(ctx.eventModule, "publishEvent");
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
     const id = createTestId(TableNameEnum.BookItem, 0);
 
     //When we delete a bookInfo
     await ctx.removeBookItemHandler.execute(new RemoveBookItem(id));
 
     //Then it should have deleted a bookInfo and emitted an event
-    expect(spy).toHaveBeenCalledTimes(1);
+    // Its event, then the screens' reload
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(
+      spy.mock.calls.slice(1).map(([event]) => ({
+        resource: event.eventKey === RESOURCE_CHANGED && event.payload.resource,
+      })),
+    ).toEqual([{ resource: Resource.Books }]);
   });
 
   it("Should not emit domain event when bookInfo is not deleted", async () => {
@@ -113,7 +124,7 @@ describe("[Unit] Delete BookInfo", () => {
     const spy = vi.spyOn(ctx.eventModule, "publishEvent");
 
     const bookInfo = new BookInfoBuilder().build();
-    await executeTask(ctx.bookInfoRepository.save(bookInfo));
+    await seedBook(ctx.bookInfoRepository, bookInfo);
 
     const newId = createTestId(TableNameEnum.None, 0);
     //When we delete a bookInfo

@@ -2,19 +2,31 @@ import { Component, inject, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { MatButton } from "@angular/material/button";
 import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatIcon } from "@angular/material/icon";
 import { MatInput } from "@angular/material/input";
-import { MatProgressSpinner } from "@angular/material/progress-spinner";
 import { Router, RouterLink } from "@angular/router";
+import {
+  coverProblem,
+  coverTypes,
+  noCoverImage,
+} from "@app/pages/books/book.entity";
 import { BookService } from "@app/pages/books/book.http.service";
 import { Logger } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { FormCardComponent } from "@app/shared/components/formCard/formCard.component";
+import { BusyDirective } from "@app/shared/directives/busy.directive";
+import { t } from "@app/shared/i18n/translations/translationKey";
+import { objectUrlOf } from "@app/shared/utils/objectUrl.utility";
+import { injectSaving } from "@app/shared/utils/saving.utility";
 import { TranslatePipe } from "@ngx-translate/core";
-import { finalize } from "rxjs";
+import { catchError, map, of, switchMap } from "rxjs";
 
 const log = new Logger("AddBookComponent");
 
-const noImage = "images/no-image.png";
+const coverProblems = {
+  type: t("books.form.coverType"),
+  size: t("books.form.coverTooLarge"),
+};
 
 @Component({
   selector: "app-add-book",
@@ -25,8 +37,9 @@ const noImage = "images/no-image.png";
     RouterLink,
     MatButton,
     MatFormFieldModule,
+    MatIcon,
     MatInput,
-    MatProgressSpinner,
+    BusyDirective,
     FormCardComponent,
     TranslatePipe,
   ],
@@ -40,29 +53,36 @@ export class AddBooksComponent {
   // As the API: a name and a price; the cover is optional
   addBookForm = this._fb.nonNullable.group({
     name: ["", Validators.required],
-    image: ["", Validators.pattern(/^https?:\/\/\S+$/)],
     price: this._fb.control<number | null>(null, [
       Validators.required,
       Validators.min(0),
     ]),
   });
 
-  readonly saving = signal(false);
-  // Set when the cover's URL doesn't load
-  readonly imageFailed = signal(false);
+  readonly saving = injectSaving(log);
+  readonly coverTypes = coverTypes.join(",");
+  readonly noCoverImage = noCoverImage;
+  // The picked cover, sent once the book exists
+  readonly cover = signal<File | null>(null);
+  readonly coverPreview = objectUrlOf(this.cover);
 
-  coverPreview() {
-    const { image } = this.addBookForm.controls;
-    if (!image.value || image.invalid || this.imageFailed()) return noImage;
-    return image.value;
+  pickCover(event: Event) {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) return;
+    const file = input.files?.[0];
+    // Picking the same file again fires change again
+    input.value = "";
+    if (!file) return;
+    const problem = coverProblem(file);
+    if (problem) {
+      this._notify.error(coverProblems[problem]);
+      return;
+    }
+    this.cover.set(file);
   }
 
-  onImageChange() {
-    this.imageFailed.set(false);
-  }
-
-  onImageError() {
-    this.imageFailed.set(true);
+  clearCover() {
+    this.cover.set(null);
   }
 
   onSubmit() {
@@ -70,22 +90,30 @@ export class AddBooksComponent {
       this.addBookForm.markAllAsTouched();
       return;
     }
-    if (this.saving()) return;
-    this.saving.set(true);
     const book = this.addBookForm.getRawValue();
-    this._bookService
+    const cover = this.cover();
+    this.saving.run(
       // A valid form has a price
-      .addBook({ ...book, price: Number(book.price) })
-      .pipe(finalize(() => this.saving.set(false)))
-      .subscribe({
-        next: () => {
-          this._notify.success("books.created");
-          this._router.navigate(["/books/list"]);
-        },
-        error: (error: Error) => {
-          this._notify.errorMessage(error?.message);
-          log.error(error);
-        },
-      });
+      this._bookService.addBook({ ...book, price: Number(book.price) }).pipe(
+        // The book stands without its cover when the upload fails; the list
+        // can upload it again
+        switchMap(({ id }) =>
+          cover
+            ? this._bookService.changeCover(id, cover).pipe(
+                map(() => true),
+                catchError((error: unknown) => {
+                  log.error(error);
+                  this._notify.error("books.form.coverNotSaved");
+                  return of(false);
+                })
+              )
+            : of(true)
+        )
+      ),
+      (withCover) => {
+        if (withCover) this._notify.success("books.created");
+        this._router.navigate(["/books/list"]);
+      }
+    );
   }
 }

@@ -1,0 +1,5 @@
+@if (message(); as message) {
+  <p class="message">{{ message | translate }}</p>
+} @else {
+  <mat-progress-bar mode="indeterminate" />
+}

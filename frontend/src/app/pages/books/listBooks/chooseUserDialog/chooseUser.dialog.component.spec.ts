@@ -19,13 +19,16 @@ Logger.level = 0;
 
 describe("ChooseUserDialogComponent", () => {
   let spectator: Spectator<ChooseUserDialogComponent>;
-  const user = (id: string, name: string, role = ROLE.CLIENT): UserEntity => ({
+  const user = (
+    id: string,
+    name: string,
+    role: UserEntity["role"] = ROLE.CLIENT
+  ): UserEntity => ({
     id,
     name,
     email: `${name.toLowerCase().split(" ")[0]}@example.com`,
     cpf: "529.982.247-25",
     role,
-    password: "",
     createdAt: new Date().toDateString(),
     updatedAt: new Date().toDateString(),
   });
@@ -132,6 +135,10 @@ describe("ChooseUserDialogComponent", () => {
     search("BRU");
     // Assert
     expect(optionTexts()).toEqual(["Bruno Lima bruno@example.com"]);
+    // Act: accents and extra spaces don't matter
+    search("  brúno  lima ");
+    // Assert
+    expect(optionTexts()).toEqual(["Bruno Lima bruno@example.com"]);
     // Act
     search("nobody");
     // Assert
@@ -173,7 +180,7 @@ describe("ChooseUserDialogComponent", () => {
     // Arrange
     spectator = createComponent();
     // Act
-    spectator.click("button[name='cancelDialog']");
+    spectator.click("button[name='cancel']");
     // Assert
     expect(dialogRefMock.close).toHaveBeenCalledExactlyOnceWith(undefined);
   });

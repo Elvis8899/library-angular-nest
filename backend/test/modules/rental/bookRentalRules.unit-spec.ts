@@ -1,7 +1,4 @@
-import {
-  BookItem,
-  BookItemStatusEnum,
-} from "@modules/book/domain/bookItem.entity";
+import { BookItem, BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import {
   ensureOwnedBy,
   finishRental,
@@ -26,7 +23,7 @@ describe("[Unit] BookRental rules", () => {
   });
 
   describe("startRental", () => {
-    const bookItem = (status: BookItemStatusEnum) =>
+    const bookItem = (status: BookItemStatus) =>
       BookItem.parse({
         id: createTestId(TableNameEnum.BookItem, 1),
         bookId: createTestId(TableNameEnum.BookInfo, 0),
@@ -35,9 +32,7 @@ describe("[Unit] BookRental rules", () => {
 
     it("Should start a rental of an available book item", () => {
       const rental = bookRentalBuilder.build();
-      const result = startRental(rental)(
-        bookItem(BookItemStatusEnum.Available),
-      );
+      const result = startRental(rental)(bookItem(BookItemStatus.Available));
       expect(result).toEqual(
         E.right({
           ...rental,
@@ -49,7 +44,7 @@ describe("[Unit] BookRental rules", () => {
 
     it("Should not start a rental of a rented book item", () => {
       const result = startRental(bookRentalBuilder.build())(
-        bookItem(BookItemStatusEnum.Rented),
+        bookItem(BookItemStatus.Rented),
       );
       expect(E.isLeft(result) && result.left).toBeInstanceOf(
         BookRentalNotAvailableException,

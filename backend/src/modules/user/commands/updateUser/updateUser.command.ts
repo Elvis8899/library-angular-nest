@@ -1,3 +1,4 @@
+import { Resource, UserChangesRequest } from "@library/contracts";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userUpdated } from "@modules/user/domain/events/userUpdated.event";
 import { PasswordHasher } from "@modules/user/domain/passwordHasher.port";
@@ -11,21 +12,25 @@ import {
   userEmailAlreadyExistsException,
   userNotFoundException,
 } from "@modules/user/domain/user.errors";
-import { UpdateUserDto } from "@modules/user/dtos/user.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
-import { Apply, FPF, O, RE, RTE, T } from "@shared/utils/application/monads";
+import { Clock } from "@shared/clock/clock";
+import { inputsRTE } from "@shared/utils/application/fromInput";
+import { FPF, O, RTE, T } from "@shared/utils/application/monads";
 import {
   ensureAbsentRTE,
   findOrFailRTE,
   performRTE,
 } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  changedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
 export class UpdateUser implements ICommand {
   constructor(
-    public readonly props: UpdateUserDto,
+    public readonly props: UserChangesRequest,
     public readonly id: string,
   ) {}
 }
@@ -34,6 +39,7 @@ export class UpdateUser implements ICommand {
 export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
   constructor(
     private readonly useCase: UseCase,
+    private readonly clock: Clock,
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
   ) {}
@@ -42,14 +48,14 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
     const { password: _, ...logged } = command.props;
     return this.useCase.run(
       "UpdateUser",
-      logged,
+      // The id names the record in the audit
+      { id: command.id, ...logged },
       FPF.pipe(
         //Data validation
-        Apply.sequenceS(RE.Applicative)({
-          id: fromInputRE(UUID, "uuid")(command.id),
-          changes: fromInputRE(UserChangesInput, "user")(command.props),
+        inputsRTE({
+          id: [UUID, "uuid", command.id],
+          changes: [UserChangesInput, "user", command.props],
         }),
-        RTE.fromReaderEither,
 
         //Validate User exists
         RTE.bind("before", ({ id }) =>
@@ -90,7 +96,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
           ),
         ),
         RTE.let("after", ({ before, changes, password }) =>
-          changeUserDetails(changes, password, new Date())(before),
+          changeUserDetails(changes, password, this.clock.now())(before),
         ),
 
         //Store entity
@@ -114,6 +120,9 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
 
         RTE.map(({ after }) => after),
         RTE.tap(publishRTE(userUpdated)),
+        RTE.tap((user) =>
+          changedRTE({ resource: Resource.Users, key: user.id }),
+        ),
         RTE.asUnit,
       ),
     );

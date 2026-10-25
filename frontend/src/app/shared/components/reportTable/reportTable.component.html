@@ -1,0 +1,67 @@
+@let columns = shown();
+@let cells = this.cells();
+@if (rows().length === 0 && empty(); as empty) {
+  <p class="message">{{ empty | translate }}</p>
+} @else {
+  <div class="table-scroll">
+    <table [class.compact]="compact()" class="data-table">
+      @if (withHeader()) {
+        <thead>
+          <tr>
+            @for (column of columns; track column.key) {
+              <th [class.num]="isEnd(column)">
+                @if (column.header) {
+                  {{ column.header | translate }}
+                }
+              </th>
+            }
+          </tr>
+        </thead>
+      }
+      <tbody>
+        @for (row of rows(); track $index) {
+          <tr>
+            @for (column of columns; track column.key) {
+              <td
+                [class]="column.cellClass?.(row) ?? {}"
+                [class.num]="isEnd(column)"
+              >
+                @if (cells.get(column.key); as cell) {
+                  <ng-container
+                    [ngTemplateOutlet]="cell"
+                    [ngTemplateOutletContext]="{ $implicit: row }"
+                  />
+                } @else if (column.translated) {
+                  @let translation = this.translation(column, row);
+                  {{
+                    translation
+                      ? (translation.key | translate: translation.params)
+                      : "—"
+                  }}
+                } @else {
+                  {{ text(column, column.value?.(row)) }}
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+      @if (totals(); as totals) {
+        <tfoot>
+          <tr>
+            @for (column of columns; track column.key; let first = $first) {
+              @let cell = total(totals, column, first);
+              <td [class.num]="isEnd(column)">
+                @if (cell.label) {
+                  {{ cell.label | translate }}
+                } @else {
+                  {{ cell.text }}
+                }
+              </td>
+            }
+          </tr>
+        </tfoot>
+      }
+    </table>
+  </div>
+}

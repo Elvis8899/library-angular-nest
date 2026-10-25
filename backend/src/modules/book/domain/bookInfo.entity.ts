@@ -8,7 +8,8 @@ export const BookInfo = z
   .object({
     id: UUID,
     name: z.string().min(1),
-    image: z.string().optional().default(""),
+    // The uploaded cover's version; none until one is uploaded
+    cover: UUID.nullable().default(null),
     price: Money,
     bookItems: z.array(BookItem).optional().default([]),
   })

@@ -1,16 +1,22 @@
 import { DatePipe } from "@angular/common";
-import { Component, computed, inject, OnInit } from "@angular/core";
+import { Component, computed, DestroyRef, inject, OnInit } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { MatButton } from "@angular/material/button";
 import { MatIcon } from "@angular/material/icon";
 import { MatTableModule } from "@angular/material/table";
 import { Router } from "@angular/router";
 import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
+import {
+  LiveUpdatesService,
+  RESOURCE,
+} from "@app/services/liveUpdates.service";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { PaginatedDataSource } from "@app/shared/components/customizedTable/paginatedDataSource";
 import { PageHeaderComponent } from "@app/shared/components/pageHeader/pageHeader.component";
+import { CellDefDirective } from "@app/shared/directives/cellDef.directive";
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
 import { injectIsSmallScreen } from "@app/shared/utils/smallScreen.utility";
 import { TranslatePipe } from "@ngx-translate/core";
@@ -22,6 +28,7 @@ const log = new Logger("ListUsersComponent");
   templateUrl: "./listUsers.component.html",
   styleUrl: "./listUsers.component.scss",
   imports: [
+    CellDefDirective,
     DatePipe,
     MatButton,
     MatIcon,
@@ -44,6 +51,8 @@ export class ListUsersComponent implements OnInit {
   );
   readonly ROLE = ROLE;
 
+  private readonly _liveUpdates = inject(LiveUpdatesService);
+  private readonly _destroyRef = inject(DestroyRef);
   private readonly _userService = inject(UserService);
   private readonly _router = inject(Router);
 
@@ -60,6 +69,11 @@ export class ListUsersComponent implements OnInit {
         displayedColumns: ["name", "role", "cpf", "createdAt"],
       }
     );
+    // What someone else changes shows here too
+    this._liveUpdates
+      .changes(RESOURCE.USERS)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe(() => this.refresh());
   }
 
   refresh() {

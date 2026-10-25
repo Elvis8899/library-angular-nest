@@ -1,3 +1,4 @@
+import { Resource } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import {
   availableBookItemNotFoundException,
@@ -9,7 +10,11 @@ import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  changedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
 export class RemoveBookItem implements ICommand {
@@ -55,6 +60,7 @@ export class RemoveBookItemHandler implements ICommandHandler<
         ),
 
         RTE.tap(publishRTE(bookItemRemoved)),
+        RTE.tap(() => changedRTE({ resource: Resource.Books })),
         RTE.asUnit,
       ),
     );

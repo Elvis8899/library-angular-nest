@@ -15,7 +15,7 @@ It is also a starting point for other projects: login, users and the conventions
 
 ## Features
 
-- **Catalogue:** books (title, cover, price), each with any number of physical copies.
+- **Catalogue:** books (title, uploaded cover, price), each with any number of physical copies.
 - **Loans:** renting a copy and returning it. A copy can't be rented twice at the same time; the database enforces this with a transaction.
 - **Late fees:** loans are due 7 days after renting, at the end of the day. Returning late costs a fixed R$20 plus 5% of the book's price per day.
 - **Users and roles:**
@@ -33,7 +33,7 @@ It is also a starting point for other projects: login, users and the conventions
 
 ### Option A: Docker dev stack
 
-The dev stack runs the API and the frontend in watch mode behind nginx, together with PostgreSQL, pgAdmin, Prometheus and Grafana:
+The dev stack runs the API and the frontend in watch mode behind nginx, together with PostgreSQL, the file storage (SeaweedFS, S3-compatible, for the books' covers), pgAdmin, Prometheus and Grafana:
 
 ```bash
 make dockerDev          # from the repo root: docker compose -f .docker/docker-compose-dev.yml up --build -d
@@ -49,13 +49,15 @@ On each start, the API container installs dependencies, applies migrations and s
 | `/pgadmin4/` | pgAdmin |
 | `/grafana/`, `/prometheus/` | Metrics |
 
+Grafana (`admin`/`admin`) opens with the Prometheus data source and two dashboards in `.docker/grafana/dashboards/`: **Library API** (requests, latency and errors by route, use cases by outcome, memory and event loop) and **Library server** (the site's probe and certificate, disk, memory, CPU, the database, the file storage). The alert rules (API, site or database down, certificate expiring, disk or memory running out, 5xx errors) are under Alerting; they aren't sent anywhere yet. Prometheus scrapes the API's metrics server on `app:9464` (`METRICS_PORT`), which nginx doesn't proxy.
+
 ### Option B: run the backend on the host
 
 ```bash
+yarn install            # at the repository root, once: both apps and packages/contracts
 cd backend
 docker compose -f ../.docker/docker-compose-dev.yml up postgres -d
 cp .env.example .env    # then set DATABASE_URL to localhost, see the comment in the file
-yarn install
 yarn migrate            # apply migrations
 npx prisma db seed      # demo users and books (runs automatically when migrate creates the database)
 yarn start:dev          # http://localhost:3000, Swagger at /swagger
@@ -66,9 +68,9 @@ yarn start:dev          # http://localhost:3000, Swagger at /swagger
 ### Frontend
 
 ```bash
-cd frontend
 nvm use                 # Node 24
-yarn install
+yarn install            # at the repository root, if not done yet
+cd frontend
 yarn start              # http://localhost:4200, proxies /v1 to localhost:3000
 ```
 
@@ -100,8 +102,8 @@ The backend suites run in parallel: before they start, each test worker gets its
 
 ## CI and deployment
 
-- **GitHub Actions** (`.github/workflows/node.js.yml`) runs on every push and pull request to `main`. It builds the backend and runs its full test suite against PostgreSQL, lints (ESLint and Stylelint), tests and builds the frontend, then publishes the coverage badges above for both apps to the `badges` branch.
-- **Deployment** is manual, to one Linux server with Docker (a VPS such as an AWS Lightsail instance; 2 GB of RAM or more, since the images are built there). The stack in `.docker/docker-compose.yml` runs the API, PostgreSQL, pgAdmin, certbot and nginx, which serves the frontend build over HTTPS and proxies `/v1`, `/swagger` and `/pgadmin4` to the rest. Only ports 80 and 443 need to be open.
+- **GitHub Actions** (`.github/workflows/node.js.yml`) runs on every push and pull request to `main`. It builds the backend and runs its full test suite against PostgreSQL and SeaweedFS, lints (ESLint and Stylelint), tests and builds the frontend, then publishes the coverage badges above for both apps to the `badges` branch.
+- **Deployment** is manual, to one Linux server with Docker (a VPS such as an AWS Lightsail instance; 2 GB of RAM or more, since the images are built there). The stack in `.docker/docker-compose.yml` runs the API, PostgreSQL, the file storage (SeaweedFS; back its volume up with the database's, and a server set up before it needs `STORAGE_ACCESS_KEY` and `STORAGE_SECRET_KEY` in `.docker/.env`, `openssl rand -hex 32`), pgAdmin, Prometheus, Grafana, certbot and nginx, which serves the frontend build over HTTPS and proxies `/v1`, `/swagger`, `/pgadmin4` and `/grafana` to the rest. Grafana (user `admin`, `.docker/.env`'s `GRAFANA_PASSWORD`; a server set up before it needs that added, `openssl rand -hex 16`) has the same dashboards and alert rules as the dev stack; Prometheus keeps 30 days (2 GB at most) and isn't reachable from outside. It probes the site through its public address, so it notices DNS, certificate and nginx problems, but not the whole server being down: that needs a monitor outside it. Only ports 80 and 443 need to be open.
 
 ### Deploying
 
@@ -117,30 +119,23 @@ make dockerCertificate                  # Let's Encrypt certificate (port 80 mus
 make dockerDeploy                       # migrations, then the stack
 ```
 
-After that, `make dockerDeploy` deploys the latest `main` (`dockerMigrate` and `dockerProd` do each half); certbot renews the certificate by itself.
+After that, `make dockerDeploy` deploys the latest `main` (`dockerMigrate` and `dockerProd` do each half); certbot renews the certificate by itself. The images build in a BuildKit container of their own, `library-builder`, which the first build creates (`make dockerBuilder`) with an eighth of a container's CPU weight: a build uses the CPU the stack leaves idle and yields it as soon as the API, Postgres or nginx need it. The API's image compiles with SWC and the frontend's skips the template checks (`build:unchecked` in each app; CI's `yarn build` and typecheck run them before any deploy), so a build fits beside the running stack on a 2 GB server. After each deploy, the cache entries no build used for a week (old versions' layers) are removed, while those the latest build used stay for the next one; the builder is stopped between deploys.
 
-To have CI deploy every push to `main` once its tests pass, give it an SSH key to the server. The `deploy` job connects and runs `make dockerDeploy` with the tested commit, so the server still builds the images; it's skipped while `DEPLOY_HOST` is unset.
-
-```bash
-# On your machine
-ssh-keygen -t ed25519 -f deploy_key -N ""      # add deploy_key.pub to the server's ~/.ssh/authorized_keys
-ssh-keyscan <server-ip>                       # the server's host keys: check them against ssh-keygen -lf /etc/ssh/ssh_host_*.pub on the server
-```
-
-Then, in the repository's Settings → Secrets and variables → Actions: the secret `DEPLOY_SSH_KEY` (the contents of `deploy_key`), and the variables `DEPLOY_HOST` (the server's IP or domain) and `DEPLOY_KNOWN_HOSTS` (the `ssh-keyscan` output), plus `DEPLOY_USER` (default `ubuntu`) and `DEPLOY_PATH` (the clone's folder relative to its home; default the repository name) when they differ. The job runs in the `production` environment, where you can require an approval before each deploy (Settings → Environments). The API's settings are in the repo root's `.env` (made from `backend/.env.example`), which Compose passes to the container when it starts, so no secret is built into an image; its `DATABASE_URL` is built from `.docker/.env` instead. PostgreSQL reads the credentials only when its volume is first created: on a server that already has the volume, change the password in the database too (`ALTER USER … PASSWORD …`).
+To have CI deploy every push to `main` once its tests pass, install the deploy hook on the server: `make serverHook`. It runs `.docker/deployHook.py` as a service on the host (outside Docker, so a deploy restarting the stack doesn't stop it), reached through nginx at `https://<DOMAIN>/hooks/deploy`, and prints the two settings for GitHub (Settings → Secrets and variables → Actions): the secret `DEPLOY_TOKEN` (generated into `.docker/.env`; a server set up before the hook needs it added there, `openssl rand -hex 32`) and the variable `DEPLOY_URL` (`https://<DOMAIN>`). The `deploy` job then calls the hook with the tested commit; the hook runs `make dockerDeploy REF=<commit>` in the background, one at a time (a call during a deploy waits for it), logging to `.docker/deploy.log`, and the job ends once the hook has taken the commit, without waiting for the deploy: how the last one ended is at `https://<DOMAIN>/hooks/deploy/status` (with the `DEPLOY_TOKEN` as a Bearer token) and in that log, and Grafana's "Deploy failed" alert fires when it failed ("Deploy stuck" when one runs for over an hour), from the metrics the hook gives Prometheus. A hook installed before those metrics needs `sudo systemctl restart library-deploy-hook` to serve them. `make dockerDeploy` does nothing when that commit is already out (`.docker/.deployed`, written by the last finished deploy; `FORCE=1` deploys anyway). Without `DEPLOY_URL` the job is skipped. No port beyond 443 is involved, so SSH can stay limited to your IP. The job runs in the `production` environment, where you can require an approval before each deploy (Settings → Environments). The API's settings are in the repo root's `.env` (made from `backend/.env.example`), which Compose passes to the container when it starts, so no secret is built into an image; its `DATABASE_URL` is built from `.docker/.env` instead. PostgreSQL reads the credentials only when its volume is first created: on a server that already has the volume, change the password in the database too (`ALTER USER … PASSWORD …`). Postgres is pinned to 18, its volume on `/var/lib/postgresql`: a server whose volume an older major wrote needs a `pg_upgrade` (or a dump and restore) first.
 
 ## Project structure
 
 ```
 Makefile                   serverSetup, dockerDev, dockerProd, dockerMigrate, dockerCertificate
-.docker/                   compose files (dev and production), the production settings (.env.example), serverSetup.sh, nginx, Prometheus, pgAdmin
+.docker/                   compose files (dev and production), the production settings (.env.example), serverSetup.sh, the deploy hook, nginx, Prometheus, Grafana, pgAdmin
 backend/
-  src/modules/<feature>/   commands, queries, domain, database, dtos; core: shared, auth, user; example: book, rental
+  src/modules/<feature>/   commands, queries, domain, database; core: shared, auth, user; example: book, rental
   prisma/schema/           the Prisma schema, one file per module
   prisma/                  migrations, seed
   test/modules/<feature>/  each module's unit, integration and e2e specs, and its own builders
   test/util/, dataBuilders/  the test harness and the core builders
   .docker/                 the API's Dockerfiles and dev entrypoint
+packages/contracts/        what the API sends and receives (Zod schemas), and the values and rules both apps use
 frontend/
   src/app/pages/           lazy-loaded routes; core: auth, home, users; example: books, rentals (with their models and services)
   src/app/services/        HTTP and auth services of the core
@@ -150,7 +145,7 @@ frontend/
 
 ## Starting a new project
 
-Copy the repository, then rename it and remove the lending example. `shared`, `auth` and `user` are the core every project keeps; `book` (plain CRUD) and `rental` (writes that must be atomic) are the example, worth reading before you remove them.
+Copy the repository, then rename it and remove the lending example. `shared`, `auth`, `user` and `audit` are the core every project keeps; `book` (plain CRUD) and `rental` (writes that must be atomic) are the example, worth reading before you remove them.
 
 ### Rename
 

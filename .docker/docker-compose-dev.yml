@@ -8,45 +8,83 @@ services:
       - "3000:80"
     volumes:
       - ./nginx.dev.conf:/etc/nginx/nginx.conf
+    # nginx resolves every proxy_pass host when it starts and exits if one
+    # isn't there yet, so it waits for all of them
     depends_on:
       - app
       - frontend
-      - postgres
+      - grafana
+      - prometheus
+      - pgadmin
     environment:
       UPLOAD_FILE_SIZE_LIMIT: 20
 
-  # Angular dev server, served by nginx at /. The browser calls /v1 on the
-  # same origin, so nginx sends those to the API and proxy.conf.json is unused
-  frontend:
+  # Installs the mounted workspace (both apps and the contracts' build) once,
+  # then exits; app and frontend start after it succeeds. Two installs taking
+  # turns through yarn's --mutex failed when the lock's refresh fell behind
+  install:
     image: node:24-slim
     working_dir: /usr/src/app
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     environment:
       YARN_CACHE_FOLDER: /usr/src/app/.yarn-cache
+      # No Git in the image to install the hook with
+      HUSKY: "0"
+    volumes:
+      - ..:/usr/src/app
+    command: yarn install --frozen-lockfile
+
+  # Angular dev server, served by nginx at /. The browser calls /v1 on the
+  # same origin, so nginx sends those to the API and proxy.conf.json is unused
+  frontend:
+    image: node:24-slim
+    working_dir: /usr/src/app/frontend
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    environment:
       NG_CLI_ANALYTICS: "false"
     volumes:
-      - ../frontend:/usr/src/app
-    command: sh -c "yarn install --frozen-lockfile && yarn ng serve --host 0.0.0.0 --port 4200"
+      - ..:/usr/src/app
+    command: yarn ng serve --host 0.0.0.0 --port 4200
+    depends_on:
+      install:
+        condition: service_completed_successfully
 
   app:
     build:
-      context: ../backend
-      dockerfile: .docker/Dockerfile.dev
+      context: ..
+      dockerfile: backend/.docker/Dockerfile.dev
     env_file: ../backend/.env.dev
     # Run as the host user so files written to the mounted source folder
     # (node_modules, dist, migrations) are not owned by root. The default
     # matches the image's node user; set HOST_UID/HOST_GID if yours differ.
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
-    environment:
-      YARN_CACHE_FOLDER: /usr/src/app/.docker/.yarn-cache
     # Uncomment this line in case you are in M1
     # platform: linux/amd64
     volumes:
-      - ../backend:/usr/src/app
+      - ..:/usr/src/app
     # ports:
     #   - "3000:3000"
     depends_on:
-      - postgres
+      install:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_started
+      storage:
+        condition: service_started
+
+  # S3-compatible object storage (SeaweedFS) for the uploaded files; the API
+  # creates its bucket. The tests reach it on localhost:8333
+  storage:
+    image: chrislusf/seaweedfs:4.48
+    # Its Prometheus metrics on 9327
+    command: mini -dir=/data -metricsPort=9327
+    ports:
+      - 8333:8333
+    environment:
+      AWS_ACCESS_KEY_ID: "storage"
+      AWS_SECRET_ACCESS_KEY: "storage-password"
+    volumes:
+      - library-storage:/data
 
   postgres:
     image: postgres:latest
@@ -74,28 +112,50 @@ services:
     volumes:
       - ./servers.dev.json:/pgadmin4/servers.json
 
+  # Scrapes the API's metrics (app:9464, never behind nginx). Its data and
+  # Grafana's survive a `down`
   prometheus:
-    image: prom/prometheus:latest
-    # ports:
-    #   - "${PROMETHEUS_PORT:-9090}:9090"
+    image: prom/prometheus:v3.15.0
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      # - prometheus_data:/prometheus
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - library-prometheus:/prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      # - '--storage.tsdb.path=/prometheus'
-      # - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      # - '--web.console.templates=/usr/share/prometheus/consoles'
-      - '--web.external-url=http://localhost:3000/prometheus/'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.external-url=http://localhost:3000/prometheus/"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  # The machine's disk, memory, CPU and network
+  node-exporter:
+    image: prom/node-exporter:v1.12.1
+    command: ["--path.rootfs=/host"]
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.20.1
+    environment:
+      DATA_SOURCE_URI: postgres:5432/library?sslmode=disable
+      DATA_SOURCE_USER: user
+      DATA_SOURCE_PASS: password
+    depends_on:
+      - postgres
+
+  # Probes the site (nginx's /check/status) for the "site" job
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.29.0
+
+  # Comes with the Prometheus data source and the dashboards
+  # (grafana/provisioning)
   grafana:
-    image: grafana/grafana:latest
-    # ports:
-    #   - "${GRAFANA_PORT:-3001}:3000"
-    # volumes:
-    #   - grafana_data:/var/lib/grafana
+    image: grafana/grafana:13.2.3
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - library-grafana:/var/lib/grafana
     environment:
       - GF_SERVER_ROOT_URL=http://localhost:3000/grafana/
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
@@ -104,6 +164,8 @@ services:
     depends_on:
       - prometheus
 
-
 volumes:
   library-postgres:
+  library-storage:
+  library-prometheus:
+  library-grafana:

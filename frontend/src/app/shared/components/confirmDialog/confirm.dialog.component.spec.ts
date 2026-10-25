@@ -4,7 +4,7 @@ import {
   ConfirmDialogComponent,
   ConfirmDialogData,
 } from "@app/shared/components/confirmDialog/confirm.dialog.component";
-import { ptBR } from "@app/shared/i18n/translations/pt-BR";
+import { usePtBR } from "@app/shared/utils/test/translations";
 import { TypedDialog } from "@app/shared/utils/typedDialog.utility";
 import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import {
@@ -36,8 +36,7 @@ describe("ConfirmDialogComponent", () => {
   function create(options: ConfirmDialogData) {
     data = options;
     spectator = createComponent();
-    spectator.inject(TranslateService).setTranslation("pt-BR", ptBR);
-    spectator.inject(TranslateService).use("pt-BR");
+    usePtBR(spectator.inject(TranslateService));
     spectator.detectChanges();
   }
 

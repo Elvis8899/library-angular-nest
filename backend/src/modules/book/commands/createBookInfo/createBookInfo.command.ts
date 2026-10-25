@@ -1,23 +1,27 @@
+import { BookInfoRequest, Created, Resource, Sent } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { bookInfoCreated } from "@modules/book/domain/events/bookInfoCreated.event";
-import { CreateBookInfoDto } from "@modules/book/dtos/bookInfo.dto";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RE, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  changedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
 
 export class CreateBookInfo implements ICommand {
-  constructor(public readonly props: CreateBookInfoDto) {}
+  constructor(public readonly props: BookInfoRequest) {}
 }
 
 @CommandHandler(CreateBookInfo)
 export class CreateBookInfoHandler implements ICommandHandler<
   CreateBookInfo,
-  void
+  Sent<typeof Created>
 > {
   constructor(
     private readonly useCase: UseCase,
@@ -25,7 +29,7 @@ export class CreateBookInfoHandler implements ICommandHandler<
     private readonly bookInfoRepository: BookInfoRepository,
   ) {}
 
-  execute(command: CreateBookInfo): Promise<void> {
+  execute(command: CreateBookInfo): Promise<Sent<typeof Created>> {
     return this.useCase.run(
       "CreateBookInfo",
       command.props,
@@ -47,7 +51,11 @@ export class CreateBookInfoHandler implements ICommandHandler<
         ),
 
         RTE.tap(publishRTE(bookInfoCreated)),
-        RTE.asUnit,
+        RTE.tap((bookInfo) =>
+          changedRTE({ resource: Resource.Books, key: bookInfo.id }),
+        ),
+        // The id, for its cover (PUT bookInfos/:id/cover)
+        RTE.map(({ id }) => ({ id })),
       ),
     );
   }

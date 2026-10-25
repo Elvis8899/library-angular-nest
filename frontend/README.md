@@ -11,7 +11,7 @@ Node 22.22.3+ or 24.15+, as required by Angular 22. Run `nvm use` to pick the ve
 ## Development
 
 ```bash
-yarn install
+yarn install        # at the repository root (a Yarn workspace)
 yarn start          # http://localhost:4200
 ```
 
@@ -19,14 +19,14 @@ The dev server proxies `/v1` requests to the backend at `http://localhost:3000` 
 
 ## Scripts
 
-| Command                       | Description                                            |
-| ----------------------------- | ------------------------------------------------------ |
-| `yarn start`                  | Dev server with live reload                            |
-| `yarn build`                  | Production build in `dist/frontend/browser`            |
-| `yarn build:serve`            | Serve the production build on port 8080                |
-| `yarn lint` / `yarn lint:fix` | ESLint (Angular rules)                                 |
-| `yarn prettier`               | Format `src/`                                          |
-| `yarn test`                   | Unit tests with Vitest and coverage (fails below 100%) |
+| Command                         | Description                                            |
+| ------------------------------- | ------------------------------------------------------ |
+| `yarn start`                    | Dev server with live reload                            |
+| `yarn build`                    | Production build in `dist/frontend/browser`            |
+| `yarn build:serve`              | Serve the production build on port 8080                |
+| `yarn lint` / `yarn lint:check` | ESLint (Angular rules), fixing / only reporting        |
+| `yarn prettier`                 | Format `src/`                                          |
+| `yarn test`                     | Unit tests with Vitest and coverage (fails below 100%) |
 
 To run a single spec file:
 

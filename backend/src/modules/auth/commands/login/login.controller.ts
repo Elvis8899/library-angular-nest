@@ -1,6 +1,11 @@
+import {
+  AuthResponse,
+  contractRef,
+  LoginRequest,
+  Sent,
+} from "@library/contracts";
 import { LoginCommand } from "@modules/auth/commands/login/login.command";
-import { AuthResponseDto } from "@modules/auth/dtos/authResponse.dto";
-import { LoginDto } from "@modules/auth/dtos/login.dto";
+import { WrongAuthException } from "@modules/auth/domain/auth.errors";
 import { LoginThrottlerGuard } from "@modules/auth/guards/loginThrottler.guard";
 import {
   Body,
@@ -12,12 +17,13 @@ import {
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
+  ApiBody,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiTooManyRequestsResponse,
-  ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
+import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @Controller("v1/")
 @ApiTags("Login")
@@ -28,19 +34,22 @@ export class LoginController {
   ) {}
 
   @Post("login")
+  @ApiErrors(WrongAuthException)
   @HttpCode(HttpStatus.OK)
   @UseGuards(LoginThrottlerGuard)
+  @ApiBody({ schema: contractRef(LoginRequest) })
   @ApiOperation({ summary: "Login a user" })
   @ApiOkResponse({
     description:
       "Authentication a user with email and password credentials and return token",
   })
-  @ApiUnauthorizedResponse({ description: "Forbidden" })
   @ApiTooManyRequestsResponse({
     description: "Muitas tentativas de login para este email.",
   })
-  public async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
-    return this.commandBus.execute<LoginCommand, AuthResponseDto>(
+  public async login(
+    @Body() loginDto: LoginRequest,
+  ): Promise<Sent<typeof AuthResponse>> {
+    return this.commandBus.execute<LoginCommand, Sent<typeof AuthResponse>>(
       new LoginCommand(loginDto),
     );
   }

@@ -2,6 +2,8 @@
  *  Dedicated file for custom utility classes. like margin, padding, display, etc.
  */
 
+@use "@angular/material" as mat;
+
 // A small status label in a table cell: <span class="chip chip-success">.
 // The text carries the meaning; the color only reinforces it.
 .chip {
@@ -17,8 +19,8 @@
 }
 
 .chip-success {
-  color: var(--mat-sys-on-primary-container);
-  background-color: var(--mat-sys-primary-container);
+  color: var(--on-success-container);
+  background-color: var(--success-container);
 }
 
 .chip-accent {
@@ -27,6 +29,34 @@
 }
 
 .chip-error {
+  color: var(--mat-sys-on-error-container);
+  background-color: var(--mat-sys-error-container);
+}
+
+// A small square label beside a name (a record's state):
+// <span class="badge badge-error">. Lighter than a .chip
+.badge {
+  display: inline-block;
+  padding: 0 var(--space-1);
+  border-radius: var(--mat-sys-corner-extra-small);
+  font: var(--mat-sys-label-small);
+  white-space: nowrap;
+  vertical-align: middle;
+  color: var(--mat-sys-on-surface-variant);
+  background-color: var(--mat-sys-surface-container-highest);
+}
+
+.badge-done {
+  color: var(--mat-sys-on-secondary-container);
+  background-color: var(--mat-sys-secondary-container);
+}
+
+.badge-accent {
+  color: var(--mat-sys-on-tertiary-container);
+  background-color: var(--mat-sys-tertiary-container);
+}
+
+.badge-error {
   color: var(--mat-sys-on-error-container);
   background-color: var(--mat-sys-error-container);
 }
@@ -61,4 +91,285 @@
   .mat-mdc-table .mat-mdc-header-cell {
     padding: 0 var(--space-2);
   }
+}
+
+// Shown on one side of the small-screen breakpoint only (a column that
+// moves under the name on a phone). Doubled, to outrank the display of
+// Material's buttons, which load later
+@media (width < 768px) {
+  .wide-only.wide-only {
+    display: none;
+  }
+}
+
+@media (width >= 768px) {
+  .phone-only.phone-only {
+    display: none;
+  }
+}
+
+// A wide table scrolls on its own instead of the page
+.table-scroll {
+  overflow-x: auto;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+// A plain table of figures (app-report-table's): <table class="data-table">,
+// numbers in <td class="num">. A box of its own, with a header band
+.data-table {
+  width: 100%;
+  border: 1px solid var(--table-border);
+  border-radius: var(--mat-sys-corner-medium);
+  border-spacing: 0;
+  border-collapse: separate;
+  // Clips the header band to the corners without becoming a scroll
+  // container, so sticky cells still follow the page or the wrapper
+  overflow: clip;
+  background-color: var(--card-background);
+  font: var(--mat-sys-body-medium);
+
+  --row: var(--row-height);
+
+  // Rows of one height: a cell's height is its minimum
+  th,
+  td {
+    height: var(--row);
+    padding: var(--cell-padding);
+    border-bottom: 1px solid var(--table-border);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  // A cell spanning rows names their group, in line with its first row (the
+  // text's line is 20px)
+  [rowspan] {
+    padding-top: calc((var(--row) - 20px) / 2);
+    vertical-align: top;
+  }
+
+  // Dense: many columns, or a table in a dialog
+  &.compact {
+    --row: var(--row-height-compact);
+
+    th,
+    td {
+      padding-inline: var(--space-2);
+    }
+  }
+
+  // The table's own border closes the last row, a little below it
+  > :last-child > tr:last-child > * {
+    border-bottom: 0;
+  }
+
+  // Not under a totals row, whose band reaches the border
+  &:not(:has(tfoot)) {
+    padding-bottom: var(--table-end-space);
+  }
+
+  thead th {
+    font: var(--mat-sys-label-large);
+    font-weight: 600;
+    color: var(--mat-sys-on-surface-variant);
+    background-color: var(--table-header-background);
+  }
+
+  tbody tr:hover > td {
+    background-color: var(--table-hover);
+  }
+
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  // A row's name, in bold: <td class="strong">
+  .strong {
+    font-weight: bold;
+  }
+
+  tfoot td {
+    font-weight: 600;
+    background-color: var(--table-header-background);
+  }
+
+  // The row's buttons, at its end
+  .actions {
+    text-align: right;
+    white-space: nowrap;
+  }
+}
+
+// A list of rows (a form's lines, a catalog): <ul class="row-list">, each
+// <li> a row laid out by its screen. A box like the tables
+.row-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--table-border);
+  border-radius: var(--mat-sys-corner-medium);
+  overflow: clip;
+  background-color: var(--card-background);
+
+  // Laid out by the screen; a row with fields is --row-height-form tall
+  > li {
+    box-sizing: border-box;
+    min-height: var(--row-height);
+    padding: var(--cell-padding);
+    border-bottom: 1px solid var(--table-border);
+
+    // Room for a field's floating label
+    &:has(.mat-mdc-form-field) {
+      min-height: var(--row-height-form);
+      padding-block: var(--space-2);
+    }
+
+    &:last-child {
+      border-bottom: 0;
+    }
+
+    &:hover {
+      background-color: var(--table-hover);
+    }
+  }
+}
+
+// Figures side by side, each a label, a value and a note under it:
+// <div class="stats"><p class="stat"><span class="label">…</span>
+// <strong>…</strong><span class="label">…</span></p></div>
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+}
+
+.stat {
+  display: flex;
+  flex: 0 1 200px;
+  flex-direction: column;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--table-border);
+  border-radius: var(--mat-sys-corner-medium);
+  background-color: var(--card-background);
+
+  strong {
+    font: var(--mat-sys-headline-small);
+  }
+
+  .label {
+    font: var(--mat-sys-label-medium);
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  &.warn strong {
+    color: var(--mat-sys-error);
+  }
+
+  // Two side by side on a phone
+  @media (width < 768px) {
+    flex-basis: calc(50% - var(--space-3) / 2);
+    min-width: 0;
+  }
+}
+
+// Text that says why something is empty or failed
+.message {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.small-note {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.text-error {
+  font-weight: 600;
+  color: var(--mat-sys-error);
+}
+
+.text-success {
+  color: var(--success);
+}
+
+// A warning in a dialog or panel, above what it's about
+.warning-text {
+  color: var(--mat-sys-error);
+}
+
+// A record's number, a link to it
+.record-number {
+  font-weight: 500;
+  color: var(--mat-sys-primary);
+  white-space: nowrap;
+}
+
+// Previous and next under a list loaded a page at a time
+.pager {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+
+// A block of a page with its heading (a report's charts and tables)
+.panel {
+  display: block;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--table-border);
+  border-radius: var(--mat-sys-corner-medium);
+  background-color: var(--card-background);
+
+  h2 {
+    margin: 0 0 var(--space-2);
+    font: var(--mat-sys-title-medium);
+  }
+
+  h3 {
+    margin: var(--space-3) 0 var(--space-2);
+    font: var(--mat-sys-title-small);
+  }
+
+  @media (width < 768px) {
+    padding: var(--space-2);
+  }
+}
+
+.block {
+  display: block;
+}
+
+// A button that reads as a link inside text (a file's name)
+.link-button {
+  padding: 0;
+  font: inherit;
+  color: var(--mat-sys-primary);
+  text-align: left;
+  cursor: pointer;
+  background: none;
+  border: 0;
+
+  &:disabled {
+    cursor: progress;
+    opacity: 0.6;
+  }
+}
+
+// A filter row of its own under the page header, when the filters don't
+// fit beside the header's buttons: its fields as tall as those buttons, as
+// the header's are. <div class="filters compact-fields">
+.compact-fields {
+  @include mat.form-field-overrides(
+    (
+      container-height: var(--control-height),
+      container-vertical-padding: var(--space-2),
+    )
+  );
 }

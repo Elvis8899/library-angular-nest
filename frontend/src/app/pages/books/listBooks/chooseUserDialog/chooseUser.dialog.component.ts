@@ -2,13 +2,7 @@ import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
-import { MatButton } from "@angular/material/button";
-import {
-  MatDialogActions,
-  MatDialogClose,
-  MatDialogContent,
-  MatDialogTitle,
-} from "@angular/material/dialog";
+import { MatDialogContent, MatDialogTitle } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIcon } from "@angular/material/icon";
 import { MatInput } from "@angular/material/input";
@@ -18,6 +12,8 @@ import { UserEntity } from "@app/models/user.entity";
 import { BookEntity } from "@app/pages/books/book.entity";
 import { Logger } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
+import { DialogActionsComponent } from "@app/shared/components/dialogActions/dialogActions.component";
+import { textKey } from "@app/shared/utils/textMatch.utility";
 import { StronglyTypedDialog } from "@app/shared/utils/typedDialog.utility";
 import { TranslatePipe } from "@ngx-translate/core";
 
@@ -39,9 +35,7 @@ export interface ChooseUserDialogData {
   imports: [
     ReactiveFormsModule,
     MatAutocompleteModule,
-    MatButton,
-    MatDialogActions,
-    MatDialogClose,
+    DialogActionsComponent,
     MatDialogContent,
     MatDialogTitle,
     MatFormFieldModule,
@@ -71,11 +65,12 @@ export class ChooseUserDialogComponent
   });
 
   readonly filteredClients = computed(() => {
-    const search = this.search().trim().toLowerCase();
+    // Accents, case and extra spaces don't matter
+    const search = textKey(this.search());
     return this.clients().filter(
       (client) =>
-        client.name.toLowerCase().includes(search) ||
-        client.email.toLowerCase().includes(search)
+        textKey(client.name).includes(search) ||
+        textKey(client.email).includes(search)
     );
   });
 
@@ -99,6 +94,10 @@ export class ChooseUserDialogComponent
   // Shows every client again when the panel reopens on a picked one
   onClientPicked() {
     this.search.set("");
+  }
+
+  rent() {
+    this.dialogRef.close(this.selectedClient()?.id);
   }
 
   displayName(user: UserEntity | null): string {
