@@ -25,7 +25,9 @@ COPY packages/contracts packages/contracts
 COPY backend backend
 RUN yarn workspace @library/contracts build
 WORKDIR /app/backend
-RUN npx prisma generate && yarn build
+# Node sizes its heap from the machine's memory, without the swap: on a 2 GB
+# server the TypeScript build ran out of it, so it may grow into the swap
+RUN npx prisma generate && NODE_OPTIONS=--max-old-space-size=2048 yarn build
 
 # One-shot migration runner (docker-compose service `migrate-deploy`)
 FROM builder AS migrate

@@ -1,6 +1,18 @@
 {
   "$schema": "./node_modules/@angular/service-worker/config/schema.json",
   "index": "/index.html",
+  "navigationUrls": [
+    "/**",
+    "!/**/*.*",
+    "!/**/*__*",
+    "!/**/*__*/**",
+    "!/pgadmin4",
+    "!/pgadmin4/**",
+    "!/swagger",
+    "!/swagger/**",
+    "!/v1/**",
+    "!/check/**"
+  ],
   "assetGroups": [
     {
       "name": "app",

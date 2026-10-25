@@ -62,10 +62,13 @@ services:
     networks:
       - "nginx_network"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   postgres:
-    image: postgres:latest
+    # A major version, never latest: a new major can't read the old one's
+    # data without pg_upgrade
+    image: postgres:18
     restart: always
     # Not reachable from outside the server: the app uses the Docker
     # network, and admins can connect from the server or an SSH tunnel
@@ -76,9 +79,20 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - library-postgres:/var/lib/postgresql/data
+      # The parent of the data folder, as the image wants from 18 on (it
+      # keeps each major's data in a folder of its own, and refuses to start
+      # with a volume on /var/lib/postgresql/data)
+      - library-postgres:/var/lib/postgresql
     networks:
       - "nginx_network"
+    # Ready once it accepts connections over TCP (the first start runs a
+    # temporary server on the socket only), so the migrations and the API wait
+    # for it instead of failing on its first start
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   pgadmin:
     image: dpage/pgadmin4
@@ -107,7 +121,8 @@ services:
     networks:
       - "nginx_network"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
 networks:
   nginx_network:

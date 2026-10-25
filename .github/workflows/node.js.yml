@@ -39,16 +39,36 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Node.js ${{ matrix.node-version }}
+        id: node
         uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "yarn"
-          # The workspace's one lockfile: both jobs share the cache of its packages
-          cache-dependency-path: yarn.lock
 
-      # The workspace's one install, which also builds the contracts
-      - name: Install
+      # The workspace's node_modules (the root's, and what's nested in the
+      # apps and the contracts) as the lockfile and the exact Node version
+      # left them (their native parts are built for that version): the
+      # install is skipped while neither changes. Both jobs install the same
+      # workspace, so they share it
+      - name: Restore node_modules
+        id: modules
+        uses: actions/cache@v6
+        with:
+          path: |
+            node_modules
+            backend/node_modules
+            frontend/node_modules
+            packages/contracts/node_modules
+          key: modules-${{ runner.os }}-node${{ steps.node.outputs.node-version }}-${{ hashFiles('yarn.lock') }}
+      - name: Install dependencies
+        if: steps.modules.outputs.cache-hit != 'true'
         run: yarn install --frozen-lockfile
+      # Out of Git, and a hit skips the install that builds it
+      - name: Build the contracts
+        run: yarn contracts:build
+      # ESLint keeps its cache in node_modules: a restored copy may hold one,
+      # and CI lints without it
+      - name: Drop the lint caches
+        run: rm -rf backend/node_modules/.cache/eslint frontend/node_modules/.cache/eslint
 
       - name: Contracts
         working-directory: packages/contracts
@@ -59,7 +79,6 @@ jobs:
       - name: run yarn commands
         working-directory: backend
         run: |
-          CI=true
           yarn generate
           yarn test:migrate
           # Fails when prisma/schema has changes no migration creates
@@ -67,6 +86,8 @@ jobs:
           yarn build
           # SWC strips the types when the tests run, so check them here
           yarn typecheck
+          # Without a cache here, so it catches what a stale local one missed
+          yarn lint:check
           yarn test:cov
 
       # The tests never run the build output, so check that it starts
@@ -92,20 +113,48 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Node.js from .nvmrc
+        id: node
         uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: "yarn"
-          # The workspace's one lockfile: both jobs share the cache of its packages
-          cache-dependency-path: yarn.lock
 
-      - name: Install
+      # As in the backend job. The install's scripts (Prettier, the Git hook)
+      # aren't needed here, so skipping them on a hit loses nothing
+      - name: Restore node_modules
+        id: modules
+        uses: actions/cache@v6
+        with:
+          path: |
+            node_modules
+            backend/node_modules
+            frontend/node_modules
+            packages/contracts/node_modules
+          key: modules-${{ runner.os }}-node${{ steps.node.outputs.node-version }}-${{ hashFiles('yarn.lock') }}
+      - name: Install dependencies
+        if: steps.modules.outputs.cache-hit != 'true'
         run: yarn install --frozen-lockfile
+      # Out of Git, and a hit skips the install that builds it
+      - name: Build the contracts
+        run: yarn contracts:build
+      # ESLint keeps its cache in node_modules: a restored copy may hold one,
+      # and CI lints without it
+      - name: Drop the lint caches
+        run: rm -rf backend/node_modules/.cache/eslint frontend/node_modules/.cache/eslint
+
+      # Angular's build cache (on in CI too, angular.json), saved by every run
+      # and restored from the latest one with the same dependencies; GitHub
+      # drops the least recently used past its 10 GB
+      - name: Restore Angular's build cache
+        uses: actions/cache@v6
+        with:
+          path: frontend/.angular/cache
+          key: angular-${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
+          restore-keys: angular-${{ runner.os }}-${{ hashFiles('yarn.lock') }}-
 
       - name: Lint, test and build
         working-directory: frontend
         run: |
-          yarn lint
+          yarn lint:check
           yarn lint:styles
           yarn test --watch=false
           yarn build
@@ -160,12 +209,12 @@ jobs:
       - name: ⬆️ Push badges branch
         run: git push origin badges
 
-  # Deploys the tested commit: the server pulls it and rebuilds the stack
-  # (make dockerDeploy). Skipped until the repository's DEPLOY_HOST variable
-  # is set (README, "Deploying")
+  # Deploys the tested commit: the server's deploy hook (make serverHook) runs
+  # make dockerDeploy, which does nothing when that commit is already out.
+  # Skipped until the repository's DEPLOY_URL variable is set
   deploy:
     needs: [build, frontend]
-    if: github.event_name == 'push' && vars.DEPLOY_HOST != ''
+    if: github.event_name == 'push' && vars.DEPLOY_URL != ''
     runs-on: ubuntu-latest
     environment: production
     # One deploy at a time: a newer push waits rather than interrupting a build
@@ -177,18 +226,20 @@ jobs:
     permissions: {}
 
     steps:
-      - name: 🚀 Deploy over SSH
+      - name: 🚀 Deploy
         env:
-          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
-          TARGET: ${{ vars.DEPLOY_USER || 'ubuntu' }}@${{ vars.DEPLOY_HOST }}
-          # The clone's folder, relative to the user's home
-          DIR: ${{ vars.DEPLOY_PATH || github.event.repository.name }}
+          URL: ${{ vars.DEPLOY_URL }}
+          TOKEN: ${{ secrets.DEPLOY_TOKEN }}
         run: |
-          install -m 700 -d ~/.ssh
-          install -m 600 /dev/null ~/.ssh/deploy_key
-          echo "$SSH_KEY" > ~/.ssh/deploy_key
-          # Pinned host keys: the connection fails rather than trust a new one
-          echo "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          ssh -i ~/.ssh/deploy_key -o ServerAliveInterval=30 "$TARGET" \
-            "cd '$DIR' && make dockerDeploy REF=$GITHUB_SHA"
+          auth="Authorization: Bearer $TOKEN"
+          curl -fsS -X POST -H "$auth" "$URL/hooks/deploy?ref=$GITHUB_SHA"
+          echo
+          # Until it's done; nginx restarts during a deploy, so a failed
+          # check is tried again
+          while sleep 15; do
+            status=$(curl -fsS -H "$auth" "$URL/hooks/deploy/status") || continue
+            busy=$(echo "$status" | jq -r '.running or .queued != null')
+            [ "$busy" = "false" ] && break
+          done
+          echo "$status" | jq -r '.log'
+          [ "$(echo "$status" | jq -r '.result')" = "ok" ]

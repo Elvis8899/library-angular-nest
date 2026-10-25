@@ -8,29 +8,46 @@ services:
       - "3000:80"
     volumes:
       - ./nginx.dev.conf:/etc/nginx/nginx.conf
+    # nginx resolves every proxy_pass host when it starts and exits if one
+    # isn't there yet, so it waits for all of them
     depends_on:
       - app
       - frontend
-      - postgres
+      - grafana
+      - prometheus
+      - pgadmin
     environment:
       UPLOAD_FILE_SIZE_LIMIT: 20
 
+  # Installs the mounted workspace (both apps and the contracts' build) once,
+  # then exits; app and frontend start after it succeeds. Two installs taking
+  # turns through yarn's --mutex failed when the lock's refresh fell behind
+  install:
+    image: node:24-slim
+    working_dir: /usr/src/app
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    environment:
+      YARN_CACHE_FOLDER: /usr/src/app/.yarn-cache
+      # No Git in the image to install the hook with
+      HUSKY: "0"
+    volumes:
+      - ..:/usr/src/app
+    command: yarn install --frozen-lockfile
+
   # Angular dev server, served by nginx at /. The browser calls /v1 on the
   # same origin, so nginx sends those to the API and proxy.conf.json is unused
-  # Both containers mount the whole workspace and install it on start; the
-  # mutex makes the second wait for the first
   frontend:
     image: node:24-slim
     working_dir: /usr/src/app/frontend
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     environment:
-      YARN_CACHE_FOLDER: /usr/src/app/.yarn-cache
       NG_CLI_ANALYTICS: "false"
-      # No Git in the image to install the hook with
-      HUSKY: "0"
     volumes:
       - ..:/usr/src/app
-    command: sh -c "yarn install --frozen-lockfile --mutex file:/usr/src/app/.yarn-mutex && yarn ng serve --host 0.0.0.0 --port 4200"
+    command: yarn ng serve --host 0.0.0.0 --port 4200
+    depends_on:
+      install:
+        condition: service_completed_successfully
 
   app:
     build:
@@ -41,9 +58,6 @@ services:
     # (node_modules, dist, migrations) are not owned by root. The default
     # matches the image's node user; set HOST_UID/HOST_GID if yours differ.
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
-    environment:
-      YARN_CACHE_FOLDER: /usr/src/app/.yarn-cache
-      HUSKY: "0"
     # Uncomment this line in case you are in M1
     # platform: linux/amd64
     volumes:
@@ -51,7 +65,10 @@ services:
     # ports:
     #   - "3000:3000"
     depends_on:
-      - postgres
+      install:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_started
 
   postgres:
     image: postgres:latest

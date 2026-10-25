@@ -49,6 +49,7 @@ owner="${SUDO_USER:-root}"
 if [ ! -f .docker/.env ]; then
   sed -e "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -hex 32)|" \
     -e "s|^PGADMIN_PASSWORD=.*|PGADMIN_PASSWORD=$(openssl rand -hex 16)|" \
+    -e "s|^DEPLOY_TOKEN=.*|DEPLOY_TOKEN=$(openssl rand -hex 32)|" \
     .docker/.env.example > .docker/.env
   chmod 600 .docker/.env
   chown "$owner" .docker/.env
