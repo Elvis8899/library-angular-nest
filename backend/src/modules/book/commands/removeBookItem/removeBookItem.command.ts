@@ -2,12 +2,12 @@ import { Resource } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import {
   availableBookItemNotFoundException,
-  bookInfoNotFoundException,
+  bookItemNotFoundException,
 } from "@modules/book/domain/bookInfo.errors";
 import { ensureAvailable } from "@modules/book/domain/bookItem.entity";
 import { bookItemRemoved } from "@modules/book/domain/events/bookItemRemoved.event";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
+import { inputsRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
 import {
@@ -37,21 +37,19 @@ export class RemoveBookItemHandler implements ICommandHandler<
       command.props,
       FPF.pipe(
         //Data validation
-        command.props,
-        fromInputRE(UUID, "id"),
-        RTE.fromReaderEither,
+        inputsRTE({ id: [UUID, "id", command.props] }),
 
         //Validate BookItem exists and is available
-        RTE.chain(
+        RTE.chain(({ id }) =>
           findOrFailRTE(
             this.bookInfoRepository.findBookItemById,
             "get bookItem by id",
-            bookInfoNotFoundException,
-          ),
+            bookItemNotFoundException,
+          )(id),
         ),
         RTE.chainEitherK(ensureAvailable(availableBookItemNotFoundException)),
 
-        //Delete entity
+        //Delete entity, refused if it was rented meanwhile
         RTE.tap((bookItem) =>
           performRTE(
             this.bookInfoRepository.deleteBookItem,

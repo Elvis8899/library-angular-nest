@@ -8,7 +8,7 @@ import { bookRentalNotFoundException } from "@modules/rental/domain/bookRental.e
 import { bookReturned } from "@modules/rental/domain/events/bookReturned.event";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { Clock } from "@shared/clock/clock";
-import { fromInputRE } from "@shared/utils/application/fromInput";
+import { inputsRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
 import {
@@ -46,17 +46,15 @@ export class ReturnBookCommandHandler implements ICommandHandler<
       command.bookRentalId,
       FPF.pipe(
         //Data validation
-        command.bookRentalId,
-        fromInputRE(UUID, "uuid"),
-        RTE.fromReaderEither,
+        inputsRTE({ id: [UUID, "id", command.bookRentalId] }),
 
         //Validate BookRental exists and belongs to the requester
-        RTE.chain(
+        RTE.chain(({ id }) =>
           findOrFailRTE(
             this.bookRentalRepository.findById,
             "get book rental by id",
             bookRentalNotFoundException,
-          ),
+          )(id),
         ),
         RTE.chainEitherK(ensureOwnedBy(command.ownerId)),
 

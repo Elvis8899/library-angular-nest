@@ -1,4 +1,4 @@
-import { RentalStatus } from "@library/contracts";
+import { RentalStatus, RentBookRequest } from "@library/contracts";
 import {
   BookItem,
   ensureAvailable,
@@ -59,6 +59,25 @@ export type BookRental = z.infer<typeof BookRental>;
 // Due at the end of the day, the loan's days after it was rented
 export const dueDateOf = (rentedAt: Date): Date =>
   new Date(endOfDay(rentedAt).getTime() + rentalPolicy.loanDays * DAY_MS);
+
+/** A rental as a request asks for it: which copy, for whom. */
+export const RentalInput = RentBookRequest;
+export type RentalInput = z.output<typeof RentBookRequest>;
+
+/** A new rental of a copy, due the loan's days after `now`. */
+export const newRental = (
+  id: UUID,
+  { bookItemId, userId }: RentalInput,
+  now: Date,
+): BookRental => ({
+  id,
+  bookItemId,
+  userId,
+  rentalStatus: RentalStatusEnum.Rented,
+  overdueDate: dueDateOf(now),
+  createdAt: now,
+  updatedAt: now,
+});
 
 // The rules below decide from what was read. The repository's `rent` and
 // `finish` check again in one conditional write, for changes made meanwhile.

@@ -1,10 +1,14 @@
 import { BookInfoRequest, Created, Resource, Sent } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
-import { BookInfo } from "@modules/book/domain/bookInfo.entity";
+import {
+  BookDetails,
+  registerBook,
+} from "@modules/book/domain/bookInfo.entity";
 import { bookInfoCreated } from "@modules/book/domain/events/bookInfoCreated.event";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
-import { FPF, RE, RTE } from "@shared/utils/application/monads";
+import { Clock } from "@shared/clock/clock";
+import { inputsRTE } from "@shared/utils/application/fromInput";
+import { FPF, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
 import {
   changedRTE,
@@ -25,6 +29,7 @@ export class CreateBookInfoHandler implements ICommandHandler<
 > {
   constructor(
     private readonly useCase: UseCase,
+    private readonly clock: Clock,
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly bookInfoRepository: BookInfoRepository,
   ) {}
@@ -35,12 +40,13 @@ export class CreateBookInfoHandler implements ICommandHandler<
       command.props,
       FPF.pipe(
         //Data validation
-        RE.of(command.props),
-        RE.bind("id", () =>
-          fromInputRE(UUID, "uuid")(this.uuidGeneratorService.generateUUID()),
-        ),
-        RE.chain(fromInputRE(BookInfo, "BookInfo")),
-        RTE.fromReaderEither,
+        inputsRTE({
+          id: [UUID, "uuid", this.uuidGeneratorService.generateUUID()],
+          input: [BookDetails, "BookInfo", command.props],
+        }),
+
+        //Build the book
+        RTE.map(({ id, input }) => registerBook(id, input, this.clock.now())),
 
         //Store entity
         RTE.tap(

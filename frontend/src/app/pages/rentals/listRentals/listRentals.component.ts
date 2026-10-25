@@ -26,6 +26,7 @@ import {
 import { injectCurrentLocale } from "@app/shared/i18n/currentLocale";
 import { MoneyPipe } from "@app/shared/pipes/number.pipes";
 import { moneyFormat } from "@app/shared/utils/numberFormat.utility";
+import { injectSaving } from "@app/shared/utils/saving.utility";
 import { injectIsSmallScreen } from "@app/shared/utils/smallScreen.utility";
 import { TranslatePipe } from "@ngx-translate/core";
 import { filter } from "rxjs";
@@ -58,6 +59,8 @@ export class ListRentalsComponent implements OnInit {
   readonly rowContext = templateContext<{ $implicit: BookRentalEntity }>();
 
   readonly locale = injectCurrentLocale();
+  // A return's request, one at a time, with the API's message on a failure
+  readonly saving = injectSaving(log);
   readonly isSmallScreen = injectIsSmallScreen();
   // Small screens leave out when the book was rented, and show the fine
   // under the due date
@@ -118,15 +121,9 @@ export class ListRentalsComponent implements OnInit {
       })
       .pipe(filter(Boolean))
       .subscribe(() =>
-        this._rentalService.returnBook(rental.id).subscribe({
-          next: () => {
-            this._notify.success("rentals.return.done");
-            this.refresh();
-          },
-          error: (error: Error) => {
-            this._notify.errorMessage(error?.message);
-            log.error(error);
-          },
+        this.saving.run(this._rentalService.returnBook(rental.id), () => {
+          this._notify.success("rentals.return.done");
+          this.refresh();
         })
       );
   }

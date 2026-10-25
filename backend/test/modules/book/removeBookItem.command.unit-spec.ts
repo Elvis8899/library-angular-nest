@@ -2,12 +2,14 @@ import {
   RemoveBookItem,
   RemoveBookItemHandler,
 } from "@modules/book/commands/removeBookItem/removeBookItem.command";
-import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
+import { FakeBookInfoRepository } from "@modules/book/database/fakeBookInfo.repository";
 import {
   AvailableBookItemNotFoundException,
-  BookInfoNotFoundException,
+  BookItemNotFoundException,
 } from "@modules/book/domain/bookInfo.errors";
 import { BookItemStatus } from "@modules/book/domain/bookItem.entity";
+import { BOOK_ITEM_REMOVED } from "@modules/book/domain/events/bookItemRemoved.event";
+import { UnprocessableEntityException } from "@nestjs/common";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
 import {
   Resource,
@@ -19,122 +21,71 @@ import { seedBook } from "@test/modules/book/createBook";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
 
-//Adapters
-
-describe("[Unit] Delete BookInfo", () => {
+describe("[Unit] Remove BookItem", () => {
   const ctx = useHandlerModule(
     { providers: [RemoveBookItemHandler] },
     (get) => ({
-      bookInfoRepository: get(BookInfoRepository),
-      removeBookItemHandler: get(RemoveBookItemHandler),
-      eventModule: get(DomainEventPublisher),
+      books: get(FakeBookInfoRepository),
+      handler: get(RemoveBookItemHandler),
+      events: get(DomainEventPublisher),
     }),
   );
-
-  it("Should delete bookInfo if id is valid", async () => {
-    //Given a valid id
-
-    const bookInfo = new BookInfoBuilder().build();
-    await seedBook(ctx.bookInfoRepository, bookInfo);
-    const id = createTestId(TableNameEnum.BookItem, 0);
-
-    //When we delete a bookInfo
-    const resultPromise = ctx.removeBookItemHandler.execute(
-      new RemoveBookItem(id),
+  const copyId = createTestId(TableNameEnum.BookItem, 0);
+  const copies = async () =>
+    (await executeTask(ctx.books.findAll())).flatMap(({ bookItems }) =>
+      bookItems.map(({ id }) => id),
     );
-    //Then it should have deleted a bookInfo
-    await expect(resultPromise).resolves.toBe(undefined);
-    const bookInfos = await executeTask(ctx.bookInfoRepository.findAll());
-    expect(bookInfos.length).toEqual(1);
-    expect(bookInfos[0]?.bookItems.length).toEqual(0);
-  });
 
-  it("Should not delete bookInfo if it is not available", async () => {
-    //Given a valid id
+  it("Should remove a copy on the shelf, then publish its event and the books' reload", async () => {
+    await seedBook(ctx.books, new BookInfoBuilder().build());
+    const spy = vi.spyOn(ctx.events, "publishEvent");
 
-    const bookInfo = new BookInfoBuilder()
-      .withBookItems([
-        {
-          id: createTestId(TableNameEnum.BookItem, 0),
-          status: BookItemStatus.Rented,
-          bookId: createTestId(TableNameEnum.BookInfo, 0),
-        },
-      ])
-      .build();
-    await seedBook(ctx.bookInfoRepository, bookInfo);
-    const id = createTestId(TableNameEnum.BookItem, 0);
+    await ctx.handler.execute(new RemoveBookItem(copyId));
 
-    //When we delete a bookInfo
-    const resultPromise = ctx.removeBookItemHandler.execute(
-      new RemoveBookItem(id),
-    );
-    //Then it should have deleted a bookInfo
-    await expect(resultPromise).rejects.toBeInstanceOf(
-      AvailableBookItemNotFoundException,
-    );
-    const bookInfos = await executeTask(ctx.bookInfoRepository.findAll());
-    expect(bookInfos.length).toEqual(1);
-    expect(bookInfos[0]?.bookItems.length).toEqual(1);
-  });
-
-  it("Should not delete bookInfo if id doesnt exists", async () => {
-    //Given a valid id
-
-    const bookInfo = new BookInfoBuilder().build();
-    await seedBook(ctx.bookInfoRepository, bookInfo);
-    const newId = createTestId(TableNameEnum.None, 0);
-
-    //When we delete a bookInfo
-    const resultPromise = ctx.removeBookItemHandler.execute(
-      new RemoveBookItem(newId),
-    );
-    //Then it should not have deleted a bookInfo
-    await expect(resultPromise).rejects.toBeInstanceOf(
-      BookInfoNotFoundException,
-    );
-    const bookInfos = await executeTask(ctx.bookInfoRepository.findAll());
-    expect(bookInfos.length).toEqual(1);
-  });
-
-  it("Should emit domain event when bookInfo is deleted", async () => {
-    //Given a bookInfo
-
-    const spy = vi.spyOn(ctx.eventModule, "publishEvent");
-
-    const bookInfo = new BookInfoBuilder().build();
-    await seedBook(ctx.bookInfoRepository, bookInfo);
-    const id = createTestId(TableNameEnum.BookItem, 0);
-
-    //When we delete a bookInfo
-    await ctx.removeBookItemHandler.execute(new RemoveBookItem(id));
-
-    //Then it should have deleted a bookInfo and emitted an event
-    // Its event, then the screens' reload
-    expect(spy).toHaveBeenCalledTimes(2);
+    expect(await copies()).toEqual([]);
     expect(
-      spy.mock.calls.slice(1).map(([event]) => ({
-        resource: event.eventKey === RESOURCE_CHANGED && event.payload.resource,
-      })),
-    ).toEqual([{ resource: Resource.Books }]);
+      spy.mock.calls.map(([event]) =>
+        event.eventKey === RESOURCE_CHANGED
+          ? event.payload.resource
+          : event.eventKey,
+      ),
+    ).toEqual([BOOK_ITEM_REMOVED, Resource.Books]);
   });
 
-  it("Should not emit domain event when bookInfo is not deleted", async () => {
-    //Given a bookInfo
-
-    const spy = vi.spyOn(ctx.eventModule, "publishEvent");
-
-    const bookInfo = new BookInfoBuilder().build();
-    await seedBook(ctx.bookInfoRepository, bookInfo);
-
-    const newId = createTestId(TableNameEnum.None, 0);
-    //When we delete a bookInfo
-    const resultPromise = ctx.removeBookItemHandler.execute(
-      new RemoveBookItem(newId),
+  it("Should refuse with 404 book.noAvailableCopy a rented copy, keeping it", async () => {
+    await seedBook(
+      ctx.books,
+      new BookInfoBuilder()
+        .withBookItems([
+          {
+            id: copyId,
+            status: BookItemStatus.Rented,
+            bookId: createTestId(TableNameEnum.BookInfo, 0),
+          },
+        ])
+        .build(),
     );
-    await expect(resultPromise).rejects.toBeInstanceOf(
-      BookInfoNotFoundException,
-    );
-    //Then it should have deleted a bookInfo and emitted an event
-    expect(spy).toHaveBeenCalledTimes(0);
+
+    await expect(
+      ctx.handler.execute(new RemoveBookItem(copyId)),
+    ).rejects.toBeInstanceOf(AvailableBookItemNotFoundException);
+    expect(await copies()).toEqual([copyId]);
+  });
+
+  it("Should refuse with 404 book.copyNotFound a copy that isn't there, and 422 an invalid id, publishing nothing", async () => {
+    await seedBook(ctx.books, new BookInfoBuilder().build());
+    const spy = vi.spyOn(ctx.events, "publishEvent");
+
+    await expect(
+      ctx.handler.execute(
+        new RemoveBookItem(createTestId(TableNameEnum.BookItem, 9)),
+      ),
+    ).rejects.toBeInstanceOf(BookItemNotFoundException);
+    await expect(
+      ctx.handler.execute(new RemoveBookItem("x")),
+    ).rejects.toBeInstanceOf(UnprocessableEntityException);
+
+    expect(await copies()).toEqual([copyId]);
+    expect(spy).not.toHaveBeenCalled();
   });
 });

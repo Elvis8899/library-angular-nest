@@ -1,4 +1,4 @@
-import { BookItemStatus } from "@library/contracts";
+import { BookItemRequest, BookItemStatus } from "@library/contracts";
 import { E } from "@shared/utils/application/monads";
 import { BaseDateEntity } from "@shared/utils/domain/dateEntity.base";
 import { UUID } from "@shared/uuid/uuid";
@@ -23,3 +23,20 @@ export const ensureAvailable =
     bookItem.status === BookItemStatus.Available
       ? E.right(bookItem)
       : E.left(onUnavailable());
+
+/** A new copy as a request asks for it: which book, and its status. */
+export const BookItemInput = BookItemRequest;
+export type BookItemInput = z.output<typeof BookItemRequest>;
+
+/** A new copy of a book, on the shelf unless the request says otherwise. */
+export const newBookItem = (
+  id: UUID,
+  { bookId, status }: BookItemInput,
+  now: Date,
+): BookItem => ({
+  id,
+  bookId,
+  status: status ?? BookItemStatus.Available,
+  createdAt: now,
+  updatedAt: now,
+});

@@ -6,7 +6,7 @@ import { bookInfoDeleted } from "@modules/book/domain/events/bookInfoDeleted.eve
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { FileStorage } from "@shared/storage/fileStorage";
 import { removeUnusedRTE } from "@shared/storage/storedFiles";
-import { fromInputRE } from "@shared/utils/application/fromInput";
+import { inputsRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
 import {
@@ -37,17 +37,15 @@ export class DeleteBookInfoHandler implements ICommandHandler<
       command.props,
       FPF.pipe(
         //Data validation
-        command.props,
-        fromInputRE(UUID, "id"),
-        RTE.fromReaderEither,
+        inputsRTE({ id: [UUID, "id", command.props] }),
 
         //Validate BookInfo exists
-        RTE.chain(
+        RTE.chain(({ id }) =>
           findOrFailRTE(
             this.bookInfoRepository.findById,
             "get bookInfo by id",
             bookInfoNotFoundException,
-          ),
+          )(id),
         ),
 
         //Delete entity

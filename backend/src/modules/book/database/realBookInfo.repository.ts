@@ -8,8 +8,11 @@ import {
   priceToCents,
 } from "@modules/book/database/priceColumn";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
-import { bookCoverChangedException } from "@modules/book/domain/bookInfo.errors";
-import { BookItem } from "@modules/book/domain/bookItem.entity";
+import {
+  availableBookItemNotFoundException,
+  bookCoverChangedException,
+} from "@modules/book/domain/bookInfo.errors";
+import { BookItem, BookItemStatus } from "@modules/book/domain/bookItem.entity";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@shared/prisma/prisma.service";
 import { E, FPF, TE } from "@shared/utils/application/monads";
@@ -115,5 +118,14 @@ export class RealBookInfoRepository implements BookInfoRepository {
     FPF.pipe(this.bookItems.create({ data: bookItem }), TE.asUnit);
 
   deleteBookItem = (bookItemId: string): TE.TaskEither<Error, void> =>
-    FPF.pipe(this.bookItems.delete({ where: { id: bookItemId } }), TE.asUnit);
+    FPF.pipe(
+      this.bookItems.deleteMany({
+        where: { id: bookItemId, status: BookItemStatus.Available },
+      }),
+      TE.chainEitherK(({ count }) =>
+        count === 0
+          ? E.left(availableBookItemNotFoundException())
+          : E.right(undefined),
+      ),
+    );
 }
