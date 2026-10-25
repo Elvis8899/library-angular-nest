@@ -1,228 +1,126 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code working in this repository.
 
 ## Overview
 
-Library management system (book lending) for a Brazilian audience: UI text, API docs (Swagger tags/summaries) and error messages are in Portuguese. A Yarn 1 workspace: one root `package.json` and `yarn.lock`, with two apps and the package they share.
+A library (book lending) app for Brazilian users: UI text, Swagger docs and error messages are in Portuguese. A Yarn 1 workspace (one root `package.json` and `yarn.lock`):
 
-- `backend/` — NestJS 12 on Fastify, Prisma 7 + PostgreSQL, Zod, fp-ts, JWT auth.
-- `frontend/` — Angular 22 (standalone components), Angular Material, ngx-translate (pt-BR, en-US), Vitest via `@angular/build:unit-test` on happy-dom.
-- `packages/contracts/` — `@library/contracts`: what travels over HTTP (Zod schemas, enums) and the rules both apps apply; see "Contracts".
+- `backend/`: NestJS 12 on Fastify, Prisma 7 + PostgreSQL, Zod, fp-ts, JWT auth.
+- `frontend/`: Angular 22 (standalone, zoneless), Angular Material, ngx-translate (pt-BR, en-US), Vitest on happy-dom.
+- `packages/contracts/`: `@library/contracts`, what travels over HTTP (Zod schemas, enums) and the rules both apps apply.
 
-The repository is also a seed for other projects. `shared`, `auth`, `user` and `audit` (backend) and `auth`, `home`, `users`, `audit` (frontend pages) are the core; `book` and `rental` (`books`, `rentals` pages) are the lending example. Everything the example owns lives in its own folders; the few lines it needs in core files are marked with a `Lending example` comment, so `git grep -i "lending example"` lists them (README, "Starting a new project"). Keep that true: example code doesn't go into core files unmarked, and core code and specs don't use the example (core specs use user routes and keys). The project's name is in the places the README lists under "Rename"; the backend's is `src/app.info.ts`.
+TypeScript 6.0 (Angular and typescript-eslint don't support 7 yet); Node 24 (`.nvmrc`; run `source ~/.nvm/nvm.sh && nvm use` first).
 
-Both use TypeScript 6.0. TypeScript 7 isn't supported by Angular or typescript-eslint yet.
-
-Both apps run on Node 24 (`.nvmrc` in each); the backend Docker images and CI use it too. The frontend needs at least Node 22.22.3 or 24.15.
+The repository is also a seed. `shared`, `auth`, `user` and `audit` (backend) and the `auth`, `home`, `users` and `audit` pages are the **core**; `book` and `rental` (`books`, `rentals` pages) are the **lending example**. The example lives in its own folders; the few lines it needs in core files carry a `Lending example` comment (`git grep -i "lending example"` lists them). Keep it that way: no unmarked example code in core files, and core code and specs never use the example. The example follows the core's patterns, so it can be copied.
 
 ## Commands
 
-### Workspace (repo root)
-
 ```bash
-yarn install                  # both apps and the contracts; builds the contracts and installs the Git pre-commit hook
-yarn contracts:watch          # rebuilds the contracts while you edit them (the apps import the build)
-yarn build                    # the contracts, then both apps
-yarn lint                     # both apps, fixing; yarn lint:check only reports (Stylelint too)
-yarn typecheck                # the contracts' build and the backend's tsc
-yarn test                     # every suite with its coverage, one after another
-```
+# Repo root
+yarn install                  # everything; builds the contracts, installs the pre-commit hook (Prettier on staged frontend files)
+yarn contracts:watch          # rebuild the contracts while editing them (the apps import the build)
+yarn build | yarn lint | yarn lint:check | yarn typecheck | yarn test   # all packages
 
-Each runs the packages' own scripts, which stay the ones CI, Docker and the per-module loops use.
-
-### Backend (`cd backend`)
-
-Tests need Postgres and the file storage (SeaweedFS, S3-compatible, on `localhost:8333`). Start both from the dev compose file, then apply migrations to the `library-test` database. `yarn test:docker:up` does both in one step, but it resets the test database and reseeds it.
-
-```bash
-docker compose -f ../.docker/docker-compose-dev.yml up postgres storage -d
-yarn test:migrate             # prisma migrate deploy against .env.test
-
-yarn start:dev                # watch mode, port 3000, Swagger at /swagger
-yarn build                    # output is dist/src/main.js (rootDir is the project root); run with yarn start:prod
-yarn build:unchecked          # the same output with SWC, without the type check (the Docker image; under a second)
-yarn lint                     # ESLint --fix (cached); yarn lint:check only reports
-yarn lint:changed             # lint:check of the .ts files changed since the last commit (new ones too)
-yarn typecheck                # tsc --noEmit over src and test; the tests themselves don't check types (CI runs it)
-yarn test:unit                # *.unit-spec.ts
-yarn test:inte                # *.inte-spec.ts (real Prisma repositories)
-yarn test:e2e                 # *.e2e-spec.ts (full AppModule + supertest)
-yarn test:cov                 # everything; enforces 100% statements/branches/functions/lines (CI runs this)
-yarn test:module <module>     # test/modules/<module> with coverage of src/modules/<module> only (a quick loop; misses what other modules' specs cover)
-
-# Single file / single test: run Vitest without --coverage. The scripts enforce coverage thresholds that fail on partial runs.
-npx env-cmd -f .env.test vitest run test/modules/user/document.unit-spec.ts
-npx env-cmd -f .env.test vitest run -t "test name" <file>
-yarn test:watch               # watch mode
-
-yarn migrate                  # prisma migrate dev (new migration)
-yarn migrate:check            # fails if prisma/schema differs from the migrated test database (CI runs it)
-yarn seed                     # prisma db seed; skips a database that already has users or books
-yarn generate                 # prisma generate; Prisma 7 doesn't on install or migrate, so run it after either
+# backend/ — tests need Postgres and SeaweedFS: docker compose -f ../.docker/docker-compose-dev.yml up postgres storage -d
+yarn test:migrate             # migrate the library-test database (yarn test:docker:up also resets and reseeds it)
+yarn start:dev                # :3000, Swagger at /swagger
+yarn test:cov                 # every suite, 100% coverage required (CI)
+yarn test:module <module>     # one module's specs and coverage (quick loop)
+npx env-cmd -f .env.test vitest run <file> [-t "name"]   # single file/test, no coverage
+yarn lint:changed             # lint:check of files changed since the last commit
+yarn migrate --name <change>  # new migration; then yarn generate (Prisma 7 doesn't generate on migrate)
+yarn migrate:check            # schema vs migrated test database (CI)
 yarn scaffold <module> <useCase> command|query [--route r] [--fields "name:string,qty?:int"] [--method m] [--guard roles|auth] [--spec unit|e2e|none]
-                              # a use case's files (scripts/scaffold/): handler, controller, contract and input, spec; registered in the module
+
+# frontend/
+yarn start                    # :4200, proxies /v1 to :3000
+yarn test                     # 100% coverage required
+yarn test:module <page>       # one pages/<page> folder
+yarn lint:changed | yarn lint:styles
 ```
 
-The app refuses to start unless `JWT_SECRET_KEY` and `JWT_REFRESH_SECRET` are set and at least 32 characters long (`src/modules/auth/auth.config.ts`), and without the `S3_*` settings of a reachable storage (it creates a missing bucket). `.env.test` contains test values. `make dockerDev` (from the repo root) starts the dev stack behind nginx on `localhost:3000`: the frontend dev server at `/`, the API at `/v1` and `/swagger`, plus Postgres, the file storage, pgAdmin, Prometheus and Grafana. Prometheus scrapes the API at `app:9464`; Grafana comes with its data source and the `.docker/grafana/dashboards/` JSON (edit the file, not the UI). The dev Docker entrypoint copies `.env.example` to `.env.dev`. The dev `app` and `frontend` containers mount the whole repository, start once its `install` service has installed the workspace, and run as uid/gid 1000 so files they write to the mounted source folder aren't root-owned; set `HOST_UID`/`HOST_GID` if yours differ. nginx waits for every service it proxies to, since it exits on a host it can't resolve.
+`make dockerDev` runs the whole dev stack behind nginx on `localhost:3000`. The API won't start without `JWT_SECRET_KEY`/`JWT_REFRESH_SECRET` (32+ characters) and the `S3_*` settings of a reachable storage; `.env.test` has test values.
 
-### Frontend (`cd frontend`, Node 24)
+While working, check with `lint:changed` and `test:module` (they only report). Once at the end: `yarn lint` (fixes), `yarn typecheck`, then the full suites, since a module's run misses what other modules' specs cover.
 
-```bash
-yarn start                    # ng serve on :4200, proxies /v1 to localhost:3000 (proxy.conf.json)
-yarn build
-yarn build:unchecked          # the same output without the type and template checks (the Docker image)
-yarn lint                     # ng lint --fix; yarn lint:check only reports (CI runs it)
-yarn lint:changed             # lint:check of the .ts/.html files changed since the last commit
-yarn lint:styles              # stylelint on src/**/*.scss (CI runs it)
-yarn test                     # ng test: Vitest with coverage, 100% thresholds (angular.json)
-yarn test:module <page>       # one src/app/pages/<page> folder's specs (plus pages.routes.spec.ts), coverage of that folder only
-npx ng test --watch=false --coverage=false --include src/app/services/authentication.service.spec.ts
-```
+## Conventions (lint enforces them)
 
-The root `yarn install` also installs the Git pre-commit hook (Husky, `core.hooksPath` = `frontend/.husky/_`), which runs Prettier on staged frontend files.
+- No relative imports. Aliases: backend `@src/ @test/ @shared/ @modules/ @db/ @scripts/` (defined in both `tsconfig.json` and `vitest.config.mts`); frontend `@app/ @shared/ @pages/ @env/`; `@library/contracts` in both.
+- File and folder names camelCase with a role suffix (`createUser.command.ts`), except locale files and migrations.
+- No `as` in the backend (`as const` is fine): type precisely or parse with Zod; a needed cast is `FPF.unsafeCoerce`.
+- Prettier with organize-imports, double quotes.
 
-## Conventions enforced by lint
+## Backend
 
-- **No relative imports** in either app (`no-restricted-imports` bans `./` and `../`). Use path aliases:
-  - backend: `@src/ @test/ @shared/ @modules/ @db/ @scripts/` (`@modules/user/…` is `src/modules/user/`, `@shared/` is `src/modules/shared/`, `@db/` is `prisma/`)
-  - frontend: `@app/ @shared/ @pages/ @env/`
-  - the contracts: `@library/contracts` in both
-- **File and folder names are camelCase** in both apps, plus a role suffix (`createUser.command.ts`, `customizedTable.component.ts`, `bookRental.repository.port.ts`). `eslint-plugin-check-file` enforces this. The exceptions are the frontend locale files (`en-US.ts`, `pt-BR.ts`) and Prisma migrations. Selectors and CSS classes stay kebab-case.
-- Backend aliases are defined in both `tsconfig.json` and `vitest.config.mts` (`resolve.alias`). A new alias has to be added to both; a new module needs none, since `@modules/` covers it.
-- **No `as` type assertions** in the backend (`consistent-type-assertions`; `as const` is allowed). Prefer a precise type, or parsing with Zod (the e2e tests parse response bodies with the schemas in `test/util/responseBodies.ts`). A cast that's really needed goes through `FPF.unsafeCoerce`, imported from `monads.ts` like the rest of fp-ts.
-- Prettier with organize-imports runs on format. Double quotes.
+### Modules
 
-## Backend architecture
+Each module under `src/modules/` is hexagonal/CQRS: `commands/<name>/` and `queries/<name>/` (handler + one controller each), `domain/` (Zod entities, their rules, errors, events), `database/` (port as abstract class, `real<X>` Prisma repository, `fake<X>` in-memory). Modules use another module's entity, port or exported providers, never its handlers.
 
-### Module layout
+### Handlers
 
-Each feature module (`user`, `book`, `rental`, `auth`) under `src/modules/` is laid out as hexagonal/CQRS. Modules use another module's entity, repository port or exported providers, not its handlers (`auth` gets `UserRepository` by importing `UserModule`, which exports it):
+`execute` is `return this.useCase.run("Name", input, FPF.pipe(…))`. `input` is logged and, for commands, kept in the audit: name the record's `id` in it and leave out passwords, tokens and file bytes. The pipeline:
 
-```
-commands/<name>/<name>.command.ts      # ICommand + @CommandHandler (writes)
-commands/<name>/<name>.controller.ts   # one controller per use case; dispatches via CommandBus
-queries/<name>/<name>.query.ts|controller.ts   # reads via QueryBus
-domain/          # Zod schemas = entities/value objects (type and validator share a name), their rules, errors, events
-database/        # <x>.repository.port.ts (abstract class used as DI token), real<X>.repository.ts (Prisma), fake<X>.repository.ts (in-memory)
-```
+1. Open with `inputsRTE({ id: [UUID, "id", command.id], input: [XInput, "X", command.props] })`; inputs are the contract's request schemas (`BookDetails = BookInfoRequest`), plus rules only the backend checks.
+2. Look up with `findOrFailRTE(repo.findById, "get x by id", xNotFoundException)(id)` / `ensureAbsentRTE(…)`.
+3. Apply pure rules from the domain (`registerUser`, `changeBookDetails`, `newRental`, `startRental`). A rule that refuses returns `Either` (`RTE.chainEitherK`). "Now" is the injected `Clock`'s `now()`, passed into rules, never `new Date()`.
+4. Store with `performRTE(repo.save, "…")`. A rule concurrent requests could break is checked again by the repository's conditional write.
+5. End with `RTE.tap(publishRTE(xCreated))` and, when a screen shows it, `changedRTE({ resource, key? })`.
 
-Modules bind the port to the real repository (`{ provide: UserRepository, useClass: RealUserRepository }`). Unit tests bind the fake instead. Fakes extend `shared/utils/database/fakeRepository.base.ts`, and they count toward the 100% coverage threshold. A fake does what its Prisma repository does, refusals included (a unique key's `*Taken`, a conditional write's refusal, a missing row's error, what an update keeps), and each port's contract checks both (see Tests). A fake whose Prisma repository writes another module's rows in its transaction takes that module's fake and writes through it, after its own checks (`FakeBookRentalRepository` → `FakeBookInfoRepository`, which also reads through it, and through `FakeUserRepository`, what Prisma's include joins). Prisma repositories get their queries from `prismaTasks(() => this.prisma.<model>)` (`shared/utils/database/prismaTasks.ts`), which returns the delegate's methods as `TaskEither`s (`this.users.findMany({ where })`), the reads by id, ids, all and page from `rowReads(() => this.prisma.<model>, validator, { include, orderBy })` (`rowReads.ts`), and share `loadPage`, `validateRows` and `validateMaybeRow` from `shared/utils/database/rowValidation.ts`.
+Import fp-ts only from `shared/utils/application/monads.ts`.
 
-### Handlers are fp-ts pipelines
+Controllers open with `@ApiController("<tag>", ...guards)`, take the request type as `@Body()`, return `Promise<Sent<typeof X>>`, and document domain errors with `@ApiErrors(XNotFoundException, …)` and contracts with `contractRef(X)`. Query strings are contracts too: `@ApiQueryContract(X)`, typed `QueryString<typeof X>`. Restrict with `@UseGuards(RolesGuard)` + `@Roles(UserRoleEnum.Admin)`.
 
-Command and query handlers inject `UseCase` (`shared/utils/application/useCase.ts`, transient, provided by the global `UseCaseModule`) next to their repositories, and their `execute` is `return this.useCase.run("CreateUser", input, FPF.pipe(…))`. `run` sets the logger's context, logs the request with `input` (leave out passwords and tokens; `undefined` logs none), runs the `ReaderTaskEither<{ logger, events }, Error, T>` pipeline and returns the Promise Nest expects. Handlers don't inject `PinoLogger` or `DomainEventPublisher` themselves. The building blocks:
+### Errors
 
-- `shared/utils/application/monads.ts`: re-exports fp-ts modules under short names (`RTE`, `TE`, `RE`, `O`, `E`, `FPF`, …). Import from here, not from `fp-ts/*` directly.
-- `fromInputRE(schema, name)`: Zod validation. A failure becomes `UnprocessableEntityException` (422). A handler with several inputs opens with `inputsRTE({ id: [UUID, "id", command.id], input: [UserChangesInput, "user", command.props] })`, each parsed with `fromInputRE`, the first that fails being the error.
-- `performRTE(repoFn, "description")`: wraps a repository `TaskEither` call and logs success or failure with the description.
-- Repositories return `TaskEither<Error, …>`. Lookups return `Option`: `findOrFailRTE(repo.findById, "get user by id", userNotFoundException)(id)` (in `perform.ts`) fails when nothing is found, and `ensureAbsentRTE(repo.findByCPF, "get user by cpf", userCPFAlreadyExistsException, conflicts?)` when something is (uniqueness checks; `conflicts` lets an update skip its own row).
-- `publishRTE(userCreated)`, the step that ends a command: `RTE.tap(publishRTE(userCreated))` builds the event from the pipeline's value with the factory next to the event's schema and publishes it (a factory may build several, published in order).
-- Business rules are pure functions next to their entity: `registerUser`, `changeUserDetails` and `endsSessions` in `user.entity.ts`, and (returning `Either`, called with `RTE.chainEitherK`) `startRental`, `finishRental`, `ensureOwnedBy` in `bookRental.entity.ts` and `ensureAvailable` in `bookItem.entity.ts`, so a rule is written once and unit-tested without Nest. A handler only looks data up, applies the rules and stores the result. A rule the database must also enforce against concurrent requests is checked again by the repository's conditional write (`rent`, `finish`).
-- Every run is timed with its outcome (`ok` or the domain error's kind) in `Metrics` (`shared/metrics/`), which also counts the HTTP requests by route pattern; `main.ts` serves them for Prometheus on `METRICS_PORT` (9464), a port nginx never proxies, so `/metrics` needs no token.
-- A command handler's run that succeeds also writes its `AuditEntry` (`shared/audit/`: who, the handler's name, the record its input names — `id`, or the id it is — or the id it returned, and the input itself), so `input` is what the audit keeps too: name the record's `id` in it and leave out passwords and tokens. The `audit` module lists them for Admin at `GET v1/audit` (the frontend's Auditoria page), with the users' names from `userNamesRTE(this.userRepository)(ids)`. Unit specs read them with `get(FakeAuditLog)`.
-- "Now" comes from the injected `Clock` (`shared/clock/`, `clock.now()`), never `new Date()` in a handler or rule: rules take it as an argument (`finishRental(now)`, `getRentalFines(now)`, `dueDateOf(rentedAt)`), and unit specs get `FakeClock`, stopped at 2026-10-21 12:00 UTC.
+`export class XNotFoundException extends domainError(DomainErrorKindEnum.NotFound, "x.notFound", "…") {}` plus a factory, in `domain/x.errors.ts`. `DomainErrorFilter` answers with the kind's status and the `code`. A new code goes in the contracts' `errorCodes` (`errors.ts`), gets a case in `<x>Errors.unit-spec.ts`, and needs its `errors.<code>` translation in both languages. A refusal that mustn't log the user out is a `Forbidden` domain error, never a guard (the frontend logs out on a 403 without a code).
 
-Controllers open with `@ApiController("<Swagger tag>", ...guards)` (`auth/decorators/apiController.decorator.ts`: `v1/`, the tag, the Bearer token and `AuthGuard` before the guards given; the public login and refresh keep their own `@Controller`), and document their domain errors with `@ApiErrors(UserNotFoundException, [UserCPFAlreadyExistsException, "a note"])` (`shared/utils/http/apiErrors.ts`), which reads each class's code and gives it its kind's status; guards' 403s and input-shape 422s stay hand-written `@Api…Response`s.
+### Events and live updates
 
-Domain errors know nothing of HTTP. Each is one class in `domain/*.errors.ts`, `export class UserCPFAlreadyExistsException extends domainError(DomainErrorKindEnum.Conflict, "user.cpfTaken", "…") {}` (`shared/utils/domain/shared.errors.ts`), with a small factory function (`userCPFAlreadyExistsException = () => new …()`, passing `{ details }` when the client needs data to act on). `DomainErrorFilter` (`shared/utils/http/domainError.filter.ts`, registered in `app.setup.ts`) answers a rejected task with the kind's status (not found 404, conflict 409, invalid 422 for input that breaks a business rule, unauthorized 401, forbidden 403, unknown 500) and Nest's usual body plus the `code` and any `details`; other errors, such as the 422 from `fromInputRE` and the guards' 401, stay Nest exceptions. A refusal the frontend shouldn't log out on is a `Forbidden` domain error, never a guard (it logs out on a 403 without a code). A new code goes in the contracts' `errorCodes` (`errors.ts`), with what it sends in `ErrorDetailsOf` when it sends details: `domainError` takes only listed codes and checks the details against them, and `contractErrorCodes.unit-spec.ts` fails on a listed code no error uses. Every code needs its frontend `errors.<code>` translation (`translationKeys.spec.ts` checks). A new kind needs its status in the filter.
+A new event goes in its module's `All*Events` tuple, or publishing fails validation. Subscribers (`@OnEvent`) dispatch commands. `changedRTE` reaches the browsers through `SocketGateway` (Socket.IO at `/v1/socket.io`); a new resource goes in the contracts' `Resource` and the frontend's `RESOURCE`.
 
-### Domain events
+### Consistency
 
-`DomainEventPublisher.publishEvent` validates the event against `DomainEvent`. That's a Zod discriminated union on `eventKey`, assembled in `shared/domainEventPublisher/domainEvent.ts` from each module's `domain/events/index.ts` (`AllUserEvents`, `AllBookInfoEvents`, `AllRentalEvents`). It then emits through `@nestjs/event-emitter` and waits for the subscribers (`emitAsync`), so what they do is done when the request answers; their errors are logged, not returned. Each event file also exports a factory that builds the event from its entity (`userCreated(user)`, `bookRented(rental)`), which handlers pass to `publishRTE`. **A new event schema has to be added to its module's `All*Events` tuple, or publishing fails validation.** Subscribers (`book/subscribers/`) use `@OnEvent` and dispatch commands. Every write command that changes what a screen shows ends with `RTE.tap(() => changedRTE({ resource, key? }, …))`, after its transaction; `SocketGateway` (`shared/socket/`, Socket.IO at `/v1/socket.io`, the access token checked in the handshake) relays it, without data, to the admins' room for their resources (`users`) and to everyone otherwise, and the frontend's `LiveUpdatesService.changes(RESOURCE.X)` reloads through REST. A new resource goes in the contracts' `Resource` (`liveUpdates.ts`, with the event's name, the socket's path and the change's shape) and gets its key in the frontend's `RESOURCE`.
+- A save touching several records is one `transactionTask(this.prisma, async (tx) => …)`; a conditional write is `ensureWritten(await tx.x.updateMany({ where: { id, …what was read } }), xChangedException)` or a `deleteMany`/`updateMany` whose count decides.
+- A fake does what its Prisma repository does, refusals and what a save keeps included; a fake whose Prisma repository writes another module's rows writes through that module's fake (`FakeBookRentalRepository` → `FakeBookInfoRepository`).
+- Files go through `FileStorage` (`shared/storage/`, a private S3 bucket): read uploads with `readUpload(request, maxBytes)`, take the type from the bytes (`fileTypeOf`), store the file before the row points to it (`removeUnsavedRTE` if the write fails, `removeUnusedRTE` for one nothing points to). Book covers are the model.
+- Money is reais to the centavo in the API (`Money`) and centavos in the database (`priceColumn.ts`).
+- User responses go through `toUserResponse`, so `password` and `tokenVersion` never leave.
 
-### Consistency rules
+### Database
 
-- A save that touches several records is one `transactionTask(this.prisma, async (tx) => …)` (`shared/utils/database/transaction.ts`; a domain error thrown inside passes through, anything else is a 500), and a conditional write is `ensureWritten(await tx.x.updateMany({ where: { id, …what was read } }), xChangedException)`.
-- Files go through `FileStorage` (`shared/storage/`): a private S3-compatible bucket (`S3FileStorage`; `FakeFileStorage` in unit specs), so the API serves each file after its own check and the frontend shows one with `<img [appAuthSrc]="path" [fallback]="…">` (`shared/directives/authSrc.directive.ts`: through HttpClient, so with the token). A route reads its upload with `readUpload(request, maxBytes)` (`shared/utils/http/upload.ts`, `@fastify/multipart`); the type comes from the bytes (`fileTypeOf`), never the name; the file is stored before its row points to it and removed if that write fails (`removeUnsavedRTE`), and one nothing points to any more is removed after (`removeUnusedRTE`, which only logs a failure). A book's cover (lending example) is the model: `PUT`/`DELETE v1/bookInfos/:id/cover` for Admin, `GET` for anyone logged in, each version under its own key and address (`coverPath`, cached for good), changed by a conditional write (409 `book.coverChanged`).
-- Renting and returning are atomic: `BookRentalRepository.rent` and `finish` are transactions with a conditional `updateMany` on the `BookItem` status or the rental status. Book item status must not be changed through events or separate writes.
-- A user with an unfinished rental can't be deleted (409 `user.hasActiveRentals`). Rentals cascade with the user, which would leave the book item rented, so `RealUserRepository.deleteById` is a conditional `deleteMany`.
-- Prices are reais to the centavo in the API and the domain (`Money`, `book/domain/money.ts`) and centavos in the database (`BookInfo.priceCents`). The repositories convert with `book/database/priceColumn.ts`; computed amounts like fines are rounded with `roundToCentavo`.
-- `User.cpf` uses `DocumentType`. It is deliberately lenient (length only), because it also validates rows read from the database. Check-digit validation (CPF and alphanumeric CNPJ) is `CheckedDocumentType`, part of the input schemas `NewUserInput` and `UserChangesInput` (`user.entity.ts`), which the create and update commands parse. Clients must have a CPF; admins may leave it empty.
-- `User.password` is a `PasswordHash` (`user/domain/password.ts`, branded, made only by `PasswordHasher` or by parsing a stored row), so a plain password can't be stored by mistake. `PasswordHasher` is a port in the user domain, bound to bcrypt in `UserModule`, which exports it for login, so `auth` depends on `user` and not the reverse; `PlainPassword` holds the length rule. An update without a password keeps the old one, and it revokes the user's refresh tokens only when the password, email or role changed (`endsSessions`).
-
-### Database migrations
-
-- The schema is one file per module in `prisma/schema/` (`schema.prisma` holds the generator and datasource); Prisma reads the whole folder. Prisma's configuration is `prisma.config.ts`: the schema folder, the datasource URL and the seed command. It loads `.env` itself, without overriding variables that are already set (env-cmd, Docker Compose `env_file`). The client is generated into `prisma/generated/` (gitignored, excluded from coverage) and imported as `@db/generated/client`, not `@prisma/client`. `PrismaService` and the seed connect through the `pg` driver adapter (`createPrismaAdapter`).
-- Schema changes go through `yarn migrate` (`prisma migrate dev`), which writes a migration under `prisma/migrations/`. Production applies them with `make dockerMigrate` (`prisma migrate deploy`).
-- Data changes that SQL can express belong in the same migration: create it with `yarn migrate --create-only --name <name>` and add the `UPDATE`/`INSERT` after the schema changes in its `migration.sql`. It then runs once, in order, in a transaction, and in every environment (dev container, test database, CI). Prefer a column `DEFAULT` when it fills existing rows, as `add_user_token_version` does.
-- There is no separate post-migration script, because one would run on every deploy rather than once. If a data change ever needs app code, add one script per change with a table recording which have run, and run the pending ones after `migrate deploy`. For changes that must not break the running app, expand first (add and backfill the new column), switch the code over, then drop the old column in a later migration.
+One schema file per module in `prisma/schema/`; the client is `@db/generated/client`. A data change SQL can express goes in its migration (`--create-only`, then the `UPDATE`); for changes the running app mustn't notice: expand, switch the code, drop later.
 
 ### Auth
 
-- `AuthGuard` checks the Bearer JWT. `RolesGuard` together with `@Roles(UserRoleEnum.Admin, …)` restricts by role. Both are applied per controller or per method; there is no global guard. Every route except `POST /v1/login`, `POST /v1/refresh` and `GET /check/status` requires a token, books included. `test/modules/auth/routeProtection.e2e-spec.ts` collects the registered routes and fails if any other route answers without one; a new public route has to be added to its `publicRoutes` list.
-- Login returns an access token and a refresh token, signed with different secrets. Both are checked against the configured audience and issuer (`jwtModuleOptions` in `auth.config.ts`). `POST /v1/refresh` exchanges a refresh token for a new pair.
-- Refresh tokens are single-use. Each login creates a `RefreshSession` row, and the refresh token carries its id (`sid`) and the session's current `jti`. `POST /v1/refresh` swaps the jti with a conditional `updateMany` (`RefreshSessionRepository.rotate`); reusing an old token deletes the session, logging out both holders. The frontend serializes refreshes across tabs with the Web Locks API and syncs credentials through `storage` events, so tabs never send the same token twice.
-- Refresh tokens also carry the user's `tokenVersion`. `POST /v1/logout` and a user update that changes the password, email or role increment it (`UserRepository.incrementTokenVersion`), which revokes every refresh token issued before. Access tokens remain stateless and valid until they expire.
-- `POST /v1/login` is rate-limited per client IP and email (`LoginThrottlerGuard`; `LOGIN_RATE_LIMIT` and `LOGIN_RATE_WINDOW_SECONDS`). Client IPs come from `X-Forwarded-For` only when `TRUST_PROXY` lists the proxy.
-- Ownership checks: clients rent for themselves and may return only their own rentals; someone else's rental is reported as 404.
-- User responses must go through `toUserResponse` (`user/domain/userViews.ts`) so `password` and `tokenVersion` are never returned.
+Every route needs a token except `POST /v1/login`, `POST /v1/refresh` and `GET /check/status`; `routeProtection.e2e-spec.ts` fails otherwise (a new public route goes in its `publicRoutes`). Refresh tokens are single-use and carry the user's `tokenVersion`, which logout and a change of password, email or role increment.
 
 ### Tests
 
-- The tests run on Vitest 5 (`vitest.config.mts`) with globals (`describe`, `it`, `expect`, `vi.fn`/`vi.spyOn`). `unplugin-swc` compiles them, because Vite's own transform doesn't emit the decorator metadata Nest's injection needs; it doesn't check types, which is `yarn typecheck`'s job. Coverage is V8, which ignores the metadata SWC generates. There are two projects: `unit` (no database) and `database` (integration and e2e suites); `test:unit`, `test:inte` and `test:e2e` pick a project and narrow `coverage.include` to the code their suites cover.
-- Test files live in `test/modules/<module>/`, named by kind: `*.unit-spec.ts` (handlers with fake repositories), `*.inte-spec.ts` (real repositories against Postgres), `*.e2e-spec.ts` (AppModule + supertest).
-- Use the builders: the core's in `test/dataBuilders/` (`UserBuilder`, `MockAuthGuardBuilder`), and each module's own next to its specs (`test/modules/book/bookInfoBuilder.ts`, `createBook.ts`, `test/modules/rental/bookRentalBuilder.ts`). Use deterministic IDs from `test/util/defaultIds.ts` (`createTestId(TableNameEnum.X, n)`).
-- Unit specs start with `const ctx = useHandlerModule({ providers: [Handler] }, (get) => ({ handler: get(Handler), users: get(UserRepository) }))` (`test/util/handlerModule.ts`), then use `ctx.handler`. It rebuilds the module before each test: every repository bound to its fake, a silent logger, real UUIDs, the clock stopped at 2026-10-21 12:00 UTC (`get(FakeClock).set(…)`), bcrypt for passwords, the event publisher and the audit in memory (`FakeAuditLog`); a provider passed in replaces the default for its token, and `init: true` runs `module.init()` for CQRS event handlers. `get` is typed from the token (Nest's own `get` types abstract-class tokens as `any`); `get(FakeUserRepository)` returns the same fake, for specs that inspect it.
-- E2E specs start with `const e2e = useE2eApp({ authGuard })` (`test/util/e2eApp.ts`), then use `e2e.http()`, `e2e.prisma` and the typed `e2e.get(…)`. It builds the app with the same setup as `main.ts` (`src/app.setup.ts`: helmet, Swagger, request context, `trustProxy`; `main.ts` only adds listening), empties the database first and closes the app afterwards. `beforeInit` runs before `app.init()`; `buildE2eApp`/`closeE2eApp` build extra apps, e.g. with another `trustProxy`.
-- E2E tests replace `AuthGuard` with `MockAuthGuardBuilder` (an admin by default); call `.withRole(UserRoleEnum.Client)` and then `.reset()` to test role restrictions, and `RolesGuard` stays real. `routeProtection.e2e-spec.ts` logs in for real instead.
-- `test/db/seed.inte-spec.ts` tests `prisma/seed.ts` through its exported `seed(prisma)`.
-- Suites run in parallel (`maxWorkers: "50%"`), and spec files aren't isolated (`isolate: false`: a worker's files share its imports, 2-5x faster), so a spec must not leave global state such as `vi.mock`, timers or `process.env` changed. Each worker of each run gets its own database, `library-test-<run>-<worker>`, and bucket, `<S3_BUCKET>-<run>-<worker>` (created by the app, deleted with the run's databases): `test/globalSetup.ts` copies the migrated `library-test` (`CREATE DATABASE … TEMPLATE`) before the run and drops the copies after it, and the next run drops those a killed run left a day before (`test/util/testRun.ts`); `test/util/useWorkerDatabase.ts` (`setupFiles`) points `DATABASE_URL` and `S3_BUCKET` at the worker's. The copy fails if anything else is connected to `library-test`. A `DATABASE_URL` already set wins over `.env.test` (`env-cmd --no-override`), so a worktree can test on its own template, migrated to its branch: `export DATABASE_URL=postgresql://user:password@localhost:5432/library-test-<name>`, then `yarn test:migrate`; names without `test` are refused, since the suites empty them. The `unit` project needs no database. `resetDatabase(prisma)` (`test/util/resetDatabase.ts`) empties every table; specs call it in `beforeEach` unless they seed once in `beforeAll` and clean only what each test adds.
-- A repository's port has one contract, `<x>Repository.contract.ts`: the cases written once against the port, run on the fake by `fake<X>.repository.unit-spec.ts` (`xRepositoryContract("fake")`) and on Prisma by `real<X>.repository.inte-spec.ts` (`"real"`), so a handler passing with the fake passes with Prisma. `useRepositories(kind, (get) => ({ … }))` (`test/util/repositoryContract.ts`) gives each case fresh fakes, or the Prisma repositories on an emptied database. Cases seed through ports, never `prisma.x` (a book and its copies with `seedBook`), and say what the port promises (an order, a refusal, what a write leaves behind), not how. Only what the fake can't meet stays beside the contract call, in the inte spec (foreign keys, what a column stores); the inte spec calls the contract last, since it empties the database a seed made in `beforeAll` would need.
+- Vitest with globals; files in `test/modules/<module>/`: `*.unit-spec.ts` (handlers with fakes), `*.inte-spec.ts` (Prisma), `*.e2e-spec.ts` (AppModule + supertest). Files aren't isolated: never leave `vi.mock`, timers or `process.env` changed.
+- Unit: `const ctx = useHandlerModule({ providers: [Handler] }, (get) => ({ handler: get(Handler), users: get(UserRepository) }))`. Repositories are fakes, the clock is `FakeClock` (2026-10-21 12:00 UTC), files and the audit are in memory (`get(FakeFileStorage)`, `get(FakeAuditLog)`).
+- E2E: `const e2e = useE2eApp({ authGuard })` with `MockAuthGuardBuilder` (an admin; `.withRole(…)`, then `.reset()`); `e2e.http()`, `e2e.prisma`, `e2e.get(…)`.
+- Each port has one contract (`<x>Repository.contract.ts`), run on the fake by `fake<X>.repository.unit-spec.ts` and on Prisma by `real<X>.repository.inte-spec.ts`. Cases seed through ports and state what the port promises.
+- Builders in `test/dataBuilders/` and next to each module's specs; ids from `createTestId(TableNameEnum.X, n)`; `resetDatabase(prisma)` in `beforeEach`.
+- Each worker gets its own database and bucket. A `DATABASE_URL` already set wins over `.env.test`, so a worktree can test on its own `library-test-<name>` template (`yarn test:migrate` first); names without `test` are refused.
 
-## Frontend architecture
+## Frontend
 
-- `src/app/pages/<feature>/` holds lazy-loaded route groups (`*.routes.ts`, loaded from `pages/pages.routes.ts`). Route access is restricted with `data: { roles: [...] }` and `shared/guards/permission.guard.ts`, which the layout route runs as both `canActivate` and `canActivateChild` (`canActivate` alone never sees the children's roles). `pages/pages.routes.spec.ts` checks which pages each role can open. A role lands on the first page of `sidebarMenuItems` it can open (`defaultRolePage` in `navMenuItems.ts`), after login and for unknown or forbidden pages, or on `home` when it has none.
-- `services/*.http.service.ts` are thin `HttpClient` wrappers (a feature's own models and services live in its page folder, as `pages/books/book.http.service.ts`); their specs pin each URL and method to the backend routes. Paginated requests build their query parameters with `PageRequestUtility.toHttpParams`. `CredentialsService` stores the user and tokens in localStorage. `AuthenticationService` handles login, logout and refresh.
-- `LiveUpdatesService` (`services/liveUpdates.service.ts`) keeps the socket connected while someone is logged in (again as another user or role; an expired token is refreshed once), and a list reloads on `changes(RESOURCE.X)` (one after each reconnection too, since what was announced meanwhile is lost). Specs stand in for it with a `Subject`, or for the socket with `FakeSocket` (`shared/utils/test/fakeSocket.ts`).
-- HTTP interceptors run in this order: `authHttpInterceptor` → `errorHandlerInterceptor`.
-  - `authHttpInterceptor` adds the Bearer token and language headers, and merges identical requests that are in flight at the same time. A request with a `noauth` header skips it entirely.
-  - `errorHandlerInterceptor`: on a 401 it refreshes the token once and retries the request; it logs out on 403 or when the refresh fails.
-- The app is zoneless (`provideZonelessChangeDetection()` in `app.config.ts`, no zone.js). State that changes outside template events (timers, promises, subscriptions) must go through signals, the `async` pipe or `markForCheck()`, or the view won't update.
-- Components use OnPush, which is the default since Angular 22: leave `changeDetection` out. The `prefer-on-push-component-change-detection` lint rule rejects `Eager`. A component whose template reads state changed outside its own template events (router events, other services) must call `markForCheck()` or use signals or the `async` pipe; see the `NavigationEnd` handler in `sidebar.component.ts`.
-- Translations (ngx-translate): pt-BR is the source, nested by area, in two parts: `shared/i18n/translations/pt-BR.ts`, the core, in the bundle (the login, the layout, the API's errors, `common`), and `pages.pt-BR.ts`, the pages' namespaces (`books`, `rentals`, `users`, `audit`, `home`), which `I18nService.loadPages()` loads with the layout route; en-US loads only when picked. `TranslationKey` is derived from both, and the `en-US` files must have the same shapes or the build fails; a new page's namespace goes in the pages part. Templates use `"books.list.title" | translate`; TypeScript passes keys typed `TranslationKey` or wrapped in `t()` (`translate.instant(t("books.created"))`). `translationKeys.spec.ts` reads the templates and code and fails on unknown or unused keys, on a page key used outside the pages, and checks `errors.<code>` against the contracts' `errorCodes`, which the error interceptor translates. Specs checking pt-BR text call `usePtBR(translate)` (`shared/utils/test/translations.ts`). Templates are type-checked strictly (`strictTemplates`).
-- State that templates read is a signal (`signal`, `computed`, `input()`, `viewChild()`/`contentChildren()`, `toSignal`); request pipelines stay RxJS (services, interceptors, `PaginatedDataSource`, where `switchMap` cancels a stale request). Unsubscribe with `takeUntilDestroyed()`.
-- Shared building blocks in `shared/components/`: `app-page-header` (page title and actions), `app-form-card` (form pages), `customizedTable` with `PaginatedDataSource` (lists), `ConfirmDialog.confirm()` (destructive actions), `app-dialog-actions` (a dialog's Cancel and primary button; `[appBusy]` puts the same spinner on any other button) with `injectSaving(log)` (`shared/utils/saving.utility.ts`: a save's request, one at a time, the API's message on a failure), `app-row-actions` (a row's ⋮ menu from a `RowAction<T>[]`), `img[appAuthSrc]` (an image the API serves behind the token) with `objectUrlOf(blob)` (`shared/utils/objectUrl.utility.ts`: a blob's object URL, freed when it changes), `app-report-table` (a read-only table of figures from `ReportColumn<Row>[]`: formats, totals row, empty message, small-screen columns; `<ng-template appReportCell="key" [appReportCellRows]="rows" let-row>` for a cell text can't say), `app-suggestions` (a free-text field's earlier values, filtered with `matching` from `shared/utils/textMatch.utility.ts`, which ignores accents and case), `*appLoaded` with `loading(log)`/`orNull(log)` (a screen's load: the progress bar, the failed and empty messages, then the content; `shared/directives/loaded.directive.ts`, `shared/utils/loading.utility.ts`) and `app-theme-toggle`. Also the `money` and `qty` pipes (`shared/pipes/number.pipes.ts`, in the screen's language), `detailsOf(error, code)` (an API error's details, typed by the contracts), `[appTemplateContext]` and `*matCellDef="let row; dataSource: data"` (`shared/directives/`: typed `let-` variables and table rows, which Angular and Material leave as `any`), `provideListLimit(n)`/`injectListLimit(max)` (a long list's limit, lowered in its spec), and the global `.data-table`, `.stats`/`.stat`, `.panel`, `.row-list` and text classes (`theme/_utilities.scss`). Messages go through `NotificationService` (`services/`): `success(key, params?)` and `error(key)` take translation keys, `errorMessage(text)` takes text that's already translated, like the API's errors, and `persistent(key, actionKey)` stays until its action is picked, coming back after other messages (the update alert). Colors come from Material's `--mat-sys-*` variables, spacing from `--space-1`…`--space-6` and table sizes from `--row-height`, `--cell-padding` and the like (`theme/_variables.scss`), so both light and dark schemes work.
-- Small screens are below 768px (`smallScreenQuery` and `injectIsSmallScreen()` in `shared/utils/smallScreen.utility.ts`; SCSS uses `@media (width < 768px)`). There the sidebar becomes a menu opened from the header, and the lists pass fewer columns to `customizedTable` through `[columns]`, moving the rest under the main cell.
-- An `@if` block isn't projected into a named content slot (`select="…"`) by itself, and the build warns (NG8011). Wrap it in an element that matches the slot (`<ng-container pageActions>`, `ngProjectAs="mat-card-subtitle"`), or, inside a `mat-form-field`, use one `mat-error` and pick its message inside it.
-- Specs use `@openng/spectator/vitest` (the maintained fork of `@ngneat/spectator`) (`createComponentFactory`, `createHostFactory`, `createServiceFactory`, `createInjectionContextFactory`, `mocks: [...]`) with `HttpTestingController`, not `TestBed` directly. To run effects or render overlays (autocomplete panels, dialogs), call `spectator.inject(ApplicationRef).tick()`.
-- A worker's spec files share one DOM (the builder's `isolate: false`): `src/testSetup.ts` turns TestBed's teardown on (Spectator's factories turn it off) and empties both storages after every test, so a spec must still undo other global changes (spies on prototypes, `vi.stubGlobal`, listeners on `window`). The DOM is happy-dom (the builder picks it when installed): block storage with `blockStorage()` (`shared/utils/test/storage.ts`, undone by `vi.unstubAllGlobals()`), not spies on `Storage.prototype` or `localStorage` (its storage binds the methods to the instance). `testSetup.ts` also makes Spectator look plain selectors up in the DOM (`querySelector`, then the document for overlay content) instead of walking every DebugElement, and adds each component stylesheet to `<head>` once per worker, so the DOM doesn't parse it again in every test. `vitest.config.mts` (the builder's `runnerConfig`) caps Vitest at 4 workers: more share the machine's cores and run no faster.
+- `pages/<feature>/` are lazy route groups with their model (aliases of the contracts' types) and `<feature>.http.service.ts` (spec pins each URL and method). Access is `data: { roles }`, checked by `permission.guard.ts`; `pages.routes.spec.ts` covers each role. The sidebar is `navMenuItems.ts`.
+- Zoneless and OnPush: template state is signals (`signal`, `computed`, `input()`, `toSignal`); requests stay RxJS; unsubscribe with `takeUntilDestroyed()`.
+- Use the shared building blocks: `app-page-header`, `app-form-card`, `customizedTable` + `PaginatedDataSource`, `ConfirmDialog.confirm()` for destructive actions, `injectSaving(log)` for every save (one at a time, the API's message on failure), `app-dialog-actions`/`[appBusy]`, `app-row-actions`, `*appLoaded` with `loading(log)`, `app-report-table`, `app-suggestions`, `img[appAuthSrc]` for files behind the token, `detailsOf(error, code)`, `[appTemplateContext]` and `*matCellDef="let row; dataSource: data"` for typed templates. Messages go through `NotificationService` (`success`/`error` take keys, `errorMessage` translated text).
+- Translations: pt-BR is the source. Core texts are in `pt-BR.ts`; a page's namespace goes in `pages.pt-BR.ts`; the en-US files have the same shape. Templates use `"x.y" | translate`, code passes `t("x.y")`. `translationKeys.spec.ts` fails on unknown, unused or misplaced keys and missing `errors.<code>`.
+- Styles: colors from `--mat-sys-*`, spacing from `--space-1`…`--space-6`, small screens below 768px (`injectIsSmallScreen()`, fewer list `[columns]`). An `@if` isn't projected into a named slot by itself: wrap it (`<ng-container pageActions>`).
+- Specs use `@openng/spectator/vitest` (`createComponentFactory`, `mocks: […]`) with `HttpTestingController`; `spectator.inject(ApplicationRef).tick()` runs effects and renders overlays. Specs share a DOM: undo global changes (prototype spies, `vi.stubGlobal`); block storage with `blockStorage()`.
 
 ## Contracts
 
-`packages/contracts` (`@library/contracts`) is the API's promise: the shapes requests and responses have, and the values and rules both apps need. It holds only Zod: no Nest, fp-ts or Prisma; moments are `Timestamp` (an ISO string on the wire, a `Date` in the backend), lists `page(item)`. It's built to ESM in `dist/` (`yarn install` builds it; `yarn contracts:watch` while editing it), and both apps import the build.
-
-- A domain is two files: `<domain>/values.ts`, the enums as `as const` objects and the rules (`inWholeCentavos`), without Zod, since the frontend imports them at runtime and its bundle must stay free of it; and `<domain>/schemas.ts`, the requests and responses, each named for Swagger with `contract(schema, { id, description })`. A schema's exported type is the wire's (`z.input`).
-- Shared building blocks: `common.ts` (`Id`, `BusinessDate`, `Timestamp`, `page(item)`, `PageQuery`, `optionalParam`, `QueryString`, `Created` for what a create answers), `files.ts` (`FileType`, the types the API tells from a file's bytes), `errors.ts` (every error code and its details), `liveUpdates.ts` (the socket's resources and event), `text.ts` (`collapseSpaces`, `textKey`) and `openapi.ts` (`contractRef`, `contractList`, `contractQuery`).
-- Backend: a command's `props` is its request type. A controller takes it as its `@Body()`, returns `Promise<Sent<typeof X>>`, so a response missing a field doesn't compile, and documents them with `@ApiBody({ schema: contractRef(X) })` and `schema: contractRef(X)` in its responses (`contractList(X)` for a list); `app.setup.ts` adds every contract to the OpenAPI document. A query string is a contract too, read by the handler and documented with `@ApiQueryContract(X)` (`shared/utils/http/apiQueryContract.ts`; `PageQuery` for a list's page, `optionalParam` for a filter left blank), and the controller types it `QueryString<typeof X>` (strings, as they arrive). An enum the backend names differently re-exports the contract's (`RentalStatusEnum = RentalStatus`). Entities stay in the backend's domain: a contract is what the API promises, an entity how the backend models it, and the views map one to the other (`toUserResponse`, `toBookRentalResponse`).
-- Frontend: `import type` the shapes, under the screens' names where they differ (`BookEntity = BookInfo`), and import the values.
-- Every module's API is in the contracts: there are no DTO classes, and the frontend's models are aliases of the contracts, so a shape is written once.
-- Its specs (`src/**/*.spec.ts`, `yarn test` in the package) keep it at 100%; its Prettier config is the backend's (`yarn format`).
+Only Zod (no Nest, fp-ts or Prisma). Moments are `Timestamp` (ISO on the wire, `Date` in the backend). A domain is `values.ts` (enums as `as const` objects and shared rules, no Zod, since the frontend bundles them) and `schemas.ts` (requests and responses, named with `contract(schema, { id })`; exported types are `z.input`). Shared: `common.ts` (`Id`, `Timestamp`, `page`, `PageQuery`, `optionalParam`, `Created`), `errors.ts`, `files.ts`, `liveUpdates.ts`, `text.ts`. There are no DTO classes: a shape is written once, here. 100% coverage (`yarn test` in the package).
 
 ## Adding a feature
 
-Copy the closest existing module and rename it: `user` for plain CRUD, `rental` for writes that must be atomic.
-
-Backend (`src/modules/<name>/`, imported as `@modules/<name>/…`):
-
-1. **Model**: add `prisma/schema/<name>.prisma`, run `yarn migrate --name <change>` and `yarn generate`. Add its `TableNameEnum` entry and id prefix in `test/util/defaultIds.ts`. `resetDatabase` empties the new table by itself.
-2. **Domain**: the Zod entity in `domain/<name>.entity.ts`; errors in `domain/<name>.errors.ts`, each a `domainError(kind, code, message)` class with its code in the contracts' `errorCodes`, and a case in `test/modules/<name>/<name>Errors.unit-spec.ts` (`itAnswersWithErrorCodes`); events in `domain/events/`, each with its factory, exported as `All<Name>Events` and spread into `DomainEvent` (`shared/domainEventPublisher/domainEvent.ts`), or publishing fails validation.
-3. **Repository**: the port, the Prisma repository and the fake (`database/`). Bind the port in `<name>.module.ts`, and the fake in `test/util/handlerModule.ts` (`fakeRepository(Port, Fake)`) so unit tests get it.
-4. **Contracts**: the requests and responses in `packages/contracts/src/<name>/` (`values.ts` and `schemas.ts`) with their spec.
-5. **Use cases**: a `commands/` or `queries/` folder per use case (`yarn scaffold` writes one, starting its contract), each controller with `@ApiController` (and `RolesGuard` with `@Roles` when restricted). A public route goes in `publicRoutes` (`routeProtection.e2e-spec.ts`).
-6. **Register** the module in `src/app.module.ts`.
-7. **Tests**, in `test/modules/<name>/`: its builder, unit specs for the handlers, an integration spec for the Prisma repository and e2e specs for the routes. `yarn test:cov` requires 100% coverage, fakes included.
-
-Frontend:
-
-1. **Data**: the model and `<name>.http.service.ts` in `pages/<name>/`, with a spec that pins each URL and method.
-2. **Pages**: `pages/<name>/<name>.routes.ts`, loaded from `pages/pages.routes.ts` with `data: { roles }`, plus cases in `pages.routes.spec.ts`; the sidebar entry in `layouts/components/sidebar/navMenuItems.ts`. Build them from the shared components (`app-page-header`, `app-form-card`, `customizedTable`).
-3. **Text**: the page's namespace in `pages.pt-BR.ts` and the same shape in `pages.en-US.ts` (core texts in `pt-BR.ts`/`en-US.ts`), including `errors.<code>` for each new error code (`translationKeys.spec.ts`).
+Copy `user` (plain CRUD) or the lending example (`book` for files, `rental` for atomic writes). Backend: the Prisma schema and migration, a `TableNameEnum` entry; entity, rules, errors (with codes and spec cases) and events; port, Prisma repository and fake, bound in the module and in `test/util/handlerModule.ts`; contracts with their spec; use cases (`yarn scaffold`); the module in `app.module.ts`; specs at 100%. Frontend: model and http service with spec, routes with `data: { roles }` and `pages.routes.spec.ts` cases, the sidebar entry, texts in both languages.
 
 ## CI and deployment
 
-- `.github/workflows/node.js.yml` runs on pushes and PRs to `main`. The backend job runs migrations, build and `test:cov` against a Postgres service and SeaweedFS (started in a step, since a service container can't take its command). The frontend job runs lint, Stylelint, tests and build on the Node version in `frontend/.nvmrc`. Both upload their `coverage-summary.json` as artifacts, and the `badges` job, which waits for both, regenerates the coverage badges on the `badges` branch (`badges/backend/`, `badges/frontend/`, shown in the README). Both jobs restore the workspace's `node_modules` from GitHub's cache while `yarn.lock` and the Node version are unchanged (the frontend also Angular's build cache), and lint without ESLint's cache (`lint:check`). The `deploy` job, also after both and only on pushes, calls the server's deploy hook (`https://<DOMAIN>/hooks/deploy`, `.docker/deployHook.py`, a host service installed by `make serverHook`, with the `DEPLOY_TOKEN` secret) to run `make dockerDeploy REF=<tested commit>` in the background, and ends once the hook has taken it (`/hooks/deploy/status` and `.docker/deploy.log` say how it ended); it's skipped while the `DEPLOY_URL` repository variable is unset (README, "Deploying"). `make dockerDeploy` does nothing when that commit is already out (`.docker/.deployed`; `FORCE=1` deploys anyway).
-- Swagger (`/swagger`) is public in production on purpose; nginx proxies it.
-- Deployment is manual, to one Docker host (README, "Deploying"). `make serverSetup` (`.docker/serverSetup.sh`, rerunnable) prepares a fresh Ubuntu server: Docker from Docker's apt repository, 2 GB of swap under 3 GB of memory, the `nginx_network`, and `.docker/.env` and the root `.env` (from `backend/.env.example`) with generated secrets. On the server, `make dockerDeploy` fast-forwards to `REF` (default `origin/main`), runs `make dockerMigrate` (applies migrations and waits for them) and then rebuilds the stack, as `make dockerProd` does after a `git pull`, building the images in a BuildKit container with a low CPU weight (`make dockerBuilder`), so a build yields the CPU to the running stack, and with `build:unchecked` (SWC for the API, no template checks for the frontend), so it fits beside it; all from the repo root with Docker Compose (`.docker/docker-compose.yml`: app, Postgres 18, the file storage (SeaweedFS, whose volume is backed up with the database's), pgAdmin, Prometheus, Grafana, certbot, nginx; the migrations and the API wait for Postgres's healthcheck). The compose files, nginx and Prometheus configs live in the root `.docker/`; each app's Dockerfiles stay in its own `.docker/` (`backend/.docker/`, `frontend/.docker/`). Images build from the repository root (its `.dockerignore`) and install only their app and the contracts (`.docker/pruneWorkspace.js`). Grafana is at `/grafana/` behind its own login, and Prometheus (`prometheus.prod.yml`) is reached only by Grafana; it also scrapes node_exporter (the server), postgres_exporter, SeaweedFS, a blackbox probe of `https://<DOMAIN>/check/status` and the deploy hook's `/metrics` (on the gateway, never through nginx: the last deploy's result, for the "Deploy failed" and "Deploy stuck" alerts). Grafana's alert rules are in `grafana/provisioning/alerting/rules.yml`, and a provisioning error there stops Grafana from starting. Only nginx (ports 80 and 443) is public; the app, Postgres and pgAdmin publish their ports on the `nginx_network` gateway (`172.18.0.1`), which nginx proxies to. The production backend Dockerfile starts `dist/src/main.js` and builds no `.env` into the image (the root `.dockerignore` excludes them): the `app` and `migrate-deploy` services get the API's settings from the repo root's `.env` (`env_file`).
-- The nginx image is built from `frontend/.docker/Dockerfile` (the Angular build in `/usr/share/nginx/html`) with `.docker/nginx.conf` mounted. Port 80 only answers Let's Encrypt challenges and redirects to HTTPS; HTTPS responses are gzipped. The service worker leaves the server's own paths (`/v1`, `/swagger`, `/pgadmin4`, `/check`) to the network (`ngsw-config.json`'s `navigationUrls`). `make dockerCertificate` issues the certificate once (certbot standalone, `--cert-name site`, so nginx's path doesn't depend on the domain); the `certbot` service renews it through the webroot, and nginx reloads every 6 hours to pick it up.
-- The stack's settings and credentials (domain, Postgres, pgAdmin, Grafana, the storage's keys) are in `.docker/.env` (gitignored; template `.docker/.env.example`), which Compose reads; a missing one fails `docker compose` with its name. The app's and `migrate-deploy`'s `DATABASE_URL`, and the app's `S3_*`, are built from them in the compose file and override the root `.env`'s.
+`.github/workflows/node.js.yml` (pushes and PRs to `main`): backend migrations, build and `test:cov` against Postgres and SeaweedFS; frontend lint, Stylelint, tests and build; coverage badges; on pushes, a `deploy` job that hands the commit to the server's deploy hook (skipped while `DEPLOY_URL` is unset). Production is one Docker host (`.docker/docker-compose.yml`, `make dockerDeploy`); the README's "Deploying" section has the setup, settings and monitoring. Only nginx is public; Swagger is public on purpose.
