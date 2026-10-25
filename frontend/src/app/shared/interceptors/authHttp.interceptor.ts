@@ -8,9 +8,9 @@ import { inject } from "@angular/core";
 import { CredentialsService } from "@app/services/credentials.service";
 import { environment } from "@env/environment";
 import { TranslateService } from "@ngx-translate/core";
-import { finalize, Observable, Subject, takeUntil } from "rxjs";
+import { finalize, Observable, share } from "rxjs";
 
-const ongoingRequests = new Map<string, Subject<HttpEvent<unknown>>>();
+const ongoingRequests = new Map<string, Observable<HttpEvent<unknown>>>();
 export const authHttpInterceptor: HttpInterceptorFn = (
   request: HttpRequest<unknown>,
   next: HttpHandlerFn
@@ -38,31 +38,28 @@ export const authHttpInterceptor: HttpInterceptorFn = (
   }
 
   /**
-   * In below piece of code If there is an ongoing request with the same method and URL than return the ongoing request instead of creating a new one
-   * This is useful when the user clicks multiple times on a button that triggers a request
+   * A request with the same method and URL as one in flight shares that one
+   * instead of going again: a double click sends one write, and two screens
+   * reloading the same record at once both get its answer.
    */
 
   const requestKey = getRequestKey(request);
 
   const ongoingRequest = ongoingRequests.get(requestKey);
   if (ongoingRequest) {
-    return ongoingRequest.asObservable();
+    return ongoingRequest;
   }
-
-  const cancelSubject = new Subject<HttpEvent<unknown>>();
-  ongoingRequests.set(requestKey, cancelSubject);
 
   const clonedRequest = request.clone({
     setHeaders: newHeaders,
   });
 
-  return next(clonedRequest).pipe(
-    takeUntil(cancelSubject),
-    finalize(() => {
-      ongoingRequests.delete(requestKey);
-      cancelSubject.complete();
-    })
+  const shared = next(clonedRequest).pipe(
+    finalize(() => ongoingRequests.delete(requestKey)),
+    share()
   );
+  ongoingRequests.set(requestKey, shared);
+  return shared;
 };
 
 const getRequestKey = (req: HttpRequest<unknown>): string => {

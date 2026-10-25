@@ -15,13 +15,11 @@ import {
   createInjectionContextFactory,
   SpectatorInjectionContext,
 } from "@openng/spectator/vitest";
-import { Mock } from "vitest";
 
 describe("AuthenticationHttpInterceptor", () => {
   let spectator: SpectatorInjectionContext;
   let httpMock: HttpTestingController;
   let httpClient: HttpClient;
-  let getItemSpy: Mock<(x: string) => string | null>;
   const createContext = createInjectionContextFactory({
     mocks: [TranslateService],
     providers: [
@@ -36,9 +34,11 @@ describe("AuthenticationHttpInterceptor", () => {
     httpClient = spectator.inject(HttpClient);
     const translateService = spectator.inject(TranslateService);
     translateService.getCurrentLang.mockReturnValue("pt-BR");
-    getItemSpy = vi
-      .spyOn(Storage.prototype, "getItem")
-      .mockReturnValue(JSON.stringify({ accessToken: "test_token" }));
+    // A remembered login; testSetup.ts empties the storage after each test
+    localStorage.setItem(
+      "credentials",
+      JSON.stringify({ accessToken: "test_token" })
+    );
   });
 
   afterEach(() => {
@@ -53,7 +53,7 @@ describe("AuthenticationHttpInterceptor", () => {
   });
 
   it("should not add Authorization header - no access token", () => {
-    getItemSpy.mockReturnValue(null);
+    localStorage.removeItem("credentials");
 
     httpClient.get("/test").subscribe();
     const req = httpMock.expectOne("/test");
@@ -80,12 +80,18 @@ describe("AuthenticationHttpInterceptor", () => {
     );
   });
 
-  it("Should cache requests", () => {
-    httpClient.get("/test").subscribe();
-    httpClient.get("/test").subscribe();
+  it("Should send a request in flight once, both callers getting its answer", () => {
+    const answers: unknown[] = [];
+    httpClient.get("/test").subscribe((body) => answers.push(body));
+    httpClient.get("/test").subscribe((body) => answers.push(body));
 
     const req = httpMock.expectOne("/test");
-    req.flush({});
+    req.flush({ ok: true });
+    expect(answers).toEqual([{ ok: true }, { ok: true }]);
+
+    // Done, the same request goes again
+    httpClient.get("/test").subscribe();
+    httpMock.expectOne("/test").flush({});
     expect(req.request.headers.has("Authorization")).toBeTruthy();
     expect(req.request.headers.get("Authorization")).toBe("Bearer test_token");
   });

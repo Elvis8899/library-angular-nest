@@ -93,7 +93,7 @@ export class AppUpdateService {
       );
   }
 
-  // Separate so tests can stub it: jsdom can't reload or spy on location
+  // Separate so tests can stub it: the test DOM can't reload or spy on location
   /* v8 ignore next 3 */
   reloadPage(): void {
     document.location.reload();

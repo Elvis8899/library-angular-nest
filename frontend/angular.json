@@ -104,7 +104,10 @@
               "branches": 100,
               "functions": 100,
               "lines": 100
-            }
+            },
+            "setupFiles": ["src/testSetup.ts"],
+            "quiet": true,
+            "runnerConfig": "vitest.config.mts"
           }
         },
         "lint": {
