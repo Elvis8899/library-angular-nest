@@ -1,24 +1,47 @@
 import { Component, computed, inject } from "@angular/core";
 import { MatIconButton } from "@angular/material/button";
 import { MatIcon } from "@angular/material/icon";
+import { MatMenu, MatMenuItem, MatMenuTrigger } from "@angular/material/menu";
 import { MatTooltip } from "@angular/material/tooltip";
-import { ThemeService } from "@app/services/theme.service";
+import {
+  ThemePreference,
+  themePreferences,
+  ThemeService,
+} from "@app/services/theme.service";
+import { t } from "@app/shared/i18n/translations/translationKey";
 import { TranslatePipe } from "@ngx-translate/core";
 
-/** Switches between the light and dark schemes. */
+const preferenceNames = {
+  auto: t("theme.auto"),
+  light: t("theme.light"),
+  dark: t("theme.dark"),
+};
+
+const preferenceIcons: Record<ThemePreference, string> = {
+  auto: "brightness_auto",
+  light: "light_mode",
+  dark: "dark_mode",
+};
+
+/** Picks the theme: Automático (the system's), Claro or Escuro. */
 @Component({
   selector: "app-theme-toggle",
   templateUrl: "./themeToggle.component.html",
-  imports: [MatIconButton, MatIcon, MatTooltip, TranslatePipe],
+  imports: [
+    MatIconButton,
+    MatIcon,
+    MatMenu,
+    MatMenuItem,
+    MatMenuTrigger,
+    MatTooltip,
+    TranslatePipe,
+  ],
 })
 export class ThemeToggleComponent {
   readonly theme = inject(ThemeService);
 
-  // Describes what a click does: switch to the other scheme
-  readonly label = computed(() =>
-    this.theme.colorScheme() === "dark" ? "theme.light" : "theme.dark"
-  );
-  readonly icon = computed(() =>
-    this.theme.colorScheme() === "dark" ? "light_mode" : "dark_mode"
-  );
+  readonly preferences = themePreferences;
+  readonly names = preferenceNames;
+  readonly icons = preferenceIcons;
+  readonly icon = computed(() => preferenceIcons[this.theme.preference()]);
 }

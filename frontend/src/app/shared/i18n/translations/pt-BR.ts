@@ -19,8 +19,10 @@ export const ptBR = {
     closeMenu: "Fechar menu",
   },
   theme: {
-    dark: "Tema escuro",
-    light: "Tema claro",
+    label: "Tema",
+    auto: "Automático",
+    light: "Claro",
+    dark: "Escuro",
   },
   language: {
     label: "Idioma",

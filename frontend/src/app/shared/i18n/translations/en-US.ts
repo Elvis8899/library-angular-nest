@@ -18,8 +18,10 @@ export const enUS: CoreTranslations = {
     closeMenu: "Close menu",
   },
   theme: {
-    dark: "Dark theme",
-    light: "Light theme",
+    label: "Theme",
+    auto: "Automatic",
+    light: "Light",
+    dark: "Dark",
   },
   language: {
     label: "Language",
