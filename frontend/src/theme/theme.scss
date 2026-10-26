@@ -14,6 +14,23 @@
   );
 }
 
+// A filled button whose action can't be undone (a confirmation's, a
+// dialog's discard)
+.destructive {
+  @include mat.button-overrides(
+    (
+      filled-container-color: var(--mat-sys-error),
+      filled-label-text-color: var(--mat-sys-on-error),
+      filled-state-layer-color: var(--mat-sys-on-error),
+      filled-ripple-color: color-mix(
+          in srgb,
+          var(--mat-sys-on-error) 12%,
+          transparent
+        ),
+    )
+  );
+}
+
 // Notifications (NotificationService): successes in the default inverse
 // colors, errors in the error colors
 .notification-error {
@@ -24,4 +41,92 @@
       button-color: var(--mat-sys-error),
     )
   );
+}
+
+// Every field is as tall as a button (--control-height): beside the header's
+// buttons, in a filter row, in a list's rows (--row-height-form) and in the
+// dialogs alike
+html {
+  @include mat.form-field-overrides(
+    (
+      container-height: var(--control-height),
+      container-vertical-padding: var(--space-2),
+    )
+  );
+}
+
+// Material tables look like the .data-table ones: a box with a header band.
+// customizedTable's wrapper is the box around its own
+.mat-mdc-table {
+  @include mat.table-overrides(
+    (
+      background-color: var(--card-background),
+      header-headline-color: var(--mat-sys-on-surface-variant),
+      header-headline-weight: 600,
+      row-item-outline-color: var(--table-border),
+      header-container-height: var(--row-height),
+      row-item-container-height: var(--row-height),
+      footer-container-height: var(--row-height),
+    )
+  );
+
+  .mat-mdc-header-row {
+    background-color: var(--table-header-background);
+  }
+
+  tr:last-child > td {
+    border-bottom: 0;
+  }
+
+  .mat-mdc-row:hover {
+    background-color: var(--table-hover);
+  }
+}
+
+// Doubled, to outrank Material's own table styles, which load later.
+// Separate borders: collapsed ones drop the corners and merge with the
+// cells'
+.mat-mdc-table.mat-mdc-table {
+  border: 1px solid var(--table-border);
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: var(--table-end-space);
+  border-radius: var(--mat-sys-corner-medium);
+  overflow: clip;
+}
+
+// Material starts a dialog's content right under its title, and the
+// content scrolls, so it cut off the floating label of a first field. The
+// title's element outranks Material's rule, which loads later
+.mat-mdc-dialog-container h2[mat-dialog-title] + .mat-mdc-dialog-content {
+  padding-top: var(--space-2);
+}
+
+// Text buttons look like the outlined ones: without a border they read as
+// links. Doubled, to outrank Material's button styles, which load later
+.mat-mdc-button.mat-mdc-button {
+  @include mat.button-overrides(
+    (
+      text-horizontal-padding: 24px,
+      text-with-icon-horizontal-padding: 24px,
+    )
+  );
+
+  border: 1px solid var(--mat-sys-outline);
+
+  &:disabled,
+  &.mat-mdc-button-disabled {
+    border-color: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 12%,
+      transparent
+    );
+  }
+}
+
+// Outlined fields are filled like the cards, so on the grey page they read
+// as places to type, not as empty boxes
+.mdc-text-field--outlined {
+  border-radius: var(--mat-sys-corner-extra-small);
+  background-color: var(--card-background);
 }

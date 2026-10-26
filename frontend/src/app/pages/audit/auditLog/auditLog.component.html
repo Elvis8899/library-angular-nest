@@ -3,11 +3,7 @@
 
   <p class="small-note">{{ "audit.help" | translate }}</p>
 
-  <form
-    (ngSubmit)="search()"
-    [formGroup]="filters"
-    class="compact-fields filters"
-  >
+  <form (ngSubmit)="search()" [formGroup]="filters" class="filters">
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
       <mat-label>{{ "audit.person" | translate }}</mat-label>
       <mat-select formControlName="userId" name="userId">

@@ -2,9 +2,9 @@
 
 .table-wrapper {
   margin-top: var(--space-3);
-  border: 1px solid var(--mat-sys-outline-variant);
+  border: 1px solid var(--table-border);
   border-radius: var(--mat-sys-corner-medium);
-  background-color: var(--mat-sys-surface-container-lowest);
+  background-color: var(--card-background);
   // Clips to the rounded corners without becoming a scroll container, so the
   // header stays sticky against the page
   overflow: clip;
@@ -15,15 +15,9 @@
     overflow-x: auto;
   }
 
-  @include mat.table-overrides(
-    (
-      background-color: var(--mat-sys-surface-container-lowest),
-      header-headline-color: var(--mat-sys-on-surface-variant),
-    )
-  );
   @include mat.paginator-overrides(
     (
-      container-background-color: var(--mat-sys-surface-container-lowest),
+      container-background-color: var(--card-background),
     )
   );
 }
@@ -41,14 +35,9 @@
 
 .table {
   width: 100%;
-}
-
-.mat-mdc-header-row {
-  background-color: var(--mat-sys-surface-container-low);
-}
-
-.mat-mdc-row:hover {
-  background-color: var(--mat-sys-surface-container);
+  // The wrapper is the box
+  border: 0;
+  border-radius: 0;
 }
 
 .no-data {
