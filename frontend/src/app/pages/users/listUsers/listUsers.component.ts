@@ -43,11 +43,12 @@ export class ListUsersComponent implements OnInit {
 
   readonly locale = injectCurrentLocale();
   readonly isSmallScreen = injectIsSmallScreen();
-  // Small screens leave out the document and the creation date
+  // Small screens leave out the document, the last access and the creation
+  // date
   readonly columns = computed(() =>
     this.isSmallScreen()
       ? ["name", "role"]
-      : ["name", "role", "cpf", "createdAt"]
+      : ["name", "role", "cpf", "lastAccessAt", "createdAt"]
   );
   readonly ROLE = ROLE;
 
@@ -66,7 +67,7 @@ export class ListUsersComponent implements OnInit {
           property: "createdAt",
           order: "desc",
         },
-        displayedColumns: ["name", "role", "cpf", "createdAt"],
+        displayedColumns: ["name", "role", "cpf", "lastAccessAt", "createdAt"],
       }
     );
     // What someone else changes shows here too

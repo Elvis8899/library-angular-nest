@@ -73,6 +73,7 @@ describe("[Unit] User entity", () => {
       role: UserRoleEnum.Client,
       password,
       tokenVersion: 0,
+      lastAccessAt: null,
       createdAt: now,
       updatedAt: now,
     });

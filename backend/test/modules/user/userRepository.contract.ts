@@ -183,6 +183,32 @@ export const userRepositoryContract = (kind: RepositoryKind) =>
       );
     });
 
+    it("Should record the last access, which a later save keeps", async () => {
+      const user = new UserBuilder().build();
+      await saveUser(user);
+      const at = new Date("2026-10-21T12:00:00Z");
+
+      await executeTask(ctx.users.recordAccess({ id: user.id, at }));
+      // A save of what was read before the access
+      await saveUser({ ...user, name: "Renamed" });
+
+      expect(user.lastAccessAt).toBeNull();
+      expect(await executeTask(ctx.users.findById(user.id))).toMatchObject(
+        O.some({ name: "Renamed", lastAccessAt: at }),
+      );
+    });
+
+    it("Should ignore an access recorded for an unknown user", async () => {
+      await expect(
+        executeTask(
+          ctx.users.recordAccess({
+            id: createTestId(TableNameEnum.User, 9),
+            at: new Date("2026-10-21T12:00:00Z"),
+          }),
+        ),
+      ).resolves.toBeUndefined();
+    });
+
     it("Should ignore a token version increment for an unknown user", async () => {
       await expect(
         executeTask(

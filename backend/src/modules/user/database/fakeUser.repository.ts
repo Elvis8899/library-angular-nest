@@ -63,8 +63,8 @@ export class FakeUserRepository
   findByEmail = (email: string): TE.TaskEither<Error, O.Option<User>> =>
     this.findOne((user) => user.email.toLowerCase() === email.toLowerCase());
 
-  /** As the Prisma upsert: the email lowercased, the token version kept on
-   * an update, and an email or CPF another user holds refused (an empty CPF
+  /** As the Prisma upsert: the email lowercased, the token version and last
+   * access kept on an update, and an email or CPF another user holds refused (an empty CPF
    * is none, so any number of admins may lack one). */
   override save = (
     row: Partial<User> & Pick<User, "id">,
@@ -82,6 +82,7 @@ export class FakeUserRepository
       ...user,
       email,
       tokenVersion: stored?.tokenVersion ?? user.tokenVersion,
+      lastAccessAt: stored ? stored.lastAccessAt : user.lastAccessAt,
     });
     return TE.of(undefined);
   };
@@ -90,6 +91,18 @@ export class FakeUserRepository
    * rental fakes' (lending example), so this one never refuses for them. */
   override deleteById = (id: string): TE.TaskEither<Error, void> =>
     this.rows.delete(id) ? TE.of(undefined) : TE.left(userNotFoundException());
+
+  recordAccess = ({
+    id,
+    at,
+  }: {
+    id: string;
+    at: Date;
+  }): TE.TaskEither<Error, void> => {
+    const user = this.rows.get(id);
+    if (user) this.rows.set(id, { ...user, lastAccessAt: at });
+    return TE.of(undefined);
+  };
 
   incrementTokenVersion = (userId: string): TE.TaskEither<Error, void> => {
     const user = this.rows.get(userId);

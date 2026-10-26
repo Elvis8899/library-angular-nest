@@ -30,6 +30,9 @@ export const User = z
     // that changes the password, email or role (endsSessions) must revoke
     // them in the same request, not later through an event
     tokenVersion: z.number().int().min(0).default(0),
+    // The last login or session refresh, which auth records; null for who
+    // never logged in. Saving the user leaves it as stored
+    lastAccessAt: z.date().nullable().default(null),
   })
   .and(BaseDateEntity)
   .refine(hasRequiredDocument, "CPF ou CNPJ inválido");
@@ -68,6 +71,7 @@ export const registerUser = (
   role,
   password,
   tokenVersion: 0,
+  lastAccessAt: null,
   createdAt: now,
   updatedAt: now,
 });

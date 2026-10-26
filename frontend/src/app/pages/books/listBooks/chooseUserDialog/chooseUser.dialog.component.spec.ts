@@ -29,6 +29,7 @@ describe("ChooseUserDialogComponent", () => {
     email: `${name.toLowerCase().split(" ")[0]}@example.com`,
     cpf: "529.982.247-25",
     role,
+    lastAccessAt: null,
     createdAt: new Date().toDateString(),
     updatedAt: new Date().toDateString(),
   });

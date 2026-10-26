@@ -107,6 +107,8 @@ export const ptBRPages = {
     list: {
       title: "Lista de Usuários",
       role: "Perfil",
+      lastAccess: "Último acesso",
+      neverLoggedIn: "Nunca entrou",
     },
     form: {
       subtitle: "Novos usuários são clientes",

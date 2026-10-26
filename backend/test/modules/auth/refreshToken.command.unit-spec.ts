@@ -62,8 +62,12 @@ describe("[Unit] Refresh token", () => {
     //When we refresh
     const result = await refresh(refreshToken);
 
-    //Then it should return new tokens for that user, in the same session
+    //Then it should return new tokens for that user, in the same session,
+    //recording the access
     expect(result.accessToken).toBeTruthy();
+    expect(await executeTask(ctx.userRepository.findById(user.id))).toEqual(
+      O.some({ ...user, lastAccessAt: new Date("2026-10-21T12:00:00Z") }),
+    );
     expect(result.refreshToken).not.toBe(refreshToken);
     expect(result.user.id).toBe(user.id);
     const claims = await ctx.jwtService.verifyAsync<{ sid: string }>(
@@ -91,7 +95,12 @@ describe("[Unit] Refresh token", () => {
     const reuse = refresh(refreshToken);
 
     //Then it is rejected and the session ends, so the newer token stops working too
+    await ctx.userRepository.recordAccess({ id: user.id, at: new Date(0) })();
     await expect(reuse).rejects.toBeInstanceOf(InvalidRefreshTokenException);
+    // A refused refresh isn't an access
+    expect(await executeTask(ctx.userRepository.findById(user.id))).toEqual(
+      O.some({ ...user, lastAccessAt: new Date(0) }),
+    );
     expect(
       await executeTask(
         ctx.refreshSessionRepository.findById(session.sessionId),

@@ -11,6 +11,7 @@ import { UserRepository } from "@modules/user/database/user.repository.port";
 import { PasswordHasher } from "@modules/user/domain/passwordHasher.port";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { JwtService } from "@nestjs/jwt";
+import { Clock } from "@shared/clock/clock";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { B, FPF, RE, RTE, TE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
@@ -33,6 +34,7 @@ export class LoginCommandHandler implements ICommandHandler<
     private readonly refreshSessionRepository: RefreshSessionRepository,
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly jwtService: JwtService,
+    private readonly clock: Clock,
   ) {}
 
   execute(command: LoginCommand): Promise<AuthResponse> {
@@ -72,6 +74,7 @@ export class LoginCommandHandler implements ICommandHandler<
             ),
           ),
         ),
+        RTE.tap((user) => this.recordAccess(user.id)),
         RTE.bindTo("user"),
         RTE.bindW("session", ({ user }) => this.startSession(user.id)),
         RTE.chainTaskK(
@@ -82,6 +85,13 @@ export class LoginCommandHandler implements ICommandHandler<
       ),
     );
   }
+
+  // The users list shows each account's last access
+  private recordAccess = (id: string) =>
+    performRTE(
+      this.userRepository.recordAccess,
+      "record user access",
+    )({ id, at: this.clock.now() });
 
   // Each login starts a refresh session; the user's expired ones are
   // removed at the same time

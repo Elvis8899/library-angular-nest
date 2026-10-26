@@ -1,8 +1,10 @@
 import { BreakpointObserver, BreakpointState } from "@angular/cdk/layout";
+import { formatDate } from "@angular/common";
 import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
+import { LOCALE_ID } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
@@ -35,6 +37,7 @@ describe("ListUsersComponent", () => {
       email: "test@example.com",
       cpf: "test",
       role: ROLE.ADMIN,
+      lastAccessAt: null,
       createdAt: new Date().toDateString(),
       updatedAt: new Date().toDateString(),
     },
@@ -109,6 +112,7 @@ describe("ListUsersComponent", () => {
       "common.name",
       "users.list.role",
       "users.document.label",
+      "users.list.lastAccess",
       "common.createdOn",
     ]);
     expect(spectator.query(".user-email")).toHaveText("test@example.com");
@@ -135,6 +139,29 @@ describe("ListUsersComponent", () => {
     expect(rows[1].querySelector(".chip")).toHaveText("roles.client");
     expect(rows[1].querySelector("td.document")).toHaveText("—");
   });
+
+  it("Should show each account's last access, or that it never logged in", () => {
+    // Arrange
+    const at = "2026-10-20T09:30:00Z";
+    spectator.component.data.data$.next([
+      { ...users[0], lastAccessAt: at },
+      users[0],
+    ]);
+    spectator.detectChanges();
+    // Assert
+    const cells = spectator
+      .queryAll("td.mat-column-lastAccessAt")
+      .map((cell) => cell.textContent?.trim());
+    expect(cells).toEqual([
+      formatDate(
+        at,
+        "short",
+        spectator.component.locale() ?? spectator.inject(LOCALE_ID)
+      ),
+      "users.list.neverLoggedIn",
+    ]);
+  });
+
   it("should call getPaginatedUsers on init", () => {
     // Assert
     expect(userServiceMock.getPaginatedUsers).toHaveBeenCalledTimes(1);

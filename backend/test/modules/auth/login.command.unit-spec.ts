@@ -8,6 +8,7 @@ import { UserRepository } from "@modules/user/database/user.repository.port";
 import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { JwtService } from "@nestjs/jwt";
 import { executeTask } from "@shared/utils/application/executeTask";
+import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
@@ -38,8 +39,11 @@ describe("[Unit] Create User", () => {
       new LoginCommand(user.withPassword(password).buildCreateDTO()),
     );
 
-    //Then it should have logged the user
+    //Then it should have logged the user, recording the access
     expect(result.accessToken).toBeTruthy();
+    expect(
+      await executeTask(ctx.userRepository.findById(user.build().id)),
+    ).toMatchObject(O.some({ lastAccessAt: new Date("2026-10-21T12:00:00Z") }));
   });
 
   it("Should start a refresh session and remove the user's expired ones", async () => {

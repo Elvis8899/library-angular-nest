@@ -111,6 +111,12 @@ export class RealUserRepository implements UserRepository {
   };
 
   // updateMany does not fail when the user no longer exists
+  recordAccess = ({ id, at }: { id: string; at: Date }) =>
+    FPF.pipe(
+      this.users.updateMany({ where: { id }, data: { lastAccessAt: at } }),
+      TE.asUnit,
+    );
+
   incrementTokenVersion = (userId: string): TE.TaskEither<Error, void> =>
     FPF.pipe(
       this.users.updateMany({

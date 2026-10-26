@@ -106,6 +106,8 @@ export const enUSPages: PagesTranslations = {
     list: {
       title: "Users List",
       role: "Role",
+      lastAccess: "Last access",
+      neverLoggedIn: "Never logged in",
     },
     form: {
       subtitle: "New users are clients",
