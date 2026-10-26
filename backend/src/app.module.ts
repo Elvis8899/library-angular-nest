@@ -1,5 +1,6 @@
 import { AuditModule } from "@modules/audit/audit.module";
 import { AuthModule } from "@modules/auth/auth.module";
+import { TokenRevocationModule } from "@modules/auth/tokenRevocation.module";
 import { BookModule } from "@modules/book/book.module";
 import { RentalModule } from "@modules/rental/rental.module";
 import { UserModule } from "@modules/user/user.module";
@@ -34,6 +35,7 @@ const appModules: NestModuleImport[] = [
   StorageModule,
   //
   AuthModule,
+  TokenRevocationModule,
   //
   UserModule,
   AuditModule,

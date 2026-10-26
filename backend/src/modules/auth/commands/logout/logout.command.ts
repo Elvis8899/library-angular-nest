@@ -1,5 +1,6 @@
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
+import { Clock } from "@shared/clock/clock";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { performRTE } from "@shared/utils/application/perform";
@@ -10,7 +11,7 @@ export class LogoutCommand implements ICommand {
   constructor(public readonly userId: string) {}
 }
 
-/** Revokes every refresh token issued to the user. */
+/** Revokes every token issued to the user, on every device. */
 @CommandHandler(LogoutCommand)
 export class LogoutCommandHandler implements ICommandHandler<
   LogoutCommand,
@@ -19,6 +20,7 @@ export class LogoutCommandHandler implements ICommandHandler<
   constructor(
     private readonly useCase: UseCase,
     private readonly userRepository: UserRepository,
+    private readonly clock: Clock,
   ) {}
 
   execute(command: LogoutCommand): Promise<void> {
@@ -29,11 +31,11 @@ export class LogoutCommandHandler implements ICommandHandler<
         command.userId,
         fromInputRE(UUID, "uuid"),
         RTE.fromReaderEither,
-        RTE.chain(
+        RTE.chain((userId) =>
           performRTE(
-            this.userRepository.incrementTokenVersion,
-            "revoke user refresh tokens",
-          ),
+            this.userRepository.revokeTokens,
+            "revoke user tokens",
+          )({ userId, at: this.clock.now() }),
         ),
       ),
     );

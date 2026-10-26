@@ -1,5 +1,7 @@
 import { RealRefreshSessionRepository } from "@modules/auth/database/realRefreshSession.repository";
+import { RealTokenRevocationRepository } from "@modules/auth/database/realTokenRevocation.repository";
 import { RefreshSessionRepository } from "@modules/auth/database/refreshSession.repository.port";
+import { TokenRevocationRepository } from "@modules/auth/database/tokenRevocation.repository.port";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { RealBookInfoRepository } from "@modules/book/database/realBookInfo.repository";
 import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
@@ -26,6 +28,7 @@ const realRepository = <Port>(
 const realRepositories: Provider[] = [
   ...realRepository(UserRepository, RealUserRepository),
   ...realRepository(RefreshSessionRepository, RealRefreshSessionRepository),
+  ...realRepository(TokenRevocationRepository, RealTokenRevocationRepository),
   // Lending example
   ...realRepository(BookInfoRepository, RealBookInfoRepository),
   ...realRepository(BookRentalRepository, RealBookRentalRepository),

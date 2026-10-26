@@ -117,7 +117,6 @@ describe("[e2e] Route protection", () => {
       .http()
       .get("/v1/users")
       .set("Authorization", `Bearer ${token}`);
-    // Revokes the refresh tokens only; the access token stays valid
     const logout = await e2e
       .http()
       .post("/v1/logout")
@@ -125,6 +124,18 @@ describe("[e2e] Route protection", () => {
 
     expect(users.status).toBe(HttpStatus.FORBIDDEN);
     expect(logout.status).toBe(HttpStatus.NO_CONTENT);
+  });
+
+  it("Should refuse an access token once revoked, and accept the next login's", async () => {
+    const token = await login(admin);
+    const listUsers = (bearer: string) =>
+      e2e.http().get("/v1/users").set("Authorization", `Bearer ${bearer}`);
+
+    // Logging out revokes the access token too, before it expires
+    await e2e.http().post("/v1/logout").set("Authorization", `Bearer ${token}`);
+
+    expect((await listUsers(token)).status).toBe(HttpStatus.UNAUTHORIZED);
+    expect((await listUsers(await login(admin))).status).toBe(HttpStatus.OK);
   });
 
   it("Should let an admin with a login token list users", async () => {

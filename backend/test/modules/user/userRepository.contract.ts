@@ -18,6 +18,7 @@ export const userRepositoryContract = (kind: RepositoryKind) =>
       users: get(UserRepository),
     }));
     const saveUser = (user: User) => executeTask(ctx.users.save(user));
+    const at = new Date("2026-10-21T12:00:00Z");
     const withoutStamps = ({ createdAt: _, updatedAt: __, ...user }: User) =>
       user;
     const admin = (index: number) =>
@@ -170,12 +171,12 @@ export const userRepositoryContract = (kind: RepositoryKind) =>
       expect([page.count, page.data.length, all.length]).toEqual([0, 0, 0]);
     });
 
-    it("Should increment the token version, which a later save keeps", async () => {
+    it("Should revoke the tokens by a new version, which a later save keeps", async () => {
       const user = new UserBuilder().build();
       await saveUser(user);
 
-      await executeTask(ctx.users.incrementTokenVersion(user.id));
-      // A save of what was read before the increment
+      await executeTask(ctx.users.revokeTokens({ userId: user.id, at }));
+      // A save of what was read before the revocation
       await saveUser({ ...user, name: "Renamed" });
 
       expect(await executeTask(ctx.users.findById(user.id))).toMatchObject(
@@ -183,25 +184,52 @@ export const userRepositoryContract = (kind: RepositoryKind) =>
       );
     });
 
-    it("Should save an account's deactivation and its reactivation", async () => {
+    it("Should deactivate an account, revoking its tokens, which a later save keeps", async () => {
       const user = new UserBuilder().build();
       await saveUser(user);
 
-      await saveUser({ ...user, active: false });
-      expect(await executeTask(ctx.users.findById(user.id))).toMatchObject(
-        O.some({ active: false }),
-      );
+      await executeTask(ctx.users.deactivate({ userId: user.id, at }));
+      // A save of what was read before the deactivation
+      await saveUser({ ...user, name: "Renamed" });
 
-      await saveUser({ ...user, active: true });
+      expect(await executeTask(ctx.users.findById(user.id))).toMatchObject(
+        O.some({
+          name: "Renamed",
+          active: false,
+          tokenVersion: user.tokenVersion + 1,
+        }),
+      );
+    });
+
+    it("Should reactivate an account, which a later save keeps", async () => {
+      const user = new UserBuilder().build();
+      await saveUser(user);
+      await executeTask(ctx.users.deactivate({ userId: user.id, at }));
+
+      await executeTask(ctx.users.reactivate({ userId: user.id, at }));
+      expect(await executeTask(ctx.users.findById(user.id))).toMatchObject(
+        O.some({ active: true, updatedAt: at }),
+      );
+      await saveUser({ ...user, active: false });
+
       expect(await executeTask(ctx.users.findById(user.id))).toMatchObject(
         O.some({ active: true }),
+      );
+    });
+
+    it("Should leave a new account's state as given", async () => {
+      const user = { ...new UserBuilder().build(), active: false };
+
+      await saveUser(user);
+
+      expect(await executeTask(ctx.users.findById(user.id))).toMatchObject(
+        O.some({ active: false }),
       );
     });
 
     it("Should record the last access, which a later save keeps", async () => {
       const user = new UserBuilder().build();
       await saveUser(user);
-      const at = new Date("2026-10-21T12:00:00Z");
 
       await executeTask(ctx.users.recordAccess({ id: user.id, at }));
       // A save of what was read before the access
@@ -224,11 +252,16 @@ export const userRepositoryContract = (kind: RepositoryKind) =>
       ).resolves.toBeUndefined();
     });
 
-    it("Should ignore a token version increment for an unknown user", async () => {
-      await expect(
-        executeTask(
-          ctx.users.incrementTokenVersion(createTestId(TableNameEnum.User, 9)),
-        ),
-      ).resolves.toBeUndefined();
+    it("Should ignore a revocation or a change of state for an unknown user", async () => {
+      const userId = createTestId(TableNameEnum.User, 9);
+
+      for (const write of [
+        ctx.users.revokeTokens,
+        ctx.users.deactivate,
+        ctx.users.reactivate,
+      ])
+        await expect(
+          executeTask(write({ userId, at })),
+        ).resolves.toBeUndefined();
     });
   });

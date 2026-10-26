@@ -27,6 +27,24 @@ export abstract class UserRepository implements RepositoryDefaultPort<User> {
     id: string;
     at: Date;
   }) => TE.TaskEither<Error, void>;
-  /** Revokes every refresh token issued to the user. */
-  incrementTokenVersion!: (userId: string) => TE.TaskEither<Error, void>;
+  /**
+   * Revokes every token issued to the user until `at`: the refresh tokens
+   * through the user's token version, the access tokens through the
+   * revocation AuthGuard reads (TokenRevocationRepository), in one write.
+   * Nothing for an unknown user.
+   */
+  revokeTokens!: (revocation: {
+    userId: string;
+    at: Date;
+  }) => TE.TaskEither<Error, void>;
+  /** Deactivates the account and revokes its tokens, in one write; `save`
+   * leaves `active` as stored, so an edit can't undo it. */
+  deactivate!: (change: {
+    userId: string;
+    at: Date;
+  }) => TE.TaskEither<Error, void>;
+  reactivate!: (change: {
+    userId: string;
+    at: Date;
+  }) => TE.TaskEither<Error, void>;
 }

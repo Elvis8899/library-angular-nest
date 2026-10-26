@@ -50,9 +50,12 @@ export class ReactivateUserHandler implements ICommandHandler<
         ),
         RTE.map(reactivateUser(this.clock.now())),
 
-        //Store entity
-        RTE.tap(
-          performRTE(this.userRepository.save, "save user in storage system."),
+        //Store the state alone, as deactivating does
+        RTE.tap((user) =>
+          performRTE(
+            this.userRepository.reactivate,
+            "reactivate user",
+          )({ userId: user.id, at: user.updatedAt }),
         ),
 
         RTE.tap(publishRTE(userReactivated)),

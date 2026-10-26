@@ -5,6 +5,9 @@ export type RequestJWTPayload = {
   sub: string;
   email: string;
   role: UserRoleEnum;
+  // The user's token version when it was issued; absent from tokens issued
+  // before access tokens carried it
+  ver?: number;
   iat: number;
   exp: number;
   aud: string;

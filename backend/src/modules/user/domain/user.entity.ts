@@ -28,9 +28,9 @@ export const User = z
       .transform((cpf) => cpf ?? ""),
     role: z.enum(UserRoleEnum),
     active: z.boolean().default(true),
-    // Auth's refresh tokens carry it, but it stays on the user: an update
-    // that changes the password, email or role (endsSessions) must revoke
-    // them in the same request, not later through an event
+    // Auth's tokens carry it, but it stays on the user: an update that
+    // changes the password, email or role (endsSessions) must revoke them
+    // in the same request (revokeTokens), not later through an event
     tokenVersion: z.number().int().min(0).default(0),
     // The last login or session refresh, which auth records; null for who
     // never logged in. Saving the user leaves it as stored

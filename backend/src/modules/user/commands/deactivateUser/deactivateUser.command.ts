@@ -54,17 +54,13 @@ export class DeactivateUserHandler implements ICommandHandler<
         ),
         RTE.chainEitherK(deactivateUser(command.requesterId, this.clock.now())),
 
-        //Store entity
-        RTE.tap(
-          performRTE(this.userRepository.save, "save user in storage system."),
-        ),
-
-        //A deactivated account can't refresh its tokens
+        //Store the state alone, ending the account's tokens in the same
+        //write, so a concurrent edit neither undoes it nor is undone
         RTE.tap((user) =>
           performRTE(
-            this.userRepository.incrementTokenVersion,
-            "revoke user refresh tokens",
-          )(user.id),
+            this.userRepository.deactivate,
+            "deactivate user and revoke its tokens",
+          )({ userId: user.id, at: user.updatedAt }),
         ),
 
         RTE.tap(publishRTE(userDeactivated)),

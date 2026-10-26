@@ -93,7 +93,10 @@ One schema file per module in `prisma/schema/`; the client is `@db/generated/cli
 
 ### Auth
 
-Every route needs a token except `POST /v1/login`, `POST /v1/refresh` and `GET /check/status`; `routeProtection.e2e-spec.ts` fails otherwise (a new public route goes in its `publicRoutes`). Refresh tokens are single-use and carry the user's `tokenVersion`, which logout and a change of password, email or role increment.
+Every route needs a token except `POST /v1/login`, `POST /v1/refresh` and `GET /check/status`; `routeProtection.e2e-spec.ts` fails otherwise (a new public route goes in its `publicRoutes`). Tokens carry the user's `tokenVersion` (`ver`); refresh tokens are single-use. Logout, deactivation and a change of password, email or role call `UserRepository.revokeTokens`, which in one write increments the version (ending the refresh tokens) and stores a `TokenRevocation` (the user's id, the new version, expiring with the access tokens it refuses, purged on the next revocation) that `AuthGuard` and the socket handshake read by primary key on every request, so access tokens end at once too.
+
+- Accounts are deactivated, not only deleted: `UserRepository.deactivate`/`reactivate` write `active` alone (`save` keeps it, as it keeps `tokenVersion` and `lastAccessAt`), so a concurrent edit can't undo them. A deactivated account can't log in (`auth.accountDeactivated`, told after the right password) or refresh, and nobody deactivates their own (`user.deactivateSelf`).
+- Login and every refresh record `lastAccessAt` (`recordAccess`); login also re-hashes a password whose hash is weaker than new ones (`PasswordHasher.needsRehash`).
 
 ### Tests
 

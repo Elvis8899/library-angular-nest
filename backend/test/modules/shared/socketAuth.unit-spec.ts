@@ -1,11 +1,14 @@
 import { jwtModuleOptions } from "@modules/auth/auth.config";
+import { FakeTokenRevocationRepository } from "@modules/auth/database/fakeTokenRevocation.repository";
+import { revokeAccessTokens } from "@modules/auth/domain/tokenRevocation.entity";
 import { UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { SocketAuthService } from "@shared/socket/socketAuth.service";
 
 describe("[Unit] SocketAuthService", () => {
   const jwtService = new JwtService(jwtModuleOptions());
-  const socketAuth = new SocketAuthService(jwtService);
+  const revocations = new FakeTokenRevocationRepository();
+  const socketAuth = new SocketAuthService(jwtService, revocations);
   const claims = {
     sub: "user-id",
     email: "a@a.com",
@@ -18,6 +21,17 @@ describe("[Unit] SocketAuthService", () => {
     await expect(socketAuth.authenticate({ token })).resolves.toMatchObject(
       claims,
     );
+  });
+
+  it("Should reject a revoked token", async () => {
+    const token = await jwtService.signAsync({ ...claims, ver: 0 });
+    const at = new Date();
+    revocations.revoke(revokeAccessTokens(claims.sub, 1, at), at);
+
+    await expect(socketAuth.authenticate({ token })).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+    revocations.removeUser(claims.sub);
   });
 
   it("Should reject a token signed with another secret", async () => {

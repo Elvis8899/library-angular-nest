@@ -1,3 +1,4 @@
+import { TokenRevocationRepository } from "@modules/auth/database/tokenRevocation.repository.port";
 import {
   DeactivateUser,
   DeactivateUserHandler,
@@ -30,6 +31,7 @@ describe("[Unit] Deactivate and reactivate User", () => {
       deactivate: get(DeactivateUserHandler),
       reactivate: get(ReactivateUserHandler),
       events: get(DomainEventPublisher),
+      revocations: get(TokenRevocationRepository),
     }),
   );
 
@@ -41,7 +43,7 @@ describe("[Unit] Deactivate and reactivate User", () => {
     await executeTask(ctx.users.save(user));
   });
 
-  it("Should deactivate the account, keep it and end its sessions", async () => {
+  it("Should deactivate the account, keep it and revoke its tokens", async () => {
     const spy = vi.spyOn(ctx.events, "publishEvent");
 
     await ctx.deactivate.execute(new DeactivateUser(user.id, adminId));
@@ -51,6 +53,9 @@ describe("[Unit] Deactivate and reactivate User", () => {
       tokenVersion: user.tokenVersion + 1,
       updatedAt: new Date("2026-10-21T12:00:00Z"),
     });
+    expect(
+      await executeTask(ctx.revocations.findByUserId(user.id)),
+    ).toMatchObject(O.some({ tokenVersion: user.tokenVersion + 1 }));
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ eventKey: "user.deactivated" }),
     );

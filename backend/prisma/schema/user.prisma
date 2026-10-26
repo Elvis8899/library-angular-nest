@@ -22,4 +22,5 @@ model User {
   // Lending example: remove with the rental module
   bookRentalDetails BookRentalDetails[]
   refreshSessions   RefreshSession[]
+  tokenRevocation   TokenRevocation?
 }

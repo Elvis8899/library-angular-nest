@@ -1,3 +1,5 @@
+import { TokenRevocationRepository } from "@modules/auth/database/tokenRevocation.repository.port";
+import { isRevoked } from "@modules/auth/domain/tokenRevocation.entity";
 import {
   AuthenticatedRequest,
   RequestJWTPayload,
@@ -9,10 +11,14 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { executeTask } from "@shared/utils/application/executeTask";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private revocations: TokenRevocationRepository,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
@@ -20,17 +26,20 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException();
     }
-    try {
-      // 💡 Here the JWT secret key that's used for verifying the payload
-      // is the key that was passsed in the JwtModule
-      const payload =
-        await this.jwtService.verifyAsync<RequestJWTPayload>(token);
-      // 💡 We're assigning the payload to the request object here
-      // so that we can access it in our route handlers
-      request.user = payload;
-    } catch {
-      throw new UnauthorizedException();
-    }
+    // Verified with the JwtModule's secret, audience and issuer
+    const payload = await this.jwtService
+      .verifyAsync<RequestJWTPayload>(token)
+      .catch(() => {
+        throw new UnauthorizedException();
+      });
+    // A token revoked since (logout, deactivation, a change of password,
+    // email or role) is refused before it expires. A failed read is a 500
+    const revocation = await executeTask(
+      this.revocations.findByUserId(payload.sub),
+    );
+    if (isRevoked(revocation, payload.ver)) throw new UnauthorizedException();
+    // The route handlers read the claims from the request
+    request.user = payload;
     return true;
   }
 

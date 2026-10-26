@@ -112,9 +112,9 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
         RTE.tap(({ before, after }) =>
           endsSessions(before, after)
             ? performRTE(
-                this.userRepository.incrementTokenVersion,
-                "revoke user refresh tokens",
-              )(after.id)
+                this.userRepository.revokeTokens,
+                "revoke user tokens",
+              )({ userId: after.id, at: after.updatedAt })
             : RTE.right(undefined),
         ),
 
