@@ -3,9 +3,7 @@ import { Roles } from "@modules/auth/decorators/roles.decorator";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
 import { ReactivateUser } from "@modules/user/commands/reactivateUser/reactivateUser.command";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
-import {
-  UserNotFoundException,
-} from "@modules/user/domain/user.errors";
+import { UserNotFoundException } from "@modules/user/domain/user.errors";
 import { HttpCode, HttpStatus, Param, Post, UseGuards } from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
 import {

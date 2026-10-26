@@ -10,12 +10,12 @@ import {
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from "bcrypt";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { useHandlerModule } from "@test/util/handlerModule";
+import * as bcrypt from "bcrypt";
 
 const passwordHasher = new BcryptPasswordHasher();
 

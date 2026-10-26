@@ -52,9 +52,7 @@ export class DeactivateUserHandler implements ICommandHandler<
             userNotFoundException,
           ),
         ),
-        RTE.chainEitherK(
-          deactivateUser(command.requesterId, this.clock.now()),
-        ),
+        RTE.chainEitherK(deactivateUser(command.requesterId, this.clock.now())),
 
         //Store entity
         RTE.tap(

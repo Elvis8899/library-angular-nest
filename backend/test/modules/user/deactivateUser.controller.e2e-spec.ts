@@ -51,7 +51,7 @@ describe("[e2e] POST /v1/users/:id/deactivate and /reactivate", () => {
     const response = await e2e.http().post(route(user.id, "deactivate"));
 
     expect(response.status).toBe(HttpStatus.CONFLICT);
-    expect(response.body.code).toBe("user.deactivateSelf");
+    expect(response.body).toMatchObject({ code: "user.deactivateSelf" });
   });
 
   it.each(["deactivate", "reactivate"] as const)(

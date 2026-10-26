@@ -64,7 +64,10 @@ describe("[Unit] readUpload", () => {
   it("Should keep only the start of a file past the limit", async () => {
     const response = await send(multipart({}, "0123456789"));
 
-    expect(response.json()).toMatchObject({ body: "01234567", truncated: true });
+    expect(response.json()).toMatchObject({
+      body: "01234567",
+      truncated: true,
+    });
   });
 
   it("Should refuse a request without a file, or not multipart, with 422", async () => {

@@ -8,7 +8,14 @@ import {
   UserDeactivatesSelfException,
   UserNotFoundException,
 } from "@modules/user/domain/user.errors";
-import { HttpCode, HttpStatus, Param, Post, Request, UseGuards } from "@nestjs/common";
+import {
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Request,
+  UseGuards,
+} from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
 import {
   ApiDefaultResponse,
@@ -31,9 +38,11 @@ export class DeactivateUserController {
   @ApiDefaultResponse({ description: "Usuário desativado com sucesso." })
   @ApiOperation({
     summary: "Desativar Usuário",
-    description: "A conta deixa de entrar e suas sessões terminam. O que ela registrou continua apontando para ela.",
+    description:
+      "A conta deixa de entrar e suas sessões terminam. O que ela registrou continua apontando para ela.",
   })
-  async deactivateUser(    @Param("id") id: string,
+  async deactivateUser(
+    @Param("id") id: string,
     @Request() req: AuthenticatedRequest,
   ): Promise<void> {
     return this.commandBus

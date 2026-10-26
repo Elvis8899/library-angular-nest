@@ -8,8 +8,8 @@ import {
   UserChangesInput,
   UserRoleEnum,
 } from "@modules/user/domain/user.entity";
-import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { UserDeactivatesSelfException } from "@modules/user/domain/user.errors";
+import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { E, O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 
