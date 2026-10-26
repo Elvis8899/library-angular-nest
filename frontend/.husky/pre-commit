@@ -1,3 +1,4 @@
-# Git runs hooks from the repository root
+# Git runs hooks from the repository root. Formats the staged files of
+# both apps and the contracts, each with its package's .prettierrc
 cd frontend
 npm run format-staged

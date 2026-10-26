@@ -18,9 +18,9 @@ The repository is also a seed. `shared`, `auth`, `user` and `audit` (backend) an
 
 ```bash
 # Repo root
-yarn install                  # everything; builds the contracts, installs the pre-commit hook (Prettier on staged frontend files)
+yarn install                  # everything; builds the contracts, installs the pre-commit hook (Prettier on the staged files of both apps and the contracts)
 yarn contracts:watch          # rebuild the contracts while editing them (the apps import the build)
-yarn build | yarn lint | yarn lint:check | yarn typecheck | yarn test   # all packages
+yarn build | yarn lint | yarn lint:check | yarn typecheck | yarn test   # all packages (lint: the contracts' Prettier too)
 
 # backend/ — tests need Postgres and SeaweedFS: docker compose -f ../.docker/docker-compose-dev.yml up postgres storage -d
 yarn test:migrate             # migrate the library-test database (yarn test:docker:up also resets and reseeds it)
@@ -42,7 +42,7 @@ yarn lint:changed | yarn lint:styles
 
 `make dockerDev` runs the whole dev stack behind nginx on `localhost:3000`. The API won't start without `JWT_SECRET_KEY`/`JWT_REFRESH_SECRET` (32+ characters) and the `S3_*` settings of a reachable storage; `.env.test` has test values.
 
-While working, check with `lint:changed` and `test:module` (they only report). Once at the end: `yarn lint` (fixes), `yarn typecheck`, then the full suites, since a module's run misses what other modules' specs cover.
+While working, check with `lint:changed` and `test:module` (they only report); leave their `prettier/prettier` errors alone, since the pre-commit hook formats what's committed. Once at the end: `yarn lint` (fixes), `yarn typecheck`, then the full suites, since a module's run misses what other modules' specs cover.
 
 ## Conventions (lint enforces them)
 

@@ -16,7 +16,7 @@
     "lint:check": "ng lint",
     "lint:changed": "sh -c 'files=$({ git diff --name-only --relative --diff-filter=d HEAD -- \"*.ts\" \"*.html\"; git ls-files --others --exclude-standard -- \"*.ts\" \"*.html\"; } | sort -u); if [ -n \"$files\" ]; then eslint --cache --cache-location node_modules/.cache/eslint/ $files; else echo No changed files.; fi'",
     "lint:styles": "stylelint \"src/**/*.scss\"",
-    "format-staged": "pretty-quick --staged --pattern \"frontend/**\"",
+    "format-staged": "pretty-quick --staged --pattern \"frontend/**\" --pattern \"backend/**\" --pattern \"packages/**\"",
     "write:env": "ngx-scripts env npm_package_version",
     "prettier": "prettier --write \"./src/**/*.{ts,js,html,scss}\"",
     "prettier:check": "prettier --list-different \"./src/**/*.{ts,js,html,scss}\"",
