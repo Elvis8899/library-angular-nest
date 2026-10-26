@@ -377,13 +377,307 @@
       "description": "Prometheus targets it can't reach (the dev stack's docker job aside)"
     },
     {
+      "id": 26,
+      "type": "row",
+      "title": "Deploys",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 27,
+      "title": "Deploy",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 6,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(2 * deploy_running{job=\"deploy\"} + 1 - deploy_last_success{job=\"deploy\"}) or 2 * deploy_running{job=\"deploy\"}",
+          "legendFormat": "",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Last one succeeded",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            },
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Last one failed",
+                  "color": "red",
+                  "index": 1
+                }
+              }
+            },
+            {
+              "type": "value",
+              "options": {
+                "2": {
+                  "text": "Deploying",
+                  "color": "blue",
+                  "index": 2
+                }
+              }
+            },
+            {
+              "type": "value",
+              "options": {
+                "3": {
+                  "text": "Deploying",
+                  "color": "blue",
+                  "index": 3
+                }
+              }
+            }
+          ],
+          "noValue": "Hook not scraped",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "description": "Whether the deploy hook is deploying now, else how its last deploy ended (the \"Deploy failed\" alert fires until one succeeds)"
+    },
+    {
+      "id": 28,
+      "title": "Deploying for",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 6,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "time() - deploy_started_timestamp_seconds{job=\"deploy\"}",
+          "legendFormat": "",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "Not deploying",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1800
+              },
+              {
+                "color": "red",
+                "value": 3600
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "description": "How long the running deploy has taken; the \"Deploy stuck\" alert fires after an hour"
+    },
+    {
+      "id": 29,
+      "title": "Last deploy finished",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 6,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "deploy_last_finished_timestamp_seconds{job=\"deploy\"} * 1000",
+          "legendFormat": "",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dateTimeFromNow",
+          "noValue": "None yet",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "description": "When the last deploy ended, successful or not"
+    },
+    {
+      "id": 30,
+      "title": "Deploys",
+      "type": "state-timeline",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 6,
+        "w": 12,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "deploy_running{job=\"deploy\"}",
+          "legendFormat": "deploy"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Idle",
+                  "color": "transparent",
+                  "index": 0
+                }
+              }
+            },
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Deploying",
+                  "color": "blue",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "never",
+        "legend": {
+          "showLegend": false
+        },
+        "mergeValues": true
+      },
+      "description": "When deploys ran; the graphs below shade the same spans (the Deploys annotation)"
+    },
+    {
       "id": 8,
       "type": "row",
       "title": "Server",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 5,
+        "y": 10,
         "w": 24,
         "h": 1
       },
@@ -399,7 +693,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 6,
+        "y": 11,
         "w": 8,
         "h": 8
       },
@@ -443,7 +737,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 6,
+        "y": 11,
         "w": 8,
         "h": 8
       },
@@ -495,7 +789,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 6,
+        "y": 11,
         "w": 8,
         "h": 8
       },
@@ -519,7 +813,7 @@
         "overrides": []
       },
       "options": {},
-      "description": "The database, Prometheus and the Docker images share this disk; dockerDeploy prunes old images"
+      "description": "Database, files, Prometheus and the Docker images share this disk; dockerDeploy prunes old images"
     },
     {
       "id": 12,
@@ -531,7 +825,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 14,
+        "y": 19,
         "w": 8,
         "h": 8
       },
@@ -573,7 +867,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 14,
+        "y": 19,
         "w": 8,
         "h": 8
       },
@@ -625,7 +919,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 14,
+        "y": 19,
         "w": 8,
         "h": 8
       },
@@ -664,7 +958,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 22,
+        "y": 27,
         "w": 24,
         "h": 1
       },
@@ -680,7 +974,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 23,
+        "y": 28,
         "w": 8,
         "h": 8
       },
@@ -723,7 +1017,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 23,
+        "y": 28,
         "w": 8,
         "h": 8
       },
@@ -765,7 +1059,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 23,
+        "y": 28,
         "w": 8,
         "h": 8
       },
@@ -798,7 +1092,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 31,
+        "y": 36,
         "w": 8,
         "h": 8
       },
@@ -840,7 +1134,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 31,
+        "y": 36,
         "w": 8,
         "h": 8
       },
@@ -875,7 +1169,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 31,
+        "y": 36,
         "w": 8,
         "h": 8
       },
@@ -905,7 +1199,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 39,
+        "y": 44,
         "w": 24,
         "h": 1
       },
@@ -921,7 +1215,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 40,
+        "y": 45,
         "w": 8,
         "h": 8
       },
@@ -963,7 +1257,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 40,
+        "y": 45,
         "w": 8,
         "h": 8
       },
@@ -997,7 +1291,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 40,
+        "y": 45,
         "w": 8,
         "h": 8
       },
@@ -1025,7 +1319,21 @@
     "list": []
   },
   "annotations": {
-    "list": []
+    "list": [
+      {
+        "name": "Deploys",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "enable": true,
+        "iconColor": "blue",
+        "expr": "deploy_running{job=\"deploy\"} == 1",
+        "step": "30s",
+        "titleFormat": "Deploy",
+        "textFormat": "A deploy was running (the deploy hook's deploy_running)"
+      }
+    ]
   },
   "links": [
     {

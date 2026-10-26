@@ -725,6 +725,20 @@
     "list": []
   },
   "annotations": {
-    "list": []
+    "list": [
+      {
+        "name": "Deploys",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "enable": true,
+        "iconColor": "blue",
+        "expr": "deploy_running{job=\"deploy\"} == 1",
+        "step": "30s",
+        "titleFormat": "Deploy",
+        "textFormat": "A deploy was running (the deploy hook's deploy_running)"
+      }
+    ]
   }
 }

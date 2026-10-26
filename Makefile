@@ -1,8 +1,9 @@
 # Images build in a builder of their own (dockerBuilder), with a low CPU weight
 BUILDER = library-builder
 COMPOSE_PROD = sudo env BUILDX_BUILDER=$(BUILDER) docker compose --file .docker/docker-compose.yml
-# The production stack, (re)built from the checked-out code
-PROD_UP = $(COMPOSE_PROD) up pgadmin postgres certbot prometheus grafana nginx --build -d --quiet-pull
+# The production stack, (re)built from the checked-out code; pgAdmin only on
+# demand (pgadminUp)
+PROD_UP = $(COMPOSE_PROD) up postgres certbot prometheus grafana nginx --build -d --quiet-pull
 # The commit dockerDeploy deploys; CI passes the one it tested
 REF ?= origin/main
 
@@ -16,6 +17,8 @@ help:
 	@echo '  dockerDeploy'
 	@echo '  dockerCertificate'
 	@echo '  dockerBuilder'
+	@echo '  pgadminUp'
+	@echo '  pgadminDown'
 
 # Prepares a fresh Ubuntu server: Docker, swap, network, .env files with secrets
 serverSetup:
@@ -71,6 +74,15 @@ dockerDeploy:
 		sudo docker buildx stop $(BUILDER); \
 		git rev-parse HEAD > $(DEPLOYED); \
 	fi
+
+# pgAdmin (https://<DOMAIN>/pgadmin4/) only while it's needed: deploys don't
+# start it, and stopped it frees its memory and its login page; its settings
+# and saved servers stay in the container
+pgadminUp:
+	$(COMPOSE_PROD) up -d pgadmin
+
+pgadminDown:
+	$(COMPOSE_PROD) stop pgadmin
 
 # Issues the HTTPS certificate for DOMAIN (.docker/.env). Run it once, before
 # the first dockerProd, or again after changing DOMAIN, with nginx stopped:
