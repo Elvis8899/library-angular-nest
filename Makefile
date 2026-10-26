@@ -6,12 +6,14 @@ COMPOSE_PROD = sudo env BUILDX_BUILDER=$(BUILDER) docker compose --file .docker/
 PROD_UP = $(COMPOSE_PROD) up postgres certbot prometheus grafana nginx --build -d --quiet-pull
 # The commit dockerDeploy deploys; CI passes the one it tested
 REF ?= origin/main
+COMPOSE_DEV = docker compose --file .docker/docker-compose-dev.yml
 
 help:
 	@echo 'Run "make <target>" where <target> is one of the following:'
 	@echo '  serverSetup'
 	@echo '  serverHook'
 	@echo '  dockerDev'
+	@echo '  dockerDevRefresh'
 	@echo '  dockerProd'
 	@echo '  dockerMigrate'
 	@echo '  dockerDeploy'
@@ -30,7 +32,16 @@ serverHook:
 	sudo sh .docker/deployHookSetup.sh
 
 dockerDev:
-	docker compose --file .docker/docker-compose-dev.yml up --build -d --quiet-pull
+	$(COMPOSE_DEV) up --build -d --quiet-pull
+
+# Brings the running dev stack up to the checked-out code after a pull, a
+# dependency, contracts or schema change: installs the workspace (which
+# rebuilds the contracts), drops Vite's pre-bundled copy of them, and restarts
+# the API (generate, migrate, seed) and the Angular dev server
+dockerDevRefresh:
+	$(COMPOSE_DEV) run --rm install
+	rm -rf frontend/.angular/cache
+	$(COMPOSE_DEV) restart app frontend
 
 dockerProd: dockerBuilder
 	git pull && $(PROD_UP)

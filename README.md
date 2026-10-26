@@ -49,6 +49,8 @@ On each start, the API container installs dependencies, applies migrations and s
 | `/pgadmin4/` | pgAdmin |
 | `/grafana/`, `/prometheus/` | Metrics |
 
+Edits to the contracts, the dependencies or the schema don't reload by themselves: the page fails with "doesn't provide an export named …" (Vite's stale copy of the contracts) or the API answers 500 with "The column … does not exist" (a migration not applied). `make dockerDevRefresh` brings the running stack up to the code: it reinstalls the workspace (rebuilding the contracts), clears the frontend's `.angular/cache`, and restarts the API (generate, migrate, seed) and the Angular dev server. Hard-reload the page after it.
+
 Grafana (`admin`/`admin`) opens with the Prometheus data source and two dashboards in `.docker/grafana/dashboards/`: **Library API** (requests, latency and errors by route, use cases by outcome, memory and event loop) and **Library server** (the site's probe and certificate, the deploys, disk, memory, CPU, the database, the file storage; both shade the spans a deploy ran). The alert rules (API, site or database down, certificate expiring, disk or memory running out, 5xx errors) are under Alerting; they aren't sent anywhere yet. Prometheus scrapes the API's metrics server on `app:9464` (`METRICS_PORT`), which nginx doesn't proxy.
 
 ### Option B: run the backend on the host
