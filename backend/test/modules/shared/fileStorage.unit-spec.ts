@@ -1,6 +1,6 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import { FakeFileStorage } from "@shared/storage/fakeFileStorage";
-import { FileType, fileTypeOf } from "@shared/storage/fileType";
+import { cleanFileName, FileType, fileTypeOf } from "@shared/storage/fileType";
 import { S3Bucket, S3FileStorage } from "@shared/storage/s3FileStorage";
 import { removeUnsavedRTE, removeUnusedRTE } from "@shared/storage/storedFiles";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -24,6 +24,17 @@ describe("[Unit] File types", () => {
     // RIFF without WEBP: a WAV
     expect(fileTypeOf(Buffer.from("RIFF\0\0\0\0WAVE"))).toEqual(O.none);
     expect(fileTypeOf(Buffer.alloc(0))).toEqual(O.none);
+  });
+
+  it("Should keep a name without its path, control characters or excess", () => {
+    expect(cleanFileName("C:\\fotos\\capa 1.jpg", FileType.Jpeg)).toBe(
+      "capa 1.jpg",
+    );
+    expect(cleanFileName("/tmp/a\u0000b\n.pdf", FileType.Pdf)).toBe("ab.pdf");
+    expect(cleanFileName(`${"x".repeat(200)}.pdf`, FileType.Pdf)).toHaveLength(
+      120,
+    );
+    expect(cleanFileName("  ", FileType.Webp)).toBe("arquivo.webp");
   });
 });
 

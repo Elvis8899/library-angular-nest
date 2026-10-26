@@ -3,6 +3,14 @@ import { O } from "@shared/utils/application/monads";
 
 export { FileType } from "@library/contracts";
 
+export const fileExtensions: Record<FileType, string> = {
+  [FileType.Jpeg]: "jpg",
+  [FileType.Png]: "png",
+  [FileType.Webp]: "webp",
+  [FileType.Gif]: "gif",
+  [FileType.Pdf]: "pdf",
+};
+
 const startsWith = (body: Buffer, bytes: readonly number[], at = 0) =>
   body.subarray(at, at + bytes.length).equals(Buffer.from(bytes));
 
@@ -33,3 +41,17 @@ const signatures: [FileType, (body: Buffer) => boolean][] = [
  */
 export const fileTypeOf = (body: Buffer): O.Option<FileType> =>
   O.fromNullable(signatures.find(([, matches]) => matches(body))?.[0]);
+
+const maxNameLength = 120;
+
+/**
+ * The name a file is shown and downloaded with: without a path or control
+ * characters, at most 120 characters, and "arquivo.<ext>" when nothing is
+ * left.
+ */
+export const cleanFileName = (name: string, type: FileType): string =>
+  name
+    .replace(/^.*[\\/]/, "")
+    .replace(/\p{Cc}/gu, "")
+    .trim()
+    .slice(0, maxNameLength) || `arquivo.${fileExtensions[type]}`;
