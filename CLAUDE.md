@@ -63,7 +63,7 @@ Each module under `src/modules/` is hexagonal/CQRS: `commands/<name>/` and `quer
 
 1. Open with `inputsRTE({ id: [UUID, "id", command.id], input: [XInput, "X", command.props] })`; inputs are the contract's request schemas (`BookDetails = BookInfoRequest`), plus rules only the backend checks.
 2. Look up with `findOrFailRTE(repo.findById, "get x by id", xNotFoundException)(id)` / `ensureAbsentRTE(…)`.
-3. Apply pure rules from the domain (`registerUser`, `changeBookDetails`, `newRental`, `startRental`). A rule that refuses returns `Either` (`RTE.chainEitherK`). "Now" is the injected `Clock`'s `now()`, passed into rules, never `new Date()`.
+3. Apply pure rules from the domain (`registerUser`, `changeBookDetails`, `newRental`, `startRental`). A rule that refuses returns `Either` (`RTE.chainEitherK`). "Now" is the injected `Clock`'s `now()` (the business day, America/Sao_Paulo, is `today()`), passed into rules, never `new Date()`.
 4. Store with `performRTE(repo.save, "…")`. A rule concurrent requests could break is checked again by the repository's conditional write.
 5. End with `RTE.tap(publishRTE(xCreated))` and, when a screen shows it, `changedRTE({ resource, key? })`.
 
@@ -115,7 +115,7 @@ Every route needs a token except `POST /v1/login`, `POST /v1/refresh` and `GET /
 
 ## Contracts
 
-Only Zod (no Nest, fp-ts or Prisma). Moments are `Timestamp` (ISO on the wire, `Date` in the backend). A domain is `values.ts` (enums as `as const` objects and shared rules, no Zod, since the frontend bundles them) and `schemas.ts` (requests and responses, named with `contract(schema, { id })`; exported types are `z.input`). Shared: `common.ts` (`Id`, `Timestamp`, `page`, `PageQuery`, `optionalParam`, `Created`), `errors.ts`, `files.ts`, `liveUpdates.ts`, `text.ts`. There are no DTO classes: a shape is written once, here. 100% coverage (`yarn test` in the package).
+Only Zod (no Nest, fp-ts or Prisma). Moments are `Timestamp` (ISO on the wire, `Date` in the backend). A domain is `values.ts` (enums as `as const` objects and shared rules, no Zod, since the frontend bundles them) and `schemas.ts` (requests and responses, named with `contract(schema, { id })`; exported types are `z.input`). Shared: `common.ts` (`Id`, `BusinessDate`, `YearMonth`, `Timestamp`, `page`, `PageQuery`, `optionalParam`, `Created`), `dates.ts` (business days: `businessDateOf`, `addDays`), `errors.ts`, `files.ts`, `liveUpdates.ts`, `text.ts`. There are no DTO classes: a shape is written once, here. 100% coverage (`yarn test` in the package).
 
 ## Adding a feature
 

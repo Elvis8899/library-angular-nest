@@ -4,9 +4,15 @@ import { contract } from "./registry.js";
 /** A record's id. */
 export const Id = z.guid();
 
-/** A business day, yyyy-MM-dd. */
+/** A business day, yyyy-MM-dd (dates.ts counts them). */
 export const BusinessDate = z.iso.date();
 export type BusinessDate = z.infer<typeof BusinessDate>;
+
+/** A month, yyyy-MM. */
+export const YearMonth = z
+  .string()
+  .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Mês inválido (aaaa-mm)");
+export type YearMonth = z.infer<typeof YearMonth>;
 
 /**
  * A moment: an ISO string on the wire, a `Date` in the backend. A contract's
