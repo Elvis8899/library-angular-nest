@@ -4,6 +4,7 @@ import {
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
 import { MatPaginatorIntl } from "@angular/material/paginator";
+import { MAT_SELECT_CONFIG } from "@angular/material/select";
 import { RouteReuseStrategy } from "@angular/router";
 import { appConfig } from "@app/app.config";
 import { Logger, LogLevel } from "@app/services/logger.service";
@@ -32,6 +33,14 @@ describe("appConfig", () => {
     expect(spectator.inject(RouteReuseStrategy)).toBeInstanceOf(
       ExplicitRouteReuseStrategy
     );
+  });
+
+  it("should let the selects show a null option as chosen", () => {
+    const spectator = createContext();
+
+    expect(spectator.inject(MAT_SELECT_CONFIG)).toEqual({
+      canSelectNullableOptions: true,
+    });
   });
 
   it("should send requests through the interceptors", () => {

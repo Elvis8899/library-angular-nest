@@ -11,6 +11,7 @@ import {
   provideZonelessChangeDetection,
 } from "@angular/core";
 import { MatPaginatorIntl } from "@angular/material/paginator";
+import { MAT_SELECT_CONFIG } from "@angular/material/select";
 import {
   PreloadAllModules,
   provideRouter,
@@ -78,6 +79,12 @@ export const appConfig: ApplicationConfig = {
     ),
     // The paginators' labels in the selected language
     { provide: MatPaginatorIntl, useClass: TranslatedPaginatorIntl },
+    // A null option ("Todos", "—") shows its label when chosen; by default
+    // mat-select treats null as nothing chosen, blank
+    {
+      provide: MAT_SELECT_CONFIG,
+      useValue: { canSelectNullableOptions: true },
+    },
     {
       provide: RouteReuseStrategy,
       useClass: ExplicitRouteReuseStrategy,

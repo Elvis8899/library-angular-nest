@@ -19,6 +19,8 @@ describe("PageHeaderComponent", () => {
     // Assert
     expect(spectator.query("h1")).toHaveText("users.list.title");
     expect(spectator.query(".subtitle")).toBeNull();
+    // Not the native tooltip, which would show the key
+    expect(spectator.element).not.toHaveAttribute("title");
     expect(spectator.query(".actions button[name='create']")).toBeTruthy();
   });
 

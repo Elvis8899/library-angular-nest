@@ -78,17 +78,14 @@
           </mat-form-field>
 
           <button
+            [appBusy]="loading()"
             [disabled]="loading()"
             class="submit"
             matButton="filled"
             name="login"
             type="submit"
           >
-            @if (loading()) {
-              <mat-progress-spinner diameter="20" mode="indeterminate" />
-            } @else {
-              {{ "auth.login.title" | translate }}
-            }
+            {{ "auth.login.title" | translate }}
           </button>
         </form>
       </mat-card-content>

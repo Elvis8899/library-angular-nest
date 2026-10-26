@@ -11,6 +11,9 @@ import { TranslatePipe } from "@ngx-translate/core";
   templateUrl: "./pageHeader.component.html",
   styleUrl: "./pageHeader.component.scss",
   imports: [TranslatePipe],
+  // The title input's key would otherwise stay as the element's native
+  // title, a tooltip over the whole component
+  host: { "[attr.title]": "null" },
 })
 export class PageHeaderComponent {
   readonly title = input.required<TranslationKey>();

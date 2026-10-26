@@ -6,12 +6,12 @@ import { MatCardModule } from "@angular/material/card";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIcon } from "@angular/material/icon";
 import { MatInput } from "@angular/material/input";
-import { MatProgressSpinner } from "@angular/material/progress-spinner";
 import { ActivatedRoute, Router } from "@angular/router";
 import { defaultRolePage } from "@app/layouts/components/sidebar/navMenuItems";
 import { AuthenticationService } from "@app/services/authentication.service";
 import { NotificationService } from "@app/services/notification.service";
 import { ThemeToggleComponent } from "@app/shared/components/themeToggle/themeToggle.component";
+import { BusyDirective } from "@app/shared/directives/busy.directive";
 import { LanguageSelectorComponent } from "@app/shared/i18n/languageSelector/languageSelector.component";
 import { TranslatePipe } from "@ngx-translate/core";
 import { finalize } from "rxjs";
@@ -28,7 +28,7 @@ import { finalize } from "rxjs";
     MatFormFieldModule,
     MatIcon,
     MatInput,
-    MatProgressSpinner,
+    BusyDirective,
     LanguageSelectorComponent,
     ThemeToggleComponent,
     TranslatePipe,
