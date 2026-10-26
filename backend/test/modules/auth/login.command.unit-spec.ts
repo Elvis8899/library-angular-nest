@@ -10,6 +10,7 @@ import {
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from "bcrypt";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
@@ -112,6 +113,28 @@ describe("[Unit] Create User", () => {
     );
 
     await expect(resultPromise).rejects.toBeInstanceOf(WrongAuthException);
+  });
+
+  it("Should replace a weaker hash on login, keeping the password", async () => {
+    //Given an account whose hash has fewer rounds than new ones
+    const user = new UserBuilder().withPassword(
+      await bcrypt.hash("senha123", 4),
+    );
+    await executeTask(ctx.userRepository.save(user.build()));
+
+    //When it logs in
+    const result = await ctx.loginCommandHandler.execute(
+      new LoginCommand(user.withPassword("senha123").buildCreateDTO()),
+    );
+
+    //Then its password is hashed as new ones are
+    const stored = O.toUndefined(
+      await executeTask(ctx.userRepository.findById(result.user.id)),
+    );
+    expect(passwordHasher.needsRehash(stored?.password ?? "")).toBe(false);
+    expect(
+      await passwordHasher.matches("senha123", stored?.password ?? ""),
+    ).toBe(true);
   });
 
   it("Should not login a deactivated account, nor record the access", async () => {

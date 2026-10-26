@@ -7,4 +7,7 @@ import { PasswordHash } from "@modules/user/domain/password";
 export abstract class PasswordHasher {
   abstract hash(password: string): Promise<PasswordHash>;
   abstract matches(password: string, hash: string): Promise<boolean>;
+  /** Whether a hash is weaker than new ones (fewer rounds, an old format),
+   * to replace on the next login. */
+  abstract needsRehash(hash: string): boolean;
 }

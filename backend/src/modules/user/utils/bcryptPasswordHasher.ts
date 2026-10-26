@@ -14,4 +14,9 @@ export class BcryptPasswordHasher extends PasswordHasher {
   matches(password: string, hash: string): Promise<boolean> {
     return bcrypt.compare(password, hash);
   }
+
+  // Raising SALT_ROUNDS strengthens each password at its next login
+  needsRehash(hash: string): boolean {
+    return bcrypt.getRounds(hash) < SALT_ROUNDS;
+  }
 }

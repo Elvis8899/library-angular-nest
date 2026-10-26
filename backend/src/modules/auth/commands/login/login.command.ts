@@ -79,6 +79,22 @@ export class LoginCommandHandler implements ICommandHandler<
         ),
         // Checked after the password, so only the account's owner learns it
         RTE.filterOrElseW((user) => user.active, accountDeactivatedException),
+        // A hash weaker than new ones is replaced, now the password is known
+        RTE.tap((user) =>
+          this.passwordHasher.needsRehash(user.password)
+            ? FPF.pipe(
+                RTE.fromTask(() =>
+                  this.passwordHasher.hash(command.props.password),
+                ),
+                RTE.chain((password) =>
+                  performRTE(
+                    this.userRepository.save,
+                    "replace weaker password hash",
+                  )({ ...user, password }),
+                ),
+              )
+            : RTE.right(undefined),
+        ),
         RTE.tap((user) => this.recordAccess(user.id)),
         RTE.bindTo("user"),
         RTE.bindW("session", ({ user }) => this.startSession(user.id)),
