@@ -62,8 +62,12 @@ describe("[Unit] Refresh token", () => {
     //When we refresh
     const result = await refresh(refreshToken);
 
-    //Then it should return new tokens for that user, in the same session
+    //Then it should return new tokens for that user, in the same session,
+    //recording the access
     expect(result.accessToken).toBeTruthy();
+    expect(await executeTask(ctx.userRepository.findById(user.id))).toEqual(
+      O.some({ ...user, lastAccessAt: new Date("2026-10-21T12:00:00Z") }),
+    );
     expect(result.refreshToken).not.toBe(refreshToken);
     expect(result.user.id).toBe(user.id);
     const claims = await ctx.jwtService.verifyAsync<{ sid: string }>(
@@ -91,7 +95,12 @@ describe("[Unit] Refresh token", () => {
     const reuse = refresh(refreshToken);
 
     //Then it is rejected and the session ends, so the newer token stops working too
+    await ctx.userRepository.recordAccess({ id: user.id, at: new Date(0) })();
     await expect(reuse).rejects.toBeInstanceOf(InvalidRefreshTokenException);
+    // A refused refresh isn't an access
+    expect(await executeTask(ctx.userRepository.findById(user.id))).toEqual(
+      O.some({ ...user, lastAccessAt: new Date(0) }),
+    );
     expect(
       await executeTask(
         ctx.refreshSessionRepository.findById(session.sessionId),
@@ -148,6 +157,17 @@ describe("[Unit] Refresh token", () => {
     );
   });
 
+  it("Should not refresh a deactivated account's token", async () => {
+    //Given a logged in user whose account is inactive (stored so first: a
+    //save keeps the state; deactivating would also revoke the token)
+    await executeTask(ctx.userRepository.save({ ...user, active: false }));
+    const { refreshToken } = await login();
+
+    await expect(refresh(refreshToken)).rejects.toBeInstanceOf(
+      InvalidRefreshTokenException,
+    );
+  });
+
   it("Should not refresh if the user no longer exists", async () => {
     //Given a valid refresh token for a user that was deleted
     const { refreshToken } = await login();
@@ -161,7 +181,9 @@ describe("[Unit] Refresh token", () => {
   it("Should not refresh after the user's tokens were revoked", async () => {
     //Given a refresh token issued before logout
     const { refreshToken } = await login();
-    await executeTask(ctx.userRepository.incrementTokenVersion(user.id));
+    await executeTask(
+      ctx.userRepository.revokeTokens({ userId: user.id, at: new Date() }),
+    );
 
     await expect(refresh(refreshToken)).rejects.toBeInstanceOf(
       InvalidRefreshTokenException,

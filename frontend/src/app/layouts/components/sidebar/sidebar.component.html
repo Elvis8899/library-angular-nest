@@ -17,8 +17,39 @@
   </a>
 
   <mat-nav-list class="menu">
-    @for (item of items; track item.route) {
-      <ng-container *ngTemplateOutlet="link; context: { $implicit: item }" />
+    @for (row of rows; track $index) {
+      @if (row.kind === "group") {
+        @let open = isOpen(row.group);
+        <!-- A closed group holding the current page is marked as current -->
+        <button
+          (click)="toggleGroup(row.group)"
+          [attr.aria-expanded]="open"
+          [attr.title]="expanded() ? null : (row.group.title | translate)"
+          [class.active]="!open && currentGroup() === row.group"
+          [class.open]="open"
+          class="menu-link menu-group"
+          mat-list-item
+          type="button"
+        >
+          <mat-icon matListItemIcon>{{ row.group.icon }}</mat-icon>
+          <span class="menu-label" matListItemTitle>{{
+            row.group.title | translate
+          }}</span>
+        </button>
+        @if (open) {
+          <div class="menu-group-items">
+            @for (item of row.items; track item.route) {
+              <ng-container
+                *ngTemplateOutlet="link; context: { $implicit: item }"
+              />
+            }
+          </div>
+        }
+      } @else {
+        <ng-container
+          *ngTemplateOutlet="link; context: { $implicit: row.item }"
+        />
+      }
     }
   </mat-nav-list>
 

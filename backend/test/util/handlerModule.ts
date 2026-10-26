@@ -1,5 +1,7 @@
 import { FakeRefreshSessionRepository } from "@modules/auth/database/fakeRefreshSession.repository";
+import { FakeTokenRevocationRepository } from "@modules/auth/database/fakeTokenRevocation.repository";
 import { RefreshSessionRepository } from "@modules/auth/database/refreshSession.repository.port";
+import { TokenRevocationRepository } from "@modules/auth/database/tokenRevocation.repository.port";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { FakeBookInfoRepository } from "@modules/book/database/fakeBookInfo.repository";
 import { BookRentalRepository } from "@modules/rental/database/bookRental.repository.port";
@@ -76,6 +78,10 @@ export const createHandlerModule = async (
       // returns, typed, for specs that inspect it
       ...fakeRepository(UserRepository, FakeUserRepository),
       ...fakeRepository(RefreshSessionRepository, FakeRefreshSessionRepository),
+      ...fakeRepository(
+        TokenRevocationRepository,
+        FakeTokenRevocationRepository,
+      ),
       ...fakeRepository(FileStorage, FakeFileStorage),
       // Lending example
       ...fakeRepository(BookInfoRepository, FakeBookInfoRepository),

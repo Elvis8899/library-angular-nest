@@ -2,8 +2,6 @@
  *  Dedicated file for custom utility classes. like margin, padding, display, etc.
  */
 
-@use "@angular/material" as mat;
-
 // A small status label in a table cell: <span class="chip chip-success">.
 // The text carries the meaning; the color only reinforces it.
 .chip {
@@ -128,6 +126,7 @@
   // Clips the header band to the corners without becoming a scroll
   // container, so sticky cells still follow the page or the wrapper
   overflow: clip;
+  margin-bottom: var(--table-end-space);
   background-color: var(--card-background);
   font: var(--mat-sys-body-medium);
 
@@ -160,14 +159,9 @@
     }
   }
 
-  // The table's own border closes the last row, a little below it
+  // The table's own border closes the last row
   > :last-child > tr:last-child > * {
     border-bottom: 0;
-  }
-
-  // Not under a totals row, whose band reaches the border
-  &:not(:has(tfoot)) {
-    padding-bottom: var(--table-end-space);
   }
 
   thead th {
@@ -360,16 +354,4 @@
     cursor: progress;
     opacity: 0.6;
   }
-}
-
-// A filter row of its own under the page header, when the filters don't
-// fit beside the header's buttons: its fields as tall as those buttons, as
-// the header's are. <div class="filters compact-fields">
-.compact-fields {
-  @include mat.form-field-overrides(
-    (
-      container-height: var(--control-height),
-      container-vertical-padding: var(--space-2),
-    )
-  );
 }

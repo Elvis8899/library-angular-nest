@@ -1,4 +1,20 @@
-import { detailsOf } from "@app/shared/utils/apiError.utility";
+import {
+  detailsOf,
+  isChangedMeanwhile,
+} from "@app/shared/utils/apiError.utility";
+
+describe("isChangedMeanwhile", () => {
+  it("Should tell the API's changed-meanwhile refusals", () => {
+    expect(isChangedMeanwhile({ code: "book.coverChanged" })).toBe(true);
+    expect(isChangedMeanwhile({ code: "rental.changed" })).toBe(true);
+  });
+
+  it("Should leave other errors out", () => {
+    expect(isChangedMeanwhile({ code: "user.cpfTaken" })).toBe(false);
+    expect(isChangedMeanwhile({ message: "falhou" })).toBe(false);
+    expect(isChangedMeanwhile(null)).toBe(false);
+  });
+});
 
 describe("detailsOf", () => {
   // No code sends details yet: the contracts' ErrorDetailsOf would type them

@@ -1,5 +1,6 @@
 import {
   userCPFAlreadyExistsException,
+  userDeactivatesSelfException,
   userEmailAlreadyExistsException,
   userHasActiveRentalsException,
   userNotFoundException,
@@ -29,6 +30,13 @@ describe("[Unit] User error codes", () => {
       HttpStatus.CONFLICT,
       "Conflict",
       "user.emailTaken",
+    ],
+    [
+      "userDeactivatesSelfException",
+      userDeactivatesSelfException,
+      HttpStatus.CONFLICT,
+      "Conflict",
+      "user.deactivateSelf",
     ],
     // Lending example
     [

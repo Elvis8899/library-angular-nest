@@ -55,16 +55,15 @@ export const generateTokens =
       {
         email: user.email,
         role: user.role,
+        // AuthGuard refuses a version a revocation went past
+        ver: user.tokenVersion,
       },
     );
     const [accessToken, refreshToken] = await Promise.all([
       jwtService.signAsync(payload, signOptions),
       // The token version lets the server revoke all the user's refresh
       // tokens; the session and jti make each refresh token single-use
-      jwtService.signAsync(
-        { ...payload, ver: user.tokenVersion, sid: sessionId, jti },
-        refreshOptions,
-      ),
+      jwtService.signAsync({ ...payload, sid: sessionId, jti }, refreshOptions),
     ]);
     return {
       accessToken,

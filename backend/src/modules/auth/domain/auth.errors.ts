@@ -19,3 +19,12 @@ export class InvalidRefreshTokenException extends domainError(
 
 export const invalidRefreshTokenException = () =>
   new InvalidRefreshTokenException();
+
+export class AccountDeactivatedException extends domainError(
+  DomainErrorKindEnum.Unauthorized,
+  "auth.accountDeactivated",
+  "Esta conta está desativada. Fale com um administrador.",
+) {}
+
+export const accountDeactivatedException = () =>
+  new AccountDeactivatedException();

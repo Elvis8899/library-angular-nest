@@ -96,6 +96,24 @@ describe("ErrorHandlerInterceptor", () => {
     expect(check).toBe(true);
   });
 
+  it("Should return the unknown error for a proxy's HTML page", () => {
+    let check = false;
+    httpClient.get("/test2").subscribe({
+      error: (error) => {
+        expect(error?.message).toBe("errors.unknown");
+        check = true;
+      },
+    });
+    const req = httpMock.expectOne("/test2");
+    httpMock.expectOne("/test").flush("");
+    req.flush("<html><head><title>502 Bad Gateway</title></head></html>", {
+      status: HttpStatusCode.BadGateway,
+      statusText: "Bad Gateway",
+    });
+    // Assert
+    expect(check).toBe(true);
+  });
+
   it.each([
     ["translated when there's a translation", "user.cpfTaken", "CPF já usado"],
     ["the API's when there's none", "user.unknownCode", "Mensagem da API"],
@@ -119,25 +137,37 @@ describe("ErrorHandlerInterceptor", () => {
     expect(received?.code).toBe(code);
   });
 
-  it("Should logout on status 401 or 403", () => {
-    const req = httpMock.expectOne("/test");
-    req.flush(new Error("error"), {
-      status: HttpStatusCode.Unauthorized,
-      statusText: "error",
-    });
+  it.each([HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden])(
+    "Should logout on status %i without a code",
+    (status) => {
+      const req = httpMock.expectOne("/test");
+      req.flush(new Error("error"), { status, statusText: "error" });
+      // Assert
+      expect(check).toBe(true);
+      expect(spectator.inject(Router).navigate).toHaveBeenCalledWith([
+        "/login",
+      ]);
+    }
+  );
+
+  it("Should show a 403 with a code without logging out", () => {
+    let received: { message?: string } | undefined;
+    httpClient
+      .get("/test4")
+      .subscribe({ error: (error) => (received = error) });
+    httpMock.expectOne("/test").flush("");
+    // Act
+    httpMock.expectOne("/test4").flush(
+      {
+        statusCode: HttpStatusCode.Forbidden,
+        message: "Mensagem da API",
+        code: "user.cpfTaken",
+      },
+      { status: HttpStatusCode.Forbidden, statusText: "Forbidden" }
+    );
     // Assert
-    expect(check).toBe(true);
-    expect(spectator.inject(Router).navigate).toHaveBeenCalledWith(["/login"]);
-  });
-  it("Should logout on status 401 or 403", () => {
-    const req = httpMock.expectOne("/test");
-    req.flush(new Error("error"), {
-      status: HttpStatusCode.Forbidden,
-      statusText: "error",
-    });
-    // Assert
-    expect(check).toBe(true);
-    expect(spectator.inject(Router).navigate).toHaveBeenCalledWith(["/login"]);
+    expect(received?.message).toBe("CPF já usado");
+    expect(spectator.inject(Router).navigate).not.toHaveBeenCalled();
   });
 
   describe("with a refresh token", () => {

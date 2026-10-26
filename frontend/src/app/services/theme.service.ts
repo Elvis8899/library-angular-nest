@@ -1,14 +1,19 @@
 import { DOCUMENT } from "@angular/common";
-import { inject, Injectable, signal } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 
 export type ColorScheme = "light" | "dark";
+/** The user's choice: follow the system (Automático), or a fixed scheme. */
+export type ThemePreference = "auto" | ColorScheme;
+
+export const themePreferences: ThemePreference[] = ["auto", "light", "dark"];
 
 const colorSchemeKey = "colorScheme";
 
 /**
- * Light or dark scheme. Follows the system setting until the user picks one,
- * which is remembered in localStorage and set on <html> (styles.scss defaults
- * to `color-scheme: light dark`).
+ * Light or dark scheme. Follows the system setting (Automático) unless the
+ * user picks one, which is remembered in localStorage and set on <html>
+ * (styles.scss defaults to `color-scheme: light dark`). `colorScheme` is the
+ * scheme in effect, for what can't follow CSS by itself (a chart, a canvas).
  */
 @Injectable({
   providedIn: "root",
@@ -18,35 +23,41 @@ export class ThemeService {
   private readonly _systemDark = this._document.defaultView?.matchMedia?.(
     "(prefers-color-scheme: dark)"
   );
-
-  private readonly _colorScheme = signal<ColorScheme>(
-    this._storedColorScheme() ?? this._systemColorScheme()
+  private readonly _systemScheme = signal<ColorScheme>(
+    this._systemColorScheme()
   );
-  readonly colorScheme = this._colorScheme.asReadonly();
+
+  private readonly _preference = signal<ThemePreference>(
+    this._storedColorScheme() ?? "auto"
+  );
+  readonly preference = this._preference.asReadonly();
+  readonly colorScheme = computed<ColorScheme>(() => {
+    const preference = this._preference();
+    return preference === "auto" ? this._systemScheme() : preference;
+  });
 
   constructor() {
-    const stored = this._storedColorScheme();
-    if (stored) this._apply(stored);
-    // Without a choice of their own, follow the system while the app is open
-    this._systemDark?.addEventListener("change", () => {
-      if (!this._storedColorScheme())
-        this._colorScheme.set(this._systemColorScheme());
-    });
+    this._apply(this._preference());
+    this._systemDark?.addEventListener("change", () =>
+      this._systemScheme.set(this._systemColorScheme())
+    );
   }
 
-  toggle(): void {
-    const next: ColorScheme = this._colorScheme() === "dark" ? "light" : "dark";
-    this._colorScheme.set(next);
-    this._apply(next);
+  setPreference(preference: ThemePreference): void {
+    this._preference.set(preference);
+    this._apply(preference);
     try {
-      localStorage.setItem(colorSchemeKey, next);
+      if (preference === "auto") localStorage.removeItem(colorSchemeKey);
+      else localStorage.setItem(colorSchemeKey, preference);
     } catch {
       // Storage blocked: the choice lasts until the page reloads
     }
   }
 
-  private _apply(colorScheme: ColorScheme): void {
-    this._document.documentElement.style.colorScheme = colorScheme;
+  // Automático leaves <html> to styles.scss, which follows the system
+  private _apply(preference: ThemePreference): void {
+    this._document.documentElement.style.colorScheme =
+      preference === "auto" ? "" : preference;
   }
 
   private _storedColorScheme(): ColorScheme | null {

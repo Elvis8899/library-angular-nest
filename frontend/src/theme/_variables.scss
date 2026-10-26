@@ -24,8 +24,8 @@
   --table-header-background: var(--mat-sys-surface-container);
   --table-border: var(--mat-sys-outline-variant);
   --table-hover: color-mix(in srgb, var(--mat-sys-on-surface) 5%, transparent);
-  // Room under a table's last row, so the box's border and rounded corners
-  // don't crowd it
+  // Room under a table's box, before what follows it; the box itself closes
+  // right under its last row
   --table-end-space: 3px;
 
   // Row heights, the same on every table and list: compact for dense grids
@@ -33,7 +33,7 @@
   // and a row with form fields (a 48px field, its label above it)
   --row-height-compact: 32px;
   --row-height: 48px;
-  --row-height-form: 64px;
+  --row-height-form: 56px;
   --cell-padding: var(--space-1) 12px;
 
   // A button's height, which a field beside buttons takes too

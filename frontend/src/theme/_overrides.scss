@@ -1,3 +1,30 @@
 /*
- *  Dedicated file for overriding styles from third-party libraries like Bootstrap, ng-select, ngneat dialog, ngneat tippy.
+ *  Dedicated file for overriding styles of third-party libraries and their
+ *  components.
  */
+
+// A button waiting on its request (`[appBusy]`): the spinner over the
+// hidden label, so the button keeps its width
+.app-busy {
+  .mdc-button__label {
+    visibility: hidden;
+  }
+
+  > mat-progress-spinner {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+  }
+}
+
+// A number field without the browser's arrows: they crowded the value and
+// ran into a unit after it (mm, h, L). The keyboard's ↑/↓ still step it
+.mat-mdc-form-field input[type="number"] {
+  appearance: textfield;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+}

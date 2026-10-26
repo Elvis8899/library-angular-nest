@@ -1,14 +1,18 @@
+import { FakeTokenRevocationRepository } from "@modules/auth/database/fakeTokenRevocation.repository";
+import { TokenRevocationRepository } from "@modules/auth/database/tokenRevocation.repository.port";
+import { revokeAccessTokens } from "@modules/auth/domain/tokenRevocation.entity";
 import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { RequestJWTPayload } from "@modules/auth/guards/authenticatedRequest";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { ExecutionContext, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
-import { FPF } from "@shared/utils/application/monads";
+import { FPF, TE } from "@shared/utils/application/monads";
 
 describe("AuthGuard", () => {
   let guard: AuthGuard;
-  let fnToUse = () => true;
+  let revocations: FakeTokenRevocationRepository;
+  let fnToUse: () => unknown = () => ({ sub: "user-1", ver: 0 });
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -18,13 +22,19 @@ describe("AuthGuard", () => {
           provide: JwtService,
           useValue: {
             // Mock the 'verify' method (or 'sign', 'decode', etc.)
-            verifyAsync: vi.fn(() => fnToUse()),
+            verifyAsync: vi.fn(() => Promise.resolve().then(fnToUse)),
           },
+        },
+        FakeTokenRevocationRepository,
+        {
+          provide: TokenRevocationRepository,
+          useExisting: FakeTokenRevocationRepository,
         },
       ],
     }).compile();
 
     guard = module.get(AuthGuard);
+    revocations = module.get(FakeTokenRevocationRepository);
   });
 
   it("should be defined", () => {
@@ -38,7 +48,7 @@ describe("AuthGuard", () => {
       headers: { authorization: "Bearer token" },
     };
     it("should return true if the token is valid", async () => {
-      fnToUse = () => true;
+      fnToUse = () => ({ sub: "user-1", ver: 0 });
       const result = await guard.canActivate(
         createMockExecutionContext(defaultInput),
       );
@@ -46,7 +56,6 @@ describe("AuthGuard", () => {
     });
 
     it("should return error if there is no token", async () => {
-      fnToUse = () => true;
       const resultPromise = guard.canActivate(
         createMockExecutionContext({
           headers: {},
@@ -63,6 +72,36 @@ describe("AuthGuard", () => {
         createMockExecutionContext(defaultInput),
       );
       await expect(resultPromise).rejects.toThrow(UnauthorizedException);
+    });
+
+    it.each([
+      ["below the revocation", 0, false],
+      ["without a version", undefined, false],
+      ["issued since", 1, true],
+    ])(
+      "should check a token %s against the user's revocation",
+      async (_, ver, accepted) => {
+        const at = new Date();
+        revocations.revoke(revokeAccessTokens("user-1", 1, at), at);
+        fnToUse = () => ({ sub: "user-1", ver });
+
+        const result = guard.canActivate(
+          createMockExecutionContext(defaultInput),
+        );
+
+        await (accepted
+          ? expect(result).resolves.toBe(true)
+          : expect(result).rejects.toThrow(UnauthorizedException));
+      },
+    );
+
+    it("should fail with the read's error, not as unauthorized", async () => {
+      const failure = new Error("database down");
+      vi.spyOn(revocations, "findByUserId").mockReturnValue(TE.left(failure));
+
+      await expect(
+        guard.canActivate(createMockExecutionContext(defaultInput)),
+      ).rejects.toBe(failure);
     });
   });
 });

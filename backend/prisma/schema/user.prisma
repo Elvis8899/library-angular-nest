@@ -10,12 +10,17 @@ model User {
   password     String
   cpf          String?      @unique
   role         UserRoleEnum
+  // A deactivated account can't log in; its records still point at it
+  active       Boolean      @default(true)
   // Incremented to revoke all refresh tokens issued to the user
   tokenVersion Int          @default(0)
+  // The last login or session refresh; null for who never logged in
+  lastAccessAt DateTime?
 
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   // Lending example: remove with the rental module
   bookRentalDetails BookRentalDetails[]
   refreshSessions   RefreshSession[]
+  tokenRevocation   TokenRevocation?
 }

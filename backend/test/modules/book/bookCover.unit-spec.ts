@@ -36,6 +36,7 @@ import { useHandlerModule } from "@test/util/handlerModule";
 
 const png = Buffer.from("\x89PNG\r\n\x1a\n cover", "latin1");
 const upload = (body = png, truncated = false) => ({
+  fields: {},
   name: "capa.png",
   body,
   truncated,

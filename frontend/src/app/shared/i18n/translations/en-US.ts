@@ -9,6 +9,9 @@ export const enUS: CoreTranslations = {
   nav: {
     users: "Users",
     audit: "Audit",
+    groups: {
+      admin: "Administration",
+    },
     // Lending example
     books: "Books",
     rentals: "Rentals",
@@ -18,8 +21,10 @@ export const enUS: CoreTranslations = {
     closeMenu: "Close menu",
   },
   theme: {
-    dark: "Dark theme",
-    light: "Light theme",
+    label: "Theme",
+    auto: "Automatic",
+    light: "Light",
+    dark: "Dark",
   },
   language: {
     label: "Language",
@@ -27,6 +32,11 @@ export const enUS: CoreTranslations = {
   roles: {
     admin: "Admin",
     client: "Client",
+  },
+  unsavedChanges: {
+    title: "Discard changes?",
+    message: "There are unsaved changes. Discard them and leave?",
+    confirm: "Discard",
   },
   common: {
     cancel: "Cancel",
@@ -74,6 +84,7 @@ export const enUS: CoreTranslations = {
     auth: {
       wrongCredentials: "The email or password is incorrect.",
       sessionExpired: "Your session expired. Please log in again.",
+      accountDeactivated: "This account is deactivated. Ask an administrator.",
     },
     // Lending example
     book: {
@@ -95,6 +106,7 @@ export const enUS: CoreTranslations = {
       notFound: "User not found.",
       cpfTaken: "This CPF is already used by another user.",
       emailTaken: "This email is already used by another user.",
+      deactivateSelf: "You can't deactivate your own account.",
       // Lending example
       hasActiveRentals:
         "This user has rentals in progress. Finish them before deleting the user.",

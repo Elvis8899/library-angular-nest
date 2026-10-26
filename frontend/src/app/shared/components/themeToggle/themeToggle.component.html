@@ -1,10 +1,25 @@
 <button
-  (click)="theme.toggle()"
-  [attr.aria-label]="label() | translate"
-  [matTooltip]="label() | translate"
+  [attr.aria-label]="'theme.label' | translate"
+  [matMenuTriggerFor]="themeMenu"
+  [matTooltip]="'theme.label' | translate"
   mat-icon-button
   name="toggleTheme"
   type="button"
 >
   <mat-icon>{{ icon() }}</mat-icon>
 </button>
+<mat-menu #themeMenu="matMenu">
+  @for (preference of preferences; track preference) {
+    <button
+      (click)="theme.setPreference(preference)"
+      [attr.aria-checked]="theme.preference() === preference"
+      [name]="'theme-' + preference"
+      mat-menu-item
+      role="menuitemradio"
+      type="button"
+    >
+      <mat-icon>{{ icons[preference] }}</mat-icon>
+      <span>{{ names[preference] | translate }}</span>
+    </button>
+  }
+</mat-menu>

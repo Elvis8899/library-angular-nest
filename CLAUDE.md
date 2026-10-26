@@ -63,7 +63,7 @@ Each module under `src/modules/` is hexagonal/CQRS: `commands/<name>/` and `quer
 
 1. Open with `inputsRTE({ id: [UUID, "id", command.id], input: [XInput, "X", command.props] })`; inputs are the contract's request schemas (`BookDetails = BookInfoRequest`), plus rules only the backend checks.
 2. Look up with `findOrFailRTE(repo.findById, "get x by id", xNotFoundException)(id)` / `ensureAbsentRTE(…)`.
-3. Apply pure rules from the domain (`registerUser`, `changeBookDetails`, `newRental`, `startRental`). A rule that refuses returns `Either` (`RTE.chainEitherK`). "Now" is the injected `Clock`'s `now()`, passed into rules, never `new Date()`.
+3. Apply pure rules from the domain (`registerUser`, `changeBookDetails`, `newRental`, `startRental`). A rule that refuses returns `Either` (`RTE.chainEitherK`). "Now" is the injected `Clock`'s `now()` (the business day, America/Sao_Paulo, is `today()`), passed into rules, never `new Date()`.
 4. Store with `performRTE(repo.save, "…")`. A rule concurrent requests could break is checked again by the repository's conditional write.
 5. End with `RTE.tap(publishRTE(xCreated))` and, when a screen shows it, `changedRTE({ resource, key? })`.
 
@@ -93,7 +93,10 @@ One schema file per module in `prisma/schema/`; the client is `@db/generated/cli
 
 ### Auth
 
-Every route needs a token except `POST /v1/login`, `POST /v1/refresh` and `GET /check/status`; `routeProtection.e2e-spec.ts` fails otherwise (a new public route goes in its `publicRoutes`). Refresh tokens are single-use and carry the user's `tokenVersion`, which logout and a change of password, email or role increment.
+Every route needs a token except `POST /v1/login`, `POST /v1/refresh` and `GET /check/status`; `routeProtection.e2e-spec.ts` fails otherwise (a new public route goes in its `publicRoutes`). Tokens carry the user's `tokenVersion` (`ver`); refresh tokens are single-use. Logout, deactivation and a change of password, email or role call `UserRepository.revokeTokens`, which in one write increments the version (ending the refresh tokens) and stores a `TokenRevocation` (the user's id, the new version, expiring with the access tokens it refuses, purged on the next revocation) that `AuthGuard` and the socket handshake read by primary key on every request, so access tokens end at once too.
+
+- Accounts are deactivated, not only deleted: `UserRepository.deactivate`/`reactivate` write `active` alone (`save` keeps it, as it keeps `tokenVersion` and `lastAccessAt`), so a concurrent edit can't undo them. A deactivated account can't log in (`auth.accountDeactivated`, told after the right password) or refresh, and nobody deactivates their own (`user.deactivateSelf`).
+- Login and every refresh record `lastAccessAt` (`recordAccess`); login also re-hashes a password whose hash is weaker than new ones (`PasswordHasher.needsRehash`).
 
 ### Tests
 
@@ -106,16 +109,16 @@ Every route needs a token except `POST /v1/login`, `POST /v1/refresh` and `GET /
 
 ## Frontend
 
-- `pages/<feature>/` are lazy route groups with their model (aliases of the contracts' types) and `<feature>.http.service.ts` (spec pins each URL and method). Access is `data: { roles }`, checked by `permission.guard.ts`; `pages.routes.spec.ts` covers each role. The sidebar is `navMenuItems.ts`.
+- `pages/<feature>/` are lazy route groups with their model (aliases of the contracts' types) and `<feature>.http.service.ts` (spec pins each URL and method). Access is `data: { roles }`, checked by `permission.guard.ts`; `pages.routes.spec.ts` covers each role. The sidebar is `navMenuItems.ts` (related pages share a `group`).
 - Zoneless and OnPush: template state is signals (`signal`, `computed`, `input()`, `toSignal`); requests stay RxJS; unsubscribe with `takeUntilDestroyed()`.
-- Use the shared building blocks: `app-page-header`, `app-form-card`, `customizedTable` + `PaginatedDataSource`, `ConfirmDialog.confirm()` for destructive actions, `injectSaving(log)` for every save (one at a time, the API's message on failure), `app-dialog-actions`/`[appBusy]`, `app-row-actions`, `*appLoaded` with `loading(log)`, `app-report-table`, `app-suggestions`, `img[appAuthSrc]` for files behind the token, `detailsOf(error, code)`, `[appTemplateContext]` and `*matCellDef="let row; dataSource: data"` for typed templates. Messages go through `NotificationService` (`success`/`error` take keys, `errorMessage` translated text).
+- Use the shared building blocks: `app-page-header`, `app-form-card`, `customizedTable` + `PaginatedDataSource`, `ConfirmDialog.confirm()` for destructive actions, `injectSaving(log)` for every save (one at a time, the API's message on failure), `app-dialog-actions`/`[appBusy]`, `app-row-actions`, `*appLoaded` with `loading(log)`, `app-report-table`, `app-suggestions`, `img[appAuthSrc]` for files behind the token, `detailsOf(error, code)` and `isChangedMeanwhile(error)`, `canDeactivate: [unsavedChangesGuard]` for forms (`HasUnsavedChanges`), `offered(entries, chosen)` for pickers, `readPreference`/`writePreference` for per-browser choices, `printDocument`, `pastedRows`, `[appTemplateContext]` and `*matCellDef="let row; dataSource: data"` for typed templates. Messages go through `NotificationService` (`success`/`error` take keys, `errorMessage` translated text).
 - Translations: pt-BR is the source. Core texts are in `pt-BR.ts`; a page's namespace goes in `pages.pt-BR.ts`; the en-US files have the same shape. Templates use `"x.y" | translate`, code passes `t("x.y")`. `translationKeys.spec.ts` fails on unknown, unused or misplaced keys and missing `errors.<code>`.
 - Styles: colors from `--mat-sys-*`, spacing from `--space-1`…`--space-6`, small screens below 768px (`injectIsSmallScreen()`, fewer list `[columns]`). An `@if` isn't projected into a named slot by itself: wrap it (`<ng-container pageActions>`).
 - Specs use `@openng/spectator/vitest` (`createComponentFactory`, `mocks: […]`) with `HttpTestingController`; `spectator.inject(ApplicationRef).tick()` runs effects and renders overlays. Specs share a DOM: undo global changes (prototype spies, `vi.stubGlobal`); block storage with `blockStorage()`.
 
 ## Contracts
 
-Only Zod (no Nest, fp-ts or Prisma). Moments are `Timestamp` (ISO on the wire, `Date` in the backend). A domain is `values.ts` (enums as `as const` objects and shared rules, no Zod, since the frontend bundles them) and `schemas.ts` (requests and responses, named with `contract(schema, { id })`; exported types are `z.input`). Shared: `common.ts` (`Id`, `Timestamp`, `page`, `PageQuery`, `optionalParam`, `Created`), `errors.ts`, `files.ts`, `liveUpdates.ts`, `text.ts`. There are no DTO classes: a shape is written once, here. 100% coverage (`yarn test` in the package).
+Only Zod (no Nest, fp-ts or Prisma). Moments are `Timestamp` (ISO on the wire, `Date` in the backend). A domain is `values.ts` (enums as `as const` objects and shared rules, no Zod, since the frontend bundles them) and `schemas.ts` (requests and responses, named with `contract(schema, { id })`; exported types are `z.input`). Shared: `common.ts` (`Id`, `BusinessDate`, `YearMonth`, `Timestamp`, `page`, `PageQuery`, `optionalParam`, `Created`), `dates.ts` (business days: `businessDateOf`, `addDays`), `errors.ts`, `files.ts`, `liveUpdates.ts`, `text.ts`. There are no DTO classes: a shape is written once, here. 100% coverage (`yarn test` in the package).
 
 ## Adding a feature
 

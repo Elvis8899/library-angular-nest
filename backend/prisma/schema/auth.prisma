@@ -13,3 +13,17 @@ model RefreshSession {
 
   @@index([userId])
 }
+
+// Access tokens aren't stored, so revoking them is a row the auth guard
+// reads on every request: the user's tokens carrying a lower version are
+// refused. One row per user, the latest revocation; once expiresAt passes,
+// every token it refuses has expired by itself, and revoking purges it
+model TokenRevocation {
+  userId       String   @id
+  tokenVersion Int
+  expiresAt    DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+}

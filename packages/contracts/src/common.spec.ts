@@ -6,12 +6,19 @@ import {
   page,
   PageQuery,
   Timestamp,
+  YearMonth,
 } from "./common.js";
 
 describe("common", () => {
   it("Should take a yyyy-MM-dd day and refuse anything else", () => {
     expect(BusinessDate.parse("2026-10-21")).toBe("2026-10-21");
     expect(BusinessDate.safeParse("21/10/2026").success).toBe(false);
+  });
+
+  it("Should take a yyyy-MM month and refuse anything else", () => {
+    expect(YearMonth.safeParse("2026-12").success).toBe(true);
+    expect(YearMonth.safeParse("2026-13").success).toBe(false);
+    expect(YearMonth.safeParse("not-a-month").success).toBe(false);
   });
 
   it("Should read a moment from its ISO string and write it back", () => {

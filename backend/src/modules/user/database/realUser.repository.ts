@@ -1,4 +1,5 @@
-import { RentalStatus } from "@db/generated/client";
+import { Prisma, RentalStatus } from "@db/generated/client";
+import { revokeAccessTokens } from "@modules/auth/domain/tokenRevocation.entity";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { formatDocument } from "@modules/user/domain/document";
 import { User, UserRoleEnum } from "@modules/user/domain/user.entity";
@@ -16,6 +17,7 @@ import { prismaTasks } from "@shared/utils/database/prismaTasks";
 import { Paginated } from "@shared/utils/database/repository.port";
 import { rowReads } from "@shared/utils/database/rowReads";
 import { validateMaybeRow } from "@shared/utils/database/rowValidation";
+import { transactionTask } from "@shared/utils/database/transaction";
 import { mapUniqueViolations } from "@shared/utils/database/uniqueViolation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
@@ -111,12 +113,57 @@ export class RealUserRepository implements UserRepository {
   };
 
   // updateMany does not fail when the user no longer exists
-  incrementTokenVersion = (userId: string): TE.TaskEither<Error, void> =>
+  recordAccess = ({ id, at }: { id: string; at: Date }) =>
+    FPF.pipe(
+      this.users.updateMany({ where: { id }, data: { lastAccessAt: at } }),
+      TE.asUnit,
+    );
+
+  revokeTokens = ({ userId, at }: { userId: string; at: Date }) =>
+    transactionTask(this.prisma, (tx) => this.revokeIn(tx, userId, at));
+
+  // active alone, so a save of what was read before can't undo it
+  deactivate = ({ userId, at }: { userId: string; at: Date }) =>
+    transactionTask(this.prisma, async (tx) => {
+      await tx.user.updateMany({
+        where: { id: userId },
+        data: { active: false, updatedAt: at },
+      });
+      await this.revokeIn(tx, userId, at);
+    });
+
+  reactivate = ({ userId, at }: { userId: string; at: Date }) =>
     FPF.pipe(
       this.users.updateMany({
         where: { id: userId },
-        data: { tokenVersion: { increment: 1 } },
+        data: { active: true, updatedAt: at },
       }),
       TE.asUnit,
     );
+
+  // A new token version ends the refresh tokens; the revocation, the access
+  // tokens. The expired revocations go at the same time. updateMany does not
+  // fail when the user no longer exists
+  private revokeIn = async (
+    tx: Prisma.TransactionClient,
+    userId: string,
+    at: Date,
+  ): Promise<void> => {
+    const { count } = await tx.user.updateMany({
+      where: { id: userId },
+      data: { tokenVersion: { increment: 1 } },
+    });
+    if (count === 0) return;
+    const { tokenVersion } = await tx.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: { tokenVersion: true },
+    });
+    const revocation = revokeAccessTokens(userId, tokenVersion, at);
+    await tx.tokenRevocation.deleteMany({ where: { expiresAt: { lt: at } } });
+    await tx.tokenRevocation.upsert({
+      where: { userId },
+      create: revocation,
+      update: revocation,
+    });
+  };
 }

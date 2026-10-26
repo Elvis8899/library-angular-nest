@@ -1,4 +1,6 @@
 import { authConfig, jwtModuleOptions } from "@modules/auth/auth.config";
+import { FakeTokenRevocationRepository } from "@modules/auth/database/fakeTokenRevocation.repository";
+import { revokeAccessTokens } from "@modules/auth/domain/tokenRevocation.entity";
 import { AuthGuard } from "@modules/auth/guards/auth.guard";
 import { generateTokens } from "@modules/auth/utils/tokens";
 import { ExecutionContext, UnauthorizedException } from "@nestjs/common";
@@ -11,7 +13,8 @@ import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 // auth.guard.unit-spec.ts which mocks token verification
 describe("[Unit] JWT verification", () => {
   const jwtService = new JwtService(jwtModuleOptions());
-  const guard = new AuthGuard(jwtService);
+  const revocations = new FakeTokenRevocationRepository();
+  const guard = new AuthGuard(jwtService, revocations);
   const user = new UserBuilder().build();
   const session = {
     sessionId: createTestId(TableNameEnum.RefreshSession, 1),
@@ -59,6 +62,27 @@ describe("[Unit] JWT verification", () => {
     await expect(
       guard.canActivate(contextWithToken(token)),
     ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it("Should reject an access token a revocation went past, not a newer one", async () => {
+    const at = new Date();
+    const { accessToken: before } = await generateTokens(jwtService)(
+      user,
+      session,
+    );
+    revocations.revoke(revokeAccessTokens(user.id, 1, at), at);
+    const { accessToken: after } = await generateTokens(jwtService)(
+      { ...user, tokenVersion: 1 },
+      session,
+    );
+
+    await expect(
+      guard.canActivate(contextWithToken(before)),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(guard.canActivate(contextWithToken(after))).resolves.toBe(
+      true,
+    );
+    revocations.removeUser(user.id);
   });
 
   it("Should reject a refresh token used as access token", async () => {

@@ -22,6 +22,12 @@ const log = new Logger("ErrorHandlerInterceptor");
 const isAuthRequest = (request: HttpRequest<unknown>): boolean =>
   /\/v1\/(login|refresh)$/.test(request.url);
 
+// A 401, or a guard's 403 (the role can't open the route). A 403 with a code
+// is a domain refusal: shown like other API errors
+const endsSession = ({ status, error }: HttpErrorResponse): boolean =>
+  status === HttpStatusCode.Unauthorized ||
+  (status === HttpStatusCode.Forbidden && typeof error?.code !== "string");
+
 export const errorHandlerInterceptor: HttpInterceptorFn = (
   request: HttpRequest<unknown>,
   next: HttpHandlerFn
@@ -32,16 +38,14 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (
   const _translate = inject(TranslateService);
 
   const handleError = (errorResponse: HttpErrorResponse) => {
-    const status = errorResponse.status;
-    if (
-      status === HttpStatusCode.Unauthorized ||
-      status === HttpStatusCode.Forbidden
-    ) {
+    if (endsSession(errorResponse)) {
       _credentialsService.setCredentials();
       _router.navigate(["/login"]);
     }
     let error = errorResponse.error;
-    if (!error || !("message" in error)) {
+    // Not the API's JSON: a proxy's HTML page (nginx's 502 while the API
+    // restarts), plain text or nothing
+    if (typeof error !== "object" || !error || !("message" in error)) {
       error = new Error(_translate.instant(t("errors.unknown")));
     } else if (typeof error.code === "string") {
       // The API's errors carry a code (user.cpfTaken); show its translation,

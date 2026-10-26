@@ -7,6 +7,16 @@ export interface ApiError {
   details?: unknown;
 }
 
+/**
+ * Whether the API refused a write because what it read changed meanwhile
+ * (a 409 whose code ends in `changed`, as a book's cover): another save got
+ * there first, and the screen must reload before trying again.
+ */
+export const isChangedMeanwhile = (error: unknown): boolean => {
+  const code = (error as ApiError | null)?.code;
+  return typeof code === "string" && /(\.c|C)hanged$/.test(code);
+};
+
 /** The error's details when the API answered with one of the codes, typed
  * as the contracts say each code sends them; null for any other error. */
 export const detailsOf = <C extends ErrorCode>(

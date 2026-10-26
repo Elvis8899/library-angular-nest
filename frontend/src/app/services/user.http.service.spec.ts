@@ -104,6 +104,17 @@ describe("UserService", () => {
     expect(result).toBe("ok");
   });
 
+  it.each(["deactivate", "reactivate"] as const)(
+    "Should %s a user",
+    (action) => {
+      spectator.service[`${action}User`](user).subscribe();
+
+      http
+        .expectOne({ method: "POST", url: `/v1/users/user-1/${action}` })
+        .flush(null);
+    }
+  );
+
   it("Should delete a user", () => {
     spectator.service.deleteUser(user).subscribe();
 

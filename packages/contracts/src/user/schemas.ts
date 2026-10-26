@@ -67,6 +67,12 @@ export const UserResponse = contract(
     email: z.string(),
     cpf: z.string().describe("Com máscara; vazio para um admin sem um"),
     role: z.enum(UserRole),
+    active: z
+      .boolean()
+      .describe("Se a conta está ativa; uma desativada não entra"),
+    lastAccessAt: Timestamp.nullable().describe(
+      "O último login ou renovação da sessão; null se nunca entrou",
+    ),
     createdAt: Timestamp,
     updatedAt: Timestamp,
   }),

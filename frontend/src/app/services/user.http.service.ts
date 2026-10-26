@@ -53,6 +53,14 @@ export class UserService {
     });
   }
 
+  deactivateUser(user: UserEntity): Observable<void> {
+    return this._http.post<void>(`/v1/users/${user.id}/deactivate`, null);
+  }
+
+  reactivateUser(user: UserEntity): Observable<void> {
+    return this._http.post<void>(`/v1/users/${user.id}/reactivate`, null);
+  }
+
   deleteUser(user: UserEntity): Observable<string> {
     return this._http.delete(`/v1/users/${user.id}`, { responseType: "text" });
   }

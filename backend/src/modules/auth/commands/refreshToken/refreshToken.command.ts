@@ -14,6 +14,7 @@ import {
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { JwtService } from "@nestjs/jwt";
+import { Clock } from "@shared/clock/clock";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { B, E, FPF, RE, RTE, TE } from "@shared/utils/application/monads";
 import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
@@ -35,6 +36,7 @@ export class RefreshTokenCommandHandler implements ICommandHandler<
     private readonly refreshSessionRepository: RefreshSessionRepository,
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly jwtService: JwtService,
+    private readonly clock: Clock,
   ) {}
 
   execute(command: RefreshTokenCommand): Promise<AuthResponse> {
@@ -69,8 +71,9 @@ export class RefreshTokenCommandHandler implements ICommandHandler<
           ),
         ),
 
-        //Validate User still exists and the token was not revoked
-        //(logout or user update increments the user's token version),
+        //Validate User still exists and is active, and the token was not
+        //revoked (logout, deactivation or a user update increments the
+        //user's token version),
         //then use the user's current data for new tokens
         RTE.chain((claims) =>
           FPF.pipe(
@@ -81,11 +84,18 @@ export class RefreshTokenCommandHandler implements ICommandHandler<
               invalidRefreshTokenException,
             ),
             RTE.filterOrElseW(
-              (user) => user.tokenVersion === claims.ver,
+              (user) => user.active && user.tokenVersion === claims.ver,
               invalidRefreshTokenException,
             ),
             RTE.bindTo("user"),
             RTE.bindW("next", () => this.rotateSession(claims)),
+            // The users list shows each account's last access
+            RTE.tap(({ user }) =>
+              performRTE(
+                this.userRepository.recordAccess,
+                "record user access",
+              )({ id: user.id, at: this.clock.now() }),
+            ),
           ),
         ),
         RTE.chainTaskK(

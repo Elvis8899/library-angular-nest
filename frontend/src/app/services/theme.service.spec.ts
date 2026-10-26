@@ -48,6 +48,7 @@ describe("ThemeService", () => {
     // Act
     spectator = createService();
     // Assert
+    expect(spectator.service.preference()).toBe("auto");
     expect(spectator.service.colorScheme()).toBe("dark");
     expect(html.style.colorScheme).toBe("");
   });
@@ -68,6 +69,7 @@ describe("ThemeService", () => {
     // Act
     spectator = createService();
     // Assert
+    expect(spectator.service.preference()).toBe("dark");
     expect(spectator.service.colorScheme()).toBe("dark");
     expect(html.style.colorScheme).toBe("dark");
   });
@@ -78,41 +80,51 @@ describe("ThemeService", () => {
     // Act
     spectator = createService();
     // Assert
+    expect(spectator.service.preference()).toBe("auto");
     expect(spectator.service.colorScheme()).toBe("light");
   });
 
-  it("Should toggle, apply and remember the choice", () => {
+  it("Should apply and remember a fixed scheme", () => {
     // Arrange
     spectator = createService();
     // Act
-    spectator.service.toggle();
+    spectator.service.setPreference("dark");
     // Assert
     expect(spectator.service.colorScheme()).toBe("dark");
     expect(html.style.colorScheme).toBe("dark");
     expect(localStorage.getItem("colorScheme")).toBe("dark");
+  });
+
+  it("Should go back to the system's scheme on Automático", () => {
+    // Arrange
+    systemDark = true;
+    localStorage.setItem("colorScheme", "light");
+    spectator = createService();
     // Act
-    spectator.service.toggle();
+    spectator.service.setPreference("auto");
+    // Assert
+    expect(spectator.service.colorScheme()).toBe("dark");
+    expect(html.style.colorScheme).toBe("");
+    expect(localStorage.getItem("colorScheme")).toBeNull();
+  });
+
+  it("Should keep a fixed scheme when the system changes", () => {
+    // Arrange
+    spectator = createService();
+    spectator.service.setPreference("light");
+    // Act
+    systemDark = true;
+    onSystemChange?.();
     // Assert
     expect(spectator.service.colorScheme()).toBe("light");
   });
 
-  it("Should keep the stored choice when the system changes", () => {
-    // Arrange
-    spectator = createService();
-    spectator.service.toggle();
-    // Act
-    systemDark = false;
-    onSystemChange?.();
-    // Assert
-    expect(spectator.service.colorScheme()).toBe("dark");
-  });
-
-  it("Should still toggle when storage is blocked", () => {
+  it("Should still apply the choice when storage is blocked", () => {
     // Arrange
     spectator = createService();
     blockStorage();
     // Act
-    spectator.service.toggle();
+    spectator.service.setPreference("dark");
     // Assert
     expect(spectator.service.colorScheme()).toBe("dark");
   });
@@ -123,6 +135,6 @@ describe("ThemeService", () => {
     // Act
     spectator = createService();
     // Assert
-    expect(spectator.service.colorScheme()).toBe("light");
+    expect(spectator.service.preference()).toBe("auto");
   });
 });

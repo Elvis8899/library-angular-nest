@@ -1,5 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { Clock } from "@shared/clock/clock";
+import {
+  BusinessDate,
+  businessDateOf,
+} from "@shared/utils/domain/businessDate";
 
 /** A clock stopped at a fixed instant, which specs can move with `set`. */
 @Injectable()
@@ -12,4 +16,5 @@ export class FakeClock implements Clock {
   }
 
   now = (): Date => new Date(this.instant);
+  today = (): BusinessDate => businessDateOf(this.instant);
 }

@@ -10,6 +10,9 @@ export const ptBR = {
   nav: {
     users: "Usuários",
     audit: "Auditoria",
+    groups: {
+      admin: "Administração",
+    },
     // Lending example
     books: "Livros",
     rentals: "Empréstimos",
@@ -19,8 +22,10 @@ export const ptBR = {
     closeMenu: "Fechar menu",
   },
   theme: {
-    dark: "Tema escuro",
-    light: "Tema claro",
+    label: "Tema",
+    auto: "Automático",
+    light: "Claro",
+    dark: "Escuro",
   },
   language: {
     label: "Idioma",
@@ -28,6 +33,11 @@ export const ptBR = {
   roles: {
     admin: "Administrador",
     client: "Cliente",
+  },
+  unsavedChanges: {
+    title: "Descartar alterações?",
+    message: "Há alterações não salvas. Descartá-las e sair?",
+    confirm: "Descartar",
   },
   common: {
     cancel: "Cancelar",
@@ -77,6 +87,8 @@ export const ptBR = {
     auth: {
       wrongCredentials: "O email e/ou senha estão incorretos.",
       sessionExpired: "Sessão expirada. Faça login novamente.",
+      accountDeactivated:
+        "Esta conta está desativada. Fale com um administrador.",
     },
     // Lending example
     book: {
@@ -98,6 +110,7 @@ export const ptBR = {
       notFound: "Usuário não encontrado.",
       cpfTaken: "O CPF informado já está sendo usado por outro usuário.",
       emailTaken: "O email informado já está sendo usado por outro usuário.",
+      deactivateSelf: "Você não pode desativar a sua própria conta.",
       // Lending example
       hasActiveRentals:
         "O usuário tem empréstimos em andamento. Finalize-os antes de excluí-lo.",
