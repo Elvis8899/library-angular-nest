@@ -183,6 +183,21 @@ export const userRepositoryContract = (kind: RepositoryKind) =>
       );
     });
 
+    it("Should save an account's deactivation and its reactivation", async () => {
+      const user = new UserBuilder().build();
+      await saveUser(user);
+
+      await saveUser({ ...user, active: false });
+      expect(await executeTask(ctx.users.findById(user.id))).toMatchObject(
+        O.some({ active: false }),
+      );
+
+      await saveUser({ ...user, active: true });
+      expect(await executeTask(ctx.users.findById(user.id))).toMatchObject(
+        O.some({ active: true }),
+      );
+    });
+
     it("Should record the last access, which a later save keeps", async () => {
       const user = new UserBuilder().build();
       await saveUser(user);

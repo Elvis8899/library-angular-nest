@@ -1,4 +1,5 @@
 import {
+  accountDeactivatedException,
   invalidRefreshTokenException,
   wrongAuthException,
 } from "@modules/auth/domain/auth.errors";
@@ -20,6 +21,13 @@ describe("[Unit] Auth error codes", () => {
       HttpStatus.UNAUTHORIZED,
       "Unauthorized",
       "auth.sessionExpired",
+    ],
+    [
+      "accountDeactivatedException",
+      accountDeactivatedException,
+      HttpStatus.UNAUTHORIZED,
+      "Unauthorized",
+      "auth.accountDeactivated",
     ],
   ]);
 });

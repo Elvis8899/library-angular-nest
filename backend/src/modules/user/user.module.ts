@@ -1,7 +1,11 @@
 import { CreateUserHandler } from "@modules/user/commands/createUser/createUser.command";
 import { CreateUserController } from "@modules/user/commands/createUser/createUser.controller";
+import { DeactivateUserHandler } from "@modules/user/commands/deactivateUser/deactivateUser.command";
+import { DeactivateUserController } from "@modules/user/commands/deactivateUser/deactivateUser.controller";
 import { DeleteUserHandler } from "@modules/user/commands/deleteUser/deleteUser.command";
 import { DeleteUserController } from "@modules/user/commands/deleteUser/deleteUser.controller";
+import { ReactivateUserHandler } from "@modules/user/commands/reactivateUser/reactivateUser.command";
+import { ReactivateUserController } from "@modules/user/commands/reactivateUser/reactivateUser.controller";
 import { UpdateUserHandler } from "@modules/user/commands/updateUser/updateUser.command";
 import { UpdateUserController } from "@modules/user/commands/updateUser/updateUser.controller";
 import { RealUserRepository } from "@modules/user/database/realUser.repository";
@@ -20,6 +24,8 @@ const controllers = [
   CreateUserController,
   UpdateUserController,
   DeleteUserController,
+  DeactivateUserController,
+  ReactivateUserController,
   PaginatedUserController,
   GetUserByIdController,
 ];
@@ -27,6 +33,8 @@ const commandHandlers = [
   CreateUserHandler,
   UpdateUserHandler,
   DeleteUserHandler,
+  DeactivateUserHandler,
+  ReactivateUserHandler,
 ];
 const queryHandlers = [PaginatedUsersQueryHandler, GetUserByIdQueryHandler];
 const services = [

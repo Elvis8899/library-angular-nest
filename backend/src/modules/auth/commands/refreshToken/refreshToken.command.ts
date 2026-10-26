@@ -71,8 +71,9 @@ export class RefreshTokenCommandHandler implements ICommandHandler<
           ),
         ),
 
-        //Validate User still exists and the token was not revoked
-        //(logout or user update increments the user's token version),
+        //Validate User still exists and is active, and the token was not
+        //revoked (logout, deactivation or a user update increments the
+        //user's token version),
         //then use the user's current data for new tokens
         RTE.chain((claims) =>
           FPF.pipe(
@@ -83,7 +84,7 @@ export class RefreshTokenCommandHandler implements ICommandHandler<
               invalidRefreshTokenException,
             ),
             RTE.filterOrElseW(
-              (user) => user.tokenVersion === claims.ver,
+              (user) => user.active && user.tokenVersion === claims.ver,
               invalidRefreshTokenException,
             ),
             RTE.bindTo("user"),

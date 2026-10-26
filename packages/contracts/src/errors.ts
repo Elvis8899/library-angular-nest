@@ -9,6 +9,7 @@ export const errorCodes = [
   // auth
   "auth.wrongCredentials",
   "auth.sessionExpired",
+  "auth.accountDeactivated",
   // book (Lending example)
   "book.notFound",
   "book.noAvailableCopy",
@@ -25,6 +26,7 @@ export const errorCodes = [
   "user.notFound",
   "user.cpfTaken",
   "user.emailTaken",
+  "user.deactivateSelf",
   // Lending example
   "user.hasActiveRentals",
 ] as const;

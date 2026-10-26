@@ -157,6 +157,16 @@ describe("[Unit] Refresh token", () => {
     );
   });
 
+  it("Should not refresh a deactivated account's token", async () => {
+    //Given a logged in user, deactivated since
+    const { refreshToken } = await login();
+    await executeTask(ctx.userRepository.save({ ...user, active: false }));
+
+    await expect(refresh(refreshToken)).rejects.toBeInstanceOf(
+      InvalidRefreshTokenException,
+    );
+  });
+
   it("Should not refresh if the user no longer exists", async () => {
     //Given a valid refresh token for a user that was deleted
     const { refreshToken } = await login();

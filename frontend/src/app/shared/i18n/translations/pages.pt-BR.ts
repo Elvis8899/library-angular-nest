@@ -109,7 +109,19 @@ export const ptBRPages = {
       role: "Perfil",
       lastAccess: "Último acesso",
       neverLoggedIn: "Nunca entrou",
+      status: "Situação",
+      active: "Ativo",
+      inactive: "Inativo",
     },
+    deactivate: "Desativar",
+    deactivated: "Usuário desativado",
+    deactivateDialog: {
+      title: "Desativar usuário",
+      message:
+        "{{name}} deixa de entrar e suas sessões terminam. O que registrou continua no histórico. Desativar?",
+    },
+    reactivate: "Reativar",
+    reactivated: "Usuário reativado",
     form: {
       subtitle: "Novos usuários são clientes",
       passwordHint: "Pelo menos 4 caracteres",

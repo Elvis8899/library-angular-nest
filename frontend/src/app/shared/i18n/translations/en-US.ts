@@ -84,6 +84,7 @@ export const enUS: CoreTranslations = {
     auth: {
       wrongCredentials: "The email or password is incorrect.",
       sessionExpired: "Your session expired. Please log in again.",
+      accountDeactivated: "This account is deactivated. Ask an administrator.",
     },
     // Lending example
     book: {
@@ -105,6 +106,7 @@ export const enUS: CoreTranslations = {
       notFound: "User not found.",
       cpfTaken: "This CPF is already used by another user.",
       emailTaken: "This email is already used by another user.",
+      deactivateSelf: "You can't deactivate your own account.",
       // Lending example
       hasActiveRentals:
         "This user has rentals in progress. Finish them before deleting the user.",

@@ -46,6 +46,23 @@
       </td>
     </ng-container>
 
+    <ng-container matColumnDef="status">
+      <th *matHeaderCellDef mat-header-cell>
+        {{ "users.list.status" | translate }}
+      </th>
+      <td *matCellDef="let user; dataSource: data" mat-cell>
+        <span
+          [class.chip-error]="!user.active"
+          [class.chip-success]="user.active"
+          class="chip"
+          >{{
+            (user.active ? "users.list.active" : "users.list.inactive")
+              | translate
+          }}</span
+        >
+      </td>
+    </ng-container>
+
     <ng-container matColumnDef="lastAccessAt">
       <th *matHeaderCellDef mat-header-cell>
         {{ "users.list.lastAccess" | translate }}
@@ -67,6 +84,40 @@
       </th>
       <td *matCellDef="let user; dataSource: data" mat-cell>
         {{ user.createdAt | date: "shortDate" : undefined : locale() }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th *matHeaderCellDef mat-header-cell>
+        <span class="visually-hidden">{{ "common.actions" | translate }}</span>
+      </th>
+      <td *matCellDef="let user; dataSource: data" mat-cell>
+        @if (!user.active) {
+          <button
+            (click)="reactivate(user)"
+            [attr.aria-label]="'users.reactivate' | translate"
+            [disabled]="saving()"
+            [matTooltip]="'users.reactivate' | translate"
+            mat-icon-button
+            name="reactivate"
+            type="button"
+          >
+            <mat-icon>how_to_reg</mat-icon>
+          </button>
+        } @else if (user.id !== currentUserId) {
+          <!-- Nobody deactivates their own account -->
+          <button
+            (click)="deactivate(user)"
+            [attr.aria-label]="'users.deactivate' | translate"
+            [disabled]="saving()"
+            [matTooltip]="'users.deactivate' | translate"
+            mat-icon-button
+            name="deactivate"
+            type="button"
+          >
+            <mat-icon>person_off</mat-icon>
+          </button>
+        }
       </td>
     </ng-container>
   </app-customized-table>

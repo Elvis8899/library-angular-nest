@@ -108,7 +108,19 @@ export const enUSPages: PagesTranslations = {
       role: "Role",
       lastAccess: "Last access",
       neverLoggedIn: "Never logged in",
+      status: "Status",
+      active: "Active",
+      inactive: "Inactive",
     },
+    deactivate: "Deactivate",
+    deactivated: "User deactivated",
+    deactivateDialog: {
+      title: "Deactivate user",
+      message:
+        "{{name}} can no longer log in and their sessions end. What they recorded stays in the history. Deactivate?",
+    },
+    reactivate: "Reactivate",
+    reactivated: "User reactivated",
     form: {
       subtitle: "New users are clients",
       passwordHint: "At least 4 characters",

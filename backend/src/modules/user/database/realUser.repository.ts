@@ -97,6 +97,7 @@ export class RealUserRepository implements UserRepository {
           password: user.password,
           cpf,
           role: user.role,
+          active: user.active,
         },
         create: { ...user, email, cpf },
       }),

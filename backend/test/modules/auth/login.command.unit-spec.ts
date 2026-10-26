@@ -3,7 +3,10 @@ import {
   LoginCommandHandler,
 } from "@modules/auth/commands/login/login.command";
 import { FakeRefreshSessionRepository } from "@modules/auth/database/fakeRefreshSession.repository";
-import { WrongAuthException } from "@modules/auth/domain/auth.errors";
+import {
+  AccountDeactivatedException,
+  WrongAuthException,
+} from "@modules/auth/domain/auth.errors";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { JwtService } from "@nestjs/jwt";
@@ -109,5 +112,29 @@ describe("[Unit] Create User", () => {
     );
 
     await expect(resultPromise).rejects.toBeInstanceOf(WrongAuthException);
+  });
+
+  it("Should not login a deactivated account, nor record the access", async () => {
+    //Given a deactivated user
+    const password = "123456";
+    const user = new UserBuilder().withPassword(
+      await passwordHasher.hash(password),
+    );
+    await executeTask(
+      ctx.userRepository.save({ ...user.build(), active: false }),
+    );
+
+    //When it logs in with the right password
+    const resultPromise = ctx.loginCommandHandler.execute(
+      new LoginCommand(user.withPassword(password).buildCreateDTO()),
+    );
+
+    //Then it is told the account is deactivated
+    await expect(resultPromise).rejects.toBeInstanceOf(
+      AccountDeactivatedException,
+    );
+    expect(
+      await executeTask(ctx.userRepository.findById(user.build().id)),
+    ).toMatchObject(O.some({ lastAccessAt: null }));
   });
 });

@@ -1,13 +1,16 @@
 import {
   changeUserDetails,
+  deactivateUser,
   endsSessions,
   NewUserInput,
+  reactivateUser,
   registerUser,
   UserChangesInput,
   UserRoleEnum,
 } from "@modules/user/domain/user.entity";
 import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
-import { O } from "@shared/utils/application/monads";
+import { UserDeactivatesSelfException } from "@modules/user/domain/user.errors";
+import { E, O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 
 const passwordHasher = new BcryptPasswordHasher();
@@ -71,6 +74,7 @@ describe("[Unit] User entity", () => {
       email: "novo@example.com",
       cpf: "111.444.777-35",
       role: UserRoleEnum.Client,
+      active: true,
       password,
       tokenVersion: 0,
       lastAccessAt: null,
@@ -101,6 +105,29 @@ describe("[Unit] User entity", () => {
       expect(
         changeUserDetails(changes, O.some(password), now)(stored).password,
       ).toBe(password);
+    });
+  });
+
+  describe("deactivateUser and reactivateUser", () => {
+    const admin = new UserBuilder(2).build();
+
+    it("Should deactivate another account, and reactivate it", () => {
+      const deactivated = deactivateUser(admin.id, now)(user);
+
+      expect(deactivated).toEqual(
+        E.right({ ...user, active: false, updatedAt: now }),
+      );
+      expect(reactivateUser(now)({ ...user, active: false })).toEqual({
+        ...user,
+        active: true,
+        updatedAt: now,
+      });
+    });
+
+    it("Should not let an admin deactivate their own account", () => {
+      expect(deactivateUser(user.id, now)(user)).toEqual(
+        E.left(new UserDeactivatesSelfException()),
+      );
     });
   });
 

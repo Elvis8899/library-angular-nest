@@ -29,6 +29,15 @@ export class UserEmailAlreadyExistsException extends domainError(
 export const userEmailAlreadyExistsException = () =>
   new UserEmailAlreadyExistsException();
 
+export class UserDeactivatesSelfException extends domainError(
+  DomainErrorKindEnum.Conflict,
+  "user.deactivateSelf",
+  "Você não pode desativar a sua própria conta.",
+) {}
+
+export const userDeactivatesSelfException = () =>
+  new UserDeactivatesSelfException();
+
 // Lending example: used by RealUserRepository.deleteById
 export class UserHasActiveRentalsException extends domainError(
   DomainErrorKindEnum.Conflict,

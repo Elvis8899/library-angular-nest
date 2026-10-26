@@ -2,7 +2,8 @@ import { UserChangesRequest, UserRequest, UserRole } from "@library/contracts";
 import { DocumentType } from "@modules/user/domain/document";
 import { Email } from "@modules/user/domain/email";
 import { PasswordHash } from "@modules/user/domain/password";
-import { O } from "@shared/utils/application/monads";
+import { userDeactivatesSelfException } from "@modules/user/domain/user.errors";
+import { E, O } from "@shared/utils/application/monads";
 import { BaseDateEntity } from "@shared/utils/domain/dateEntity.base";
 import { UUID } from "@shared/uuid/uuid";
 import { z } from "zod";
@@ -26,6 +27,7 @@ export const User = z
       .nullish()
       .transform((cpf) => cpf ?? ""),
     role: z.enum(UserRoleEnum),
+    active: z.boolean().default(true),
     // Auth's refresh tokens carry it, but it stays on the user: an update
     // that changes the password, email or role (endsSessions) must revoke
     // them in the same request, not later through an event
@@ -69,6 +71,7 @@ export const registerUser = (
   email,
   cpf,
   role,
+  active: true,
   password,
   tokenVersion: 0,
   lastAccessAt: null,
@@ -101,3 +104,19 @@ export const endsSessions = (before: User, after: User): boolean =>
   before.password !== after.password ||
   before.email !== after.email ||
   before.role !== after.role;
+
+/**
+ * Deactivates an account instead of deleting it, so what it recorded still
+ * points at it. An admin can't deactivate their own, which could leave no
+ * admin to undo it.
+ */
+export const deactivateUser =
+  (requesterId: string, now: Date) =>
+  (user: User): E.Either<Error, User> =>
+    user.id === requesterId
+      ? E.left(userDeactivatesSelfException())
+      : E.right({ ...user, active: false, updatedAt: now });
+
+export const reactivateUser =
+  (now: Date) =>
+  (user: User): User => ({ ...user, active: true, updatedAt: now });

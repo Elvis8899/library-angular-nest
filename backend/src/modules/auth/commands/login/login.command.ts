@@ -1,6 +1,9 @@
 import { AuthResponse, LoginRequest } from "@library/contracts";
 import { RefreshSessionRepository } from "@modules/auth/database/refreshSession.repository.port";
-import { wrongAuthException } from "@modules/auth/domain/auth.errors";
+import {
+  accountDeactivatedException,
+  wrongAuthException,
+} from "@modules/auth/domain/auth.errors";
 import { LoginInput } from "@modules/auth/domain/credentials";
 import {
   generateTokens,
@@ -74,6 +77,8 @@ export class LoginCommandHandler implements ICommandHandler<
             ),
           ),
         ),
+        // Checked after the password, so only the account's owner learns it
+        RTE.filterOrElseW((user) => user.active, accountDeactivatedException),
         RTE.tap((user) => this.recordAccess(user.id)),
         RTE.bindTo("user"),
         RTE.bindW("session", ({ user }) => this.startSession(user.id)),
