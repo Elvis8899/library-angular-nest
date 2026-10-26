@@ -9,6 +9,9 @@ export const enUS: CoreTranslations = {
   nav: {
     users: "Users",
     audit: "Audit",
+    groups: {
+      admin: "Administration",
+    },
     // Lending example
     books: "Books",
     rentals: "Rentals",

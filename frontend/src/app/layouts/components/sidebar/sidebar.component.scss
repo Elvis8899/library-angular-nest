@@ -151,6 +151,58 @@
   }
 }
 
+// A group's pages hang from a line under its row
+.menu-group-items {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-left: 21px;
+  padding-left: 6px;
+  border-left: 1px solid var(--sidebar-divider);
+
+  @media (width >= 768px) {
+    .collapsed & {
+      margin-left: 0;
+      padding-left: 0;
+      border-left: 0;
+    }
+  }
+}
+
+// A group's row is a button: without the browser's button look, and room
+// on the right for the chevron
+.menu-group {
+  width: 100%;
+  padding-right: 32px;
+  border: 0;
+  text-align: left;
+  background: none;
+  cursor: pointer;
+}
+
+.menu-group::after {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  margin-top: -12px;
+  // An icon font: a fallback would spell the ligature out
+  // stylelint-disable-next-line font-family-no-missing-generic-family-keyword
+  font: 24px / 1 "Material Icons";
+  content: "expand_more";
+  color: var(--sidebar-text);
+  transition: transform 0.2s ease-in-out;
+
+  @media (width >= 768px) {
+    .collapsed & {
+      display: none;
+    }
+  }
+}
+
+.menu-group.open::after {
+  transform: rotate(180deg);
+}
+
 // Small screens: the sidebar is the layout's slide-in menu, always expanded,
 // so the collapse button goes away
 @media (width < 768px) {

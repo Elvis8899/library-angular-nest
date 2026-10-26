@@ -1,5 +1,14 @@
 import { ROLE } from "@app/models/credentials.entity";
-import { NavMenuItem } from "@app/models/navMenuItem.interface";
+import {
+  NavMenuGroup,
+  NavMenuItem,
+  NavMenuRow,
+} from "@app/models/navMenuItem.interface";
+
+const adminGroup: NavMenuGroup = {
+  title: "nav.groups.admin",
+  icon: "admin_panel_settings",
+};
 
 export const sidebarMenuItems: NavMenuItem[] = [
   {
@@ -7,12 +16,14 @@ export const sidebarMenuItems: NavMenuItem[] = [
     route: "/users",
     icon: "group",
     roles: [ROLE.ADMIN],
+    group: adminGroup,
   },
   {
     title: "nav.audit",
     route: "/audit",
     icon: "history",
     roles: [ROLE.ADMIN],
+    group: adminGroup,
   },
   // Lending example
   {
@@ -35,6 +46,22 @@ export const sidebarMenuItems: NavMenuItem[] = [
  */
 export const defaultRolePage = (role: ROLE): string =>
   sidebarMenuItems.find((item) => item.roles.includes(role))?.route ?? "/home";
+
+/**
+ * The sidebar's rows: a group takes the place of its first page the role
+ * sees, with the others it sees after it; a group with one page shows it
+ * alone
+ */
+export const menuRows = (items: NavMenuItem[]): NavMenuRow[] =>
+  items.flatMap((item): NavMenuRow[] => {
+    const members = items.filter(
+      (other) => item.group !== undefined && other.group === item.group
+    );
+    if (members.length < 2) return [{ kind: "item", item }];
+    return members[0] === item && item.group
+      ? [{ kind: "group", group: item.group, items: members }]
+      : [];
+  });
 
 // Shown apart, after the other items
 export const sidebarLogoutItem: NavMenuItem = {

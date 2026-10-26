@@ -10,6 +10,9 @@ export const ptBR = {
   nav: {
     users: "Usuários",
     audit: "Auditoria",
+    groups: {
+      admin: "Administração",
+    },
     // Lending example
     books: "Livros",
     rentals: "Empréstimos",
