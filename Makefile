@@ -1,8 +1,16 @@
 # Images build in a builder of their own (dockerBuilder), with a low CPU weight
 BUILDER = library-builder
-COMPOSE_PROD = sudo env BUILDX_BUILDER=$(BUILDER) docker compose --file .docker/docker-compose.yml
-# The production stack, (re)built from the checked-out code; pgAdmin only on
-# demand (pgadminUp)
+# The frontend's image, which CI builds and pushes for every commit to main
+# (the frontend-image job): the stack runs the checked-out commit's, read when
+# each command runs (dockerDeploy fast-forwards first)
+FRONTEND_IMAGE = ghcr.io/elvis8899/library-angular-nest/frontend
+COMPOSE_PROD = sudo env BUILDX_BUILDER=$(BUILDER) FRONTEND_IMAGE=$(FRONTEND_IMAGE) FRONTEND_TAG=$$(git rev-parse HEAD) docker compose --file .docker/docker-compose.yml
+# Pulls the checked-out commit's frontend image; fails when CI hasn't pushed
+# it (or, the package made private, the server's GHCR login is gone), before
+# anything restarts
+PROD_PULL = $(COMPOSE_PROD) pull --quiet nginx
+# The production stack, (re)built from the checked-out code (the frontend
+# pulled); pgAdmin only on demand (pgadminUp)
 PROD_UP = $(COMPOSE_PROD) up postgres certbot prometheus grafana nginx --build -d --quiet-pull
 # The commit dockerDeploy deploys; CI passes the one it tested
 REF ?= origin/main
@@ -44,7 +52,7 @@ dockerDevRefresh:
 	$(COMPOSE_DEV) restart app frontend
 
 dockerProd: dockerBuilder
-	git pull && $(PROD_UP)
+	git pull && $(PROD_PULL) && $(PROD_UP)
 
 # The builder the production images build in, made once: a BuildKit container
 # with an eighth of a container's CPU weight (128 to the default 1024), so a
@@ -61,8 +69,9 @@ dockerMigrate: dockerBuilder
 # The commit the last finished deploy went out with
 DEPLOYED = .docker/.deployed
 
-# Deploys REF: fast-forwards to it (never back), applies its migrations,
-# rebuilds and restarts the stack, then removes the previous build's images and
+# Deploys REF: fast-forwards to it (never back), applies its migrations, pulls
+# its frontend image (stopping there when it can't), rebuilds and restarts the
+# stack, then removes the previous build's images (the older frontend ones too) and
 # the build cache no build used for a week (never what this one used), so the
 # disk doesn't fill up, empties Docker's default builder's cache (the builds
 # used it before; nothing should now) and stops the builder, which holds memory
@@ -78,8 +87,11 @@ dockerDeploy:
 		set -e; \
 		git merge --ff-only $(REF); \
 		$(MAKE) dockerMigrate; \
+		$(PROD_PULL); \
 		$(PROD_UP); \
 		sudo docker image prune -f; \
+		sudo docker images $(FRONTEND_IMAGE) --format '{{.Repository}}:{{.Tag}}' \
+			| grep -v ":$$(git rev-parse HEAD)$$" | xargs -r sudo docker rmi; \
 		sudo docker buildx prune --builder $(BUILDER) --force --filter until=168h; \
 		sudo docker builder prune --builder default --all --force; \
 		sudo docker buildx stop $(BUILDER); \

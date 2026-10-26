@@ -225,13 +225,46 @@ jobs:
       - name: ⬆️ Push badges branch
         run: git push origin badges
 
+  # The production frontend image (nginx with the build), pushed to GHCR as
+  # ghcr.io/<owner>/<repository>/frontend:<commit> for the server to pull:
+  # the server never builds the frontend. Public, so the server pulls it
+  # without logging in (README, "Deploying", for making it private). Runs
+  # beside the tests, so deploy waits for no extra minutes; an image of a
+  # commit that fails them is never deployed. The build cache is the
+  # :buildcache tag, beside the image
+  frontend-image:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build and push the frontend image
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}/frontend"
+          echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          # The docker-container driver, which can export the cache
+          docker buildx create --use
+          docker buildx build \
+            --file frontend/.docker/Dockerfile \
+            --tag "$image:$GITHUB_SHA" \
+            --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+            --cache-from "type=registry,ref=$image:buildcache" \
+            --cache-to "type=registry,ref=$image:buildcache,mode=max" \
+            --push .
+
   # Starts deploying the tested commit and ends once the server has taken it:
   # the server's deploy hook (make serverHook) runs make dockerDeploy in the
   # background, one at a time, queueing a newer commit behind the running
   # one. How it ended is at /hooks/deploy/status and in .docker/deploy.log.
   # Skipped until the repository's DEPLOY_URL variable is set
   deploy:
-    needs: [build, frontend]
+    needs: [build, frontend, frontend-image]
     if: github.event_name == 'push' && vars.DEPLOY_URL != ''
     runs-on: ubuntu-latest
     environment: production

@@ -1,11 +1,11 @@
 name: "library"
 
 services:
-  # Serves the frontend build and proxies the API, over HTTPS
+  # Serves the frontend build and proxies the API, over HTTPS. CI builds its
+  # image (frontend/.docker/Dockerfile) and pushes it to GHCR; the Makefile
+  # passes the image and the deployed commit, and pulls it before starting
   nginx:
-    build:
-      context: ..
-      dockerfile: frontend/.docker/Dockerfile
+    image: ${FRONTEND_IMAGE:?set by the Makefile}:${FRONTEND_TAG:?set by the Makefile}
     restart: always
     ports:
       - "80:80"
