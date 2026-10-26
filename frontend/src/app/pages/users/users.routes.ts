@@ -1,5 +1,6 @@
 import { Routes } from "@angular/router";
 import { ListUsersComponent } from "@app/pages/users/listUsers/listUsers.component";
+import { unsavedChangesGuard } from "@app/shared/guards/unsavedChanges.guard";
 
 export const routes: Routes = [
   {
@@ -13,6 +14,7 @@ export const routes: Routes = [
   },
   {
     path: "add",
+    canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
       import("./addUser/addUser.component").then((m) => m.AddUsersComponent),
   },

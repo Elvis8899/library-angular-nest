@@ -83,6 +83,16 @@ describe("AddUsersComponent", () => {
     });
     expect(notifications.success).toHaveBeenCalledTimes(1);
     expect(navigateSpy).toHaveBeenCalledWith(["/users/list"]);
+    // Saved, so leaving asks nothing
+    expect(spectator.component.hasUnsavedChanges()).toBe(false);
+  });
+
+  it("Should have unsaved changes once something is typed", () => {
+    expect(spectator.component.hasUnsavedChanges()).toBe(false);
+    // Act
+    fillIn();
+    // Assert
+    expect(spectator.component.hasUnsavedChanges()).toBe(true);
   });
 
   it("Should accept an alphanumeric CNPJ", () => {

@@ -11,6 +11,7 @@ import { NotificationService } from "@app/services/notification.service";
 import { UserService } from "@app/services/user.http.service";
 import { FormCardComponent } from "@app/shared/components/formCard/formCard.component";
 import { BusyDirective } from "@app/shared/directives/busy.directive";
+import { HasUnsavedChanges } from "@app/shared/guards/unsavedChanges.guard";
 import { FormValidatorUtility } from "@app/shared/utils/formValidators.utility";
 import { injectSaving } from "@app/shared/utils/saving.utility";
 import { TranslatePipe } from "@ngx-translate/core";
@@ -33,7 +34,7 @@ const log = new Logger("AddUsersComponent");
     TranslatePipe,
   ],
 })
-export class AddUsersComponent {
+export class AddUsersComponent implements HasUnsavedChanges {
   private readonly _userService = inject(UserService);
   private readonly _router = inject(Router);
   private readonly _fb = inject(FormBuilder);
@@ -49,6 +50,11 @@ export class AddUsersComponent {
 
   readonly saving = injectSaving(log);
   readonly passwordVisible = signal(false);
+
+  // Asked before leaving with what was typed (unsavedChangesGuard)
+  hasUnsavedChanges(): boolean {
+    return this.addUserForm.dirty;
+  }
 
   togglePasswordVisibility() {
     this.passwordVisible.update((visible) => !visible);
@@ -66,6 +72,7 @@ export class AddUsersComponent {
       }),
       () => {
         this._notify.success("users.created");
+        this.addUserForm.markAsPristine();
         this._router.navigate(["/users/list"]);
       }
     );

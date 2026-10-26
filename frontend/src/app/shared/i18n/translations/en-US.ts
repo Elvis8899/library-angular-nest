@@ -33,6 +33,11 @@ export const enUS: CoreTranslations = {
     admin: "Admin",
     client: "Client",
   },
+  unsavedChanges: {
+    title: "Discard changes?",
+    message: "There are unsaved changes. Discard them and leave?",
+    confirm: "Discard",
+  },
   common: {
     cancel: "Cancel",
     close: "Close",

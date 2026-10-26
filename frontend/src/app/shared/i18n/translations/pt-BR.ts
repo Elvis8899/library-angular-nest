@@ -34,6 +34,11 @@ export const ptBR = {
     admin: "Administrador",
     client: "Cliente",
   },
+  unsavedChanges: {
+    title: "Descartar alterações?",
+    message: "Há alterações não salvas. Descartá-las e sair?",
+    confirm: "Descartar",
+  },
   common: {
     cancel: "Cancelar",
     close: "Fechar",
