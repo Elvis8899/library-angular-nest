@@ -3,8 +3,11 @@
 version: 2
 
 updates:
+  # The Yarn workspace from its root, so a pull request updates each app's
+  # package.json and the one yarn.lock together (from an app's folder,
+  # Dependabot misses the lockfile and the frozen install in CI fails)
   - package-ecosystem: npm
-    directory: /backend
+    directory: /
     schedule:
       interval: weekly
     groups:
@@ -13,21 +16,6 @@ updates:
         patterns: ["@nestjs/*"]
       prisma:
         patterns: ["prisma", "@prisma/*"]
-      minor-and-patch:
-        update-types: [minor, patch]
-    ignore:
-      # Angular and typescript-eslint don't support TypeScript 7 yet
-      - dependency-name: typescript
-        update-types: [version-update:semver-major]
-      # Follows the Node version in .nvmrc (24)
-      - dependency-name: "@types/node"
-        update-types: [version-update:semver-major]
-
-  - package-ecosystem: npm
-    directory: /frontend
-    schedule:
-      interval: weekly
-    groups:
       angular:
         patterns:
           - "@angular/*"
@@ -37,8 +25,10 @@ updates:
       minor-and-patch:
         update-types: [minor, patch]
     ignore:
+      # Angular and typescript-eslint don't support TypeScript 7 yet
       - dependency-name: typescript
         update-types: [version-update:semver-major]
+      # Follows the Node version in .nvmrc (24)
       - dependency-name: "@types/node"
         update-types: [version-update:semver-major]
 
