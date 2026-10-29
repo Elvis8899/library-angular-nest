@@ -35,6 +35,7 @@ describe("[Unit] ApiErrors", () => {
         [TakenException, "details.name"],
         ChangedException,
       )
+      // eslint-disable-next-line @typescript-eslint/no-empty-function -- only its decorators are read
       route(): void {}
     }
 

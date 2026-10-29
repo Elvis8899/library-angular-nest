@@ -6,7 +6,7 @@ See the [root README](../README.md) for the full setup and demo accounts.
 
 ## Requirements
 
-Node 22.22.3+ or 24.15+, as required by Angular 22. Run `nvm use` to pick the version from `.nvmrc`.
+Node 26 (Angular 22 takes 22.22.3+, 24.15+ or 26). Run `nvm use` to pick the version from the root `.nvmrc`.
 
 ## Development
 
@@ -25,7 +25,6 @@ The dev server proxies `/v1` requests to the backend at `http://localhost:3000` 
 | `yarn build`                    | Production build in `dist/frontend/browser`            |
 | `yarn build:serve`              | Serve the production build on port 8080                |
 | `yarn lint` / `yarn lint:check` | ESLint (Angular rules), fixing / only reporting        |
-| `yarn prettier`                 | Format `src/`                                          |
 | `yarn test`                     | Unit tests with Vitest and coverage (fails below 100%) |
 
 To run a single spec file:

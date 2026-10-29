@@ -36,7 +36,7 @@ export const LIVE_UPDATES_SOCKET = new InjectionToken<Socket<LiveUpdateEvents>>(
   {
     providedIn: "root",
     factory: () => io({ path: LIVE_UPDATES_PATH, autoConnect: false }),
-  }
+  },
 );
 
 /**
@@ -85,7 +85,7 @@ export class LiveUpdatesService {
   changes(resource: RESOURCE): Observable<ResourceChange> {
     return merge(
       this._changes.pipe(filter((change) => change.resource === resource)),
-      this._reconnected.pipe(map(() => ({ resource })))
+      this._reconnected.pipe(map(() => ({ resource }))),
     );
   }
 

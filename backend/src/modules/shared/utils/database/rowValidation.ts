@@ -18,13 +18,13 @@ export const validateMaybeRow =
       ? E.right(O.none)
       : FPF.pipe(validate(row), E.map(O.some));
 
-type PageSource = {
+interface PageSource {
   rows: (window: {
     skip: number;
     take: number;
   }) => TE.TaskEither<Error, unknown[]>;
   total: () => TE.TaskEither<Error, number>;
-};
+}
 
 /** Loads one page of rows and the total row count, in parallel. */
 export const loadPage =
@@ -45,7 +45,7 @@ export const loadPage =
       ),
       TE.apS("count", source.total()),
       TE.map(({ data, count }) => ({
-        data: data,
+        data,
         count,
         page,
         limit,

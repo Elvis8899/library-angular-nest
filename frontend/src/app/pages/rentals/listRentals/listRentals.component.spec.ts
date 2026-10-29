@@ -16,7 +16,7 @@ import {
   RESOURCE,
   ResourceChange,
 } from "@app/services/liveUpdates.service";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
@@ -25,7 +25,7 @@ import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 import { BehaviorSubject, of, Subject, throwError } from "rxjs";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 describe("ListRentalsComponent", () => {
   let spectator: Spectator<ListRentalsComponent>;
@@ -34,7 +34,7 @@ describe("ListRentalsComponent", () => {
   const rental = (
     id: string,
     bookName: string,
-    fines: BookRentalEntity["fines"]
+    fines: BookRentalEntity["fines"],
   ): BookRentalEntity => ({
     id,
     bookItemId: "item-1",
@@ -66,7 +66,7 @@ describe("ListRentalsComponent", () => {
   ];
   const rentalServiceMock = {
     getPaginatedBookRentals: vi.fn(() =>
-      of({ data: rentals, count: 2, limit: 10, page: 0 })
+      of({ data: rentals, count: 2, limit: 10, page: 0 }),
     ),
     returnBook: vi.fn(() => of({})),
   };
@@ -136,7 +136,7 @@ describe("ListRentalsComponent", () => {
     // Assert
     expect(liveUpdatesMock.changes).toHaveBeenCalledWith(RESOURCE.RENTALS);
     expect(rentalServiceMock.getPaginatedBookRentals).toHaveBeenCalledTimes(
-      loads + 1
+      loads + 1,
     );
   });
 
@@ -185,7 +185,7 @@ describe("ListRentalsComponent", () => {
     create();
     // Assert
     expect(rows()[0].querySelector(".chip-error")).toHaveText(
-      "rentals.list.overdue"
+      "rentals.list.overdue",
     );
     expect(rows()[0].querySelector(".fine")).toHaveText("R$16.00");
     expect(rows()[1].querySelector(".chip-error")).toBeNull();
@@ -228,7 +228,7 @@ describe("ListRentalsComponent", () => {
     spectator.click("button[name='returnBook']");
     // Assert
     expect(confirmDialogMock.confirm).toHaveBeenCalledWith(
-      expect.objectContaining({ messageParams: { book: "Dom Casmurro" } })
+      expect.objectContaining({ messageParams: { book: "Dom Casmurro" } }),
     );
     expect(rentalServiceMock.returnBook).toHaveBeenCalledExactlyOnceWith("1");
     expect(notifications.success).toHaveBeenCalledTimes(1);
@@ -249,13 +249,13 @@ describe("ListRentalsComponent", () => {
     // Arrange
     create();
     rentalServiceMock.returnBook.mockReturnValueOnce(
-      throwError(() => new Error("test error"))
+      throwError(() => new Error("test error")),
     );
     // Act
     spectator.click("button[name='returnBook']");
     // Assert
     expect(notifications.errorMessage).toHaveBeenCalledExactlyOnceWith(
-      "test error"
+      "test error",
     );
   });
 });

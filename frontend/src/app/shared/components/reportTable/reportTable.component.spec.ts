@@ -49,7 +49,7 @@ describe("ReportTableComponent", () => {
       content?: string;
       attributes?: string;
       language?: boolean;
-    } = {}
+    } = {},
   ) => {
     spectator = createHost(
       `<app-report-table [columns]="columns" [rows]="rows" [totals]="totals" ${options.attributes ?? ""}>${options.content ?? ""}</app-report-table>`,
@@ -60,7 +60,7 @@ describe("ReportTableComponent", () => {
           totals: options.totals ?? null,
         },
         detectChanges: false,
-      }
+      },
     );
     if (options.language !== false) usePtBR(spectator.inject(TranslateService));
     spectator.detectChanges();
@@ -84,7 +84,7 @@ describe("ReportTableComponent", () => {
     host([item, { key: "qty", value: (line) => line.qty, end: true }]);
     // Assert
     expect(
-      spectator.queryAll("thead th").map((th) => th.textContent.trim())
+      spectator.queryAll("thead th").map((th) => th.textContent.trim()),
     ).toEqual(["Nome", ""]);
     expect(spectator.query("thead th:last-child")).toHaveClass("num");
     expect(cells(1)).toEqual(["Prego", "1234.5"]);
@@ -110,7 +110,7 @@ describe("ReportTableComponent", () => {
         { ...row("2026-10-21T13:05:00"), key: "short", format: "short" },
         { ...row("—1"), key: "text", format: "money" },
       ],
-      { rows: [lines[0]] }
+      { rows: [lines[0]] },
     );
     // Assert
     expect(cells(1)).toEqual([
@@ -123,7 +123,7 @@ describe("ReportTableComponent", () => {
       "—1",
     ]);
     expect(
-      spectator.queryAll("tbody td").map((td) => td.classList.contains("num"))
+      spectator.queryAll("tbody td").map((td) => td.classList.contains("num")),
     ).toEqual([true, true, false, false, false, false, true]);
   });
 
@@ -209,7 +209,7 @@ describe("ReportTableComponent", () => {
         { key: "note", value: () => "x" },
         { key: "cost", value: (line) => line.cost, format: "money" },
       ],
-      { totals: { label: t("common.confirm"), values: { cost: 10.5 } } }
+      { totals: { label: t("common.confirm"), values: { cost: 10.5 } } },
     );
     // Assert
     const totals = spectator.queryAll("tfoot td");
@@ -241,7 +241,7 @@ describe("ReportTableComponent", () => {
     });
     // Assert
     expect(
-      spectator.queryAll("tbody strong").map((cell) => cell.textContent)
+      spectator.queryAll("tbody strong").map((cell) => cell.textContent),
     ).toEqual(["1234.5", "2"]);
     expect(cells(1)[0]).toBe("Prego");
   });
@@ -251,7 +251,7 @@ describe("ReportTableComponent", () => {
     host([item], { rows: [], attributes: `empty="common.noResults"` });
     // Assert
     expect(spectator.query("p.message")).toHaveExactTrimmedText(
-      "Nenhum resultado"
+      "Nenhum resultado",
     );
     expect(spectator.query("table")).toBeNull();
   });
@@ -275,7 +275,7 @@ describe("ReportTableComponent", () => {
         { key: "cost", value: (line) => line.cost, format: "money" },
         { key: "blank", format: "money" },
       ],
-      lines
+      lines,
     );
     // Assert
     expect(totals).toEqual({

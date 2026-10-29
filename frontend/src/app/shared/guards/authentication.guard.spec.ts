@@ -36,7 +36,7 @@ describe("AuthenticationGuard", () => {
       const credentialsService = spectator.inject(CredentialsService);
       credentialsService.isAuthenticated.mockReturnValueOnce(true);
       const res = spectator.runInInjectionContext(() =>
-        authenticationGuard(route, state)
+        authenticationGuard(route, state),
       );
       expect(res).toBe(true);
     });
@@ -49,10 +49,10 @@ describe("AuthenticationGuard", () => {
       credentialsService.isAuthenticated.mockReturnValueOnce(false);
       //
       const res = spectator.runInInjectionContext(() =>
-        authenticationGuard(route, state)
+        authenticationGuard(route, state),
       );
       //
-      expect(router.navigate).toBeCalledWith(["/login"], {
+      expect(router.navigate).toHaveBeenCalledWith(["/login"], {
         queryParams: {
           redirect: undefined,
         },
@@ -70,10 +70,10 @@ describe("AuthenticationGuard", () => {
       credentialsService.isAuthenticated.mockReturnValueOnce(true);
       credentialsService.getRole.mockReturnValueOnce(ROLE.ADMIN);
       const res = spectator.runInInjectionContext(() =>
-        alreadyLoggedCheckGuard(route, state)
+        alreadyLoggedCheckGuard(route, state),
       );
       const router = spectator.inject(Router);
-      expect(router.navigateByUrl).toBeCalledWith("/users");
+      expect(router.navigateByUrl).toHaveBeenCalledWith("/users");
       expect(res).toBe(false);
     });
 
@@ -83,7 +83,7 @@ describe("AuthenticationGuard", () => {
       const credentialsService = spectator.inject(CredentialsService);
       credentialsService.isAuthenticated.mockReturnValueOnce(false);
       const res = spectator.runInInjectionContext(() =>
-        alreadyLoggedCheckGuard(route, state)
+        alreadyLoggedCheckGuard(route, state),
       );
       expect(res).toBe(true);
     });

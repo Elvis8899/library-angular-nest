@@ -26,7 +26,7 @@ export class HeaderComponent {
   private readonly _credentialsService = inject(CredentialsService);
 
   readonly menuOpen = input(false);
-  readonly menuToggle = output<void>();
+  readonly menuToggle = output();
 
   // The layout only exists while logged in
   userName() {

@@ -2,7 +2,7 @@ import "@shared/utils/config/dotenv";
 import { get } from "env-var";
 
 /** The S3-compatible bucket the files are kept in. */
-export type StorageConfig = {
+export interface StorageConfig {
   // Unset for AWS S3; a self-hosted server's URL otherwise
   endpoint: string | undefined;
   region: string;
@@ -11,7 +11,7 @@ export type StorageConfig = {
   secretAccessKey: string;
   // Self-hosted servers address buckets by path, not by host name
   forcePathStyle: boolean;
-};
+}
 
 /** Read when the storage is created, so each test worker gets its bucket. */
 export const storageConfig = (): StorageConfig => ({

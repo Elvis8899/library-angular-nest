@@ -1,6 +1,10 @@
 {
   "name": "library",
   "private": true,
+  "packageManager": "yarn@1.22.22",
+  "engines": {
+    "node": ">=26"
+  },
   "workspaces": [
     "backend",
     "frontend",
@@ -8,17 +12,21 @@
   ],
   "scripts": {
     "postinstall": "yarn contracts:build",
-    "prepare": "husky frontend/.husky",
+    "prepare": "husky",
+    "format:staged": "pretty-quick --staged --pattern \"frontend/**\" --pattern \"backend/**\" --pattern \"packages/**\"",
     "build": "yarn contracts:build && yarn workspace backend build && yarn workspace frontend build",
     "lint": "yarn workspace @library/contracts format && yarn workspace backend lint && yarn workspace frontend lint",
     "lint:check": "yarn workspace @library/contracts format:check && yarn workspace backend lint:check && yarn workspace frontend lint:check && yarn workspace frontend lint:styles",
-    "typecheck": "yarn contracts:build && yarn workspace backend typecheck",
+    "typecheck": "yarn contracts:build && yarn workspace backend typecheck && yarn workspace frontend typecheck",
     "test": "yarn workspace @library/contracts test && yarn workspace backend test:cov && yarn workspace frontend test",
     "contracts:build": "yarn workspace @library/contracts build",
     "contracts:watch": "yarn workspace @library/contracts watch"
   },
   "devDependencies": {
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "prettier": "^3.9.10",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "pretty-quick": "^4.2.2"
   },
   "resolutions": {
     "vite": "~8.3.4",

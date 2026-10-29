@@ -20,8 +20,8 @@ export function injectCurrentLocale(): Signal<string | undefined> {
     translate.onLangChange.pipe(
       map((event) => event.lang),
       startWith(translate.getCurrentLang()),
-      map((lang) => lang || undefined)
+      map((lang) => lang || undefined),
     ),
-    { requireSync: true }
+    { requireSync: true },
   );
 }

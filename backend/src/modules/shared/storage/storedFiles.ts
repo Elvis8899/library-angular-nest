@@ -1,6 +1,6 @@
 import { FileStorage } from "@shared/storage/fileStorage";
 import { FPF, RTE } from "@shared/utils/application/monads";
-import { performRTE } from "@shared/utils/application/perform";
+import { perform } from "@shared/utils/application/perform";
 import { PinoLogger } from "nestjs-pino";
 
 /**
@@ -13,7 +13,7 @@ export const removeUnsavedRTE =
     error: Error,
   ): RTE.ReaderTaskEither<U, Error, never> =>
     FPF.pipe(
-      performRTE(storage.remove, "remove the unsaved file")<U>(key),
+      perform(storage).remove(key),
       RTE.matchE(
         () => RTE.left(error),
         () => RTE.left(error),
@@ -32,6 +32,6 @@ export const removeUnusedRTE = <U extends { logger: PinoLogger }>(
   key === null
     ? RTE.right(undefined)
     : FPF.pipe(
-        performRTE(storage.remove, "remove the unused file")<U>(key),
+        perform(storage).remove(key),
         RTE.orElseW(() => RTE.right(undefined)),
       );

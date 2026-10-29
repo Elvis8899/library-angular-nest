@@ -33,7 +33,7 @@ describe("PermissionGuard", () => {
     credentialsService.hasRole.mockReturnValueOnce(true);
     credentialsService.hasPermission.mockReturnValueOnce(true);
     const res = spectator.runInInjectionContext(() =>
-      permissionGuard(route, state)
+      permissionGuard(route, state),
     );
     //
     expect(res).toBe(true);
@@ -50,7 +50,7 @@ describe("PermissionGuard", () => {
     credentialsService.hasRole.mockReturnValueOnce(true);
     credentialsService.hasPermission.mockReturnValueOnce(true);
     const res = spectator.runInInjectionContext(() =>
-      permissionGuard(route, state)
+      permissionGuard(route, state),
     );
     expect(res).toBe(true);
   });
@@ -65,7 +65,7 @@ describe("PermissionGuard", () => {
     const credentialsService = spectator.inject(CredentialsService);
     credentialsService.hasRole.mockReturnValueOnce(false);
     const res = spectator.runInInjectionContext(() =>
-      permissionGuard(route, state)
+      permissionGuard(route, state),
     );
     expect(res).toBe(false);
   });
@@ -81,7 +81,7 @@ describe("PermissionGuard", () => {
     credentialsService.hasRole.mockReturnValueOnce(true);
     credentialsService.hasPermission.mockReturnValueOnce(false);
     const res = spectator.runInInjectionContext(() =>
-      permissionGuard(route, state)
+      permissionGuard(route, state),
     );
     expect(res).toBe(false);
   });

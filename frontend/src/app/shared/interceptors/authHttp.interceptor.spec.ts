@@ -37,7 +37,7 @@ describe("AuthenticationHttpInterceptor", () => {
     // A remembered login; testSetup.ts empties the storage after each test
     localStorage.setItem(
       "credentials",
-      JSON.stringify({ accessToken: "test_token" })
+      JSON.stringify({ accessToken: "test_token" }),
     );
   });
 
@@ -76,7 +76,7 @@ describe("AuthenticationHttpInterceptor", () => {
     const req = httpMock.expectOne("/test");
     req.flush({});
     expect(req.request.headers.get("Accept-Language")).toBe(
-      environment.defaultLanguage.substring(0, 2)
+      environment.defaultLanguage.substring(0, 2),
     );
   });
 
@@ -106,7 +106,7 @@ describe("AuthenticationHttpInterceptor", () => {
     const req = httpMock.expectOne("/test");
     req.flush(
       {},
-      { status: HttpStatusCode.InternalServerError, statusText: "Unknown" }
+      { status: HttpStatusCode.InternalServerError, statusText: "Unknown" },
     );
     expect(req.request.headers.has("Authorization")).toBeTruthy();
     expect(req.request.headers.get("Authorization")).toBe("Bearer test_token");

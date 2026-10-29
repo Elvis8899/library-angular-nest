@@ -1,0 +1,3 @@
+# Formats the staged files of both apps and the contracts (the root's
+# .prettierrc)
+yarn -s format:staged

@@ -57,7 +57,7 @@ describe("RowActionsComponent", () => {
     // Assert
     expect(spectator.query("button[name='more']")).toHaveAttribute(
       "aria-label",
-      "common.moreActions"
+      "common.moreActions",
     );
     // Act
     const items = open();

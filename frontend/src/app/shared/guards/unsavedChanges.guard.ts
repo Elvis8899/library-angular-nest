@@ -15,7 +15,7 @@ export interface HasUnsavedChanges {
  * would keep a form nothing can save.
  */
 export const unsavedChangesGuard: CanDeactivateFn<HasUnsavedChanges | null> = (
-  component
+  component,
 ) =>
   // No component when the route was never rendered
   !component?.hasUnsavedChanges() ||

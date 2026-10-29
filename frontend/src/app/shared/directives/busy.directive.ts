@@ -44,7 +44,7 @@ export class BusyDirective {
     this._spinner.setInput("mode", "indeterminate");
     // Created next to the button; moved inside it, over the label
     this._button.nativeElement.appendChild(
-      this._spinner.location.nativeElement
+      this._spinner.location.nativeElement,
     );
   }
 

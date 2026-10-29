@@ -11,7 +11,7 @@ import { PaginatedBookRentalsQueryHandler } from "@modules/rental/queries/pagina
 import { RealUserRepository } from "@modules/user/database/realUser.repository";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { Module, ModuleMetadata, Provider } from "@nestjs/common";
-import { CqrsModule } from "@nestjs/cqrs";
+import { CqrsModule } from "@shared/utils/application/cqrs";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 const controllers: ModuleMetadata["controllers"] = [
   PaginatedBookRentalsController,

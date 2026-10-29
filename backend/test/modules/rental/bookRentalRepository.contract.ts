@@ -92,18 +92,26 @@ export const bookRentalRepositoryContract = (kind: RepositoryKind) =>
       for (const each of [older, newer, others])
         await executeTask(ctx.rentals.save(each));
 
-      expect(await page(RentalStatusEnum.Finished, user.id)).toEqual({
-        count: 2,
-        ids: [newer.id, older.id],
-      });
-      expect(await page(RentalStatusEnum.Rented)).toEqual({
-        count: 1,
-        ids: [others.id],
-      });
-      expect(await page(undefined, other.id)).toEqual({
-        count: 1,
-        ids: [others.id],
-      });
+      expect(
+        await Promise.all([
+          page(RentalStatusEnum.Finished, user.id),
+          page(RentalStatusEnum.Rented),
+          page(undefined, other.id),
+        ]),
+      ).toEqual([
+        {
+          count: 2,
+          ids: [newer.id, older.id],
+        },
+        {
+          count: 1,
+          ids: [others.id],
+        },
+        {
+          count: 1,
+          ids: [others.id],
+        },
+      ]);
     });
 
     it("Should rent an available copy, marking it rented", async () => {
@@ -155,8 +163,12 @@ export const bookRentalRepositoryContract = (kind: RepositoryKind) =>
       );
 
       await expect(result).rejects.toThrow();
-      expect(await copyStatus()).toEqual(O.some(BookItemStatus.Available));
-      expect((await page()).count).toBe(0);
+      const [copyStatusNow, rentals] = await Promise.all([
+        copyStatus(),
+        page(),
+      ]);
+      expect(copyStatusNow).toEqual(O.some(BookItemStatus.Available));
+      expect(rentals.count).toBe(0);
     });
 
     it("Should finish a rental with its delivery date, making the copy available", async () => {
@@ -166,8 +178,12 @@ export const bookRentalRepositoryContract = (kind: RepositoryKind) =>
 
       await executeTask(ctx.rentals.finish({ ...rented, deliveryDate }));
 
-      expect(await copyStatus()).toEqual(O.some(BookItemStatus.Available));
-      expect(await executeTask(ctx.rentals.findById(rented.id))).toMatchObject(
+      const [copyStatusNow, storedRental] = await Promise.all([
+        copyStatus(),
+        executeTask(ctx.rentals.findById(rented.id)),
+      ]);
+      expect(copyStatusNow).toEqual(O.some(BookItemStatus.Available));
+      expect(storedRental).toMatchObject(
         O.some({ rentalStatus: RentalStatusEnum.Finished, deliveryDate }),
       );
     });

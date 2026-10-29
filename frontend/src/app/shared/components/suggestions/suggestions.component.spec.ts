@@ -25,7 +25,7 @@ describe("SuggestionsComponent", () => {
           control: new FormControl<string | null>(""),
           values: ["Pinho", "Pinho tratado", "Eucalipto"],
         },
-      }
+      },
     );
   });
   const open = () => {

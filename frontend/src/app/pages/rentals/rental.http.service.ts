@@ -16,12 +16,12 @@ export class RentalService {
   private readonly _http = inject(HttpClient);
 
   getPaginatedBookRentals(
-    req?: PageRequest<BookRentalEntity, object>
+    req?: PageRequest<BookRentalEntity, object>,
   ): Observable<PaginatedResponse<BookRentalEntity>> {
     const params = PageRequestUtility.toHttpParams(req);
     return this._http.get<PaginatedResponse<BookRentalEntity>>(
       "/v1/bookRentals",
-      { params }
+      { params },
     );
   }
 

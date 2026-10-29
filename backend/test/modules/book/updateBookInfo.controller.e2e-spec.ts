@@ -1,7 +1,6 @@
 import { HttpStatus } from "@nestjs/common";
 import { FPF } from "@shared/utils/application/monads";
 import { useE2eApp } from "@test/util/e2eApp";
-import { resetDatabase } from "@test/util/resetDatabase";
 
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -11,15 +10,16 @@ let bookInfoRepository: BookInfoRepository;
 const bookInfoBuilder = new BookInfoBuilder();
 const originalBookInfo = bookInfoBuilder.withName("Test").build();
 
-const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });
+const e2e = useE2eApp({
+  authGuard: new MockAuthGuardBuilder(),
+  resetEachTest: true,
+});
 
 beforeAll(() => {
   bookInfoRepository = e2e.get(BookInfoRepository);
 });
 
 beforeEach(async () => {
-  await resetDatabase(e2e.prisma);
-
   bookInfoBuilder.reset();
   await executeTask(bookInfoRepository.save(originalBookInfo));
 });

@@ -16,7 +16,7 @@ export class AuditService {
 
   /** A page of the entries, newest first, with the filters filled in. */
   getEntries(
-    req: PageRequest<AuditEntryEntity, AuditQuery>
+    req: PageRequest<AuditEntryEntity, AuditQuery>,
   ): Observable<AuditEntryPage> {
     const params = PageRequestUtility.toHttpParams({
       ...req,

@@ -4,7 +4,7 @@ import { FormValidatorUtility } from "@app/shared/utils/formValidators.utility";
 describe("removeNonNumeric", () => {
   it("Should remove non numeric", () => {
     const res = FormValidatorUtility.removeNonNumeric(
-      "asdasd123120asdasodmpqw2"
+      "asdasd123120asdasodmpqw2",
     );
     expect(res).toBe("1231202");
   });
@@ -38,14 +38,14 @@ describe("validateDocument", () => {
 describe("arrayNotEmptyValidator", () => {
   it("Should return null for a non empty array", () => {
     const res = FormValidatorUtility.arrayNotEmptyValidator()(
-      new FormControl([1, 2, 3])
+      new FormControl([1, 2, 3]),
     );
     expect(res).toBe(null);
   });
 
   it("Should return error for an empty array", () => {
     const res = FormValidatorUtility.arrayNotEmptyValidator()(
-      new FormControl([])
+      new FormControl([]),
     );
     expect(res).toEqual({
       arrayNotEmpty: { value: [] },
@@ -64,7 +64,7 @@ describe("timeRangeValidator", () => {
         [dateA]: new FormControl(),
         [dateB]: new FormControl(),
       },
-      FormValidatorUtility.timeRangeValidator(dateA, dateB)
+      FormValidatorUtility.timeRangeValidator(dateA, dateB),
     );
   });
 
@@ -95,7 +95,7 @@ describe("dateRangeValidator", () => {
         [dateA]: new FormControl(),
         [dateB]: new FormControl(),
       },
-      FormValidatorUtility.dateRangeValidator(dateA, dateB)
+      FormValidatorUtility.dateRangeValidator(dateA, dateB),
     );
   });
 

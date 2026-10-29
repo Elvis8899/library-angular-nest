@@ -8,9 +8,13 @@ export type Guard = "roles" | "auth";
 export type SpecKind = "unit" | "e2e" | "none";
 export type Method = "get" | "post" | "put" | "delete";
 
-export type Field = { name: string; type: FieldType; optional: boolean };
+export interface Field {
+  name: string;
+  type: FieldType;
+  optional: boolean;
+}
 
-export type ScaffoldOptions = {
+export interface ScaffoldOptions {
   module: string;
   useCase: string;
   kind: UseCaseKind;
@@ -21,15 +25,15 @@ export type ScaffoldOptions = {
   spec: SpecKind;
   // The Swagger tag, from the module's other controllers when there are some
   tag: string;
-};
+}
 
 /** A file to create, or text to add to a file that may already exist. */
-export type ScaffoldFile = {
+export interface ScaffoldFile {
   path: string;
   content: string;
   // Added to the end of an existing file, with `imports` added on top
   append?: { imports: string[] };
-};
+}
 
 const fieldTypes: FieldType[] = [
   "string",
@@ -184,12 +188,17 @@ const validationBlock = (options: ScaffoldOptions, source: string): string => {
       : []),
   ];
   return entries.length
-    ? `        //Data validation
-        inputsRTE({
+    ? `        inputsRTE({
 ${entries.join("\n")}
         }),`
     : "        RTE.right({}),";
 };
+
+// The pipeline's parameter, named _… when nothing reads it
+const messageParam = (options: ScaffoldOptions, source: string): string =>
+  routeParams(options.route).length > 0 || options.fields.length > 0
+    ? source
+    : `_${source}`;
 
 const handlerImports = (options: ScaffoldOptions): string[] => {
   const names = namesOf(options);
@@ -212,7 +221,7 @@ const handlerImports = (options: ScaffoldOptions): string[] => {
       ? ['import { inputsRTE } from "@shared/utils/application/fromInput";']
       : []),
     'import { FPF, RTE } from "@shared/utils/application/monads";',
-    'import { UseCase } from "@shared/utils/application/useCase";',
+    'import { UseCaseHandler } from "@shared/utils/application/useCase";',
   ];
 };
 
@@ -232,34 +241,29 @@ const commandFile = (options: ScaffoldOptions): string => {
     ...(options.fields.length
       ? [`import { ${names.contract} } from "@library/contracts";`]
       : []),
-    'import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";',
+    'import { Command, CommandHandler } from "@shared/utils/application/cqrs";',
   ])}
 
-export class ${names.message} implements ICommand {
+export class ${names.message} extends Command {
   constructor(
 ${fields.join("\n")}
-  ) {}
+  ) {
+    super();
+  }
 }
 
 @CommandHandler(${names.message})
-export class ${names.handler} implements ICommandHandler<
-  ${names.message},
-  void
-> {
-  constructor(private readonly useCase: UseCase) {}
-
-  execute(command: ${names.message}): Promise<void> {
-    return this.useCase.run(
-      "${names.name}",
-      command,
-      FPF.pipe(
+export class ${names.handler} extends UseCaseHandler<${names.message}> {
+  protected pipeline(${messageParam(options, "command")}: ${names.message}) {
+    return FPF.pipe(
 ${validationBlock(options, "command")}
 
         //Look the records up, apply the rules (RTE.chainEitherK), store
-        //them (performRTE), then publish what happened:
-        //RTE.tap(publishRTE(…)), the event in the module's All…Events
+        //them (perform(this.xRepository).save(…)), then tell the screens
+        //that show what changed:
+        //RTE.tap(() => changedRTE({ resource: Resource.… })), the resource
+        //added to Resource and the frontend's RESOURCE
         RTE.asUnit,
-      ),
     );
   }
 }
@@ -272,7 +276,7 @@ const queryFile = (options: ScaffoldOptions): string => {
   return `${imports([
     ...handlerImports(options),
     `import { ${names.view} } from "@modules/${options.module}/domain/${options.module}Views";`,
-    'import { IQueryHandler, Query, QueryHandler } from "@nestjs/cqrs";',
+    'import { Query, QueryHandler } from "@shared/utils/application/cqrs";',
   ])}
 
 export class ${names.message} extends Query<${names.view}> {${
@@ -288,22 +292,13 @@ ${params.map((param) => `    public readonly ${param}: string,`).join("\n")}
   }}
 
 @QueryHandler(${names.message})
-export class ${names.handler} implements IQueryHandler<
-  ${names.message},
-  ${names.view}
-> {
-  constructor(private readonly useCase: UseCase) {}
-
-  execute(query: ${names.message}): Promise<${names.view}> {
-    return this.useCase.run(
-      "${names.name}",
-      query,
-      FPF.pipe(
+export class ${names.handler} extends UseCaseHandler<${names.message}> {
+  protected pipeline(${messageParam(options, "query")}: ${names.message}) {
+    return FPF.pipe(
 ${validationBlock(options, "query")}
 
-        //Read the records (performRTE), then build the view
+        //Read the records (perform(this.xRepository)…), then build the view
         RTE.map((): ${names.view} => ({})),
-      ),
     );
   }
 }
@@ -347,7 +342,6 @@ const controllerFile = (options: ScaffoldOptions): string => {
   ].join(", ");
   const nestImports = [
     method,
-    ...(guard.decorators.length ? ["UseGuards"] : []),
     ...(params.length ? ["Param"] : []),
     ...(hasBody ? ["Body"] : []),
     ...(isCommand ? ["HttpCode", "HttpStatus", "Request"] : []),
@@ -355,19 +349,15 @@ const controllerFile = (options: ScaffoldOptions): string => {
   const swagger = [
     "ApiOperation",
     ...(hasBody ? ["ApiBody"] : []),
-    isCommand ? "ApiDefaultResponse" : "ApiOkResponse",
+    ...(isCommand ? ["ApiDefaultResponse"] : []),
   ];
   const contracts = [
-    ...(hasBody || !isCommand ? ["contractRef", names.contract] : []),
-    ...(isCommand ? [] : ["Sent"]),
+    ...(hasBody ? ["contractRef"] : []),
+    ...(hasBody || !isCommand ? [names.contract] : []),
   ];
   const body = isCommand
-    ? `    return this.commandBus
-      .execute(new ${names.message}(${messageArgs}))
-      .then(noop);`
-    : `    return this.queryBus.execute<${names.message}, ${names.view}>(
-      new ${names.message}(${messageArgs}),
-    );`;
+    ? `    return this.commandBus.execute(new ${names.message}(${messageArgs}));`
+    : `    return this.queryBus.execute(new ${names.message}(${messageArgs}));`;
   return `${imports([
     'import { ApiController } from "@modules/auth/decorators/apiController.decorator";',
     ...(isCommand
@@ -380,14 +370,12 @@ const controllerFile = (options: ScaffoldOptions): string => {
     ...(contracts.length
       ? [`import { ${contracts.join(", ")} } from "@library/contracts";`]
       : []),
-    ...(isCommand
-      ? ['import { noop } from "@shared/utils/application/noop";']
-      : [
-          `import { ${names.view} } from "@modules/${options.module}/domain/${options.module}Views";`,
-        ]),
     `import { ${nestImports.join(", ")} } from "@nestjs/common";`,
-    `import { ${isCommand ? "CommandBus" : "QueryBus"} } from "@nestjs/cqrs";`,
+    `import { ${isCommand ? "CommandBus" : "QueryBus"} } from "@shared/utils/application/cqrs";`,
     `import { ${swagger.join(", ")} } from "@nestjs/swagger";`,
+    ...(isCommand
+      ? []
+      : ['import { Answers } from "@shared/utils/http/answers";']),
   ])}
 
 @ApiController("${options.tag}")
@@ -406,11 +394,11 @@ ${[
   ${
     isCommand
       ? '@ApiDefaultResponse({ description: "Feito." })'
-      : `@ApiOkResponse({ schema: contractRef(${names.contract}) })`
+      : `@Answers(${names.contract})`
   }
   async ${options.useCase}(
 ${args.join("\n")}
-  ): Promise<${isCommand ? "void" : `Sent<typeof ${names.contract}>`}> {
+  )${isCommand ? ": Promise<void>" : ""} {
 ${body}
   }
 }
@@ -514,20 +502,13 @@ const e2eSpecFile = (options: ScaffoldOptions): string => {
   return `import { HttpStatus } from "@nestjs/common";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { useE2eApp } from "@test/util/e2eApp";
-import { resetDatabase } from "@test/util/resetDatabase";
 
 const authGuard = new MockAuthGuardBuilder();
-const e2e = useE2eApp({ authGuard });
-
-beforeEach(async () => {
-  await resetDatabase(e2e.prisma);
-  authGuard.reset();
-});
+const e2e = useE2eApp({ authGuard, resetEachTest: true });
 
 describe("[e2e] ${options.method.toUpperCase()} /v1/${options.route}", () => {
   it("Should answer ${names.name}", async () => {
-    const response = await e2e.http().${options.method}("/v1/${url}")${body};
-    expect(response.status).toBe(HttpStatus.OK);
+    await e2e.http().${options.method}("/v1/${url}")${body}.expect(HttpStatus.OK);
   });
 });
 `;

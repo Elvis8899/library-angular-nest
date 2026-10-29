@@ -4,7 +4,7 @@ Conventions for `frontend`. Most of them are enforced by tooling. Run `yarn lint
 
 ## Formatting
 
-[Prettier](../.prettierrc) is the source of truth for formatting:
+[Prettier](../../.prettierrc) is the source of truth for formatting:
 
 - 2-space indentation, 80-character lines, semicolons, trailing commas where valid in ES5.
 - Double quotes.

@@ -5,7 +5,7 @@ import {
 import { Router, RouterModule } from "@angular/router";
 import { ROLE } from "@app/models/credentials.entity";
 import { AddUsersComponent } from "@app/pages/users/addUser/addUser.component";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { UserService } from "@app/services/user.http.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
@@ -17,7 +17,7 @@ import {
 } from "@openng/spectator/vitest";
 import { defer, of, Subject, throwError } from "rxjs";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 describe("AddUsersComponent", () => {
   let spectator: Spectator<AddUsersComponent>;
@@ -40,10 +40,10 @@ describe("AddUsersComponent", () => {
     userServiceMock.addUser.mockReturnValue(of(undefined));
     httpMock = spectator.inject(HttpTestingController);
     inputs = {
-      name: spectator.query("input[name='name']") as HTMLInputElement,
-      email: spectator.query("input[name='email']") as HTMLInputElement,
-      cpf: spectator.query("input[name='cpf']") as HTMLInputElement,
-      password: spectator.query("input[name='password']") as HTMLInputElement,
+      name: spectator.query("input[name='name']")!,
+      email: spectator.query("input[name='email']")!,
+      cpf: spectator.query("input[name='cpf']")!,
+      password: spectator.query("input[name='password']")!,
     };
   });
 
@@ -108,14 +108,14 @@ describe("AddUsersComponent", () => {
     // Arrange
     const notifications = spectator.inject(NotificationService);
     userServiceMock.addUser.mockReturnValueOnce(
-      throwError(() => new Error("Email já cadastrado"))
+      throwError(() => new Error("Email já cadastrado")),
     );
     fillIn();
     // Act
     spectator.click("button[name='save']");
     // Assert
     expect(notifications.errorMessage).toHaveBeenCalledExactlyOnceWith(
-      "Email já cadastrado"
+      "Email já cadastrado",
     );
     expect(spectator.component.saving()).toBe(false);
   });
@@ -157,7 +157,7 @@ describe("AddUsersComponent", () => {
     expect(inputs.password).toHaveAttribute("type", "text");
     expect(spectator.query("button[name='togglePassword']")).toHaveAttribute(
       "aria-label",
-      "auth.password.hide"
+      "auth.password.hide",
     );
     // Act
     spectator.click("button[name='togglePassword']");
@@ -174,7 +174,7 @@ describe("AddUsersComponent", () => {
       defer(() => {
         sent++;
         return response;
-      })
+      }),
     );
     fillIn();
     // Act
@@ -195,7 +195,7 @@ describe("AddUsersComponent", () => {
     // Assert
     expect(spectator.query("a[name='cancel']")).toHaveAttribute(
       "href",
-      "/users/list"
+      "/users/list",
     );
   });
 });

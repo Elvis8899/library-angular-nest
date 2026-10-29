@@ -3,14 +3,14 @@ import { defaultRolePage } from "@app/layouts/components/sidebar/navMenuItems";
 import { ROLE } from "@app/models/credentials.entity";
 import { routes } from "@app/pages/pages.routes";
 import { CredentialsService } from "@app/services/credentials.service";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { I18nService } from "@app/shared/i18n/i18n.service";
 import {
   createServiceFactory,
   SpectatorService,
 } from "@openng/spectator/vitest";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 // No router outlet is rendered: guards and lazy loading run, but the pages
 // themselves are never created
@@ -30,7 +30,7 @@ describe("Routes", () => {
   const navigate = async (url: string) => {
     const router = spectator.service;
     await router.navigateByUrl(url);
-    await vi.waitFor(() => expect(router.getCurrentNavigation()).toBeNull());
+    await vi.waitFor(() => expect(router.currentNavigation()).toBeNull());
     return router.url;
   };
 
@@ -58,7 +58,7 @@ describe("Routes", () => {
 
     it("Should send protected pages to login and come back after", async () => {
       expect(await navigate("/users/list")).toBe(
-        "/login?redirect=%2Fusers%2Flist"
+        "/login?redirect=%2Fusers%2Flist",
       );
     });
 
@@ -92,7 +92,7 @@ describe("Routes", () => {
       async (url) => {
         const defaultPage = await navigate(defaultRolePage(ROLE.CLIENT));
         expect(await navigate(url)).toBe(defaultPage);
-      }
+      },
     );
 
     // Lending example
@@ -105,7 +105,7 @@ describe("Routes", () => {
         "Should open %s",
         async (url) => {
           expect(await navigate(url)).toBe(url);
-        }
+        },
       );
 
       it.each([
@@ -131,7 +131,7 @@ describe("Routes", () => {
       "Should open %s",
       async (url) => {
         expect(await navigate(url)).toBe(url);
-      }
+      },
     );
 
     it.each([
@@ -146,7 +146,7 @@ describe("Routes", () => {
       "Should open the lending example's %s",
       async (url) => {
         expect(await navigate(url)).toBe(url);
-      }
+      },
     );
   });
 });

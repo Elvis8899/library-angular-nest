@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
-    // Emits CommonJS (package.json has no "type": "module"); Node 24 require()s
+    // Emits CommonJS (package.json has no "type": "module"); Node require()s
     // the ESM-only dependencies natively
     "module": "nodenext",
     "target": "es2024",
     "lib": ["ES2024"],
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    // The ES2022+ default (true) makes a field redeclared in a subclass, such as
-    // a DTO's decorated `data!`, overwrite what the base constructor assigned
+    // The ES2022+ default (true) makes a field redeclared in a subclass
+    // overwrite what the base constructor assigned
     "useDefineForClassFields": false,
     "removeComments": true,
     "sourceMap": true,

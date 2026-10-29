@@ -1,9 +1,9 @@
 import { Page, PageRequest } from "@app/models/utils/pageRequest.entity";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { PaginatedDataSource } from "@app/shared/components/customizedTable/paginatedDataSource";
 import { Observable, of, throwError } from "rxjs";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 interface Item {
   id: string;
@@ -42,7 +42,7 @@ describe("PaginatedDataSource", () => {
   beforeEach(() => {
     log = new Logger("PaginatedDataSourceSpec");
     endpoint = vi.fn((req: PageRequest<Item, ItemQuery>) =>
-      of(page(items, req.page))
+      of(page(items, req.page)),
     );
   });
 
@@ -65,7 +65,7 @@ describe("PaginatedDataSource", () => {
     create({ pageSize: 25 });
 
     expect(endpoint).toHaveBeenLastCalledWith(
-      expect.objectContaining({ limit: 25, query: {} })
+      expect.objectContaining({ limit: 25, query: {} }),
     );
   });
 
@@ -75,7 +75,7 @@ describe("PaginatedDataSource", () => {
     dataSource.fetch(2);
 
     expect(endpoint).toHaveBeenLastCalledWith(
-      expect.objectContaining({ page: 2 })
+      expect.objectContaining({ page: 2 }),
     );
     expect(dataSource.page$.getValue().page).toBe(2);
   });
@@ -90,7 +90,7 @@ describe("PaginatedDataSource", () => {
       expect.objectContaining({
         page: 0,
         sort: { property: "createdAt", order: "asc" },
-      })
+      }),
     );
   });
 
@@ -101,7 +101,7 @@ describe("PaginatedDataSource", () => {
     dataSource.queryBy({ createdAt });
 
     expect(endpoint).toHaveBeenLastCalledWith(
-      expect.objectContaining({ query: { name: "Dom", createdAt } })
+      expect.objectContaining({ query: { name: "Dom", createdAt } }),
     );
   });
 
@@ -112,7 +112,7 @@ describe("PaginatedDataSource", () => {
 
     expect(endpoint).toHaveBeenCalledTimes(2);
     expect(endpoint).toHaveBeenLastCalledWith(
-      expect.objectContaining({ page: 0, query: { name: "Dom" } })
+      expect.objectContaining({ page: 0, query: { name: "Dom" } }),
     );
   });
 

@@ -1,7 +1,7 @@
 import { Router, RouterModule } from "@angular/router";
 import { LogoutComponent } from "@app/pages/auth/logout/logout.component";
 import { AuthenticationService } from "@app/services/authentication.service";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
 import { provideTranslateService } from "@ngx-translate/core";
 import {
@@ -11,7 +11,7 @@ import {
 } from "@openng/spectator/vitest";
 import { of, Subject, throwError } from "rxjs";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 describe("LogoutComponent", () => {
   const authServiceMock = createSpyObject(AuthenticationService);
@@ -63,7 +63,7 @@ describe("LogoutComponent", () => {
   it("Should go to the login page even if logging out fails", () => {
     // Arrange
     authServiceMock.logout.mockReturnValue(
-      throwError(() => new Error("test error"))
+      throwError(() => new Error("test error")),
     );
     // Act
     const navigateSpy = create();

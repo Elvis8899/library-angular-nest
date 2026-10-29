@@ -20,7 +20,7 @@ describe("audit.entity", () => {
         useCase: "User",
         from: "2026-10-01",
         to: "2026-10-31",
-      })
+      }),
     ).toEqual({
       useCase: "User",
       from: new Date(2026, 9, 1).toISOString(),

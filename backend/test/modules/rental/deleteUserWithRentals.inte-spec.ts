@@ -54,8 +54,12 @@ describe("[Integration] User repository with rentals", () => {
     await expect(resultPromise).rejects.toBeInstanceOf(
       UserHasActiveRentalsException,
     );
-    expect(await prismaService.user.count()).toBe(1);
-    expect(await prismaService.bookRentalDetails.count()).toBe(1);
+    expect(
+      await Promise.all([
+        prismaService.user.count(),
+        prismaService.bookRentalDetails.count(),
+      ]),
+    ).toEqual([1, 1]);
   });
 
   it("Successfully delete user whose rentals are finished", async () => {
@@ -68,7 +72,11 @@ describe("[Integration] User repository with rentals", () => {
     await executeTask(userRepository.deleteById(user.id));
 
     //Then he and his rental history should be deleted
-    expect(await prismaService.user.count()).toBe(0);
-    expect(await prismaService.bookRentalDetails.count()).toBe(0);
+    expect(
+      await Promise.all([
+        prismaService.user.count(),
+        prismaService.bookRentalDetails.count(),
+      ]),
+    ).toEqual([0, 0]);
   });
 });

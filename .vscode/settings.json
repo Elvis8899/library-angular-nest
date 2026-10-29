@@ -1,7 +1,5 @@
 {
   "editor.formatOnSave": true,
-  //"typescript.preferences.importModuleSpecifier": "non-relative",
-  //"javascript.preferences.importModuleSpecifier": "non-relative",
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -15,12 +13,6 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[mjs]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[jsx-tags]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }

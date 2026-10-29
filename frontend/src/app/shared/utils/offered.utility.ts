@@ -7,7 +7,7 @@ export const offered = <
 >(
   entries: readonly T[],
   kept: string | null | readonly (string | null)[],
-  key: K = "id" as K
+  key: K = "id" as K,
 ): T[] => {
   const keep = typeof kept === "string" || kept === null ? [kept] : kept;
   return entries.filter((entry) => entry.active || keep.includes(entry[key]));

@@ -24,11 +24,11 @@ describe("DialogActionsComponent", () => {
     const accept = vi.fn();
     spectator = createHost(
       `<app-dialog-actions (accept)="accept()"><button name="more">+</button></app-dialog-actions>`,
-      { hostProps: { accept } }
+      { hostProps: { accept } },
     );
     // Assert: projected buttons go between the two
     expect(
-      spectator.queryAll("button").map((button) => button.getAttribute("name"))
+      spectator.queryAll("button").map((button) => button.getAttribute("name")),
     ).toEqual(["cancel", "more", "save"]);
     expect(primary()).toHaveText("common.save");
     expect(primary()).toHaveAttribute("type", "button");
@@ -48,10 +48,10 @@ describe("DialogActionsComponent", () => {
     spectator = createHost(
       `<form id="f" (submit)="submitted($event)"></form>
        <app-dialog-actions (accept)="accept()" [cancelResult]="null" [destructive]="true" form="f" label="common.confirm" name="confirm" />`,
-      { hostProps: { accept, submitted } }
+      { hostProps: { accept, submitted } },
     );
     const button = spectator.query<HTMLButtonElement>(
-      "button[name='confirm']"
+      "button[name='confirm']",
     )!;
     // Act
     button.click();
@@ -71,7 +71,7 @@ describe("DialogActionsComponent", () => {
     const disabled = signal(false);
     spectator = createHost(
       `<app-dialog-actions [busy]="busy()" [disabled]="disabled()" />`,
-      { hostProps: { busy, disabled } }
+      { hostProps: { busy, disabled } },
     );
     // Assert
     expect(primary()).toBeDisabled();

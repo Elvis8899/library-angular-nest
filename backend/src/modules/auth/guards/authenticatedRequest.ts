@@ -1,7 +1,7 @@
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 
 /** The claims of a verified access token. */
-export type RequestJWTPayload = {
+export interface RequestJWTPayload {
   sub: string;
   email: string;
   role: UserRoleEnum;
@@ -12,10 +12,10 @@ export type RequestJWTPayload = {
   exp: number;
   aud: string;
   iss: string;
-};
+}
 
 /** A request that passed AuthGuard, which sets its user from the token. */
-export type AuthenticatedRequest = {
+export interface AuthenticatedRequest {
   headers: { authorization?: string };
   user: RequestJWTPayload;
-};
+}

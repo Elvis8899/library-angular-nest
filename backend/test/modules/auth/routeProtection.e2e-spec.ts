@@ -134,8 +134,8 @@ describe("[e2e] Route protection", () => {
     // Logging out revokes the access token too, before it expires
     await e2e.http().post("/v1/logout").set("Authorization", `Bearer ${token}`);
 
-    expect((await listUsers(token)).status).toBe(HttpStatus.UNAUTHORIZED);
-    expect((await listUsers(await login(admin))).status).toBe(HttpStatus.OK);
+    await listUsers(token).expect(HttpStatus.UNAUTHORIZED);
+    await listUsers(await login(admin)).expect(HttpStatus.OK);
   });
 
   it("Should let an admin with a login token list users", async () => {

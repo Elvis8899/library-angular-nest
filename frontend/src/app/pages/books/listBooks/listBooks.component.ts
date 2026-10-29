@@ -118,7 +118,7 @@ export class ListBooksComponent implements OnInit {
   readonly columns = computed(() =>
     this.isSmallScreen()
       ? ["book", "actions"]
-      : ["book", "price", "availability", "actions"]
+      : ["book", "price", "availability", "actions"],
   );
   // The row actions' requests, one at a time, with the API's message on a
   // failure
@@ -158,7 +158,7 @@ export class ListBooksComponent implements OnInit {
           order: "desc",
         },
         displayedColumns: ["book", "price", "availability", "actions"],
-      }
+      },
     );
     // What someone else changes shows here too, a rental's copy included
     this._liveUpdates
@@ -188,7 +188,7 @@ export class ListBooksComponent implements OnInit {
           this.rentBook({
             bookItemId,
             userId: this._credentialsService.userId(),
-          })
+          }),
         );
       return;
     }
@@ -214,7 +214,7 @@ export class ListBooksComponent implements OnInit {
 
   availableCount(book: BookEntity) {
     return book.bookItems.filter(
-      (item) => item.status === BookItemStatus.Available
+      (item) => item.status === BookItemStatus.Available,
     ).length;
   }
 
@@ -286,12 +286,12 @@ export class ListBooksComponent implements OnInit {
         this.saving.run(this._bookService.removeCover(book.id), () => {
           this._notify.success("books.cover.removed");
           this.refresh();
-        })
+        }),
       );
   }
 
   goToAddBook() {
-    this._router.navigateByUrl("/books/add");
+    void this._router.navigateByUrl("/books/add");
   }
 
   rentBook(book: BookRentEntity) {
@@ -327,7 +327,7 @@ export class ListBooksComponent implements OnInit {
         this.saving.run(this._bookService.deleteBookItem(bookItem.id), () => {
           this._notify.success("books.copies.removed");
           this.refresh();
-        })
+        }),
       );
   }
 
@@ -337,7 +337,7 @@ export class ListBooksComponent implements OnInit {
 
   private _availableItem(book: BookEntity) {
     return book.bookItems.find(
-      (item) => item.status === BookItemStatus.Available
+      (item) => item.status === BookItemStatus.Available,
     );
   }
 }

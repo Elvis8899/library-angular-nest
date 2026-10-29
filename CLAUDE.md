@@ -10,7 +10,7 @@ A library (book lending) app for Brazilian users: UI text, Swagger docs and erro
 - `frontend/`: Angular 22 (standalone, zoneless), Angular Material, ngx-translate (pt-BR, en-US), Vitest on happy-dom.
 - `packages/contracts/`: `@library/contracts`, what travels over HTTP (Zod schemas, enums) and the rules both apps apply.
 
-TypeScript 6.0 (Angular and typescript-eslint don't support 7 yet); Node 24 (`.nvmrc`; run `source ~/.nvm/nvm.sh && nvm use` first).
+TypeScript 6.0 (Angular and typescript-eslint don't support 7 yet); Node 26 (the root `.nvmrc`; run `source ~/.nvm/nvm.sh && nvm use` first).
 
 The repository is also a seed. `shared`, `auth`, `user` and `audit` (backend) and the `auth`, `home`, `users` and `audit` pages are the **core**; `book` and `rental` (`books`, `rentals` pages) are the **lending example**. The example lives in its own folders; the few lines it needs in core files carry a `Lending example` comment (`git grep -i "lending example"` lists them). Keep it that way: no unmarked example code in core files, and core code and specs never use the example. The example follows the core's patterns, so it can be copied.
 
@@ -20,7 +20,7 @@ The repository is also a seed. `shared`, `auth`, `user` and `audit` (backend) an
 # Repo root
 yarn install                  # everything; builds the contracts, installs the pre-commit hook (Prettier on the staged files of both apps and the contracts)
 yarn contracts:watch          # rebuild the contracts while editing them (the apps import the build)
-yarn build | yarn lint | yarn lint:check | yarn typecheck | yarn test   # all packages (lint: the contracts' Prettier too)
+yarn build | yarn lint | yarn lint:check | yarn typecheck | yarn test   # all packages (lint: the contracts' Prettier too; typecheck: the backend and the frontend specs, which ng test doesn't check)
 
 # backend/ — tests need Postgres and SeaweedFS: docker compose -f ../.docker/docker-compose-dev.yml up postgres storage -d
 yarn test:migrate             # migrate the library-test database (yarn test:docker:up also resets and reseeds it)
@@ -49,7 +49,8 @@ While working, check with `lint:changed` and `test:module` (they only report); l
 - No relative imports. Aliases: backend `@src/ @test/ @shared/ @modules/ @db/ @scripts/` (defined in both `tsconfig.json` and `vitest.config.mts`); frontend `@app/ @shared/ @pages/ @env/`; `@library/contracts` in both.
 - File and folder names camelCase with a role suffix (`createUser.command.ts`), except locale files and migrations.
 - No `as` in the backend (`as const` is fine): type precisely or parse with Zod; a needed cast is `FPF.unsafeCoerce`.
-- Prettier with organize-imports, double quotes.
+- Both apps lint with typescript-eslint's `strictTypeChecked` and `stylisticTypeChecked`; each config says why it relaxes a rule (the frontend's Angular idioms, the specs' `any` matchers and spies).
+- Prettier with organize-imports (the root `.prettierrc`), double quotes.
 
 ## Backend
 
@@ -59,17 +60,17 @@ Each module under `src/modules/` is hexagonal/CQRS: `commands/<name>/` and `quer
 
 ### Handlers
 
-`execute` is `return this.useCase.run("Name", input, FPF.pipe(…))`. `input` is logged and, for commands, kept in the audit: name the record's `id` in it and leave out passwords, tokens and file bytes. The pipeline:
+Commands and queries come from `shared/utils/application/cqrs.ts`, the only file that imports `@nestjs/cqrs` (lint enforces it): a command extends `Command<R>` (`R` is what it answers, `void` by default) and a query `Query<View>`; `commandBus.execute(new X(…))` is typed by them. The handler `extends UseCaseHandler<X>` under `@CommandHandler(X)`/`@QueryHandler(X)` and defines only `protected pipeline(command: X) { return FPF.pipe(…); }`, plus `protected logged(command)` when it logs less than the whole message (never passwords, tokens or file bytes). `UseCaseHandler` owns `execute`: it logs the input, runs the pipeline, times it, and for a command that succeeds writes its audit entry under the class's name (a query's without `Query`).
 
-1. Open with `inputsRTE({ id: [UUID, "id", command.id], input: [XInput, "X", command.props] })`; inputs are the contract's request schemas (`BookDetails = BookInfoRequest`), plus rules only the backend checks.
-2. Look up with `findOrFailRTE(repo.findById, "get x by id", xNotFoundException)(id)` / `ensureAbsentRTE(…)`.
-3. Apply pure rules from the domain (`registerUser`, `changeBookDetails`, `newRental`, `startRental`). A rule that refuses returns `Either` (`RTE.chainEitherK`). "Now" is the injected `Clock`'s `now()` (the business day, America/Sao_Paulo, is `today()`), passed into rules, never `new Date()`.
-4. Store with `performRTE(repo.save, "…")`. A rule concurrent requests could break is checked again by the repository's conditional write.
-5. End with `RTE.tap(publishRTE(xCreated))` and, when a screen shows it, `changedRTE({ resource, key? })`.
+**Read `docs/handlerPipelines.md` before writing or changing a handler**: the fp-ts types and operators, the helpers (`inputsRTE`/`inputRTE`, `perform(repo).method(…)`, `orFail`/`orConflict`, `allRTE`/`bindAll`, `publishRTE`, `changedRTE`), `createUser` read line by line, and what TypeScript's errors in a pipeline mean. The rules it doesn't relax:
 
-Import fp-ts only from `shared/utils/application/monads.ts`.
+- Import fp-ts only from `shared/utils/application/monads.ts`.
+- Inputs are the contract's request schemas (`BookDetails = BookInfoRequest`), plus rules only the backend checks.
+- Rules are pure functions in the domain (`registerUser`, `changeBookDetails`, `newRental`, `startRental`); one that refuses returns `Either` (`RTE.chainEitherK`). "Now" is the injected `Clock`'s `now()` (the business day, America/Sao_Paulo, is `today()`) passed into rules, never `new Date()`. A rule concurrent requests could break is checked again by the repository's conditional write.
+- The first step to fail is the answer: access checks first, a check that guards a write right before it, lookups that don't need each other in one `bindAll`/`allRTE` (first key wins; `bindAll` refuses to rebind a name the scope has).
+- Every write command ends with `changedRTE({ resource, key? })` (or `nothingChangedRTE` on purpose): specs fail one that doesn't (`test/util/screenChanges.ts`).
 
-Controllers open with `@ApiController("<tag>", ...guards)`, take the request type as `@Body()`, return `Promise<Sent<typeof X>>`, and document domain errors with `@ApiErrors(XNotFoundException, …)` and contracts with `contractRef(X)`. Query strings are contracts too: `@ApiQueryContract(X)`, typed `QueryString<typeof X>`. Restrict with `@UseGuards(RolesGuard)` + `@Roles(UserRoleEnum.Admin)`.
+Controllers open with `@ApiController("<tag>", ...guards)`, take the request type as `@Body()`, and name what they answer with `@Answers(X)` (`AnswersList`, `AnswersOneOf`, `{ status: HttpStatus.CREATED }`; `shared/utils/http/answers.ts`), which sets the status and Swagger's response and doesn't compile if the method returns anything else. They document domain errors with `@ApiErrors(XNotFoundException, …)`. Query strings are contracts too: `@ApiQueryContract(X)`, typed `QueryString<typeof X>`. Restrict with `@UseGuards(RolesGuard)` + `@Roles(UserRoleEnum.Admin)`. Subscribers listen with `@OnDomainEvent(KEY)`, which checks the payload's type.
 
 ### Errors
 
@@ -102,23 +103,25 @@ Every route needs a token except `POST /v1/login`, `POST /v1/refresh` and `GET /
 
 - Vitest with globals; files in `test/modules/<module>/`: `*.unit-spec.ts` (handlers with fakes), `*.inte-spec.ts` (Prisma), `*.e2e-spec.ts` (AppModule + supertest). Files aren't isolated: never leave `vi.mock`, timers or `process.env` changed.
 - Unit: `const ctx = useHandlerModule({ providers: [Handler] }, (get) => ({ handler: get(Handler), users: get(UserRepository) }))`. Repositories are fakes, the clock is `FakeClock` (2026-10-21 12:00 UTC), files and the audit are in memory (`get(FakeFileStorage)`, `get(FakeAuditLog)`).
-- E2E: `const e2e = useE2eApp({ authGuard })` with `MockAuthGuardBuilder` (an admin; `.withRole(…)`, then `.reset()`); `e2e.http()`, `e2e.prisma`, `e2e.get(…)`.
+- E2E: `const e2e = useE2eApp({ authGuard, resetEachTest: true })` with `MockAuthGuardBuilder` (an admin; `.withRole(…)`); `resetEachTest` empties the database and resets the guard before each test. Then `e2e.http()`, `e2e.prisma`, `e2e.get(…)`. Bodies are read with the route's contract (`await bodyOf(AuditEntryPage, e2e.http().get(url))`, so a spec checks the API sends what it promises), a status alone with supertest's `.expect(HttpStatus.OK)`; `test/util/responseBodies.ts` holds what no contract describes (`ErrorBody`, `errorOf`).
 - Each port has one contract (`<x>Repository.contract.ts`), run on the fake by `fake<X>.repository.unit-spec.ts` and on Prisma by `real<X>.repository.inte-spec.ts`. Cases seed through ports and state what the port promises.
-- Builders in `test/dataBuilders/` and next to each module's specs; ids from `createTestId(TableNameEnum.X, n)`; `resetDatabase(prisma)` in `beforeEach`.
+- Builders in `test/dataBuilders/` and next to each module's specs; ids from `createTestId(TableNameEnum.X, n)`; `resetDatabase(prisma)` in `beforeEach` outside e2e specs. A rule's `Either` is read with `leftOf(result)` (`test/util/either.ts`).
+- Reads that don't depend on each other run at once: one `expect(await Promise.all([…])).toEqual([…])` when every check compares whole values, otherwise `const [stock, lines] = await executeTasks(ctx.x.findStock(id), ctx.x.findLines(id))` with an expect per value; rows of one table seed with `executeTasks(save(a), save(b))`. Writes stay one after another.
+- `domainErrors.unit-spec.ts` checks every module's `*.errors.ts` against its declaration (status, code, a readable message, factories), so a new error needs no case of its own.
 - Each worker gets its own database and bucket. A `DATABASE_URL` already set wins over `.env.test`, so a worktree can test on its own `library-test-<name>` template (`yarn test:migrate` first); names without `test` are refused.
 
 ## Frontend
 
 - `pages/<feature>/` are lazy route groups with their model (aliases of the contracts' types) and `<feature>.http.service.ts` (spec pins each URL and method). Access is `data: { roles }`, checked by `permission.guard.ts`; `pages.routes.spec.ts` covers each role. The sidebar is `navMenuItems.ts` (related pages share a `group`).
 - Zoneless and OnPush: template state is signals (`signal`, `computed`, `input()`, `toSignal`); requests stay RxJS; unsubscribe with `takeUntilDestroyed()`.
-- Use the shared building blocks: `app-page-header`, `app-form-card`, `customizedTable` + `PaginatedDataSource`, `ConfirmDialog.confirm()` for destructive actions, `injectSaving(log)` for every save (one at a time, the API's message on failure), `app-dialog-actions`/`[appBusy]`, `app-row-actions`, `*appLoaded` with `loading(log)`, `app-report-table`, `app-suggestions`, `img[appAuthSrc]` for files behind the token, `detailsOf(error, code)` and `isChangedMeanwhile(error)`, `canDeactivate: [unsavedChangesGuard]` for forms (`HasUnsavedChanges`), `offered(entries, chosen)` for pickers, `readPreference`/`writePreference` for per-browser choices, `printDocument`, `pastedRows`, `[appTemplateContext]` and `*matCellDef="let row; dataSource: data"` for typed templates. Messages go through `NotificationService` (`success`/`error` take keys, `errorMessage` translated text).
+- Use the shared building blocks: `app-page-header`, `app-form-card`, `customizedTable` + `PaginatedDataSource`, `ConfirmDialog.confirm()` for destructive actions, `injectSaving(log)` for every save (one at a time, the API's message on failure), `app-dialog-actions`/`[appBusy]`, `app-row-actions`, `*appLoaded` with `loading(log)` (and `reloaded([liveUpdates.changes(RESOURCE.X), reload], () => request, log, notify)` for a load made again on each trigger), `app-report-table`, `app-suggestions`, `img[appAuthSrc]` for files behind the token, `detailsOf(error, code)` and `isChangedMeanwhile(error)`, `canDeactivate: [unsavedChangesGuard]` for forms (`HasUnsavedChanges`), `offered(entries, chosen)` for pickers, `readPreference`/`writePreference` for per-browser choices, `printDocument`, `pastedRows`, `[appTemplateContext]` and `*matCellDef="let row; dataSource: data"` for typed templates. Messages go through `NotificationService` (`success`/`error` take keys, `errorMessage` translated text).
 - Translations: pt-BR is the source. Core texts are in `pt-BR.ts`; a page's namespace goes in `pages.pt-BR.ts`; the en-US files have the same shape. Templates use `"x.y" | translate`, code passes `t("x.y")`. `translationKeys.spec.ts` fails on unknown, unused or misplaced keys and missing `errors.<code>`.
 - Styles: colors from `--mat-sys-*`, spacing from `--space-1`…`--space-6`, small screens below 768px (`injectIsSmallScreen()`, fewer list `[columns]`). An `@if` isn't projected into a named slot by itself: wrap it (`<ng-container pageActions>`).
 - Specs use `@openng/spectator/vitest` (`createComponentFactory`, `mocks: […]`) with `HttpTestingController`; `spectator.inject(ApplicationRef).tick()` runs effects and renders overlays. Specs share a DOM: undo global changes (prototype spies, `vi.stubGlobal`); block storage with `blockStorage()`.
 
 ## Contracts
 
-Only Zod (no Nest, fp-ts or Prisma). Moments are `Timestamp` (ISO on the wire, `Date` in the backend). A domain is `values.ts` (enums as `as const` objects and shared rules, no Zod, since the frontend bundles them) and `schemas.ts` (requests and responses, named with `contract(schema, { id })`; exported types are `z.input`). Shared: `common.ts` (`Id`, `BusinessDate`, `YearMonth`, `Timestamp`, `page`, `PageQuery`, `optionalParam`, `Created`), `dates.ts` (business days: `businessDateOf`, `addDays`), `errors.ts`, `files.ts`, `liveUpdates.ts`, `text.ts`. There are no DTO classes: a shape is written once, here. 100% coverage (`yarn test` in the package).
+Only Zod (no Nest, fp-ts or Prisma). Moments are `Timestamp` (ISO on the wire, `Date` in the backend). A domain is `values.ts` (enums as `as const` objects and shared rules, no Zod, since the frontend bundles them) and `schemas.ts` (requests and responses, named with `contract(schema, { id })`; exported types are `z.input`). Shared: `common.ts` (`Id`, `BusinessDate`, `YearMonth`, `Timestamp`, `page`, `PageQuery`, `optionalParam`, `Created`), `dates.ts` (business days: `businessDateOf`, `addDays`), `errors.ts`, `files.ts`, `liveUpdates.ts`, `text.ts`. There are no DTO classes: a shape is written once, here, and a backend view's type is its contract's (`toBookRentalResponse(…): Sent<typeof BookRentalContract>`), never a copy of its fields. 100% coverage (`yarn test` in the package).
 
 ## Adding a feature
 

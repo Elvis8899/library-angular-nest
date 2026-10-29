@@ -9,9 +9,9 @@ import { RealRefreshSessionRepository } from "@modules/auth/database/realRefresh
 import { RefreshSessionRepository } from "@modules/auth/database/refreshSession.repository.port";
 import { UserModule } from "@modules/user/user.module";
 import { Module } from "@nestjs/common";
-import { CqrsModule } from "@nestjs/cqrs";
 import { JwtModule } from "@nestjs/jwt";
 import { ThrottlerModule } from "@nestjs/throttler";
+import { CqrsModule } from "@shared/utils/application/cqrs";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 
 const controllers = [LoginController, RefreshTokenController, LogoutController];

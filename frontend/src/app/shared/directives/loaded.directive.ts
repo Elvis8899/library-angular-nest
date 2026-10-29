@@ -50,7 +50,7 @@ export class LoadedDirective<T> {
   /* eslint-disable @typescript-eslint/no-unused-vars */
   static ngTemplateContextGuard<T>(
     _directive: LoadedDirective<T>,
-    context: unknown
+    context: unknown,
   ): context is LoadedContext<T> {
     return true;
   }
@@ -60,12 +60,20 @@ export class LoadedDirective<T> {
   private _render(
     value: T | null | undefined,
     failed: TranslationKey,
-    empty: TranslationKey | undefined
+    empty: TranslationKey | undefined,
   ) {
-    if (value === undefined) return this._showState(null);
-    if (value === null) return this._showState(failed);
-    if (empty && Array.isArray(value) && value.length === 0)
-      return this._showState(empty);
+    if (value === undefined) {
+      this._showState(null);
+      return;
+    }
+    if (value === null) {
+      this._showState(failed);
+      return;
+    }
+    if (empty && Array.isArray(value) && value.length === 0) {
+      this._showState(empty);
+      return;
+    }
     this._showContent(value);
   }
 

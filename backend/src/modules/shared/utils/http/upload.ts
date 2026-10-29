@@ -4,14 +4,14 @@ import { UnprocessableEntityException } from "@nestjs/common";
 import { FastifyRequest } from "fastify";
 
 /** A multipart request's file, read up to the limit. */
-export type Upload = {
+export interface Upload {
   // The text fields sent before the file
   fields: Record<string, string>;
   name: string;
   body: Buffer;
   // It went past the limit; `body` holds only the start
   truncated: boolean;
-};
+}
 
 const isPart = (part: Multipart | undefined): part is Multipart =>
   part !== undefined;

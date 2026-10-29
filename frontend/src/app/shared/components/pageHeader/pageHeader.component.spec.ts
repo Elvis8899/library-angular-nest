@@ -14,7 +14,7 @@ describe("PageHeaderComponent", () => {
     spectator = createHost(
       `<app-page-header title="users.list.title">
         <button pageActions name="create">Create</button>
-      </app-page-header>`
+      </app-page-header>`,
     );
     // Assert
     expect(spectator.query("h1")).toHaveText("users.list.title");
@@ -27,7 +27,7 @@ describe("PageHeaderComponent", () => {
   it("Should show the subtitle when given", () => {
     // Act
     spectator = createHost(
-      `<app-page-header title="users.list.title" subtitle="users.form.subtitle" />`
+      `<app-page-header title="users.list.title" subtitle="users.form.subtitle" />`,
     );
     // Assert
     expect(spectator.query(".subtitle")).toHaveText("users.form.subtitle");

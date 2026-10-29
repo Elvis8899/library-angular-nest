@@ -16,7 +16,6 @@ import { validateFromUnknown } from "@shared/utils/application/validateWith";
 import { prismaTasks } from "@shared/utils/database/prismaTasks";
 import { Paginated } from "@shared/utils/database/repository.port";
 import { rowReads } from "@shared/utils/database/rowReads";
-import { validateMaybeRow } from "@shared/utils/database/rowValidation";
 import { transactionTask } from "@shared/utils/database/transaction";
 import { mapUniqueViolations } from "@shared/utils/database/uniqueViolation";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
@@ -40,21 +39,13 @@ export class RealUserRepository implements UserRepository {
   ): TE.TaskEither<Error, Paginated<User>> => this.reads.findPage(params);
 
   findByCPF = (cpf: string): TE.TaskEither<Error, O.Option<User>> =>
-    FPF.pipe(
-      this.users.findFirst({
-        where: {
-          role: UserRoleEnum.Client,
-          cpf: formatDocument(cpf),
-        },
-      }),
-      TE.chainEitherK(validateMaybeRow(this.baseValidator)),
-    );
+    this.reads.findFirstWhere({
+      role: UserRoleEnum.Client,
+      cpf: formatDocument(cpf),
+    });
 
   findByEmail = (email: string): TE.TaskEither<Error, O.Option<User>> =>
-    FPF.pipe(
-      this.users.findFirst({ where: { email: email.toLowerCase() } }),
-      TE.chainEitherK(validateMaybeRow(this.baseValidator)),
-    );
+    this.reads.findFirstWhere({ email: email.toLowerCase() });
 
   // Lending example: refuses a user with an unfinished rental, in one conditional
   // statement so a rental started meanwhile can't be deleted by the cascade.

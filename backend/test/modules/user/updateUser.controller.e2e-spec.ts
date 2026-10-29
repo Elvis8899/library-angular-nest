@@ -1,7 +1,6 @@
 import { HttpStatus } from "@nestjs/common";
 import { FPF } from "@shared/utils/application/monads";
 import { useE2eApp } from "@test/util/e2eApp";
-import { resetDatabase } from "@test/util/resetDatabase";
 
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
@@ -15,15 +14,16 @@ let userRepository: UserRepository;
 const userBuilder = new UserBuilder();
 const originalUser = userBuilder.withName("Test").build();
 
-const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });
+const e2e = useE2eApp({
+  authGuard: new MockAuthGuardBuilder(),
+  resetEachTest: true,
+});
 
 beforeAll(() => {
   userRepository = e2e.get(UserRepository);
 });
 
 beforeEach(async () => {
-  await resetDatabase(e2e.prisma);
-
   userBuilder.reset();
   await executeTask(userRepository.save(originalUser));
 });

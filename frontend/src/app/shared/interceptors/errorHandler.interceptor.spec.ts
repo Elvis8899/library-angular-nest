@@ -12,7 +12,7 @@ import { Router } from "@angular/router";
 import { Credentials, ROLE } from "@app/models/credentials.entity";
 import { AuthenticationService } from "@app/services/authentication.service";
 import { CredentialsService } from "@app/services/credentials.service";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { errorHandlerInterceptor } from "@app/shared/interceptors/errorHandler.interceptor";
 import { TranslateService } from "@ngx-translate/core";
 import {
@@ -21,7 +21,7 @@ import {
 } from "@openng/spectator/vitest";
 import { of, throwError } from "rxjs";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 describe("ErrorHandlerInterceptor", () => {
   let spectator: SpectatorInjectionContext;
@@ -44,8 +44,8 @@ describe("ErrorHandlerInterceptor", () => {
     const translateService = spectator.inject(TranslateService);
     translateService.getCurrentLang.mockReturnValue("pt-BR");
     // A missing translation returns its key, as ngx-translate does
-    translateService.instant.mockImplementation((...args: unknown[]) =>
-      args[0] === "errors.user.cpfTaken" ? "CPF já usado" : args[0]
+    translateService.instant.mockImplementation((key: string) =>
+      key === "errors.user.cpfTaken" ? "CPF já usado" : key,
     );
     httpClient.get("/test").subscribe({
       error: (error) => {
@@ -130,7 +130,7 @@ describe("ErrorHandlerInterceptor", () => {
         message: "Mensagem da API",
         code,
       },
-      { status: HttpStatusCode.Conflict, statusText: "Conflict" }
+      { status: HttpStatusCode.Conflict, statusText: "Conflict" },
     );
     // Assert
     expect(received?.message).toBe(message);
@@ -147,7 +147,7 @@ describe("ErrorHandlerInterceptor", () => {
       expect(spectator.inject(Router).navigate).toHaveBeenCalledWith([
         "/login",
       ]);
-    }
+    },
   );
 
   it("Should show a 403 with a code without logging out", () => {
@@ -163,7 +163,7 @@ describe("ErrorHandlerInterceptor", () => {
         message: "Mensagem da API",
         code: "user.cpfTaken",
       },
-      { status: HttpStatusCode.Forbidden, statusText: "Forbidden" }
+      { status: HttpStatusCode.Forbidden, statusText: "Forbidden" },
     );
     // Assert
     expect(received?.message).toBe("CPF já usado");
@@ -184,7 +184,7 @@ describe("ErrorHandlerInterceptor", () => {
     it("Should refresh tokens and retry the request on 401", () => {
       const authService = spectator.inject(AuthenticationService);
       authService.refresh.mockReturnValue(
-        of({ ...credentials, accessToken: "new" })
+        of({ ...credentials, accessToken: "new" }),
       );
 
       httpMock.expectOne("/test").flush(new Error("error"), {
@@ -245,7 +245,7 @@ describe("ErrorHandlerInterceptor", () => {
       });
 
       expect(
-        spectator.inject(AuthenticationService).refresh
+        spectator.inject(AuthenticationService).refresh,
       ).not.toHaveBeenCalled();
     });
   });

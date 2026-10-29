@@ -54,13 +54,13 @@ describe("ThemeToggleComponent", () => {
     openMenu();
     // Act
     spectator.click(
-      spectator.query("button[name='theme-dark']", { root: true })!
+      spectator.query("button[name='theme-dark']", { root: true })!,
     );
     spectator.detectChanges();
     // Assert
     expect(themeServiceMock.setPreference).toHaveBeenCalledWith("dark");
     expect(spectator.query("button[name='toggleTheme'] mat-icon")).toHaveText(
-      "dark_mode"
+      "dark_mode",
     );
   });
 });

@@ -1,46 +1,32 @@
-import {
-  contractRef,
-  PageQuery,
-  QueryString,
-  Sent,
-  UserPage,
-} from "@library/contracts";
+import { PageQuery, QueryString, UserPage } from "@library/contracts";
 import { ApiController } from "@modules/auth/decorators/apiController.decorator";
 import { Roles } from "@modules/auth/decorators/roles.decorator";
 import { RolesGuard } from "@modules/auth/guards/roles.guard";
-import { User, UserRoleEnum } from "@modules/user/domain/user.entity";
+import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { toUserResponse } from "@modules/user/domain/userViews";
 import { PaginatedUsersQuery } from "@modules/user/queries/paginatedUsers/paginatedUsers.query";
-import { Get, HttpStatus, Query, UseGuards } from "@nestjs/common";
-import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import { ApiOperation, ApiResponse } from "@nestjs/swagger";
-import { Paginated } from "@shared/utils/database/repository.port";
+import { Get, Query, UseGuards } from "@nestjs/common";
+import { ApiOperation } from "@nestjs/swagger";
+import { QueryBus } from "@shared/utils/application/cqrs";
+import { Answers } from "@shared/utils/http/answers";
 import { ApiQueryContract } from "@shared/utils/http/apiQueryContract";
 
 @ApiController("Usuários")
 export class PaginatedUserController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private readonly queryBus: QueryBus) {}
 
   @Get("users")
   @UseGuards(RolesGuard)
   @Roles(UserRoleEnum.Admin)
   @ApiOperation({ summary: "Listar Usuários" })
   @ApiQueryContract(PageQuery)
-  @ApiResponse({
-    status: HttpStatus.OK,
-    schema: contractRef(UserPage),
-  })
+  @Answers(UserPage)
   async paginatedUsers(
     // Parsed by the handler
     @Query() { page, limit }: QueryString<typeof PageQuery>,
-  ): Promise<Sent<typeof UserPage>> {
+  ) {
     return this.queryBus
-      .execute<PaginatedUsersQuery, Paginated<User>>(
-        new PaginatedUsersQuery({ page, limit }),
-      )
+      .execute(new PaginatedUsersQuery({ page, limit }))
       .then((result) => ({
         count: result.count,
         limit: result.limit,

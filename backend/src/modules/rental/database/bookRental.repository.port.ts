@@ -9,10 +9,10 @@ import {
 } from "@shared/utils/database/repository.port";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
-export type BookRentalFindAllQuery = {
+export interface BookRentalFindAllQuery {
   userId?: string;
   status?: RentalStatusEnum;
-};
+}
 
 export abstract class BookRentalRepository implements RepositoryDefaultPort<BookRental> {
   findById!: (id: string) => TE.TaskEither<Error, O.Option<BookRental>>;

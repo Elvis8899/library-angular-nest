@@ -13,22 +13,18 @@ import {
   Put,
   UseGuards,
 } from "@nestjs/common";
-import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
   ApiBody,
   ApiCreatedResponse,
   ApiOperation,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @ApiController("Livros")
 export class UpdateBookInfoController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @Put("bookInfos/:id")
   @ApiErrors(BookInfoNotFoundException)
@@ -43,6 +39,6 @@ export class UpdateBookInfoController {
     @Body() book: BookInfoRequest,
     @Param("id") id: string,
   ): Promise<void> {
-    return this.commandBus.execute(new UpdateBookInfo(book, id)).then(noop);
+    return this.commandBus.execute(new UpdateBookInfo(book, id));
   }
 }

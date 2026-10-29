@@ -21,6 +21,20 @@ export const fromInputRE = <Validator extends z.ZodType>(
     RE.tapReader(loggerOnRightR(`${dataKind} parsed successfully.`)),
   );
 
+/**
+ * A handler's one input parsed, as a step:
+ * `inputRTE(UUID, "id", command.id)` (`inputsRTE` for several).
+ */
+export const inputRTE = <
+  Validator extends z.ZodType,
+  U extends { logger: PinoLogger },
+>(
+  validator: Validator,
+  dataKind: string,
+  data: z.input<Validator>,
+): RTE.ReaderTaskEither<U, Error, z.output<Validator>> =>
+  RTE.fromReaderEither(fromInputRE(validator, dataKind)<U>(data));
+
 /** A value to parse: its schema, its name in the logs and errors, the value. */
 type InputField = readonly [
   validator: z.ZodType,

@@ -5,7 +5,10 @@ import {
   UserEmailAlreadyExistsException,
   UserNotFoundException,
 } from "@modules/user/domain/user.errors";
-import { executeTask } from "@shared/utils/application/executeTask";
+import {
+  executeTask,
+  executeTasks,
+} from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
@@ -135,14 +138,14 @@ export const userRepositoryContract = (kind: RepositoryKind) =>
       const user = new UserBuilder(0).withEmail("Ana@Example.com").build();
       await saveUser(user);
 
-      expect(await executeTask(ctx.users.findById(user.id))).toMatchObject(
-        O.some({ email: "ana@example.com" }),
+      const [byId, byEmail] = await executeTasks(
+        ctx.users.findById(user.id),
+        ctx.users.findByEmail("ANA@example.COM"),
       );
-      expect(
-        O.map((found: User) => found.id)(
-          await executeTask(ctx.users.findByEmail("ANA@example.COM")),
-        ),
-      ).toEqual(O.some(user.id));
+      expect(byId).toMatchObject(O.some({ email: "ana@example.com" }));
+      expect(O.map((found: User) => found.id)(byEmail)).toEqual(
+        O.some(user.id),
+      );
     });
 
     it("Should delete a user, and refuse with 404 one that isn't there", async () => {

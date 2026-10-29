@@ -18,7 +18,7 @@ export class TemplateContextDirective<Context> {
   /* eslint-disable @typescript-eslint/no-unused-vars */
   static ngTemplateContextGuard<Context>(
     _directive: TemplateContextDirective<Context>,
-    context: unknown
+    context: unknown,
   ): context is Context {
     return true;
   }
@@ -27,4 +27,5 @@ export class TemplateContextDirective<Context> {
 }
 
 /** A template context's type, for [appTemplateContext]. */
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- the caller names the type
 export const templateContext = <Context>(): Context | null => null;

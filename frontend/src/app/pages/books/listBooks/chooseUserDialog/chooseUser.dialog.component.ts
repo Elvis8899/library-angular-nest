@@ -70,7 +70,7 @@ export class ChooseUserDialogComponent
     return this.clients().filter(
       (client) =>
         textKey(client.name).includes(search) ||
-        textKey(client.email).includes(search)
+        textKey(client.email).includes(search),
     );
   });
 

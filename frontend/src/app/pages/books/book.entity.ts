@@ -1,14 +1,8 @@
-import {
-  coverTypes,
-  maxCoverBytes,
-  type BookInfo,
-  type BookItem,
-} from "@library/contracts";
+import { coverTypes, maxCoverBytes, type BookInfo } from "@library/contracts";
 
 // The API's shapes and values, under the names the screens use
 export { BookItemStatus, coverPath, coverTypes } from "@library/contracts";
 export type BookEntity = BookInfo;
-export type BookItemEntity = BookItem;
 
 export interface BookQuery {
   name?: string;

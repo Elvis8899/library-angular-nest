@@ -4,17 +4,15 @@ import { executeTask } from "@shared/utils/application/executeTask";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
 import { useE2eApp } from "@test/util/e2eApp";
-import { resetDatabase } from "@test/util/resetDatabase";
 
 let bookInfoRepository: BookInfoRepository;
-const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });
+const e2e = useE2eApp({
+  authGuard: new MockAuthGuardBuilder(),
+  resetEachTest: true,
+});
 
 beforeAll(() => {
   bookInfoRepository = e2e.get(BookInfoRepository);
-});
-
-beforeEach(async () => {
-  await resetDatabase(e2e.prisma);
 });
 
 describe("[e2e] GET /v1/bookInfos", () => {

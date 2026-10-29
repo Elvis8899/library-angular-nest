@@ -9,22 +9,18 @@ import {
   UserEmailAlreadyExistsException,
 } from "@modules/user/domain/user.errors";
 import { Body, HttpCode, HttpStatus, Post, UseGuards } from "@nestjs/common";
-import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
   ApiBody,
   ApiCreatedResponse,
   ApiOperation,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @ApiController("Usuários")
 export class CreateUserController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @Post("users")
   @ApiErrors(UserCPFAlreadyExistsException, UserEmailAlreadyExistsException)
@@ -39,8 +35,6 @@ export class CreateUserController {
   @ApiCreatedResponse({ description: "Usuário criado com sucesso." })
   @ApiUnprocessableEntityResponse({ description: "Usuário inválido." })
   async createUser(@Body() createUserDto: UserRequest): Promise<void> {
-    return this.commandBus
-      .execute<CreateUser>(new CreateUser(createUserDto))
-      .then(noop);
+    return this.commandBus.execute(new CreateUser(createUserDto));
   }
 }

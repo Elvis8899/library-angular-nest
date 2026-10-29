@@ -3,9 +3,9 @@ import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { ExecutionContext } from "@nestjs/common";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 
-type AuthGuardMock = {
+interface AuthGuardMock {
   canActivate: (context: ExecutionContext) => boolean;
-};
+}
 
 export class MockAuthGuardBuilder {
   private sub = createTestId(TableNameEnum.User, 1);

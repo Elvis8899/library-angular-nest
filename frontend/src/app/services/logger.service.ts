@@ -109,7 +109,7 @@ export class Logger {
   private _log(
     func: (...args: unknown[]) => void,
     level: LogLevel,
-    objects: unknown[]
+    objects: unknown[],
   ) {
     if (level <= Logger.level) {
       const log = this._source
@@ -117,7 +117,7 @@ export class Logger {
         : objects;
       func.apply(console, log);
       Logger.outputs.forEach((output) =>
-        output.apply(output, [this._source, level, ...objects])
+        output.apply(output, [this._source, level, ...objects]),
       );
     }
   }

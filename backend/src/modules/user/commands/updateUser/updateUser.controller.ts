@@ -17,22 +17,18 @@ import {
   Put,
   UseGuards,
 } from "@nestjs/common";
-import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
   ApiBody,
   ApiCreatedResponse,
   ApiOperation,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @ApiController("Usuários")
 export class UpdateUserController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @Put("users/:id")
   @ApiErrors(
@@ -51,8 +47,6 @@ export class UpdateUserController {
     @Body() updateModuleDto: UserChangesRequest,
     @Param("id") id: string,
   ): Promise<void> {
-    return this.commandBus
-      .execute(new UpdateUser(updateModuleDto, id))
-      .then(noop);
+    return this.commandBus.execute(new UpdateUser(updateModuleDto, id));
   }
 }

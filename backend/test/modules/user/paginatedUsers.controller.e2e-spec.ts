@@ -6,18 +6,13 @@ import { executeTask } from "@shared/utils/application/executeTask";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { useE2eApp } from "@test/util/e2eApp";
-import { resetDatabase } from "@test/util/resetDatabase";
 const mockAuthGuard = new MockAuthGuardBuilder();
 
 let userRepository: UserRepository;
-const e2e = useE2eApp({ authGuard: mockAuthGuard });
+const e2e = useE2eApp({ authGuard: mockAuthGuard, resetEachTest: true });
 
 beforeAll(() => {
   userRepository = e2e.get(UserRepository);
-});
-
-beforeEach(async () => {
-  await resetDatabase(e2e.prisma);
 });
 
 describe("[e2e] GET /v1/users", () => {

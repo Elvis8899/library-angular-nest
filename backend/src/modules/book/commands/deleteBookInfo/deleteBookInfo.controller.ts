@@ -5,21 +5,17 @@ import { DeleteBookInfo } from "@modules/book/commands/deleteBookInfo/deleteBook
 import { BookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { Delete, HttpCode, HttpStatus, Param, UseGuards } from "@nestjs/common";
-import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
   ApiDefaultResponse,
   ApiOperation,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @ApiController("Livros")
 export class DeleteBookInfoController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @Delete("bookInfos/:id")
   @ApiErrors(BookInfoNotFoundException)
@@ -30,8 +26,6 @@ export class DeleteBookInfoController {
   @ApiDefaultResponse({ description: "Livro excluído com sucesso." })
   @ApiOperation({ summary: "Deletar Livro" })
   async deleteBookInfo(@Param("id") bookInfoId: string): Promise<void> {
-    return this.commandBus
-      .execute<DeleteBookInfo>(new DeleteBookInfo(bookInfoId))
-      .then(noop);
+    return this.commandBus.execute(new DeleteBookInfo(bookInfoId));
   }
 }

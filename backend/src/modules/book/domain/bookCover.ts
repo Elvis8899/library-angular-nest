@@ -1,5 +1,7 @@
 import { coverTypes } from "@library/contracts";
+import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import {
+  bookCoverNotFoundException,
   bookCoverTooLargeException,
   bookCoverTypeException,
 } from "@modules/book/domain/bookInfo.errors";
@@ -16,6 +18,12 @@ export const storedCoverKey = (book: {
   cover: string | null;
 }): string | null =>
   book.cover === null ? null : coverKey(book.id, book.cover);
+
+/** The cover a book has, to take off: refused when it has none. */
+export const coverOf = (book: BookInfo): E.Either<Error, string> =>
+  book.cover === null
+    ? E.left(bookCoverNotFoundException())
+    : E.right(book.cover);
 
 /**
  * The type of an uploaded cover, told from its bytes: refused when the

@@ -1,11 +1,11 @@
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 
 describe("Logger", () => {
   let logger: Logger;
 
   beforeEach(() => {
     logger = new Logger("test");
-    Logger.level = 0;
+    Logger.level = LogLevel.Off;
   });
 
   it("Should be created", () => {

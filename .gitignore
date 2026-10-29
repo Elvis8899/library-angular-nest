@@ -1,4 +1,3 @@
-Frontend/
 # Production settings: the stack's (see .docker/.env.example) and the API's
 .docker/.env
 # The commit the last deploy went out with (make dockerDeploy), and the deploy

@@ -44,11 +44,11 @@ describe("NotificationService", () => {
     spectator.service.error("errors.unknown");
     // Assert
     expect(snackBar()?.textContent).toContain(
-      "Algo deu errado. Tente novamente."
+      "Algo deu errado. Tente novamente.",
     );
     expect(snackBar()?.classList).toContain("notification-error");
     expect(snackBar()?.querySelector("button")?.textContent).toContain(
-      "Fechar"
+      "Fechar",
     );
   });
 
@@ -65,10 +65,10 @@ describe("NotificationService", () => {
     const openSpy = vi.spyOn(spectator.inject(MatSnackBar), "open");
     spectator.service.errorMessage("Erro");
     const dismissed = firstValueFrom(
-      openSpy.mock.results[0].value.afterDismissed()
+      openSpy.mock.results[0].value.afterDismissed(),
     );
     // Act
-    (snackBar()?.querySelector("button") as HTMLButtonElement).click();
+    snackBar()!.querySelector("button")!.click();
     // Assert
     expect(await dismissed).toEqual({ dismissedByAction: true });
   });
@@ -79,12 +79,12 @@ describe("NotificationService", () => {
     spectator.service.errorMessage("Erro");
     expect(snackBar()?.textContent).toContain("Erro");
     // Act
-    (snackBar()?.querySelector("button") as HTMLButtonElement).click();
+    snackBar()!.querySelector("button")!.click();
     // Assert
     await vi.waitFor(() =>
       expect(snackBar()?.textContent).toContain(
-        "Uma nova versão está disponível."
-      )
+        "Uma nova versão está disponível.",
+      ),
     );
   });
 });
@@ -97,7 +97,7 @@ class FakeSnackBarRef {
 
   constructor(
     readonly message: string,
-    readonly action?: string
+    readonly action?: string,
   ) {}
 
   afterDismissed() {

@@ -67,7 +67,7 @@ export class ListRentalsComponent implements OnInit {
   readonly columns = computed(() =>
     this.isSmallScreen()
       ? ["book", "dueDate", "actions"]
-      : ["book", "rentedOn", "dueDate", "fine", "actions"]
+      : ["book", "rentedOn", "dueDate", "fine", "actions"],
   );
   // Clients only see their own rentals, so only admins see who rented
   readonly showClient = inject(CredentialsService).isAdmin();
@@ -89,7 +89,7 @@ export class ListRentalsComponent implements OnInit {
           order: "desc",
         },
         displayedColumns: ["book", "rentedOn", "dueDate", "fine", "actions"],
-      }
+      },
     );
     // What someone else changes shows here too
     this._liveUpdates
@@ -124,7 +124,7 @@ export class ListRentalsComponent implements OnInit {
         this.saving.run(this._rentalService.returnBook(rental.id), () => {
           this._notify.success("rentals.return.done");
           this.refresh();
-        })
+        }),
       );
   }
 }

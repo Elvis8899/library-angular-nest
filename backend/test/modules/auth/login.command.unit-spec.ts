@@ -10,7 +10,10 @@ import {
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { JwtService } from "@nestjs/jwt";
-import { executeTask } from "@shared/utils/application/executeTask";
+import {
+  executeTask,
+  executeTasks,
+} from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
@@ -65,10 +68,8 @@ describe("[Unit] Create User", () => {
       currentJti: createTestId(TableNameEnum.None, n),
       expiresAt: yesterday,
     });
-    await executeTask(
+    await executeTasks(
       ctx.refreshSessionRepository.create(expired(1, user.build().id)),
-    );
-    await executeTask(
       ctx.refreshSessionRepository.create(expired(2, otherUserId)),
     );
 

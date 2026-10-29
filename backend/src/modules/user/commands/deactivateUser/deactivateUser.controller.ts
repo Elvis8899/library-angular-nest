@@ -16,13 +16,12 @@ import {
   Request,
   UseGuards,
 } from "@nestjs/common";
-import { CommandBus } from "@nestjs/cqrs";
 import {
   ApiDefaultResponse,
   ApiOperation,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @ApiController("Usuários")
@@ -45,8 +44,6 @@ export class DeactivateUserController {
     @Param("id") id: string,
     @Request() req: AuthenticatedRequest,
   ): Promise<void> {
-    return this.commandBus
-      .execute<DeactivateUser>(new DeactivateUser(id, req.user.sub))
-      .then(noop);
+    return this.commandBus.execute(new DeactivateUser(id, req.user.sub));
   }
 }

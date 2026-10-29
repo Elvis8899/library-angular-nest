@@ -6,6 +6,26 @@ import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended"
 import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
 
+const relativeImports = [
+  { group: ["./", "../"], message: "Relative imports are not allowed." },
+];
+// Commands and queries name what they answer, and the decorators check
+// their handlers against it
+const nestCqrs = [
+  {
+    name: "@nestjs/cqrs",
+    message: "Import from @shared/utils/application/cqrs.",
+  },
+];
+// Subscribers name a domain event, and the decorator checks the payload they
+// take against it
+const nestEventEmitter = [
+  {
+    name: "@nestjs/event-emitter",
+    message: "Subscribe with @shared/domainEventPublisher/onDomainEvent.",
+  },
+];
+
 export default defineConfig(
   // Written by prisma generate; an object with only ignores applies to all
   { ignores: ["prisma/generated/**"] },
@@ -16,10 +36,11 @@ export default defineConfig(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    ignores: ["build/**", "coverage/**", "resources/**"],
+    ignores: ["coverage/**"],
     extends: [
       eslint.configs.recommended,
       tseslint.configs.strictTypeChecked,
+      tseslint.configs.stylisticTypeChecked,
       prettierlint,
       comments.recommended,
       eslintPluginPrettierRecommended,
@@ -28,12 +49,8 @@ export default defineConfig(
       "no-restricted-imports": [
         "error",
         {
-          patterns: [
-            {
-              group: ["./", "../"],
-              message: "Relative imports are not allowed.",
-            },
-          ],
+          patterns: relativeImports,
+          paths: [...nestCqrs, ...nestEventEmitter],
         },
       ],
       "no-console": "error",
@@ -41,16 +58,12 @@ export default defineConfig(
         "error",
         { allowOptionalChaining: true },
       ],
-      "@typescript-eslint/no-explicit-any": "error",
       // Casts go through FPF.unsafeCoerce, which makes them easy to spot;
       // `as const` is still allowed
       "@typescript-eslint/consistent-type-assertions": [
         "error",
         { assertionStyle: "never" },
       ],
-      // // TS errors
-      "@typescript-eslint/no-misused-new": "error",
-      "@typescript-eslint/no-non-null-assertion": "error",
       "@eslint-community/eslint-comments/require-description": [
         "error",
         { ignore: [] },
@@ -63,10 +76,15 @@ export default defineConfig(
           caughtErrorsIgnorePattern: "^_",
         },
       ],
-      // // Eslint off
       "@typescript-eslint/no-extraneous-class": "off",
-
-      // // Eslint errors
+      // `text.trim() || null`: an empty text means none
+      "@typescript-eslint/prefer-nullish-coalescing": [
+        "error",
+        { ignorePrimitives: { string: true } },
+      ],
+      // Its rewrite of `x === null || x.y === null` (`x?.y === null`) is false
+      // for a null x
+      "@typescript-eslint/prefer-optional-chain": "off",
       "no-restricted-syntax": [
         "error",
         {
@@ -111,6 +129,16 @@ export default defineConfig(
           "scripts/**/": "CAMEL_CASE",
         },
       ],
+    },
+  },
+  {
+    // The files that wrap @nestjs/cqrs and @nestjs/event-emitter
+    files: [
+      "src/modules/shared/utils/application/cqrs.ts",
+      "src/modules/shared/domainEventPublisher/*.ts",
+    ],
+    rules: {
+      "no-restricted-imports": ["error", { patterns: relativeImports }],
     },
   },
   {

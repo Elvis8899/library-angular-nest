@@ -7,19 +7,19 @@ import {
 } from "@shared/utils/database/repository.port";
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
-export type BookInfoSort = {
+export interface BookInfoSort {
   by: "name" | "createdAt";
   order: "asc" | "desc";
-};
+}
 
-export type BookInfoFindAllQuery = {
+export interface BookInfoFindAllQuery {
   // Case-insensitive part of the book name
   name?: string;
   // Creation time range: from is inclusive, before is exclusive
   createdFrom?: Date;
   createdBefore?: Date;
   sort: BookInfoSort;
-};
+}
 
 export abstract class BookInfoRepository implements RepositoryDefaultPort<BookInfo> {
   findById!: (id: string) => TE.TaskEither<Error, O.Option<BookInfo>>;

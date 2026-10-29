@@ -30,7 +30,7 @@ export class ExplicitRouteReuseStrategy extends RouteReuseStrategy {
 
   public shouldReuseRoute(
     future: ActivatedRouteSnapshot,
-    curr: ActivatedRouteSnapshot
+    curr: ActivatedRouteSnapshot,
   ): boolean {
     // Reuse the route if the RouteConfig is the same, or if both routes use the
     // same component, because the latter can have different RouteConfigs.
@@ -38,7 +38,7 @@ export class ExplicitRouteReuseStrategy extends RouteReuseStrategy {
       future.routeConfig === curr.routeConfig ||
       Boolean(
         future.routeConfig?.component &&
-        future.routeConfig?.component === curr.routeConfig?.component
+        future.routeConfig?.component === curr.routeConfig?.component,
       )
     );
   }

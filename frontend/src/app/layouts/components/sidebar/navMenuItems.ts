@@ -55,7 +55,7 @@ export const defaultRolePage = (role: ROLE): string =>
 export const menuRows = (items: NavMenuItem[]): NavMenuRow[] =>
   items.flatMap((item): NavMenuRow[] => {
     const members = items.filter(
-      (other) => item.group !== undefined && other.group === item.group
+      (other) => item.group !== undefined && other.group === item.group,
     );
     if (members.length < 2) return [{ kind: "item", item }];
     return members[0] === item && item.group

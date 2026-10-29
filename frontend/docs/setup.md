@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Node 22.22.3+ or 24.15+ (required by Angular 22; `nvm use` picks it from `.nvmrc`)
+- Node 26 (Angular 22 takes 22.22.3+, 24.15+ or 26; `nvm use` picks it from the root `.nvmrc`)
 - Yarn 1.22+
 
 ## Install dependencies

@@ -63,7 +63,7 @@ describe("UserService", () => {
       .subscribe((page) => (result = page));
 
     const req = http.expectOne(
-      (r) => r.method === "GET" && r.url === "/v1/users"
+      (r) => r.method === "GET" && r.url === "/v1/users",
     );
     expect(req.request.params.get("page")).toBe("3");
     expect(req.request.params.get("limit")).toBe("20");
@@ -112,7 +112,7 @@ describe("UserService", () => {
       http
         .expectOne({ method: "POST", url: `/v1/users/user-1/${action}` })
         .flush(null);
-    }
+    },
   );
 
   it("Should delete a user", () => {

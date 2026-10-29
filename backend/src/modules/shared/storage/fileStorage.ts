@@ -1,7 +1,10 @@
 import { O, TE } from "@shared/utils/application/monads";
 
 /** A stored file's content. */
-export type StoredFile = { body: Buffer; contentType: string };
+export interface StoredFile {
+  body: Buffer;
+  contentType: string;
+}
 
 /**
  * Object storage for the files users upload (the books' covers): an

@@ -6,20 +6,18 @@ import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createRental } from "@test/modules/rental/createRental";
 import { useE2eApp } from "@test/util/e2eApp";
-import { resetDatabase } from "@test/util/resetDatabase";
 
 // The user module's rule that rentals add: deleting a user would cascade to
 // an unfinished rental and leave its book item rented
 
 let userRepository: UserRepository;
-const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });
+const e2e = useE2eApp({
+  authGuard: new MockAuthGuardBuilder(),
+  resetEachTest: true,
+});
 
 beforeAll(() => {
   userRepository = e2e.get(UserRepository);
-});
-
-beforeEach(async () => {
-  await resetDatabase(e2e.prisma);
 });
 
 describe("[e2e] DELETE /v1/users/:id with rentals", () => {

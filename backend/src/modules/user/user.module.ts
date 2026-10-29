@@ -17,7 +17,7 @@ import { PaginatedUserController } from "@modules/user/queries/paginatedUsers/pa
 import { PaginatedUsersQueryHandler } from "@modules/user/queries/paginatedUsers/paginatedUsers.query";
 import { BcryptPasswordHasher } from "@modules/user/utils/bcryptPasswordHasher";
 import { Module } from "@nestjs/common";
-import { CqrsModule } from "@nestjs/cqrs";
+import { CqrsModule } from "@shared/utils/application/cqrs";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 
 const controllers = [

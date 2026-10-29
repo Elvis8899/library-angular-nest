@@ -47,6 +47,6 @@ export class LogoutComponent implements OnInit {
   }
 
   goToLogin() {
-    this._router.navigate(["/login"]);
+    void this._router.navigate(["/login"]);
   }
 }

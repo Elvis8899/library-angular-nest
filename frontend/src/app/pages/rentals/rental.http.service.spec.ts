@@ -3,10 +3,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
-import {
-  BookRentalEntity,
-  BookRentEntity,
-} from "@app/pages/rentals/bookRental.entity";
+import { BookRentalEntity } from "@app/pages/rentals/bookRental.entity";
 import { RentalService } from "@app/pages/rentals/rental.http.service";
 import {
   createServiceFactory,
@@ -44,7 +41,7 @@ describe("RentalService", () => {
       .subscribe((page) => (result = page));
 
     const req = http.expectOne(
-      (r) => r.method === "GET" && r.url === "/v1/bookRentals"
+      (r) => r.method === "GET" && r.url === "/v1/bookRentals",
     );
     expect(req.request.params.has("page")).toBe(false);
     expect(req.request.params.get("limit")).toBe("5");
@@ -55,7 +52,7 @@ describe("RentalService", () => {
   });
 
   it("Should rent a book", () => {
-    const rent = { bookItemId: "item-1", userId: "user-1" } as BookRentEntity;
+    const rent = { bookItemId: "item-1", userId: "user-1" };
     spectator.service.rentBook(rent).subscribe();
 
     const req = http.expectOne({ method: "POST", url: "/v1/bookRentals/rent" });

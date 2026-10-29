@@ -50,7 +50,7 @@ defineGlobalsInjections({
           inject(DOCUMENT),
           inject(APP_ID),
           inject(CSP_NONCE, { optional: true }),
-          inject(PLATFORM_ID)
+          inject(PLATFORM_ID),
         ),
     },
   ],
@@ -77,7 +77,7 @@ const domSpectator: {
   getNativeElement(selector: unknown): unknown;
   // What triggerEventHandler looks selectors up with
   getDebugElement(selector: unknown, options?: unknown): DebugElement | null;
-} = Object.getPrototypeOf(Spectator.prototype);
+} = Object.getPrototypeOf(Spectator.prototype) as never;
 const { query, queryAll, getNativeElement, getDebugElement } = domSpectator;
 interface Queried {
   debugElement?: { nativeElement: Element };
@@ -85,7 +85,7 @@ interface Queried {
 const plainSelector = (
   spectator: Queried,
   selector: unknown,
-  options?: unknown
+  options?: unknown,
 ): { root: Element; selector: string } | null => {
   const root = spectator.debugElement?.nativeElement;
   return typeof selector === "string" && !options && root
@@ -107,7 +107,7 @@ domSpectator.queryAll = function (this: Queried, selector, options) {
   return Array.from(
     found.length
       ? found
-      : plain.root.ownerDocument.querySelectorAll(plain.selector)
+      : plain.root.ownerDocument.querySelectorAll(plain.selector),
   );
 };
 domSpectator.getNativeElement = function (this: Queried, selector) {

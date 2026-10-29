@@ -1,4 +1,4 @@
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { injectSaving, Saving } from "@app/shared/utils/saving.utility";
 import {
@@ -7,7 +7,7 @@ import {
 } from "@openng/spectator/vitest";
 import { EMPTY, of, Subject, throwError } from "rxjs";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 describe("injectSaving", () => {
   let spectator: SpectatorInjectionContext;
@@ -49,7 +49,7 @@ describe("injectSaving", () => {
     // Act
     saving.run(
       throwError(() => ({ message: "Repetida" })),
-      done
+      done,
     );
     // Assert
     expect(notify.errorMessage).toHaveBeenCalledWith("Repetida");
@@ -58,7 +58,7 @@ describe("injectSaving", () => {
     // Act: an error without a body
     saving.run(
       throwError(() => null),
-      done
+      done,
     );
     // Assert
     expect(notify.errorMessage).toHaveBeenLastCalledWith("");
@@ -76,7 +76,7 @@ describe("injectSaving", () => {
       () => {
         again();
         return true;
-      }
+      },
     );
     // Assert
     expect(done.mock.calls).toEqual([["again"], ["again"]]);
@@ -96,7 +96,7 @@ describe("injectSaving", () => {
     saving.run(
       throwError(() => ({ code: "worker.duplicateName" })),
       vi.fn(),
-      refused
+      refused,
     );
     // Assert
     expect(notify.errorMessage).not.toHaveBeenCalled();
@@ -104,12 +104,12 @@ describe("injectSaving", () => {
     saving.run(
       throwError(() => ({ code: "other", message: "Outra" })),
       vi.fn(),
-      refused
+      refused,
     );
     saving.run(
       throwError(() => null),
       vi.fn(),
-      refused
+      refused,
     );
     // Assert
     expect(refused).toHaveBeenCalledTimes(2);

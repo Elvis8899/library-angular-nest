@@ -8,7 +8,10 @@ import {
   BookCoverChangedException,
 } from "@modules/book/domain/bookInfo.errors";
 import { BookItem, BookItemStatus } from "@modules/book/domain/bookItem.entity";
-import { executeTask } from "@shared/utils/application/executeTask";
+import {
+  executeTask,
+  executeTasks,
+} from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
@@ -115,17 +118,9 @@ export const bookInfoRepositoryContract = (kind: RepositoryKind) =>
           query: { sort: { by: "name", order } },
         }).then(({ ids }) => ids);
 
-      expect(await list("asc")).toEqual([
-        domCasmurro.id,
-        domCasmurro2.id,
-        iracema.id,
-        cortico.id,
-      ]);
-      expect(await list("desc")).toEqual([
-        cortico.id,
-        iracema.id,
-        domCasmurro.id,
-        domCasmurro2.id,
+      expect(await Promise.all([list("asc"), list("desc")])).toEqual([
+        [domCasmurro.id, domCasmurro2.id, iracema.id, cortico.id],
+        [cortico.id, iracema.id, domCasmurro.id, domCasmurro2.id],
       ]);
     });
 
@@ -215,12 +210,12 @@ export const bookInfoRepositoryContract = (kind: RepositoryKind) =>
       expect(found).toMatchObject(
         O.some({ id: copy.id, status: copy.status, bookId: saved.id }),
       );
-      expect(await executeTask(ctx.books.findBookItemById(copy.id))).toEqual(
-        O.none,
+      const [bookItemById, byId] = await executeTasks(
+        ctx.books.findBookItemById(copy.id),
+        ctx.books.findById(saved.id),
       );
-      expect(await executeTask(ctx.books.findById(saved.id))).toMatchObject(
-        O.some({ bookItems: [] }),
-      );
+      expect(bookItemById).toEqual(O.none);
+      expect(byId).toMatchObject(O.some({ bookItems: [] }));
     });
 
     it("Should refuse a copy whose id another copy has", async () => {

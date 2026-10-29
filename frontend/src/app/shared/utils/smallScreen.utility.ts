@@ -13,6 +13,6 @@ export function injectIsSmallScreen(): Signal<boolean> {
     inject(BreakpointObserver)
       .observe(smallScreenQuery)
       .pipe(map((state) => state.matches)),
-    { initialValue: false }
+    { initialValue: false },
   );
 }

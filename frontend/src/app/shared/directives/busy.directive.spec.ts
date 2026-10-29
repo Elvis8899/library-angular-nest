@@ -18,7 +18,7 @@ describe("BusyDirective", () => {
     busy.set(false);
     spectator = createDirective(
       `<button matButton [appBusy]="busy()">Salvar</button>`,
-      { hostProps: { busy } }
+      { hostProps: { busy } },
     );
   });
 

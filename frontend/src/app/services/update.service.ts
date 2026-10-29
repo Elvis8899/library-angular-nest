@@ -27,16 +27,16 @@ export class AppUpdateService {
 
       // Allow the app to stabilize first, before starting polling for updates.
       const appIsStable$ = this.appRef.isStable.pipe(
-        first((isStable) => isStable === true)
+        first((isStable) => isStable),
       );
       const hours = 6;
       const everyNHours$ = interval(1000 * 60 * 60 * hours);
       const everyNHoursOnceAppIsStable$ = concat(
         appIsStable$,
-        everyNHours$
+        everyNHours$,
       ).pipe(takeUntilDestroyed());
 
-      everyNHoursOnceAppIsStable$.subscribe(this.updateCheck.bind(this));
+      everyNHoursOnceAppIsStable$.subscribe(() => void this.updateCheck());
     } else {
       log.info("No service worker allow");
     }
@@ -54,7 +54,7 @@ export class AppUpdateService {
       log.info(
         updateFound
           ? "A new version is available."
-          : "Already on the latest version."
+          : "Already on the latest version.",
       );
     } catch (err) {
       log.error("Failed to check for updates:", err);
@@ -73,7 +73,7 @@ export class AppUpdateService {
         break;
       case "VERSION_INSTALLATION_FAILED":
         log.info(
-          `Failed to install app version '${evt.version.hash}': ${evt.error}`
+          `Failed to install app version '${evt.version.hash}': ${evt.error}`,
         );
         break;
     }
@@ -88,9 +88,11 @@ export class AppUpdateService {
     this._isUpdateOffered = true;
     this._notifications
       .persistent("update.available", "update.reload")
-      .subscribe(() =>
-        this._swUpdate.activateUpdate().then(() => this.reloadPage())
-      );
+      .subscribe(() => {
+        void this._swUpdate.activateUpdate().then(() => {
+          this.reloadPage();
+        });
+      });
   }
 
   // Separate so tests can stub it: the test DOM can't reload or spy on location

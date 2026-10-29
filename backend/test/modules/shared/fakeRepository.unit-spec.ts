@@ -1,4 +1,7 @@
-import { executeTask } from "@shared/utils/application/executeTask";
+import {
+  executeTask,
+  executeTasks,
+} from "@shared/utils/application/executeTask";
 import { Ord, S } from "@shared/utils/application/monads";
 import { validateFromUnknown } from "@shared/utils/application/validateWith";
 import { FakeRepository } from "@shared/utils/database/fakeRepository.base";
@@ -24,8 +27,10 @@ describe("[Unit] FakeRepository", () => {
 
   beforeEach(async () => {
     rows = new FakeRowRepository();
-    await executeTask(rows.save({ id: "1", name: "b" }));
-    await executeTask(rows.save({ id: "2", name: "a" }));
+    await executeTasks(
+      rows.save({ id: "1", name: "b" }),
+      rows.save({ id: "2", name: "a" }),
+    );
   });
 
   it("Should page the rows in insertion order", async () => {

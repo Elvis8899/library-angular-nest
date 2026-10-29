@@ -3,7 +3,7 @@ import { escapeHtml, printDocument } from "@app/shared/utils/print.utility";
 describe("print.utility", () => {
   it("Should escape text for a page", () => {
     expect(escapeHtml('<a href="x">&</a>')).toBe(
-      "&lt;a href=&quot;x&quot;&gt;&amp;&lt;/a&gt;"
+      "&lt;a href=&quot;x&quot;&gt;&amp;&lt;/a&gt;",
     );
     expect(escapeHtml(null)).toBe("");
   });

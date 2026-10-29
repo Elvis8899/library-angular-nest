@@ -24,13 +24,13 @@ describe("detailsOf", () => {
     const error = { code: "user.emailTaken", details };
     expect(detailsOf(error, "user.emailTaken")).toEqual(details);
     expect(
-      detailsOf({ code: "user.cpfTaken" }, "user.emailTaken", "user.cpfTaken")
+      detailsOf({ code: "user.cpfTaken" }, "user.emailTaken", "user.cpfTaken"),
     ).toBeNull();
   });
 
   it("Should give nothing for another code, or an error without one", () => {
     expect(
-      detailsOf({ code: "user.cpfTaken", details }, "user.emailTaken")
+      detailsOf({ code: "user.cpfTaken", details }, "user.emailTaken"),
     ).toBeNull();
     expect(detailsOf({ message: "falhou" }, "user.emailTaken")).toBeNull();
     expect(detailsOf(null, "user.emailTaken")).toBeNull();

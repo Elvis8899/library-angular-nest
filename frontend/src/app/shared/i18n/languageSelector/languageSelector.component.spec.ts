@@ -1,12 +1,12 @@
 import { ApplicationRef } from "@angular/core";
 import { provideRouter } from "@angular/router";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { I18nService } from "@app/shared/i18n/i18n.service";
 import { LanguageSelectorComponent } from "@app/shared/i18n/languageSelector/languageSelector.component";
 import { provideTranslateService, TranslateService } from "@ngx-translate/core";
 import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 // I18nService starts in the saved language, or pt-BR (cleared before each
 // test)
@@ -48,7 +48,9 @@ describe("LanguageSelectorComponent", () => {
     openMenu();
     // Assert
     expect(
-      options().map((option) => option.textContent?.replace(/\s+/g, " ").trim())
+      options().map((option) =>
+        option.textContent?.replace(/\s+/g, " ").trim(),
+      ),
     ).toEqual(["check Português", "English"]);
     expect(options()[0]).toHaveAttribute("aria-current", "true");
     expect(options()[1]).not.toHaveAttribute("aria-current");
@@ -59,7 +61,7 @@ describe("LanguageSelectorComponent", () => {
     // Arrange
     const setLanguageSpy = vi.spyOn(
       spectator.inject(I18nService),
-      "setLanguage"
+      "setLanguage",
     );
     openMenu();
     // Act

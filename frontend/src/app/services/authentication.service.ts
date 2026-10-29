@@ -50,7 +50,7 @@ export class AuthenticationService {
       map((credentials) => {
         this._credentialsService.setCredentials(credentials);
         return credentials;
-      })
+      }),
     );
   }
 
@@ -66,10 +66,10 @@ export class AuthenticationService {
       return throwError(() => new Error("No refresh token"));
     }
     this._refreshInFlight$ ??= defer(() =>
-      withRefreshLock(() => this.refreshOnce(refreshToken))
+      withRefreshLock(() => this.refreshOnce(refreshToken)),
     ).pipe(
       finalize(() => (this._refreshInFlight$ = null)),
-      shareReplay(1)
+      shareReplay(1),
     );
     return this._refreshInFlight$;
   }
@@ -85,7 +85,7 @@ export class AuthenticationService {
       return stored;
     }
     const credentials = await firstValueFrom(
-      this._userService.refresh(refreshToken)
+      this._userService.refresh(refreshToken),
     );
     this._credentialsService.setCredentials(credentials);
     return credentials;
@@ -105,7 +105,7 @@ export class AuthenticationService {
       map(() => {
         this._credentialsService.clearCredentials();
         return true;
-      })
+      }),
     );
   }
 }

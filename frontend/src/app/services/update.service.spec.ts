@@ -1,6 +1,6 @@
 import { ApplicationRef } from "@angular/core";
 import { SwUpdate, VersionEvent } from "@angular/service-worker";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { AppUpdateService } from "@app/services/update.service";
 import { ptBR } from "@app/shared/i18n/translations/pt-BR";
@@ -13,7 +13,7 @@ import {
 } from "@openng/spectator/vitest";
 import { Subject } from "rxjs";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 const versionDetected: VersionEvent = {
   type: "VERSION_DETECTED",
@@ -112,7 +112,7 @@ describe("Update Service", () => {
 
       expect(notifications.persistent).toHaveBeenCalledExactlyOnceWith(
         "update.available",
-        "update.reload"
+        "update.reload",
       );
     });
 
@@ -172,10 +172,10 @@ describe("Update alert", () => {
     const snackBar = all.item(all.length - 1);
     expect(snackBar?.textContent).toContain("Uma nova versão está disponível.");
     expect(snackBar?.querySelector("button")?.textContent).toContain(
-      "Atualizar"
+      "Atualizar",
     );
     // Act
-    (snackBar?.querySelector("button") as HTMLButtonElement).click();
+    snackBar.querySelector("button")!.click();
     // Assert
     await vi.waitFor(() => expect(reloadSpy).toHaveBeenCalledOnce());
     expect(swSpy.activateUpdate).toHaveBeenCalledOnce();

@@ -12,11 +12,11 @@ import {
 @Directive()
 export abstract class StronglyTypedDialog<DialogData, DialogResult> {
   /* v8 ignore stop */
-  protected data: DialogData = inject(MAT_DIALOG_DATA);
-  protected dialogRef: MatDialogRef<
-    StronglyTypedDialog<DialogData, DialogResult>,
-    DialogResult
-  > = inject(MatDialogRef);
+  protected data = inject<DialogData>(MAT_DIALOG_DATA);
+  protected dialogRef =
+    inject<
+      MatDialogRef<StronglyTypedDialog<DialogData, DialogResult>, DialogResult>
+    >(MatDialogRef);
 }
 
 @Injectable({ providedIn: "root" })
@@ -25,7 +25,7 @@ export class TypedDialog {
 
   open = <DialogData, DialogResult>(
     component: Type<StronglyTypedDialog<DialogData, DialogResult>>,
-    config?: MatDialogConfig<DialogData>
+    config?: MatDialogConfig<DialogData>,
   ): MatDialogRef<
     StronglyTypedDialog<DialogData, DialogResult>,
     DialogResult

@@ -1,10 +1,8 @@
 # Production image for the API. Build context: the repository root.
 # Targets: `migrate` applies migrations and exits; the default (last) stage runs the API.
 
-ARG NODE_IMAGE=node:24-slim
-
 # Shared base: Prisma's engines need OpenSSL at build time and at runtime
-FROM ${NODE_IMAGE} AS base
+FROM node:26-slim AS base
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends openssl dumb-init \
   && rm -rf /var/lib/apt/lists/*

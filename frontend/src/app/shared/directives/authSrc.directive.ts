@@ -34,11 +34,11 @@ export class AuthSrcDirective {
               catchError((error: unknown) => {
                 log.error(error);
                 return of(null);
-              })
-            )
-      )
+              }),
+            ),
+      ),
     ),
-    { initialValue: null }
+    { initialValue: null },
   );
   private readonly _url = objectUrlOf(this._blob);
 

@@ -51,10 +51,10 @@ describe("ConfirmDialogComponent", () => {
     expect(spectator.query("h2")).toHaveText("Página Inicial");
     expect(spectator.query("mat-dialog-content")).toHaveText("Olá, Ana.");
     expect(spectator.query("button[name='confirmDialog']")).toHaveText(
-      "Confirmar"
+      "Confirmar",
     );
     expect(spectator.query("button[name='confirmDialog']")).not.toHaveClass(
-      "destructive"
+      "destructive",
     );
   });
 
@@ -68,10 +68,10 @@ describe("ConfirmDialogComponent", () => {
     });
     // Assert
     expect(spectator.query("button[name='confirmDialog']")).toHaveText(
-      "Salvar"
+      "Salvar",
     );
     expect(spectator.query("button[name='confirmDialog']")).toHaveClass(
-      "destructive"
+      "destructive",
     );
   });
 

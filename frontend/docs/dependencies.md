@@ -21,4 +21,3 @@ This app has third-party dependencies (both production and development). These d
 - [pretty-quick](https://www.npmjs.com/package/pretty-quick): Runs Prettier on staged files.
 - [stylelint](https://www.npmjs.com/package/stylelint): Linter for CSS/SCSS.
 - [typescript](https://www.npmjs.com/package/typescript): Superset of JavaScript that adds static types.
-- [ts-node](https://www.npmjs.com/package/ts-node): TypeScript execution environment for Node.js.

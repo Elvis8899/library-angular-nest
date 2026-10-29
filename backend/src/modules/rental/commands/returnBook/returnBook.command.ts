@@ -6,19 +6,19 @@ import {
 } from "@modules/rental/domain/bookRental.entity";
 import { bookRentalNotFoundException } from "@modules/rental/domain/bookRental.errors";
 import { bookReturned } from "@modules/rental/domain/events/bookReturned.event";
-import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { Clock } from "@shared/clock/clock";
-import { inputsRTE } from "@shared/utils/application/fromInput";
+import { Command, CommandHandler } from "@shared/utils/application/cqrs";
+import { inputRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
-import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
+import { orFail, perform } from "@shared/utils/application/perform";
 import {
   changedRTE,
   publishRTE,
-  UseCase,
+  UseCaseHandler,
 } from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
-export class ReturnBookCommand implements ICommand {
+export class ReturnBookCommand extends Command {
   /**
    * @param ownerId when set, the rental must belong to this user
    * (used for clients, who may only return their own rentals)
@@ -26,56 +26,52 @@ export class ReturnBookCommand implements ICommand {
   constructor(
     public readonly bookRentalId: string,
     public readonly ownerId?: string,
-  ) {}
+  ) {
+    super();
+  }
 }
 
 @CommandHandler(ReturnBookCommand)
-export class ReturnBookCommandHandler implements ICommandHandler<
-  ReturnBookCommand,
-  void
-> {
+export class ReturnBookCommandHandler extends UseCaseHandler<ReturnBookCommand> {
   constructor(
-    private readonly useCase: UseCase,
     private readonly clock: Clock,
     private readonly bookRentalRepository: BookRentalRepository,
-  ) {}
+  ) {
+    super();
+  }
 
-  execute(command: ReturnBookCommand): Promise<void> {
-    return this.useCase.run(
-      "ReturnBookCommand",
-      command.bookRentalId,
-      FPF.pipe(
-        //Data validation
-        inputsRTE({ id: [UUID, "id", command.bookRentalId] }),
+  protected logged(command: ReturnBookCommand): unknown {
+    return command.bookRentalId;
+  }
 
-        //Validate BookRental exists and belongs to the requester
-        RTE.chain(({ id }) =>
-          findOrFailRTE(
-            this.bookRentalRepository.findById,
-            "get book rental by id",
-            bookRentalNotFoundException,
-          )(id),
+  protected pipeline(command: ReturnBookCommand) {
+    return FPF.pipe(
+      inputRTE(UUID, "id", command.bookRentalId),
+
+      //Validate BookRental exists and belongs to the requester
+      RTE.chain((id) =>
+        orFail(
+          perform(this.bookRentalRepository).findById(id),
+          bookRentalNotFoundException,
         ),
-        RTE.chainEitherK(ensureOwnedBy(command.ownerId)),
-
-        //Finish the rental, which must be active
-        RTE.chainEitherK(finishRental(this.clock.now())),
-
-        //Store it and make book item available atomically
-        RTE.tap(
-          performRTE(this.bookRentalRepository.finish, "finish book rental."),
-        ),
-
-        RTE.tap(publishRTE(bookReturned)),
-        RTE.tap(() =>
-          changedRTE(
-            { resource: Resource.Rentals },
-            // The copy is available again
-            { resource: Resource.Books },
-          ),
-        ),
-        RTE.asUnit,
       ),
+      RTE.chainEitherK(ensureOwnedBy(command.ownerId)),
+
+      //Finish the rental, which must be active
+      RTE.chainEitherK(finishRental(this.clock.now())),
+
+      //Store it and make book item available atomically
+      RTE.tap(perform(this.bookRentalRepository).finish),
+
+      RTE.tap(publishRTE(bookReturned)),
+      RTE.tap(() =>
+        changedRTE(
+          { resource: Resource.Rentals },
+          // The copy is available again
+          { resource: Resource.Books },
+        ),
+      ),
+      RTE.asUnit,
     );
   }
 }

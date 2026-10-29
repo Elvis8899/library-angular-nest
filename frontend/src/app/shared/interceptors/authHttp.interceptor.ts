@@ -13,16 +13,16 @@ import { finalize, Observable, share } from "rxjs";
 const ongoingRequests = new Map<string, Observable<HttpEvent<unknown>>>();
 export const authHttpInterceptor: HttpInterceptorFn = (
   request: HttpRequest<unknown>,
-  next: HttpHandlerFn
+  next: HttpHandlerFn,
 ): Observable<HttpEvent<unknown>> => {
   const _credentialsService = inject(CredentialsService);
   const _translateService = inject(TranslateService);
 
   if (request.headers.get("noauth")) {
-    return next(request) as Observable<HttpEvent<unknown>>;
+    return next(request);
   }
 
-  const { accessToken } = _credentialsService.credentials || {};
+  const { accessToken } = _credentialsService.credentials ?? {};
 
   const currentLang = (
     _translateService.getCurrentLang() ?? environment.defaultLanguage
@@ -56,7 +56,7 @@ export const authHttpInterceptor: HttpInterceptorFn = (
 
   const shared = next(clonedRequest).pipe(
     finalize(() => ongoingRequests.delete(requestKey)),
-    share()
+    share(),
   );
   ongoingRequests.set(requestKey, shared);
   return shared;

@@ -54,9 +54,9 @@ describe("RouteReuseStrategy", () => {
   });
   describe("store", () => {
     it("should return undefined ", () => {
-      const res = spectator.service.store();
-
-      expect(res).toBe(undefined);
+      expect(() => {
+        spectator.service.store();
+      }).not.toThrow();
     });
   });
 

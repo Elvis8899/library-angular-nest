@@ -16,11 +16,11 @@ export class TranslatedPaginatorIntl extends MatPaginatorIntl {
       .pipe(startWith(null), takeUntilDestroyed(inject(DestroyRef)))
       .subscribe(() => {
         this.itemsPerPageLabel = this._translate.instant(
-          t("paginator.itemsPerPage")
+          t("paginator.itemsPerPage"),
         );
         this.nextPageLabel = this._translate.instant(t("paginator.nextPage"));
         this.previousPageLabel = this._translate.instant(
-          t("paginator.previousPage")
+          t("paginator.previousPage"),
         );
         this.firstPageLabel = this._translate.instant(t("paginator.firstPage"));
         this.lastPageLabel = this._translate.instant(t("paginator.lastPage"));

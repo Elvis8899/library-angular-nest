@@ -32,7 +32,7 @@ export class CredentialsService {
 
   refresh() {
     this._credentials.set(
-      this.getSavedCredentials(false) || this.getSavedCredentials()
+      this.getSavedCredentials(false) ?? this.getSavedCredentials(),
     );
   }
 
@@ -42,7 +42,7 @@ export class CredentialsService {
     if (!savedCredentials) {
       return null;
     }
-    return JSON.parse(savedCredentials);
+    return JSON.parse(savedCredentials) as Credentials;
   }
 
   clearCredentials() {
@@ -68,7 +68,7 @@ export class CredentialsService {
   }
 
   isAdmin(): boolean {
-    return this.credentials?.user.role?.includes("admin") || false;
+    return this.credentials?.user.role?.includes("admin") ?? false;
   }
 
   getRole(): ROLE {
@@ -135,6 +135,6 @@ export class CredentialsService {
       return false;
     }
     const rolePermissions = appPermissionsSetting[role];
-    return permission.every((p) => rolePermissions[p] === true);
+    return permission.every((p) => rolePermissions[p]);
   }
 }

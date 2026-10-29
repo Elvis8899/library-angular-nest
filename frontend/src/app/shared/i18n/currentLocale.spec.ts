@@ -38,7 +38,7 @@ describe("injectCurrentLocale", () => {
     // Assert: the currency has a no-break space after the symbol
     expect(formatCurrency(39.9, "pt-BR", "R$", "BRL")).toBe("R$\u00a039,90");
     expect(formatDate("2026-10-20T12:00:00", "shortDate", "pt-BR")).toBe(
-      "20/10/2026"
+      "20/10/2026",
     );
   });
 });
