@@ -1,6 +1,5 @@
 import { HttpStatus } from "@nestjs/common";
 import { useE2eApp } from "@test/util/e2eApp";
-import { resetDatabase } from "@test/util/resetDatabase";
 
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { executeTask } from "@shared/utils/application/executeTask";
@@ -8,14 +7,13 @@ import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 
 let userRepository: UserRepository;
-const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });
+const e2e = useE2eApp({
+  authGuard: new MockAuthGuardBuilder(),
+  resetEachTest: true,
+});
 
 beforeAll(() => {
   userRepository = e2e.get(UserRepository);
-});
-
-beforeEach(async () => {
-  await resetDatabase(e2e.prisma);
 });
 
 describe("[e2e] DELETE /v1/users/:id", () => {

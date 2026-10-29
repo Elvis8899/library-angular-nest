@@ -45,7 +45,7 @@ export const loadPage =
       ),
       TE.apS("count", source.total()),
       TE.map(({ data, count }) => ({
-        data: data,
+        data,
         count,
         page,
         limit,

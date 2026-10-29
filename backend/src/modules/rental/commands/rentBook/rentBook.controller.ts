@@ -15,22 +15,18 @@ import {
   Request,
   UseGuards,
 } from "@nestjs/common";
-import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
   ApiBody,
   ApiCreatedResponse,
   ApiOperation,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @ApiController("Empréstimos")
 export class RentBookController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @Post("bookRentals/rent")
   @ApiErrors(UserNotFoundException, BookRentalNotAvailableException)
@@ -53,10 +49,8 @@ export class RentBookController {
       req.user.role === UserRoleEnum.Admin
         ? bookRentalInput.userId
         : req.user.sub;
-    return this.commandBus
-      .execute<RentBookCommand>(
-        new RentBookCommand({ ...bookRentalInput, userId }),
-      )
-      .then(noop);
+    return this.commandBus.execute(
+      new RentBookCommand({ ...bookRentalInput, userId }),
+    );
   }
 }

@@ -2,13 +2,12 @@ import { LogoutCommand } from "@modules/auth/commands/logout/logout.command";
 import { ApiController } from "@modules/auth/decorators/apiController.decorator";
 import { AuthenticatedRequest } from "@modules/auth/guards/authenticatedRequest";
 import { HttpCode, HttpStatus, Post, Request } from "@nestjs/common";
-import { CommandBus } from "@nestjs/cqrs";
 import {
   ApiNoContentResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 
 @ApiController("Login")
 export class LogoutController {
@@ -24,6 +23,6 @@ export class LogoutController {
   @ApiNoContentResponse({ description: "Sessão encerrada." })
   @ApiUnauthorizedResponse({ description: "Token de acesso inválido." })
   public async logout(@Request() req: AuthenticatedRequest): Promise<void> {
-    return this.commandBus.execute(new LogoutCommand(req.user.sub)).then(noop);
+    return this.commandBus.execute(new LogoutCommand(req.user.sub));
   }
 }

@@ -8,6 +8,8 @@ A full-stack library management system for lending books: an admin manages the c
 
 It is also a starting point for other projects: login, users and the conventions are the reusable core, and the lending is an example to learn from and then remove. See [Starting a new project](#starting-a-new-project).
 
+How a backend command or query is written, fp-ts in one page: [`docs/handlerPipelines.md`](docs/handlerPipelines.md).
+
 | App | Stack |
 |---|---|
 | [`backend`](backend/README.md) | NestJS 12 on Fastify, Prisma 7 + PostgreSQL, Zod, fp-ts, JWT |

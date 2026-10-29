@@ -22,7 +22,7 @@ import { PaginatedBookInfoController } from "@modules/book/queries/paginatedBook
 import { PaginatedBookInfosQueryHandler } from "@modules/book/queries/paginatedBookInfos/paginatedBookInfos.query";
 import { AddFirstBookItemSubscriber } from "@modules/book/subscribers/addFirstBookItem.subscriber";
 import { Module } from "@nestjs/common";
-import { CqrsModule } from "@nestjs/cqrs";
+import { CqrsModule } from "@shared/utils/application/cqrs";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 
 const controllers = [

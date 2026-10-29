@@ -1,16 +1,17 @@
 import { HttpStatus } from "@nestjs/common";
 import { FPF } from "@shared/utils/application/monads";
 import { useE2eApp } from "@test/util/e2eApp";
-import { resetDatabase } from "@test/util/resetDatabase";
 
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 const userBuilder = new UserBuilder(1);
 
-const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });
+const e2e = useE2eApp({
+  authGuard: new MockAuthGuardBuilder(),
+  resetEachTest: true,
+});
 
-beforeEach(async () => {
-  await resetDatabase(e2e.prisma);
+beforeEach(() => {
   userBuilder.reset();
 });
 

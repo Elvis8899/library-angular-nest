@@ -1,5 +1,4 @@
 import { PageQuery } from "@library/contracts";
-import { z } from "zod";
 
 /** Raw paging input, as it arrives from the query string. */
 export type PageRequest = {
@@ -26,12 +25,3 @@ export const PageRequestSchema = PageQuery.transform(
     offset: page * limit,
   }),
 );
-
-/** Schema for a page of results whose rows match `row`. */
-export const paginatedSchema = <Row extends z.ZodType>(row: Row) =>
-  z.object({
-    data: z.array(row),
-    count: z.number(),
-    page: z.number(),
-    limit: z.number(),
-  });

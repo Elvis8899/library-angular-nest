@@ -3,67 +3,61 @@ import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userReactivated } from "@modules/user/domain/events/userReactivated.event";
 import { reactivateUser } from "@modules/user/domain/user.entity";
 import { userNotFoundException } from "@modules/user/domain/user.errors";
-import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { Clock } from "@shared/clock/clock";
-import { fromInputRE } from "@shared/utils/application/fromInput";
+import { Command, CommandHandler } from "@shared/utils/application/cqrs";
+import { inputRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
-import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
+import { orFail, perform } from "@shared/utils/application/perform";
 import {
   changedRTE,
   publishRTE,
-  UseCase,
+  UseCaseHandler,
 } from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
-export class ReactivateUser implements ICommand {
-  constructor(public readonly id: string) {}
+export class ReactivateUser extends Command {
+  constructor(public readonly id: string) {
+    super();
+  }
 }
 
 @CommandHandler(ReactivateUser)
-export class ReactivateUserHandler implements ICommandHandler<
-  ReactivateUser,
-  void
-> {
+export class ReactivateUserHandler extends UseCaseHandler<ReactivateUser> {
   constructor(
-    private readonly useCase: UseCase,
     private readonly userRepository: UserRepository,
     private readonly clock: Clock,
-  ) {}
+  ) {
+    super();
+  }
 
-  execute(command: ReactivateUser): Promise<void> {
-    return this.useCase.run(
-      "ReactivateUser",
-      command.id,
-      FPF.pipe(
-        //Data validation
-        command.id,
-        fromInputRE(UUID, "id"),
-        RTE.fromReaderEither,
+  protected logged(command: ReactivateUser): unknown {
+    return command.id;
+  }
 
-        //Validate User exists
-        RTE.chain(
-          findOrFailRTE(
-            this.userRepository.findById,
-            "get user by id",
-            userNotFoundException,
-          ),
+  protected pipeline(command: ReactivateUser) {
+    return FPF.pipe(
+      inputRTE(UUID, "id", command.id),
+
+      //Validate User exists
+      RTE.chain((key) =>
+        orFail(
+          perform(this.userRepository).findById(key),
+          userNotFoundException,
         ),
-        RTE.map(reactivateUser(this.clock.now())),
-
-        //Store the state alone, as deactivating does
-        RTE.tap((user) =>
-          performRTE(
-            this.userRepository.reactivate,
-            "reactivate user",
-          )({ userId: user.id, at: user.updatedAt }),
-        ),
-
-        RTE.tap(publishRTE(userReactivated)),
-        RTE.tap((user) =>
-          changedRTE({ resource: Resource.Users, key: user.id }),
-        ),
-        RTE.asUnit,
       ),
+      RTE.map(reactivateUser(this.clock.now())),
+
+      //Store the state alone, as deactivating does
+      RTE.tap((user) =>
+        perform(this.userRepository).reactivate({
+          userId: user.id,
+          at: user.updatedAt,
+        }),
+      ),
+
+      RTE.tap(publishRTE(userReactivated)),
+      RTE.tap((user) => changedRTE({ resource: Resource.Users, key: user.id })),
+      RTE.asUnit,
     );
   }
 }

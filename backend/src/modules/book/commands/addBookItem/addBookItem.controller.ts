@@ -6,22 +6,18 @@ import { AddBookItem } from "@modules/book/commands/addBookItem/addBookItem.comm
 import { BookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { Body, HttpCode, HttpStatus, Post, UseGuards } from "@nestjs/common";
-import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
   ApiBody,
   ApiCreatedResponse,
   ApiOperation,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @ApiController("Livros")
 export class AddBookItemController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @Post("bookInfos/item")
   @ApiErrors(BookInfoNotFoundException)
@@ -36,8 +32,6 @@ export class AddBookItemController {
   @ApiUnprocessableEntityResponse({ description: "Livro inválido." })
   @ApiBody({ schema: contractRef(BookItemRequest) })
   async addBookItem(@Body() bookItem: BookItemRequest): Promise<void> {
-    return this.commandBus
-      .execute<AddBookItem>(new AddBookItem(bookItem))
-      .then(noop);
+    return this.commandBus.execute(new AddBookItem(bookItem));
   }
 }

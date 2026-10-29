@@ -132,10 +132,11 @@ export class I18nService {
     }
 
     const request = ++this._languageRequest;
-    await this.load(newLanguage, "core");
-    if (this._pagesNeeded) {
-      await this.load(newLanguage, "pages");
-    }
+    // Both at once; each merges into the language's texts
+    await Promise.all([
+      this.load(newLanguage, "core"),
+      this._pagesNeeded ? this.load(newLanguage, "pages") : undefined,
+    ]);
     if (request === this._languageRequest) {
       log.debug(`Language set to ${newLanguage}`);
       this._translateService.use(newLanguage);

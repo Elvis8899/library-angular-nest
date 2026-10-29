@@ -5,10 +5,10 @@ import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
 import { createBook } from "@test/modules/book/createBook";
 import { useE2eApp } from "@test/util/e2eApp";
-import { resetDatabase } from "@test/util/resetDatabase";
+import { bodyOf } from "@test/util/responseBodies";
 
 const authGuard = new MockAuthGuardBuilder();
-const e2e = useE2eApp({ authGuard });
+const e2e = useE2eApp({ authGuard, resetEachTest: true });
 
 const png = Buffer.from("\x89PNG\r\n\x1a\n cover", "latin1");
 const book = new BookInfoBuilder();
@@ -17,13 +17,9 @@ const coverRoute = `/v1/bookInfos/${book.build().id}/cover`;
 const upload = (body = png, name = "capa.png") =>
   e2e.http().put(coverRoute).attach("file", body, name);
 const readBook = async () =>
-  BookInfo.parse(
-    (await e2e.http().get(`/v1/bookInfos/${book.build().id}`)).body,
-  );
+  await bodyOf(BookInfo, e2e.http().get(`/v1/bookInfos/${book.build().id}`));
 
 beforeEach(async () => {
-  await resetDatabase(e2e.prisma);
-  authGuard.reset();
   await createBook(e2e.prisma, book);
 });
 
@@ -49,10 +45,12 @@ describe("[e2e] PUT, GET and DELETE /v1/bookInfos/{id}/cover", () => {
     });
     expect(Buffer.from(served.body)).toEqual(png);
     expect(removed.status).toBe(HttpStatus.OK);
-    expect((await readBook()).cover).toBeNull();
-    expect((await e2e.http().get(coverRoute)).status).toBe(
-      HttpStatus.NOT_FOUND,
-    );
+    const [stored, response] = await Promise.all([
+      readBook(),
+      e2e.http().get(coverRoute),
+    ]);
+    expect(stored.cover).toBeNull();
+    expect(response.status).toBe(HttpStatus.NOT_FOUND);
   });
 
   it.each([

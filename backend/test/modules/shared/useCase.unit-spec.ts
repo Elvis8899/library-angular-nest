@@ -1,18 +1,34 @@
 import { userCreated } from "@modules/user/domain/events/userCreated.event";
-import { userDeleted } from "@modules/user/domain/events/userDeleted.event";
 import { userNotFoundException } from "@modules/user/domain/user.errors";
-import { CommandHandler, ICommand, IQuery, QueryHandler } from "@nestjs/cqrs";
 import { AUDIT_INPUT_MAX, auditEntryOf } from "@shared/audit/auditEntry";
 import { AuditLog } from "@shared/audit/auditLog";
 import { FakeAuditLog } from "@shared/audit/fakeAuditLog";
 import { DomainEventPublisher } from "@shared/domainEventPublisher/domainEventPublisher";
+import {
+  Resource,
+  resourceChanged,
+} from "@shared/domainEventPublisher/resourceChanged.event";
 import { Metrics } from "@shared/metrics/metrics";
+import {
+  Command,
+  CommandHandler,
+  Handles,
+  Query,
+  QueryHandler,
+} from "@shared/utils/application/cqrs";
 import { E, FPF, O, RTE, TE } from "@shared/utils/application/monads";
 import {
-  ensureAbsentRTE,
-  findOrFailRTE,
+  bindAll,
+  orConflict,
+  orFail,
+  perform,
 } from "@shared/utils/application/perform";
-import { publishRTE, UseCase } from "@shared/utils/application/useCase";
+import {
+  nothingChangedRTE,
+  publishRTE,
+  UseCase,
+} from "@shared/utils/application/useCase";
+import { UseCaseRun } from "@shared/utils/application/useCaseObserver";
 import { useCaseRuns } from "@test/util/metrics";
 import { PinoLogger } from "nestjs-pino";
 
@@ -39,23 +55,48 @@ beforeEach(() => {
 const auditLog = new FakeAuditLog();
 const metrics = new Metrics();
 
-class SaveThing implements ICommand {}
+class CreateUser extends Command {}
+
+@CommandHandler(CreateUser)
+class CreateUserHandler implements Handles<CreateUser> {
+  execute = () => Promise.resolve();
+}
+
+class RenameThing extends Command {}
+
+@CommandHandler(RenameThing)
+class RenameThingHandler implements Handles<RenameThing> {
+  execute = () => Promise.resolve();
+}
+
+class SaveThing extends Command {}
 
 @CommandHandler(SaveThing)
-class SaveThingHandler {}
+class SaveThingHandler implements Handles<SaveThing> {
+  execute = () => Promise.resolve();
+}
 
-class Things implements IQuery {}
+class ThingsQuery extends Query<void> {}
 
-@QueryHandler(Things)
-class ThingsHandler {}
+@QueryHandler(ThingsQuery)
+class ThingsQueryHandler implements Handles<ThingsQuery> {
+  execute = () => Promise.resolve();
+}
+
+const runs: UseCaseRun[] = [];
+const observer = { ran: (run: UseCaseRun) => runs.push(run) };
+
+const useCaseFor = (handler?: object, log: AuditLog = auditLog) =>
+  new UseCase(logger, events, log, metrics, observer, handler);
+
+const usersChanged = ({ id }: { id: string }) =>
+  resourceChanged({ resource: Resource.Users, key: id });
 
 describe("[Unit] UseCase", () => {
-  const useCase = new UseCase(logger, events, auditLog, metrics);
+  const useCase = useCaseFor(new CreateUserHandler());
 
   it("Should log the request under the handler's name and resolve", async () => {
-    await expect(
-      useCase.run("CreateUser", { name: "Ana" }, RTE.right(1)),
-    ).resolves.toBe(1);
+    await expect(useCase.run({ name: "Ana" }, RTE.right(1))).resolves.toBe(1);
 
     expect(fakeLogger.setContext).toHaveBeenCalledWith("CreateUser");
     expect(fakeLogger.info).toHaveBeenCalledWith(
@@ -65,29 +106,38 @@ describe("[Unit] UseCase", () => {
   });
 
   it("Should log only the name when there is no input to log", async () => {
-    await useCase.run("RefreshTokenCommand", undefined, RTE.right(1));
+    await useCase.run(undefined, RTE.right(1));
 
-    expect(fakeLogger.info).toHaveBeenCalledWith(
-      "RefreshTokenCommand received",
-    );
+    expect(fakeLogger.info).toHaveBeenCalledWith("CreateUser received");
+  });
+
+  it("Should name a query's runs without its Query suffix", async () => {
+    await useCaseFor(new ThingsQueryHandler()).run({}, RTE.right(1));
+
+    expect(fakeLogger.setContext).toHaveBeenCalledWith("Things");
+  });
+
+  it("Should refuse to be built for anything but a handler", () => {
+    expect(() => useCaseFor()).toThrow("only a command's or query's handler");
+    expect(() => useCaseFor({})).toThrow("only a command's or query's handler");
   });
 
   it("Should reject with the pipeline's error", async () => {
-    await expect(
-      useCase.run("CreateUser", {}, RTE.left(conflict())),
-    ).rejects.toThrow("conflict");
+    await expect(useCase.run({}, RTE.left(conflict()))).rejects.toThrow(
+      "conflict",
+    );
   });
 
   it("Should time each run with its outcome: ok, the domain error's kind or error", async () => {
     const before = await useCaseRuns(metrics, "RenameThing");
 
-    await useCase.run("RenameThing", {}, RTE.right(1));
+    const renaming = useCaseFor(new RenameThingHandler());
+
+    await renaming.run({}, RTE.right(1));
     await expect(
-      useCase.run("RenameThing", {}, RTE.left(userNotFoundException())),
+      renaming.run({}, RTE.left(userNotFoundException())),
     ).rejects.toThrow();
-    await expect(
-      useCase.run("RenameThing", {}, RTE.left(conflict())),
-    ).rejects.toThrow();
+    await expect(renaming.run({}, RTE.left(conflict()))).rejects.toThrow();
 
     expect(before).toEqual({});
     expect(await useCaseRuns(metrics, "RenameThing")).toEqual({
@@ -99,7 +149,6 @@ describe("[Unit] UseCase", () => {
 
   it("Should give the pipeline the event publisher", async () => {
     await useCase.run(
-      "CreateUser",
       {},
       FPF.pipe(RTE.right(user), RTE.tap(publishRTE(userCreated))),
     );
@@ -107,92 +156,97 @@ describe("[Unit] UseCase", () => {
     expect(publishEvent).toHaveBeenCalledWith(userCreated(user));
   });
 
+  it("Should tell the observer each run, with the events it published", async () => {
+    runs.length = 0;
+
+    await useCase.run(
+      {},
+      FPF.pipe(RTE.right(user), RTE.tap(publishRTE(userCreated))),
+    );
+    await expect(useCase.run({}, RTE.left(conflict()))).rejects.toThrow();
+    await useCaseFor(new ThingsQueryHandler()).run({}, RTE.right(1));
+    await useCase.run({}, nothingChangedRTE);
+
+    const run = { name: "CreateUser", command: true, changedNothing: false };
+    expect(runs).toEqual([
+      { ...run, succeeded: true, published: [userCreated(user).eventKey] },
+      { ...run, succeeded: false, published: [] },
+      {
+        ...run,
+        name: "Things",
+        command: false,
+        succeeded: true,
+        published: [],
+      },
+      { ...run, succeeded: true, published: [], changedNothing: true },
+    ]);
+  });
+
   it("Should publish every event a factory builds, in order", async () => {
     await useCase.run(
-      "ReplaceUser",
       {},
       FPF.pipe(
         RTE.right(user),
         RTE.tap(
           publishRTE((created: typeof user) => [
-            userDeleted(created),
             userCreated(created),
+            usersChanged(created),
           ]),
         ),
       ),
     );
 
     expect(publishEvent.mock.calls).toEqual([
-      [userDeleted(user)],
       [userCreated(user)],
+      [usersChanged(user)],
     ]);
   });
 });
 
 describe("[Unit] UseCase's audit", () => {
-  const command = new UseCase(
-    logger,
-    events,
-    auditLog,
-    metrics,
-    new SaveThingHandler(),
-  );
-  const query = new UseCase(
-    logger,
-    events,
-    auditLog,
-    metrics,
-    new ThingsHandler(),
-  );
+  const command = useCaseFor(new SaveThingHandler());
+  const query = useCaseFor(new ThingsQueryHandler());
 
   beforeEach(() => {
     auditLog.entries.length = 0;
   });
 
   it("Should record a command that succeeded, with what it named", async () => {
-    const input = { id: "u1", props: { name: "Ana" } };
+    const input = { section: "pallet", id: "w1", props: { name: "Ana" } };
 
-    await command.run("UpdateUser", input, RTE.right(undefined));
+    await command.run(input, RTE.right(undefined));
 
     expect(auditLog.entries).toHaveLength(1);
     expect(auditLog.entries[0]?.id).toMatch(/^[0-9a-f-]{36}$/);
     expect(auditLog.entries).toMatchObject([
       {
         userId: null,
-        useCase: "UpdateUser",
-        recordId: "u1",
+        useCase: "SaveThing",
+        recordId: "w1",
         input,
         recordedAt: auditLog.now,
       },
     ]);
   });
 
-  it("Should not record a query, a refused command or one built outside a handler", async () => {
-    await query.run("Things", { id: "u1" }, RTE.right([]));
-    await expect(
-      command.run("UpdateUser", {}, RTE.left(conflict())),
-    ).rejects.toThrow("conflict");
-    await new UseCase(logger, events, auditLog, metrics).run(
-      "UpdateUser",
-      {},
-      RTE.right(1),
+  it("Should not record a query or a refused command", async () => {
+    await query.run({ id: "w1" }, RTE.right([]));
+    await expect(command.run({}, RTE.left(conflict()))).rejects.toThrow(
+      "conflict",
     );
 
     expect(auditLog.entries).toEqual([]);
   });
 
   it("Should answer though the entry couldn't be written, and log it", async () => {
-    const failing = new UseCase(
-      logger,
-      events,
+    const failing = useCaseFor(
+      new SaveThingHandler(),
       FPF.unsafeCoerce<object, AuditLog>({
         record: () => TE.left(new Error("down")),
       }),
-      metrics,
-      new SaveThingHandler(),
     );
 
-    await expect(failing.run("SaveThing", {}, RTE.right(1))).resolves.toBe(1);
+    await expect(failing.run({}, RTE.right(1))).resolves.toBe(1);
     expect(fakeLogger.error).toHaveBeenCalledWith(
       { err: new Error("down") },
       "SaveThing not audited",
@@ -232,38 +286,108 @@ describe("[Unit] auditEntryOf", () => {
   });
 });
 
-describe("[Unit] findOrFailRTE and ensureAbsentRTE", () => {
-  const found = () => TE.right(O.some(user));
-  const missing = () => TE.right(O.none);
+describe("[Unit] perform, orFail, orConflict and bindAll", () => {
+  class FakeUserRepository {
+    findById = (id: string) => TE.right(id === user.id ? O.some(user) : O.none);
+    failing = () => TE.left(conflict());
+  }
+  const users = new FakeUserRepository();
   const run = <A>(
     task: RTE.ReaderTaskEither<{ logger: PinoLogger }, Error, A>,
   ) => task({ logger })();
 
-  it("Should return what findOrFailRTE finds, or fail", async () => {
-    expect(await run(findOrFailRTE(found, "get user", conflict)("u1"))).toEqual(
-      E.right(user),
+  it("Should run a port's method as a step logged under its name", async () => {
+    expect(await run(perform(users).findById("u1"))).toEqual(
+      E.right(O.some(user)),
     );
-    expect(
-      await run(findOrFailRTE(missing, "get user", conflict)("u1")),
-    ).toEqual(E.left(conflict()));
+    expect(fakeLogger.debug).toHaveBeenCalledWith(
+      { value: { some: { id: user.id } } },
+      "UserRepository.findById succeeded",
+    );
+
+    expect(await run(perform(users).failing())).toEqual(E.left(conflict()));
+    expect(fakeLogger.warn).toHaveBeenCalledWith(
+      "Error - UserRepository.failing failed",
+    );
   });
 
-  it("Should fail ensureAbsentRTE only on a conflicting row", async () => {
+  it("Should return what orFail finds, or fail", async () => {
+    expect(await run(orFail(perform(users).findById("u1"), conflict))).toEqual(
+      E.right(user),
+    );
+    expect(await run(orFail(perform(users).findById("u2"), conflict))).toEqual(
+      E.left(conflict()),
+    );
+  });
+
+  it("Should fail orConflict only on a conflicting row", async () => {
     expect(
-      await run(ensureAbsentRTE(missing, "get user", conflict)("u1")),
+      await run(orConflict(perform(users).findById("u2"), conflict)),
     ).toEqual(E.right(undefined));
     expect(
-      await run(ensureAbsentRTE(found, "get user", conflict)("u1")),
+      await run(orConflict(perform(users).findById("u1"), conflict)),
     ).toEqual(E.left(conflict()));
     expect(
       await run(
-        ensureAbsentRTE(
-          found,
-          "get user",
+        orConflict(
+          perform(users).findById("u1"),
           conflict,
           (other) => other.id !== user.id,
-        )("u1"),
+        ),
       ),
     ).toEqual(E.right(undefined));
+  });
+
+  it("Should run bindAll's lookups at once and bind them to the scope", async () => {
+    const started: string[] = [];
+    const lookup =
+      (
+        name: string,
+        value: number,
+      ): RTE.ReaderTaskEither<unknown, Error, number> =>
+      () =>
+      async () => {
+        started.push(name);
+        // Each waits for the other to start
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        return E.right(started.length === 2 ? value : -1);
+      };
+    expect(
+      await run(
+        FPF.pipe(
+          RTE.right({ id: "u1" }),
+          bindAll(({ id }) => ({
+            user: orFail(perform(users).findById(id), conflict),
+            a: lookup("a", 1),
+            b: lookup("b", 2),
+          })),
+        ),
+      ),
+    ).toEqual(E.right({ id: "u1", user, a: 1, b: 2 }));
+  });
+
+  it("Should refuse, in its types, a bindAll lookup named as the scope's", () => {
+    const rebinds = FPF.pipe(
+      RTE.right({ id: "u1" }),
+      bindAll(() => ({ id: perform(users).findById("u2") })),
+    );
+    // @ts-expect-error: a lookup can't rebind a name the scope has
+    const checked: RTE.ReaderTaskEither<unknown, Error, unknown> = rebinds;
+    expect(checked).toBe(rebinds);
+  });
+
+  it("Should fail bindAll with the first lookup, in order, that fails", async () => {
+    const notFound = () => new Error("notFound");
+    expect(
+      await run(
+        FPF.pipe(
+          RTE.right({ id: "u2" }),
+          bindAll(({ id }) => ({
+            user: orFail(perform(users).findById(id), notFound),
+            other: perform(users).failing(),
+          })),
+        ),
+      ),
+    ).toEqual(E.left(notFound()));
   });
 });

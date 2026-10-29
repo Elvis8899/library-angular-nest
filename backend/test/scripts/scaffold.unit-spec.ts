@@ -108,7 +108,14 @@ describe("[Unit] scaffold", () => {
         query,
         "src/modules/task/queries/taskList/taskList.controller.ts",
       ),
-    ).toContain("Promise<Sent<typeof TaskListResponse>>");
+    ).toContain("@Answers(TaskListResponse)");
+    const e2eSpec = contentOf(
+      query,
+      "test/modules/task/taskList.controller.e2e-spec.ts",
+    );
+    expect(e2eSpec).toContain("useE2eApp({ authGuard, resetEachTest: true })");
+    expect(e2eSpec).toContain(".expect(HttpStatus.OK)");
+    expect(e2eSpec).not.toContain("resetDatabase");
     expect(scaffoldFiles({ ...query, spec: "none" })).toHaveLength(5);
   });
 

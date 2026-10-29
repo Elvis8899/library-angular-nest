@@ -27,8 +27,10 @@ import { FakeFileStorage } from "@shared/storage/fakeFileStorage";
 import { FileStorage } from "@shared/storage/fileStorage";
 import { FPF } from "@shared/utils/application/monads";
 import { UseCaseModule } from "@shared/utils/application/useCase.module";
+import { UseCaseObserver } from "@shared/utils/application/useCaseObserver";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { FakeClock } from "@test/util/fakeClock";
+import { ScreenChangeCheck } from "@test/util/screenChanges";
 import { typedGet, TypedGet } from "@test/util/typedGet";
 import { PinoLogger } from "nestjs-pino";
 
@@ -88,7 +90,11 @@ export const createHandlerModule = async (
       ...fakeRepository(BookRentalRepository, FakeBookRentalRepository),
       ...providers,
     ],
-  }).compile();
+  })
+    // UseCaseModule's own binding, which UseCase reads
+    .overrideProvider(UseCaseObserver)
+    .useClass(ScreenChangeCheck)
+    .compile();
   return { module, get: typedGet(module) };
 };
 

@@ -8,21 +8,17 @@ import {
 } from "@modules/book/domain/bookInfo.errors";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { Delete, HttpCode, HttpStatus, Param, UseGuards } from "@nestjs/common";
-import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
   ApiCreatedResponse,
   ApiOperation,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @ApiController("Livros")
 export class RemoveBookItemController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @Delete("bookInfos/item/:id")
   @ApiErrors(BookInfoNotFoundException, AvailableBookItemNotFoundException)
@@ -38,8 +34,6 @@ export class RemoveBookItemController {
   })
   @ApiUnprocessableEntityResponse({ description: "Livro inválido." })
   async removeBookItem(@Param("id") bookInfoId: string): Promise<void> {
-    return this.commandBus
-      .execute<RemoveBookItem>(new RemoveBookItem(bookInfoId))
-      .then(noop);
+    return this.commandBus.execute(new RemoveBookItem(bookInfoId));
   }
 }

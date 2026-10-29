@@ -5,9 +5,21 @@ import {
   unknownException,
 } from "@shared/utils/domain/shared.errors";
 import { toHttpException } from "@shared/utils/http/domainError.filter";
-import { itAnswersWithErrorCodes } from "@test/util/errorCodes";
+import { ErrorCodeCase, itAnswersWithErrorCodes } from "@test/util/errorCodes";
 
-// Each module checks its own errors' codes, in test/modules/<module>/
+// Each kind's status, which every module's error is answered with
+// (domainErrors.unit-spec.ts checks each against its kind)
+const kinds: [DomainErrorKindEnum, number, string][] = [
+  [DomainErrorKindEnum.NotFound, HttpStatus.NOT_FOUND, "Not Found"],
+  [DomainErrorKindEnum.Conflict, HttpStatus.CONFLICT, "Conflict"],
+  [
+    DomainErrorKindEnum.Invalid,
+    HttpStatus.UNPROCESSABLE_ENTITY,
+    "Unprocessable Entity",
+  ],
+  [DomainErrorKindEnum.Unauthorized, HttpStatus.UNAUTHORIZED, "Unauthorized"],
+  [DomainErrorKindEnum.Forbidden, HttpStatus.FORBIDDEN, "Forbidden"],
+];
 
 describe("[Unit] Shared error codes", () => {
   itAnswersWithErrorCodes([
@@ -18,18 +30,13 @@ describe("[Unit] Shared error codes", () => {
       "Internal Server Error",
       "unknown",
     ],
-    [
-      "a Forbidden error",
-      () =>
-        new DomainError(
-          DomainErrorKindEnum.Forbidden,
-          "user.notFound",
-          "Sem permissão.",
-        ),
-      HttpStatus.FORBIDDEN,
-      "Forbidden",
+    ...kinds.map(([kind, status, error]): ErrorCodeCase => [
+      `a ${kind} error`,
+      () => new DomainError(kind, "user.notFound", "Sem permissão."),
+      status,
+      error,
       "user.notFound",
-    ],
+    ]),
   ]);
 });
 

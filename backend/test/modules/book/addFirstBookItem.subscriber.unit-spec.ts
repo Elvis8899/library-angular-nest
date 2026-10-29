@@ -6,7 +6,7 @@ import {
   BookInfoCreatedEvent,
 } from "@modules/book/domain/events/bookInfoCreated.event";
 import { AddFirstBookItemSubscriber } from "@modules/book/subscribers/addFirstBookItem.subscriber";
-import { CqrsModule } from "@nestjs/cqrs";
+import { CqrsModule } from "@shared/utils/application/cqrs";
 import { executeTask } from "@shared/utils/application/executeTask";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
 import { seedBook } from "@test/modules/book/createBook";

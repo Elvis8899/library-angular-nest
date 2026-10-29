@@ -34,12 +34,12 @@ describe("[Integration] Database seed", () => {
       ],
     );
     const [admin, client] = users;
-    expect(await passwordHasher.matches("admin", admin?.password ?? "")).toBe(
-      true,
-    );
-    expect(await passwordHasher.matches("client", client?.password ?? "")).toBe(
-      true,
-    );
+    expect(
+      await Promise.all([
+        passwordHasher.matches("admin", admin?.password ?? ""),
+        passwordHasher.matches("client", client?.password ?? ""),
+      ]),
+    ).toEqual([true, true]);
   });
 
   it("Should hash the passwords again when seeding a second database", async () => {

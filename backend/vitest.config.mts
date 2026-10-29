@@ -48,7 +48,12 @@ export default defineConfig({
       {
         extends: true,
         // Fakes instead of a database
-        test: { name: "unit", include: ["test/**/*.unit-spec.ts"] },
+        test: {
+          name: "unit",
+          include: ["test/**/*.unit-spec.ts"],
+          // Every command that succeeds tells its screens
+          setupFiles: ["test/util/screenChanges.ts"],
+        },
       },
       {
         extends: true,
@@ -57,7 +62,10 @@ export default defineConfig({
           include: ["test/**/*.inte-spec.ts", "test/**/*.e2e-spec.ts"],
           // One database per worker, copied from the test database
           globalSetup: ["test/globalSetup.ts"],
-          setupFiles: ["test/util/useWorkerDatabase.ts"],
+          setupFiles: [
+            "test/util/useWorkerDatabase.ts",
+            "test/util/screenChanges.ts",
+          ],
         },
       },
     ],

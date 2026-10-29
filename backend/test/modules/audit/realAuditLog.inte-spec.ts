@@ -71,22 +71,23 @@ describe("[Integration] Audit log", () => {
   });
 
   it("Should filter by every field and the period", async () => {
-    expect(await useCases({ userId: "u1" })).toEqual(["CreateUser"]);
-    expect(await useCases({ useCase: "TOKEN" })).toEqual([
-      "RefreshTokenCommand",
-    ]);
-    expect(await useCases({ recordId: "u2" })).toEqual(["CreateUser"]);
-    expect(await useCases({ from: new Date("2026-10-22T00:00:00Z") })).toEqual([
-      "RefreshTokenCommand",
-    ]);
-    expect(
-      await useCases({ before: new Date("2026-10-22T00:00:00Z") }),
-    ).toEqual(["CreateUser"]);
-    expect(
-      await useCases({
-        from: new Date("2026-10-21T00:00:00Z"),
-        before: new Date("2026-10-23T00:00:00Z"),
-      }),
-    ).toHaveLength(2);
+    const [byUser, byUseCase, byRecord, fromDay, beforeDay, betweenDays] =
+      await Promise.all([
+        useCases({ userId: "u1" }),
+        useCases({ useCase: "TOKEN" }),
+        useCases({ recordId: "u2" }),
+        useCases({ from: new Date("2026-10-22T00:00:00Z") }),
+        useCases({ before: new Date("2026-10-22T00:00:00Z") }),
+        useCases({
+          from: new Date("2026-10-21T00:00:00Z"),
+          before: new Date("2026-10-23T00:00:00Z"),
+        }),
+      ]);
+    expect(byUser).toEqual(["CreateUser"]);
+    expect(byUseCase).toEqual(["RefreshTokenCommand"]);
+    expect(byRecord).toEqual(["CreateUser"]);
+    expect(fromDay).toEqual(["RefreshTokenCommand"]);
+    expect(beforeDay).toEqual(["CreateUser"]);
+    expect(betweenDays).toHaveLength(2);
   });
 });

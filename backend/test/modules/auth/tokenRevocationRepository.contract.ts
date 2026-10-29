@@ -1,7 +1,10 @@
 import { authConfig } from "@modules/auth/auth.config";
 import { TokenRevocationRepository } from "@modules/auth/database/tokenRevocation.repository.port";
 import { UserRepository } from "@modules/user/database/user.repository.port";
-import { executeTask } from "@shared/utils/application/executeTask";
+import {
+  executeTask,
+  executeTasks,
+} from "@shared/utils/application/executeTask";
 import { O } from "@shared/utils/application/monads";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { RepositoryKind, useRepositories } from "@test/util/repositoryContract";
@@ -27,8 +30,7 @@ export const tokenRevocationRepositoryContract = (kind: RepositoryKind) =>
       executeTask(ctx.users.revokeTokens({ userId, at: when }));
 
     beforeEach(async () => {
-      await executeTask(ctx.users.save(user));
-      await executeTask(ctx.users.save(other));
+      await executeTasks(ctx.users.save(user), ctx.users.save(other));
     });
 
     it("Should find nothing for a user never revoked", async () => {
@@ -54,8 +56,12 @@ export const tokenRevocationRepositoryContract = (kind: RepositoryKind) =>
 
       await revoke(user.id, later);
 
-      expect(await revocationOf(other.id)).toEqual(O.none);
-      expect(O.isSome(await revocationOf(user.id))).toBe(true);
+      const [otherRevocation, userRevocation] = await Promise.all([
+        revocationOf(other.id),
+        revocationOf(user.id),
+      ]);
+      expect(otherRevocation).toEqual(O.none);
+      expect(O.isSome(userRevocation)).toBe(true);
     });
 
     it("Should drop a user's revocation with the user", async () => {
