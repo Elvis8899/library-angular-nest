@@ -5,13 +5,12 @@ import { ReactivateUser } from "@modules/user/commands/reactivateUser/reactivate
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { UserNotFoundException } from "@modules/user/domain/user.errors";
 import { HttpCode, HttpStatus, Param, Post, UseGuards } from "@nestjs/common";
-import { CommandBus } from "@nestjs/cqrs";
 import {
   ApiDefaultResponse,
   ApiOperation,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @ApiController("Usuários")
@@ -30,8 +29,6 @@ export class ReactivateUserController {
     description: "A conta volta a entrar.",
   })
   async reactivateUser(@Param("id") id: string): Promise<void> {
-    return this.commandBus
-      .execute<ReactivateUser>(new ReactivateUser(id))
-      .then(noop);
+    return this.commandBus.execute(new ReactivateUser(id));
   }
 }

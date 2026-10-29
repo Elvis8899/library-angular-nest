@@ -1,6 +1,6 @@
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { FPF, RTE } from "@shared/utils/application/monads";
-import { performRTE } from "@shared/utils/application/perform";
+import { perform } from "@shared/utils/application/perform";
 import { PinoLogger } from "nestjs-pino";
 
 /**
@@ -13,9 +13,8 @@ export const userNamesRTE =
     ids: Iterable<string | null>,
   ): RTE.ReaderTaskEither<U, Error, ReadonlyMap<string, string>> =>
     FPF.pipe(
-      performRTE(
-        users.findByIds,
-        "get recording users",
-      )<U>([...new Set(ids)].filter((id): id is string => id !== null)),
+      perform(users).findByIds<U>(
+        [...new Set(ids)].filter((id): id is string => id !== null),
+      ),
       RTE.map((found) => new Map(found.map(({ id, name }) => [id, name]))),
     );

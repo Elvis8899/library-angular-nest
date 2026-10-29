@@ -13,6 +13,7 @@ import {
 import { E } from "@shared/utils/application/monads";
 import { BookRentalBuilder } from "@test/modules/rental/bookRentalBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
+import { leftOf } from "@test/util/either";
 
 describe("[Unit] BookRental rules", () => {
   const bookRentalBuilder = new BookRentalBuilder();
@@ -46,9 +47,7 @@ describe("[Unit] BookRental rules", () => {
       const result = startRental(bookRentalBuilder.build())(
         bookItem(BookItemStatus.Rented),
       );
-      expect(E.isLeft(result) && result.left).toBeInstanceOf(
-        BookRentalNotAvailableException,
-      );
+      expect(leftOf(result)).toBeInstanceOf(BookRentalNotAvailableException);
     });
   });
 
@@ -68,9 +67,7 @@ describe("[Unit] BookRental rules", () => {
       const result = finishRental(now)(
         bookRentalBuilder.withStatus(RentalStatusEnum.Finished).build(),
       );
-      expect(E.isLeft(result) && result.left).toBeInstanceOf(
-        BookRentalFinishedException,
-      );
+      expect(leftOf(result)).toBeInstanceOf(BookRentalFinishedException);
     });
   });
 
@@ -87,9 +84,7 @@ describe("[Unit] BookRental rules", () => {
       const result = ensureOwnedBy(createTestId(TableNameEnum.User, 5))(
         bookRentalBuilder.build(),
       );
-      expect(E.isLeft(result) && result.left).toBeInstanceOf(
-        BookRentalNotFoundException,
-      );
+      expect(leftOf(result)).toBeInstanceOf(BookRentalNotFoundException);
     });
   });
 });

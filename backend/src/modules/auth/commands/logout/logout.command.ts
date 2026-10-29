@@ -1,42 +1,42 @@
 import { UserRepository } from "@modules/user/database/user.repository.port";
-import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { Clock } from "@shared/clock/clock";
+import { Command, CommandHandler } from "@shared/utils/application/cqrs";
 import { fromInputRE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
-import { performRTE } from "@shared/utils/application/perform";
-import { UseCase } from "@shared/utils/application/useCase";
+import { perform } from "@shared/utils/application/perform";
+import { UseCaseHandler } from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
-export class LogoutCommand implements ICommand {
-  constructor(public readonly userId: string) {}
+export class LogoutCommand extends Command {
+  constructor(public readonly userId: string) {
+    super();
+  }
 }
 
 /** Revokes every token issued to the user, on every device. */
 @CommandHandler(LogoutCommand)
-export class LogoutCommandHandler implements ICommandHandler<
-  LogoutCommand,
-  void
-> {
+export class LogoutCommandHandler extends UseCaseHandler<LogoutCommand> {
   constructor(
-    private readonly useCase: UseCase,
     private readonly userRepository: UserRepository,
     private readonly clock: Clock,
-  ) {}
+  ) {
+    super();
+  }
 
-  execute(command: LogoutCommand): Promise<void> {
-    return this.useCase.run(
-      "LogoutCommand",
+  protected logged(command: LogoutCommand): unknown {
+    return command.userId;
+  }
+
+  protected pipeline(command: LogoutCommand) {
+    return FPF.pipe(
       command.userId,
-      FPF.pipe(
-        command.userId,
-        fromInputRE(UUID, "uuid"),
-        RTE.fromReaderEither,
-        RTE.chain((userId) =>
-          performRTE(
-            this.userRepository.revokeTokens,
-            "revoke user tokens",
-          )({ userId, at: this.clock.now() }),
-        ),
+      fromInputRE(UUID, "uuid"),
+      RTE.fromReaderEither,
+      RTE.chain((userId) =>
+        perform(this.userRepository).revokeTokens({
+          userId,
+          at: this.clock.now(),
+        }),
       ),
     );
   }

@@ -6,6 +6,26 @@ import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended"
 import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
 
+const relativeImports = [
+  { group: ["./", "../"], message: "Relative imports are not allowed." },
+];
+// Commands and queries name what they answer, and the decorators check
+// their handlers against it
+const nestCqrs = [
+  {
+    name: "@nestjs/cqrs",
+    message: "Import from @shared/utils/application/cqrs.",
+  },
+];
+// Subscribers name a domain event, and the decorator checks the payload they
+// take against it
+const nestEventEmitter = [
+  {
+    name: "@nestjs/event-emitter",
+    message: "Subscribe with @shared/domainEventPublisher/onDomainEvent.",
+  },
+];
+
 export default defineConfig(
   // Written by prisma generate; an object with only ignores applies to all
   { ignores: ["prisma/generated/**"] },
@@ -28,12 +48,8 @@ export default defineConfig(
       "no-restricted-imports": [
         "error",
         {
-          patterns: [
-            {
-              group: ["./", "../"],
-              message: "Relative imports are not allowed.",
-            },
-          ],
+          patterns: relativeImports,
+          paths: [...nestCqrs, ...nestEventEmitter],
         },
       ],
       "no-console": "error",
@@ -111,6 +127,16 @@ export default defineConfig(
           "scripts/**/": "CAMEL_CASE",
         },
       ],
+    },
+  },
+  {
+    // The files that wrap @nestjs/cqrs and @nestjs/event-emitter
+    files: [
+      "src/modules/shared/utils/application/cqrs.ts",
+      "src/modules/shared/domainEventPublisher/*.ts",
+    ],
+    rules: {
+      "no-restricted-imports": ["error", { patterns: relativeImports }],
     },
   },
   {

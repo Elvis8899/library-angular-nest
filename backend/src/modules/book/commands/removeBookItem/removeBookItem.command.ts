@@ -6,61 +6,55 @@ import {
 } from "@modules/book/domain/bookInfo.errors";
 import { ensureAvailable } from "@modules/book/domain/bookItem.entity";
 import { bookItemRemoved } from "@modules/book/domain/events/bookItemRemoved.event";
-import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
+import { Command, CommandHandler } from "@shared/utils/application/cqrs";
 import { inputsRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
-import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
+import { orFail, perform } from "@shared/utils/application/perform";
 import {
   changedRTE,
   publishRTE,
-  UseCase,
+  UseCaseHandler,
 } from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
-export class RemoveBookItem implements ICommand {
-  constructor(public readonly props: string) {}
+export class RemoveBookItem extends Command {
+  constructor(public readonly props: string) {
+    super();
+  }
 }
 
 @CommandHandler(RemoveBookItem)
-export class RemoveBookItemHandler implements ICommandHandler<
-  RemoveBookItem,
-  void
-> {
-  constructor(
-    private readonly useCase: UseCase,
-    private readonly bookInfoRepository: BookInfoRepository,
-  ) {}
+export class RemoveBookItemHandler extends UseCaseHandler<RemoveBookItem> {
+  constructor(private readonly bookInfoRepository: BookInfoRepository) {
+    super();
+  }
 
-  execute(command: RemoveBookItem): Promise<void> {
-    return this.useCase.run(
-      "RemoveBookItem",
-      command.props,
-      FPF.pipe(
-        //Data validation
-        inputsRTE({ id: [UUID, "id", command.props] }),
+  protected logged(command: RemoveBookItem): unknown {
+    return command.props;
+  }
 
-        //Validate BookItem exists and is available
-        RTE.chain(({ id }) =>
-          findOrFailRTE(
-            this.bookInfoRepository.findBookItemById,
-            "get bookItem by id",
-            bookItemNotFoundException,
-          )(id),
+  protected pipeline(command: RemoveBookItem) {
+    return FPF.pipe(
+      //Data validation
+      inputsRTE({ id: [UUID, "id", command.props] }),
+
+      //Validate BookItem exists and is available
+      RTE.chain(({ id }) =>
+        orFail(
+          perform(this.bookInfoRepository).findBookItemById(id),
+          bookItemNotFoundException,
         ),
-        RTE.chainEitherK(ensureAvailable(availableBookItemNotFoundException)),
-
-        //Delete entity, refused if it was rented meanwhile
-        RTE.tap((bookItem) =>
-          performRTE(
-            this.bookInfoRepository.deleteBookItem,
-            "delete bookItem in storage system.",
-          )(bookItem.id),
-        ),
-
-        RTE.tap(publishRTE(bookItemRemoved)),
-        RTE.tap(() => changedRTE({ resource: Resource.Books })),
-        RTE.asUnit,
       ),
+      RTE.chainEitherK(ensureAvailable(availableBookItemNotFoundException)),
+
+      //Delete entity, refused if it was rented meanwhile
+      RTE.tap((bookItem) =>
+        perform(this.bookInfoRepository).deleteBookItem(bookItem.id),
+      ),
+
+      RTE.tap(publishRTE(bookItemRemoved)),
+      RTE.tap(() => changedRTE({ resource: Resource.Books })),
+      RTE.asUnit,
     );
   }
 }

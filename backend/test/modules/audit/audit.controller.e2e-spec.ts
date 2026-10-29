@@ -1,3 +1,4 @@
+import { AuditEntryPage } from "@library/contracts";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { HttpStatus } from "@nestjs/common";
@@ -5,24 +6,9 @@ import { executeTask } from "@shared/utils/application/executeTask";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { useE2eApp } from "@test/util/e2eApp";
-import { resetDatabase } from "@test/util/resetDatabase";
-import { z } from "zod";
 
 const authGuard = new MockAuthGuardBuilder();
-const e2e = useE2eApp({ authGuard });
-
-const AuditBody = z.object({
-  count: z.number(),
-  data: z.array(
-    z.object({
-      userId: z.string().nullable(),
-      userName: z.string().nullable(),
-      useCase: z.string(),
-      recordId: z.string().nullable(),
-      input: z.unknown(),
-    }),
-  ),
-});
+const e2e = useE2eApp({ authGuard, resetEachTest: true });
 
 // The mock guard's user
 const admin = new UserBuilder(1)
@@ -33,8 +19,6 @@ const admin = new UserBuilder(1)
   .build();
 
 beforeEach(async () => {
-  await resetDatabase(e2e.prisma);
-  authGuard.reset();
   await executeTask(e2e.get(UserRepository).save(admin));
 });
 
@@ -52,7 +36,7 @@ describe("[e2e] GET /v1/audit", () => {
 
     expect(updated.status).toBe(HttpStatus.OK);
     expect(response.status).toBe(HttpStatus.OK);
-    expect(AuditBody.parse(response.body)).toMatchObject({
+    expect(AuditEntryPage.parse(response.body)).toMatchObject({
       count: 1,
       data: [
         {

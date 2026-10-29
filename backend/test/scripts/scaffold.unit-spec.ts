@@ -108,7 +108,7 @@ describe("[Unit] scaffold", () => {
         query,
         "src/modules/task/queries/taskList/taskList.controller.ts",
       ),
-    ).toContain("Promise<Sent<typeof TaskListResponse>>");
+    ).toContain("@Answers(TaskListResponse)");
     expect(scaffoldFiles({ ...query, spec: "none" })).toHaveLength(5);
   });
 

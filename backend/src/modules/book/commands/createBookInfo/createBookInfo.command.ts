@@ -5,64 +5,59 @@ import {
   registerBook,
 } from "@modules/book/domain/bookInfo.entity";
 import { bookInfoCreated } from "@modules/book/domain/events/bookInfoCreated.event";
-import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { Clock } from "@shared/clock/clock";
+import { Command, CommandHandler } from "@shared/utils/application/cqrs";
 import { inputsRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
-import { performRTE } from "@shared/utils/application/perform";
+import { perform } from "@shared/utils/application/perform";
 import {
   changedRTE,
   publishRTE,
-  UseCase,
+  UseCaseHandler,
 } from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
 
-export class CreateBookInfo implements ICommand {
-  constructor(public readonly props: BookInfoRequest) {}
+export class CreateBookInfo extends Command<Sent<typeof Created>> {
+  constructor(public readonly props: BookInfoRequest) {
+    super();
+  }
 }
 
 @CommandHandler(CreateBookInfo)
-export class CreateBookInfoHandler implements ICommandHandler<
-  CreateBookInfo,
-  Sent<typeof Created>
-> {
+export class CreateBookInfoHandler extends UseCaseHandler<CreateBookInfo> {
   constructor(
-    private readonly useCase: UseCase,
     private readonly clock: Clock,
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly bookInfoRepository: BookInfoRepository,
-  ) {}
+  ) {
+    super();
+  }
 
-  execute(command: CreateBookInfo): Promise<Sent<typeof Created>> {
-    return this.useCase.run(
-      "CreateBookInfo",
-      command.props,
-      FPF.pipe(
-        //Data validation
-        inputsRTE({
-          id: [UUID, "uuid", this.uuidGeneratorService.generateUUID()],
-          input: [BookDetails, "BookInfo", command.props],
-        }),
+  protected logged(command: CreateBookInfo): unknown {
+    return command.props;
+  }
 
-        //Build the book
-        RTE.map(({ id, input }) => registerBook(id, input, this.clock.now())),
+  protected pipeline(command: CreateBookInfo) {
+    return FPF.pipe(
+      //Data validation
+      inputsRTE({
+        id: [UUID, "uuid", this.uuidGeneratorService.generateUUID()],
+        input: [BookDetails, "BookInfo", command.props],
+      }),
 
-        //Store entity
-        RTE.tap(
-          performRTE(
-            this.bookInfoRepository.save,
-            "save bookInfo in storage system.",
-          ),
-        ),
+      //Build the book
+      RTE.map(({ id, input }) => registerBook(id, input, this.clock.now())),
 
-        RTE.tap(publishRTE(bookInfoCreated)),
-        RTE.tap((bookInfo) =>
-          changedRTE({ resource: Resource.Books, key: bookInfo.id }),
-        ),
-        // The id, for its cover (PUT bookInfos/:id/cover)
-        RTE.map(({ id }) => ({ id })),
+      //Store entity
+      RTE.tap(perform(this.bookInfoRepository).save),
+
+      RTE.tap(publishRTE(bookInfoCreated)),
+      RTE.tap((bookInfo) =>
+        changedRTE({ resource: Resource.Books, key: bookInfo.id }),
       ),
+      // The id, for its cover (PUT bookInfos/:id/cover)
+      RTE.map(({ id }) => ({ id })),
     );
   }
 }

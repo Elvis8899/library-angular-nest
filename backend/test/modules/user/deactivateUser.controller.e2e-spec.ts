@@ -1,6 +1,5 @@
 import { HttpStatus } from "@nestjs/common";
 import { useE2eApp } from "@test/util/e2eApp";
-import { resetDatabase } from "@test/util/resetDatabase";
 
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
@@ -10,15 +9,10 @@ import { UserBuilder } from "@test/dataBuilders/userBuilder";
 
 let userRepository: UserRepository;
 const authGuard = new MockAuthGuardBuilder();
-const e2e = useE2eApp({ authGuard });
+const e2e = useE2eApp({ authGuard, resetEachTest: true });
 
 beforeAll(() => {
   userRepository = e2e.get(UserRepository);
-});
-
-beforeEach(async () => {
-  authGuard.reset();
-  await resetDatabase(e2e.prisma);
 });
 
 describe("[e2e] POST /v1/users/:id/deactivate and /reactivate", () => {
@@ -57,12 +51,14 @@ describe("[e2e] POST /v1/users/:id/deactivate and /reactivate", () => {
   it.each(["deactivate", "reactivate"] as const)(
     "Should respond 404 to %s a user not found, and 422 an invalid id",
     async (action) => {
-      expect((await e2e.http().post(route(user.id, action))).status).toBe(
-        HttpStatus.NOT_FOUND,
-      );
-      expect((await e2e.http().post(route("fakeId", action))).status).toBe(
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
+      await e2e
+        .http()
+        .post(route(user.id, action))
+        .expect(HttpStatus.NOT_FOUND);
+      await e2e
+        .http()
+        .post(route("fakeId", action))
+        .expect(HttpStatus.UNPROCESSABLE_ENTITY);
     },
   );
 

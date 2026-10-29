@@ -1,7 +1,10 @@
 import { RefreshSessionRepository } from "@modules/auth/database/refreshSession.repository.port";
 import { RefreshSession } from "@modules/auth/domain/refreshSession.entity";
 import { UserRepository } from "@modules/user/database/user.repository.port";
-import { executeTask } from "@shared/utils/application/executeTask";
+import {
+  executeTask,
+  executeTasks,
+} from "@shared/utils/application/executeTask";
 import { UserBuilder } from "@test/dataBuilders/userBuilder";
 import { createTestId, TableNameEnum } from "@test/util/defaultIds";
 import { RepositoryKind, useRepositories } from "@test/util/repositoryContract";
@@ -62,9 +65,11 @@ export const refreshSessionRepositoryContract = (kind: RepositoryKind) =>
     });
 
     it("Should delete only the user's expired sessions, rotated ones too", async () => {
-      await executeTask(ctx.sessions.create(session(1, yesterday())));
-      await executeTask(ctx.sessions.create(session(2)));
-      await executeTask(ctx.sessions.create(session(3)));
+      await executeTasks(
+        ctx.sessions.create(session(1, yesterday())),
+        ctx.sessions.create(session(2)),
+        ctx.sessions.create(session(3)),
+      );
       // Rotated to a date already gone
       await executeTask(
         ctx.sessions.rotate({

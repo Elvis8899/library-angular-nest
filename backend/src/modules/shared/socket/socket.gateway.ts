@@ -1,12 +1,12 @@
 import { LIVE_UPDATES_PATH, LiveUpdateEvents } from "@library/contracts";
 import { RequestJWTPayload } from "@modules/auth/guards/authenticatedRequest";
-import { OnEvent } from "@nestjs/event-emitter";
 import {
   OnGatewayConnection,
   OnGatewayInit,
   WebSocketGateway,
   WebSocketServer,
 } from "@nestjs/websockets";
+import { OnDomainEvent } from "@shared/domainEventPublisher/onDomainEvent";
 import {
   RESOURCE_CHANGED,
   ResourceChange,
@@ -59,7 +59,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection {
     await client.join(roomsOf(client.data.user));
   }
 
-  @OnEvent(RESOURCE_CHANGED)
+  @OnDomainEvent(RESOURCE_CHANGED)
   handleResourceChanged(change: ResourceChange): void {
     const rooms = roomsFor(change);
     (rooms === null ? this.server : this.server.to(rooms)).emit(

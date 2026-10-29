@@ -9,14 +9,13 @@ import {
 } from "@modules/book/domain/bookInfo.errors";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { Delete, Param, UseGuards } from "@nestjs/common";
-import { CommandBus } from "@nestjs/cqrs";
 import {
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @ApiController("Livros")
@@ -35,8 +34,6 @@ export class RemoveBookCoverController {
   ])
   @ApiUnprocessableEntityResponse({ description: "Id inválido." })
   async removeBookCover(@Param("id") id: string): Promise<void> {
-    return this.commandBus
-      .execute<RemoveBookCover>(new RemoveBookCover(id))
-      .then(noop);
+    return this.commandBus.execute(new RemoveBookCover(id));
   }
 }

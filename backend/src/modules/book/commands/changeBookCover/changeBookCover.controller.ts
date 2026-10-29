@@ -15,7 +15,6 @@ import {
 } from "@modules/book/domain/bookInfo.errors";
 import { UserRoleEnum } from "@modules/user/domain/user.entity";
 import { Param, Put, Request, UseGuards } from "@nestjs/common";
-import { CommandBus } from "@nestjs/cqrs";
 import {
   ApiBody,
   ApiConsumes,
@@ -24,7 +23,7 @@ import {
   ApiOperation,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 import { ApiErrors } from "@shared/utils/http/apiErrors";
 import { readUpload } from "@shared/utils/http/upload";
 import { FastifyRequest } from "fastify";
@@ -59,8 +58,6 @@ export class ChangeBookCoverController {
     @Request() request: FastifyRequest,
   ): Promise<void> {
     const upload = await readUpload(request, maxCoverBytes);
-    return this.commandBus
-      .execute<ChangeBookCover>(new ChangeBookCover(id, upload))
-      .then(noop);
+    return this.commandBus.execute(new ChangeBookCover(id, upload));
   }
 }

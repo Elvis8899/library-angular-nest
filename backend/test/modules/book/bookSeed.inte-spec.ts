@@ -64,7 +64,11 @@ describe("[Integration] Database seed: books", () => {
 
     //Then nothing is added
     expect(result).toBe("skipped");
-    expect(await prismaService.user.count()).toBe(0);
-    expect(await prismaService.bookInfo.count()).toBe(1);
+    expect(
+      await Promise.all([
+        prismaService.user.count(),
+        prismaService.bookInfo.count(),
+      ]),
+    ).toEqual([0, 1]);
   });
 });

@@ -1,26 +1,24 @@
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
-import { IQuery, IQueryHandler, QueryHandler } from "@nestjs/cqrs";
+import { Query, QueryHandler } from "@shared/utils/application/cqrs";
 import { inputsRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
-import { findOrFailRTE } from "@shared/utils/application/perform";
-import { UseCase } from "@shared/utils/application/useCase";
+import { orFail, perform } from "@shared/utils/application/perform";
+import { UseCaseHandler } from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
-export class GetBookInfoByIdQuery implements IQuery {
-  constructor(public readonly id: string) {}
+export class GetBookInfoByIdQuery extends Query<BookInfo> {
+  constructor(public readonly id: string) {
+    super();
+  }
 }
 
 @QueryHandler(GetBookInfoByIdQuery)
-export class GetBookInfoByIdQueryHandler implements IQueryHandler<
-  GetBookInfoByIdQuery,
-  BookInfo
-> {
-  constructor(
-    private readonly useCase: UseCase,
-    private readonly bookInfoRepository: BookInfoRepository,
-  ) {}
+export class GetBookInfoByIdQueryHandler extends UseCaseHandler<GetBookInfoByIdQuery> {
+  constructor(private readonly bookInfoRepository: BookInfoRepository) {
+    super();
+  }
 
   /**
    * In read model we don't need to execute
@@ -28,18 +26,13 @@ export class GetBookInfoByIdQueryHandler implements IQueryHandler<
    * domain and repository layers completely
    * and execute query directly
    */
-  execute(query: GetBookInfoByIdQuery): Promise<BookInfo> {
-    return this.useCase.run(
-      "GetBookInfoById",
-      query,
-      FPF.pipe(
-        inputsRTE({ id: [UUID, "id", query.id] }),
-        RTE.chain(({ id }) =>
-          findOrFailRTE(
-            this.bookInfoRepository.findById,
-            "get bookInfo in storage system.",
-            bookInfoNotFoundException,
-          )(id),
+  protected pipeline(query: GetBookInfoByIdQuery) {
+    return FPF.pipe(
+      inputsRTE({ id: [UUID, "id", query.id] }),
+      RTE.chain(({ id }) =>
+        orFail(
+          perform(this.bookInfoRepository).findById(id),
+          bookInfoNotFoundException,
         ),
       ),
     );

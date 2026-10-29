@@ -8,21 +8,17 @@ import {
   UserNotFoundException,
 } from "@modules/user/domain/user.errors";
 import { Delete, HttpCode, HttpStatus, Param, UseGuards } from "@nestjs/common";
-import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
   ApiDefaultResponse,
   ApiOperation,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @ApiController("Usuários")
 export class DeleteUserController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @Delete("users/:id")
   // Lending example: UserHasActiveRentalsException
@@ -34,8 +30,6 @@ export class DeleteUserController {
   @ApiDefaultResponse({ description: "Usuário excluído com sucesso." })
   @ApiOperation({ summary: "Deletar Usuário" })
   async deleteUser(@Param("id") userId: string): Promise<void> {
-    return this.commandBus
-      .execute<DeleteUser>(new DeleteUser(userId))
-      .then(noop);
+    return this.commandBus.execute(new DeleteUser(userId));
   }
 }

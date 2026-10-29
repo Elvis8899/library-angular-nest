@@ -25,3 +25,22 @@ export const SwaggerDocumentBody = z.object({
     schemas: z.record(z.string(), z.unknown()),
   }),
 });
+
+/** A refusal's body: its code, and the details the client acts on. */
+export const ErrorBody = z.object({
+  code: z.string(),
+  details: z.record(z.string(), z.unknown()).optional(),
+});
+
+/** A response's status and error code, to compare in one go. */
+export const errorOf = (response: { status: number; body: unknown }) => [
+  response.status,
+  ErrorBody.parse(response.body).code,
+];
+
+/** A response's body, read with what describes it:
+ * `await bodyOf(ProductDay, e2e.http().get(url))`. */
+export const bodyOf = async <S extends z.ZodType>(
+  schema: S,
+  request: PromiseLike<{ body: unknown }>,
+): Promise<z.output<S>> => schema.parse((await request).body);

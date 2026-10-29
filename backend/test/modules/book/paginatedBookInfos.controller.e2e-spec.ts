@@ -1,21 +1,22 @@
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
 import { HttpStatus } from "@nestjs/common";
-import { executeTask } from "@shared/utils/application/executeTask";
+import {
+  executeTask,
+  executeTasks,
+} from "@shared/utils/application/executeTask";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { BookInfoBuilder } from "@test/modules/book/bookInfoBuilder";
 import { useE2eApp } from "@test/util/e2eApp";
-import { resetDatabase } from "@test/util/resetDatabase";
 import { PageBody } from "@test/util/responseBodies";
 
 let bookInfoRepository: BookInfoRepository;
-const e2e = useE2eApp({ authGuard: new MockAuthGuardBuilder() });
+const e2e = useE2eApp({
+  authGuard: new MockAuthGuardBuilder(),
+  resetEachTest: true,
+});
 
 beforeAll(() => {
   bookInfoRepository = e2e.get(BookInfoRepository);
-});
-
-beforeEach(async () => {
-  await resetDatabase(e2e.prisma);
 });
 
 describe("[e2e] GET /v1/bookInfos", () => {
@@ -37,8 +38,10 @@ describe("[e2e] GET /v1/bookInfos", () => {
   it("Should respond 200 with the books whose name contains the search", async () => {
     const domCasmurro = new BookInfoBuilder(1).withName("Dom Casmurro").build();
     const cortico = new BookInfoBuilder(2).withName("O Cortiço").build();
-    await executeTask(bookInfoRepository.save(domCasmurro));
-    await executeTask(bookInfoRepository.save(cortico));
+    await executeTasks(
+      bookInfoRepository.save(domCasmurro),
+      bookInfoRepository.save(cortico),
+    );
 
     const response = await e2e
       .http()

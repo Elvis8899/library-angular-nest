@@ -9,6 +9,7 @@ const Row = z.object({ id: z.string() });
 // Stands in for a Prisma delegate, recording the queries it gets
 const delegateOf = (rows: unknown[]) => ({
   findUnique: vi.fn(() => Promise.resolve(rows[0] ?? null)),
+  findFirst: vi.fn(() => Promise.resolve(rows[0] ?? null)),
   findMany: vi.fn(() => Promise.resolve(rows)),
   count: vi.fn(() => Promise.resolve(rows.length)),
 });
@@ -49,6 +50,31 @@ describe("[Unit] rowReads", () => {
       orderBy: { name: "asc" },
     });
     expect(delegate.count).toHaveBeenCalledWith({ where: { active: true } });
+  });
+
+  it("Should filter with findWhere and findFirstWhere", async () => {
+    const delegate = delegateOf([{ id: "1" }]);
+    const reads = rowReads(() => delegate, validateFromUnknown(Row, "Row"), {
+      orderBy: { name: "asc" },
+    });
+
+    expect(await executeTask(reads.findWhere({ active: true }))).toEqual([
+      { id: "1" },
+    ]);
+    expect(delegate.findMany).toHaveBeenLastCalledWith({
+      where: { active: true },
+      orderBy: { name: "asc" },
+    });
+    expect(
+      await executeTask(reads.findWhere({ active: true }, { id: "desc" })),
+    ).toEqual([{ id: "1" }]);
+    expect(delegate.findMany).toHaveBeenLastCalledWith({
+      where: { active: true },
+      orderBy: { id: "desc" },
+    });
+    expect(await executeTask(reads.findFirstWhere({ id: "1" }))).toEqual(
+      O.some({ id: "1" }),
+    );
   });
 
   it("Should leave out what isn't given, and refuse rows that don't match", async () => {

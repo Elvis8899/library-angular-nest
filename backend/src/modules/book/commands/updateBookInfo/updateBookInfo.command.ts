@@ -6,74 +6,67 @@ import {
 } from "@modules/book/domain/bookInfo.entity";
 import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { bookInfoUpdated } from "@modules/book/domain/events/bookInfoUpdated.event";
-import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { Clock } from "@shared/clock/clock";
+import { Command, CommandHandler } from "@shared/utils/application/cqrs";
 import { inputsRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
-import { findOrFailRTE, performRTE } from "@shared/utils/application/perform";
+import { orFail, perform } from "@shared/utils/application/perform";
 import {
   changedRTE,
   publishRTE,
-  UseCase,
+  UseCaseHandler,
 } from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
 
-export class UpdateBookInfo implements ICommand {
+export class UpdateBookInfo extends Command {
   constructor(
     public readonly props: BookInfoRequest,
     public readonly id: string,
-  ) {}
+  ) {
+    super();
+  }
 }
 
 @CommandHandler(UpdateBookInfo)
-export class UpdateBookInfoHandler implements ICommandHandler<
-  UpdateBookInfo,
-  void
-> {
+export class UpdateBookInfoHandler extends UseCaseHandler<UpdateBookInfo> {
   constructor(
-    private readonly useCase: UseCase,
     private readonly clock: Clock,
     private readonly bookInfoRepository: BookInfoRepository,
-  ) {}
+  ) {
+    super();
+  }
 
-  execute(command: UpdateBookInfo): Promise<void> {
-    return this.useCase.run(
-      "UpdateBookInfo",
-      // The id names the record in the audit
-      { id: command.id, ...command.props },
-      FPF.pipe(
-        //Data validation
-        inputsRTE({
-          id: [UUID, "uuid", command.id],
-          changes: [BookDetails, "BookInfo", command.props],
-        }),
+  protected logged(command: UpdateBookInfo): unknown {
+    return { id: command.id, ...command.props };
+  }
 
-        //Validate BookInfo exists, then apply the changes
-        RTE.bind("before", ({ id }) =>
-          findOrFailRTE(
-            this.bookInfoRepository.findById,
-            "get bookInfo by id",
-            bookInfoNotFoundException,
-          )(id),
-        ),
-        RTE.map(({ before, changes }) =>
-          changeBookDetails(changes, this.clock.now())(before),
-        ),
+  protected pipeline(command: UpdateBookInfo) {
+    return FPF.pipe(
+      //Data validation
+      inputsRTE({
+        id: [UUID, "uuid", command.id],
+        changes: [BookDetails, "BookInfo", command.props],
+      }),
 
-        //Store entity
-        RTE.tap(
-          performRTE(
-            this.bookInfoRepository.save,
-            "save bookInfo in storage system.",
-          ),
+      //Validate BookInfo exists, then apply the changes
+      RTE.bind("before", ({ id }) =>
+        orFail(
+          perform(this.bookInfoRepository).findById(id),
+          bookInfoNotFoundException,
         ),
-
-        RTE.tap(publishRTE(bookInfoUpdated)),
-        RTE.tap((bookInfo) =>
-          changedRTE({ resource: Resource.Books, key: bookInfo.id }),
-        ),
-        RTE.asUnit,
       ),
+      RTE.map(({ before, changes }) =>
+        changeBookDetails(changes, this.clock.now())(before),
+      ),
+
+      //Store entity
+      RTE.tap(perform(this.bookInfoRepository).save),
+
+      RTE.tap(publishRTE(bookInfoUpdated)),
+      RTE.tap((bookInfo) =>
+        changedRTE({ resource: Resource.Books, key: bookInfo.id }),
+      ),
+      RTE.asUnit,
     );
   }
 }

@@ -16,17 +16,13 @@ import {
   Request,
   UseGuards,
 } from "@nestjs/common";
-import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { ApiCreatedResponse, ApiOperation } from "@nestjs/swagger";
-import { noop } from "@shared/utils/application/noop";
+import { CommandBus } from "@shared/utils/application/cqrs";
 import { ApiErrors } from "@shared/utils/http/apiErrors";
 
 @ApiController("Empréstimos")
 export class ReturnBookController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @Put("bookRentals/return/:id")
   @ApiErrors(BookRentalNotFoundException, BookRentalFinishedException)
@@ -46,8 +42,8 @@ export class ReturnBookController {
     // Clients may only return their own rentals
     const ownerId =
       req.user.role === UserRoleEnum.Admin ? undefined : req.user.sub;
-    return this.commandBus
-      .execute(new ReturnBookCommand(bookRentalId, ownerId))
-      .then(noop);
+    return this.commandBus.execute(
+      new ReturnBookCommand(bookRentalId, ownerId),
+    );
   }
 }

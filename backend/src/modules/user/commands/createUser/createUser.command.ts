@@ -7,80 +7,77 @@ import {
   userCPFAlreadyExistsException,
   userEmailAlreadyExistsException,
 } from "@modules/user/domain/user.errors";
-import { CommandHandler, ICommand, ICommandHandler } from "@nestjs/cqrs";
 import { Clock } from "@shared/clock/clock";
+import { Command, CommandHandler } from "@shared/utils/application/cqrs";
 import { inputsRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
-import { ensureAbsentRTE, performRTE } from "@shared/utils/application/perform";
+import { allRTE, orConflict, perform } from "@shared/utils/application/perform";
 import {
   changedRTE,
   publishRTE,
-  UseCase,
+  UseCaseHandler,
 } from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
 import { UUID } from "@shared/uuid/uuid";
 
-export class CreateUser implements ICommand {
-  constructor(public readonly props: UserRequest) {}
+export class CreateUser extends Command {
+  constructor(public readonly props: UserRequest) {
+    super();
+  }
 }
 
 @CommandHandler(CreateUser)
-export class CreateUserHandler implements ICommandHandler<CreateUser, void> {
+export class CreateUserHandler extends UseCaseHandler<CreateUser> {
   constructor(
-    private readonly useCase: UseCase,
     private readonly clock: Clock,
     private readonly uuidGeneratorService: RealUUIDGeneratorService,
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
-  ) {}
+  ) {
+    super();
+  }
 
-  execute(command: CreateUser): Promise<void> {
+  protected logged(command: CreateUser) {
     const { password: _, ...logged } = command.props;
-    return this.useCase.run(
-      "CreateUser",
-      logged,
-      FPF.pipe(
-        //Data validation
-        inputsRTE({
-          id: [UUID, "uuid", this.uuidGeneratorService.generateUUID()],
-          input: [NewUserInput, "User", command.props],
-        }),
+    return logged;
+  }
 
-        //Check cpf and email unicity
-        RTE.tap(({ input }) =>
-          ensureAbsentRTE(
-            this.userRepository.findByCPF,
-            "get user by cpf",
+  protected pipeline(command: CreateUser) {
+    return FPF.pipe(
+      //Data validation
+      inputsRTE({
+        id: [UUID, "uuid", this.uuidGeneratorService.generateUUID()],
+        input: [NewUserInput, "User", command.props],
+      }),
+
+      //Check cpf and email unicity
+      RTE.tap(({ input }) =>
+        allRTE({
+          cpf: orConflict(
+            perform(this.userRepository).findByCPF(input.cpf),
             userCPFAlreadyExistsException,
-          )(input.cpf),
-        ),
-        RTE.tap(({ input }) =>
-          ensureAbsentRTE(
-            this.userRepository.findByEmail,
-            "get user by email",
+          ),
+          email: orConflict(
+            perform(this.userRepository).findByEmail(input.email),
             userEmailAlreadyExistsException,
-          )(input.email),
-        ),
-
-        //Hash the password and build the user
-        RTE.bind("password", ({ input }) =>
-          RTE.fromTask(() => this.passwordHasher.hash(input.password)),
-        ),
-        RTE.map(({ id, input, password }) =>
-          registerUser(id, input, password, this.clock.now()),
-        ),
-
-        //Store entity
-        RTE.tap(
-          performRTE(this.userRepository.save, "save user in storage system."),
-        ),
-
-        RTE.tap(publishRTE(userCreated)),
-        RTE.tap((user) =>
-          changedRTE({ resource: Resource.Users, key: user.id }),
-        ),
-        RTE.asUnit,
+          ),
+        }),
       ),
+
+      //Hash the password and build the user
+      RTE.bind("password", ({ input }) =>
+        RTE.fromTask(() => this.passwordHasher.hash(input.password)),
+      ),
+      RTE.map(({ id, input, password }) =>
+        registerUser(id, input, password, this.clock.now()),
+      ),
+
+      //Store entity
+      RTE.tap(perform(this.userRepository).save),
+
+      RTE.tap(publishRTE(userCreated)),
+      RTE.tap((user) => changedRTE({ resource: Resource.Users, key: user.id })),
+      RTE.asUnit,
     );
   }
 }
