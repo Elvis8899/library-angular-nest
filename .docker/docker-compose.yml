@@ -193,7 +193,7 @@ services:
   # At https://<DOMAIN>/grafana/, with the Prometheus data source and the
   # dashboards in grafana/ (the same as the dev stack's)
   grafana:
-    image: grafana/grafana:13.2.3
+    image: grafana/grafana:13.2.4
     restart: always
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
