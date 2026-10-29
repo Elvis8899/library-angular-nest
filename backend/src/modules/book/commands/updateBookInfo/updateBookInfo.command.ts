@@ -42,7 +42,6 @@ export class UpdateBookInfoHandler extends UseCaseHandler<UpdateBookInfo> {
 
   protected pipeline(command: UpdateBookInfo) {
     return FPF.pipe(
-      //Data validation
       inputsRTE({
         id: [UUID, "uuid", command.id],
         changes: [BookDetails, "BookInfo", command.props],

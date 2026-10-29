@@ -37,7 +37,6 @@ export class DeleteBookInfoHandler extends UseCaseHandler<DeleteBookInfo> {
 
   protected pipeline(command: DeleteBookInfo) {
     return FPF.pipe(
-      //Data validation
       inputsRTE({ id: [UUID, "id", command.props] }),
 
       //Validate BookInfo exists

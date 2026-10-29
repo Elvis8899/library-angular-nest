@@ -44,7 +44,6 @@ export class CreateUserHandler extends UseCaseHandler<CreateUser> {
 
   protected pipeline(command: CreateUser) {
     return FPF.pipe(
-      //Data validation
       inputsRTE({
         id: [UUID, "uuid", this.uuidGeneratorService.generateUUID()],
         input: [NewUserInput, "User", command.props],

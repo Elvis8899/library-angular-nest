@@ -41,7 +41,6 @@ export class AddBookItemHandler extends UseCaseHandler<AddBookItem> {
 
   protected pipeline(command: AddBookItem) {
     return FPF.pipe(
-      //Data validation
       inputsRTE({
         id: [UUID, "uuid", this.uuidGeneratorService.generateUUID()],
         input: [BookItemInput, "BookItem", command.props],

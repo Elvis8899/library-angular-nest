@@ -1,5 +1,6 @@
 import { inputsRTE } from "@shared/utils/application/fromInput";
 import { E, FPF } from "@shared/utils/application/monads";
+import { leftOf } from "@test/util/either";
 import { PinoLogger } from "nestjs-pino";
 import { z } from "zod";
 
@@ -31,6 +32,6 @@ describe("[Unit] inputsRTE", () => {
       id: [Id, "id", "nope"],
     })(env)();
 
-    expect(E.isLeft(result) && result.left.message).toContain("qty");
+    expect(leftOf(result)?.message).toContain("qty");
   });
 });

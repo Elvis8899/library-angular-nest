@@ -43,7 +43,6 @@ export class ChangeBookCoverHandler extends UseCaseHandler<ChangeBookCover> {
 
   protected pipeline({ id, upload }: ChangeBookCover) {
     return FPF.pipe(
-      //Data validation
       inputsRTE({
         id: [UUID, "id", id],
         cover: [UUID, "uuid", this.uuidGeneratorService.generateUUID()],

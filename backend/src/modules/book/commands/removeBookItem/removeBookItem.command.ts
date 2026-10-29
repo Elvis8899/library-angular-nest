@@ -35,7 +35,6 @@ export class RemoveBookItemHandler extends UseCaseHandler<RemoveBookItem> {
 
   protected pipeline(command: RemoveBookItem) {
     return FPF.pipe(
-      //Data validation
       inputsRTE({ id: [UUID, "id", command.props] }),
 
       //Validate BookItem exists and is available

@@ -46,7 +46,6 @@ export class ReturnBookCommandHandler extends UseCaseHandler<ReturnBookCommand> 
 
   protected pipeline(command: ReturnBookCommand) {
     return FPF.pipe(
-      //Data validation
       inputsRTE({ id: [UUID, "id", command.bookRentalId] }),
 
       //Validate BookRental exists and belongs to the requester

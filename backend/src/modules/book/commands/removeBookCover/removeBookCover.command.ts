@@ -35,7 +35,6 @@ export class RemoveBookCoverHandler extends UseCaseHandler<RemoveBookCover> {
 
   protected pipeline({ id }: RemoveBookCover) {
     return FPF.pipe(
-      //Data validation
       inputsRTE({ id: [UUID, "id", id] }),
       RTE.chain(({ id }) =>
         orFail(

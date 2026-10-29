@@ -1,6 +1,7 @@
 import { E, FPF } from "@shared/utils/application/monads";
 import { prismaTasks } from "@shared/utils/database/prismaTasks";
 import { UnknownException } from "@shared/utils/domain/shared.errors";
+import { leftOf } from "@test/util/either";
 
 // Stands in for a Prisma delegate: its methods read `this`, as Prisma's do
 class FakeDelegate {
@@ -30,7 +31,7 @@ describe("[Unit] prismaTasks", () => {
     const result = await tasks.count()();
 
     expect(E.isLeft(result)).toBe(true);
-    expect(E.isLeft(result) && result.left).toBeInstanceOf(UnknownException);
+    expect(leftOf(result)).toBeInstanceOf(UnknownException);
   });
 
   it("Should read the delegate only when a method is used", () => {

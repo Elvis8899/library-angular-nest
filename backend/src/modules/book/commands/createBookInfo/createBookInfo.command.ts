@@ -40,7 +40,6 @@ export class CreateBookInfoHandler extends UseCaseHandler<CreateBookInfo> {
 
   protected pipeline(command: CreateBookInfo) {
     return FPF.pipe(
-      //Data validation
       inputsRTE({
         id: [UUID, "uuid", this.uuidGeneratorService.generateUUID()],
         input: [BookDetails, "BookInfo", command.props],

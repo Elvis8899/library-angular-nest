@@ -55,7 +55,6 @@ export class UpdateUserHandler extends UseCaseHandler<UpdateUser> {
 
   protected pipeline(command: UpdateUser) {
     return FPF.pipe(
-      //Data validation
       inputsRTE({
         id: [UUID, "uuid", command.id],
         changes: [UserChangesInput, "user", command.props],

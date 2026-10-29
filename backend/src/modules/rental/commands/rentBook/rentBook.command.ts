@@ -47,7 +47,6 @@ export class RentBookCommandHandler extends UseCaseHandler<RentBookCommand> {
 
   protected pipeline(command: RentBookCommand) {
     return FPF.pipe(
-      //Data validation
       inputsRTE({
         id: [UUID, "uuid", this.uuidGeneratorService.generateUUID()],
         input: [RentalInput, "BookRental", command.props],
