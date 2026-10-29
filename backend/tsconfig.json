@@ -3,8 +3,10 @@
     // Emits CommonJS (package.json has no "type": "module"); Node require()s
     // the ESM-only dependencies natively
     "module": "nodenext",
-    "target": "es2024",
-    "lib": ["ES2024"],
+    // What Node 26 runs. SWC (.swcrc, the tests) stops at es2024, which only
+    // lowers ES2025's few syntax additions
+    "target": "es2025",
+    "lib": ["ES2025"],
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     // The ES2022+ default (true) makes a field redeclared in a subclass
