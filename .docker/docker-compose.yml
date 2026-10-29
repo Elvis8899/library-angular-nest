@@ -76,7 +76,7 @@ services:
   # books' covers). Only the app reaches it, on the Docker network; back its
   # volume up with the database's
   storage:
-    image: chrislusf/seaweedfs:4.48
+    image: chrislusf/seaweedfs:4.50
     restart: always
     # Its Prometheus metrics on 9327, for the Docker network only
     command: mini -dir=/data -metricsPort=9327
