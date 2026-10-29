@@ -498,20 +498,13 @@ const e2eSpecFile = (options: ScaffoldOptions): string => {
   return `import { HttpStatus } from "@nestjs/common";
 import { MockAuthGuardBuilder } from "@test/dataBuilders/mockAuthGuardBuilder";
 import { useE2eApp } from "@test/util/e2eApp";
-import { resetDatabase } from "@test/util/resetDatabase";
 
 const authGuard = new MockAuthGuardBuilder();
-const e2e = useE2eApp({ authGuard });
-
-beforeEach(async () => {
-  await resetDatabase(e2e.prisma);
-  authGuard.reset();
-});
+const e2e = useE2eApp({ authGuard, resetEachTest: true });
 
 describe("[e2e] ${options.method.toUpperCase()} /v1/${options.route}", () => {
   it("Should answer ${names.name}", async () => {
-    const response = await e2e.http().${options.method}("/v1/${url}")${body};
-    expect(response.status).toBe(HttpStatus.OK);
+    await e2e.http().${options.method}("/v1/${url}")${body}.expect(HttpStatus.OK);
   });
 });
 `;
