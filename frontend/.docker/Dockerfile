@@ -21,5 +21,5 @@ WORKDIR /app/frontend
 # commit that fails them is never deployed
 RUN yarn build:unchecked
 
-FROM nginx:1.30.6
+FROM nginx:1.31.0
 COPY --from=builder /app/frontend/dist/frontend/browser /usr/share/nginx/html
