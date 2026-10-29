@@ -3,7 +3,7 @@ import { UserRepository } from "@modules/user/database/user.repository.port";
 import { userDeleted } from "@modules/user/domain/events/userDeleted.event";
 import { userNotFoundException } from "@modules/user/domain/user.errors";
 import { Command, CommandHandler } from "@shared/utils/application/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
+import { inputRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { orFail, perform } from "@shared/utils/application/perform";
 import {
@@ -14,7 +14,7 @@ import {
 import { UUID } from "@shared/uuid/uuid";
 
 export class DeleteUser extends Command {
-  constructor(public readonly props: string) {
+  constructor(public readonly id: string) {
     super();
   }
 }
@@ -26,15 +26,12 @@ export class DeleteUserHandler extends UseCaseHandler<DeleteUser> {
   }
 
   protected logged(command: DeleteUser): unknown {
-    return command.props;
+    return command.id;
   }
 
   protected pipeline(command: DeleteUser) {
     return FPF.pipe(
-      //Data validation
-      command.props,
-      fromInputRE(UUID, "id"),
-      RTE.fromReaderEither,
+      inputRTE(UUID, "id", command.id),
 
       //Validate User exists
       RTE.chain((key) =>
