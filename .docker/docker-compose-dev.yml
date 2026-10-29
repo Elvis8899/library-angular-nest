@@ -152,7 +152,7 @@ services:
   # Comes with the Prometheus data source and the dashboards
   # (grafana/provisioning)
   grafana:
-    image: grafana/grafana:13.2.3
+    image: grafana/grafana:13.2.4
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
