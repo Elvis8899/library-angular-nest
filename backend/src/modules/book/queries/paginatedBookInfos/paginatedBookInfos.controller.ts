@@ -30,8 +30,8 @@ export class PaginatedBookInfoController {
       ...filters
     }: QueryString<typeof PageQuery> & QueryString<typeof BookInfoQuery>,
   ) {
-    return this.queryBus
-      .execute(new PaginatedBookInfosQuery({ page, limit }, filters))
-      .then(({ count, limit, page, data }) => ({ count, limit, page, data }));
+    return this.queryBus.execute(
+      new PaginatedBookInfosQuery({ page, limit }, filters),
+    );
   }
 }
