@@ -1,15 +1,12 @@
 import { Resource } from "@library/contracts";
 import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.port";
-import { coverKey } from "@modules/book/domain/bookCover";
-import {
-  bookCoverNotFoundException,
-  bookInfoNotFoundException,
-} from "@modules/book/domain/bookInfo.errors";
+import { coverKey, coverOf } from "@modules/book/domain/bookCover";
+import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { FileStorage } from "@shared/storage/fileStorage";
 import { removeUnusedRTE } from "@shared/storage/storedFiles";
 import { Command, CommandHandler } from "@shared/utils/application/cqrs";
 import { inputRTE } from "@shared/utils/application/fromInput";
-import { FPF, O, RTE } from "@shared/utils/application/monads";
+import { FPF, RTE } from "@shared/utils/application/monads";
 import { orFail, perform } from "@shared/utils/application/perform";
 import { changedRTE, UseCaseHandler } from "@shared/utils/application/useCase";
 import { UUID } from "@shared/uuid/uuid";
@@ -43,9 +40,7 @@ export class RemoveBookCoverHandler extends UseCaseHandler<RemoveBookCover> {
         ),
       ),
       RTE.bindTo("book"),
-      RTE.bindW("cover", ({ book }) =>
-        RTE.fromOption(bookCoverNotFoundException)(O.fromNullable(book.cover)),
-      ),
+      RTE.bind("cover", ({ book }) => RTE.fromEither(coverOf(book))),
 
       //Take it off the book, then remove the file
       RTE.tap(({ book, cover }) =>

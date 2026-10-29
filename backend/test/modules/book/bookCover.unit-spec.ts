@@ -11,7 +11,7 @@ import {
   RemoveBookCoverHandler,
 } from "@modules/book/commands/removeBookCover/removeBookCover.command";
 import { FakeBookInfoRepository } from "@modules/book/database/fakeBookInfo.repository";
-import { coverKey, coverTypeOf } from "@modules/book/domain/bookCover";
+import { coverKey, coverOf, coverTypeOf } from "@modules/book/domain/bookCover";
 import {
   BookCoverChangedException,
   BookCoverNotFoundException,
@@ -55,6 +55,13 @@ describe("[Unit] Book cover rules", () => {
     expect(coverTypeOf(upload(png, true))).toEqual(
       E.left(new BookCoverTooLargeException()),
     );
+  });
+
+  it("Should give a book's cover to take off, refusing one without", () => {
+    const book = new BookInfoBuilder().build();
+
+    expect(coverOf({ ...book, cover: oldCover })).toEqual(E.right(oldCover));
+    expect(coverOf(book)).toEqual(E.left(new BookCoverNotFoundException()));
   });
 });
 
