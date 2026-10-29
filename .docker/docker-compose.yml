@@ -132,7 +132,7 @@ services:
   # Scrapes the API's metrics server (app:9464) on the Docker network. Not
   # published: only Grafana reads it
   prometheus:
-    image: prom/prometheus:v3.15.0
+    image: prom/prometheus:v3.15.1
     restart: always
     volumes:
       - ./prometheus/prometheus.prod.yml:/etc/prometheus/prometheus.prod.yml:ro

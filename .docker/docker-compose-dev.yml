@@ -116,7 +116,7 @@ services:
   # Scrapes the API's metrics (app:9464, never behind nginx). Its data and
   # Grafana's survive a `down`
   prometheus:
-    image: prom/prometheus:v3.15.0
+    image: prom/prometheus:v3.15.1
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - library-prometheus:/prometheus
