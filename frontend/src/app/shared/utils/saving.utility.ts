@@ -12,10 +12,10 @@ export type Saving = Signal<boolean> & {
    * failure is logged and its message shown, unless `refused` handles it
    * (returning true).
    */
-  run<T, E extends ApiError = ApiError>(
+  run<T>(
     request: Observable<T>,
     done: (value: T) => void,
-    refused?: (error: E) => boolean
+    refused?: (error: ApiError) => boolean,
   ): void;
 };
 
@@ -24,10 +24,10 @@ export const injectSaving = (log: Logger): Saving => {
   const failed = reportError(log, inject(NotificationService));
   const saving = signal(false);
   return Object.assign(saving.asReadonly(), {
-    run: <T, E extends ApiError>(
+    run: <T>(
       request: Observable<T>,
       done: (value: T) => void,
-      refused?: (error: E) => boolean
+      refused?: (error: ApiError) => boolean,
     ) => {
       if (saving()) return;
       saving.set(true);
@@ -37,7 +37,7 @@ export const injectSaving = (log: Logger): Saving => {
           saving.set(false);
           done(value);
         },
-        error: (error: E | null) => {
+        error: (error: ApiError | null) => {
           saving.set(false);
           if (error && refused?.(error)) return;
           failed(error);

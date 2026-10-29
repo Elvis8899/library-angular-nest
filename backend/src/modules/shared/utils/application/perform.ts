@@ -12,7 +12,9 @@ import {
 } from "@shared/utils/application/monads";
 import { PinoLogger } from "nestjs-pino";
 
-type Env = { logger: PinoLogger };
+interface Env {
+  logger: PinoLogger;
+}
 
 /** A port's method as a pipeline step: the same arguments, an RTE. */
 export type Step<F> = F extends (

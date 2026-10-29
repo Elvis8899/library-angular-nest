@@ -43,7 +43,7 @@ describe("AuthService", () => {
   it("Should update what reads the credentials when they change", () => {
     // Arrange
     const userName = computed(
-      () => spectator.service.credentials?.user.name ?? ""
+      () => spectator.service.credentials?.user.name ?? "",
     );
     expect(userName()).toBe("");
     // Act: another tab logs in
@@ -152,14 +152,14 @@ describe("AuthService", () => {
 
   it("hasPermission should return false if not authenticated", () => {
     expect(spectator.service.hasPermission([PERMISSIONS.CREATE_USER])).toBe(
-      false
+      false,
     );
   });
 
   it("hasPermission should return true if authenticated and user has admin role", () => {
     spectator.service.setCredentials(credential);
     expect(spectator.service.hasPermission([PERMISSIONS.CREATE_USER])).toBe(
-      true
+      true,
     );
   });
 

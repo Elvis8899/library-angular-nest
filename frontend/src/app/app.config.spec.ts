@@ -28,10 +28,10 @@ describe("appConfig", () => {
     const spectator = createContext();
 
     expect(spectator.inject(MatPaginatorIntl)).toBeInstanceOf(
-      TranslatedPaginatorIntl
+      TranslatedPaginatorIntl,
     );
     expect(spectator.inject(RouteReuseStrategy)).toBeInstanceOf(
-      ExplicitRouteReuseStrategy
+      ExplicitRouteReuseStrategy,
     );
   });
 

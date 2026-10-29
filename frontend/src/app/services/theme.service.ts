@@ -21,14 +21,14 @@ const colorSchemeKey = "colorScheme";
 export class ThemeService {
   private readonly _document = inject(DOCUMENT);
   private readonly _systemDark = this._document.defaultView?.matchMedia?.(
-    "(prefers-color-scheme: dark)"
+    "(prefers-color-scheme: dark)",
   );
   private readonly _systemScheme = signal<ColorScheme>(
-    this._systemColorScheme()
+    this._systemColorScheme(),
   );
 
   private readonly _preference = signal<ThemePreference>(
-    this._storedColorScheme() ?? "auto"
+    this._storedColorScheme() ?? "auto",
   );
   readonly preference = this._preference.asReadonly();
   readonly colorScheme = computed<ColorScheme>(() => {
@@ -39,7 +39,7 @@ export class ThemeService {
   constructor() {
     this._apply(this._preference());
     this._systemDark?.addEventListener("change", () =>
-      this._systemScheme.set(this._systemColorScheme())
+      this._systemScheme.set(this._systemColorScheme()),
     );
   }
 

@@ -31,7 +31,7 @@ export const routes: Routes = [
     path: "",
     loadComponent() {
       return import("../layouts/layout.component").then(
-        (m) => m.LayoutComponent
+        (m) => m.LayoutComponent,
       );
     },
     // The pages' texts, which aren't in the bundle (I18nService)

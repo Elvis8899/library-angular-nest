@@ -3,4 +3,6 @@ import { AppComponent } from "@app/app.component";
 import { appConfig } from "@app/app.config";
 import { Logger } from "@app/services/logger.service";
 const log = new Logger("Main");
-bootstrapApplication(AppComponent, appConfig).catch((err) => log.error(err));
+bootstrapApplication(AppComponent, appConfig).catch((err: unknown) => {
+  log.error(err);
+});

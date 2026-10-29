@@ -25,7 +25,7 @@ describe("LoadedDirective", () => {
           }
         </ul>
       </div>`,
-      { hostProps: { rows } }
+      { hostProps: { rows } },
     );
   });
 
@@ -92,7 +92,7 @@ describe("LoadedDirective without an empty message", () => {
     // Arrange
     const spectator = createDirective(
       `<p *appLoaded="rows(); let rows; failed: 'x.failed'">{{ rows.length }} rows</p>`,
-      { hostProps: { rows } }
+      { hostProps: { rows } },
     );
     // Act
     rows.set([]);

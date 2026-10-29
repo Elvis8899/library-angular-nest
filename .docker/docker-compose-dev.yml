@@ -2,7 +2,7 @@ name: "library-dev"
 
 services:
   nginx:
-    image: nginx:latest
+    image: nginx:1.30.6
     # restart: always
     ports:
       - "3000:80"
@@ -23,7 +23,7 @@ services:
   # then exits; app and frontend start after it succeeds. Two installs taking
   # turns through yarn's --mutex failed when the lock's refresh fell behind
   install:
-    image: node:24-slim
+    image: node:26-slim
     working_dir: /usr/src/app
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     environment:
@@ -37,7 +37,7 @@ services:
   # Angular dev server, served by nginx at /. The browser calls /v1 on the
   # same origin, so nginx sends those to the API and proxy.conf.json is unused
   frontend:
-    image: node:24-slim
+    image: node:26-slim
     working_dir: /usr/src/app/frontend
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     environment:
@@ -58,8 +58,6 @@ services:
     # (node_modules, dist, migrations) are not owned by root. The default
     # matches the image's node user; set HOST_UID/HOST_GID if yours differ.
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
-    # Uncomment this line in case you are in M1
-    # platform: linux/amd64
     volumes:
       - ..:/usr/src/app
     # ports:
@@ -87,7 +85,8 @@ services:
       - library-storage:/data
 
   postgres:
-    image: postgres:latest
+    # Production's major (docker-compose.yml)
+    image: postgres:18
     ports:
       - 5432:5432
     environment:
@@ -95,10 +94,12 @@ services:
       POSTGRES_PASSWORD: "password"
       POSTGRES_DB: "library"
     volumes:
-      - library-postgres:/var/lib/postgresql/library-data
+      # The parent of the data folder, as from 18 on (each major keeps its
+      # data in a folder of its own)
+      - library-postgres:/var/lib/postgresql
 
   pgadmin:
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:9.19.0
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@email.com
       PGADMIN_DEFAULT_PASSWORD: admin

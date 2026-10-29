@@ -64,7 +64,7 @@ export class ListUsersComponent implements OnInit {
           "lastAccessAt",
           "createdAt",
           "actions",
-        ]
+        ],
   );
   readonly saving = injectSaving(log);
   // Nobody deactivates their own account
@@ -97,7 +97,7 @@ export class ListUsersComponent implements OnInit {
           "createdAt",
           "actions",
         ],
-      }
+      },
     );
     // What someone else changes shows here too
     this._liveUpdates
@@ -124,7 +124,7 @@ export class ListUsersComponent implements OnInit {
         this.saving.run(this._userService.deactivateUser(user), () => {
           this._notify.success("users.deactivated");
           this.refresh();
-        })
+        }),
       );
   }
 
@@ -136,6 +136,6 @@ export class ListUsersComponent implements OnInit {
   }
 
   goToAddUser() {
-    this._router.navigate(["/users/add"]);
+    void this._router.navigate(["/users/add"]);
   }
 }

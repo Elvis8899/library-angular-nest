@@ -26,7 +26,7 @@ describe("injectIsSmallScreen", () => {
     const isSmall = spectator.runInInjectionContext(injectIsSmallScreen);
     // Assert
     expect(breakpointObserverMock.observe).toHaveBeenCalledWith(
-      smallScreenQuery
+      smallScreenQuery,
     );
     expect(isSmall()).toBe(false);
     // Act

@@ -30,7 +30,7 @@ How a backend command or query is written, fp-ts in one page: [`docs/handlerPipe
 ### Requirements
 
 - Docker with Compose, for PostgreSQL (or the full dev stack)
-- Node 24 for both apps (`.nvmrc` in each)
+- Node 26 for both apps (the root `.nvmrc`)
 - Yarn 1.22
 
 ### Option A: Docker dev stack
@@ -72,7 +72,7 @@ yarn start:dev          # http://localhost:3000, Swagger at /swagger
 ### Frontend
 
 ```bash
-nvm use                 # Node 24
+nvm use                 # Node 26
 yarn install            # at the repository root, if not done yet
 cd frontend
 yarn start              # http://localhost:4200, proxies /v1 to localhost:3000

@@ -7,12 +7,12 @@ import { UUID } from "@shared/uuid/uuid";
  * Who records a change, and when: what a rule needs to stamp the rows it
  * makes, so it stays pure. Ids for new rows come from `newId`.
  */
-export type Recording = {
+export interface Recording {
   newId: () => UUID;
   recordedById: string;
   today: BusinessDate;
   now: Date;
-};
+}
 
 /** A recording from a clock and UUIDs, read once: handlers take theirs
  * from `UseCaseHandler.recordingBy`. */

@@ -13,6 +13,7 @@ import { NotificationService } from "@app/services/notification.service";
 import { ThemeToggleComponent } from "@app/shared/components/themeToggle/themeToggle.component";
 import { BusyDirective } from "@app/shared/directives/busy.directive";
 import { LanguageSelectorComponent } from "@app/shared/i18n/languageSelector/languageSelector.component";
+import { ApiError } from "@app/shared/utils/apiError.utility";
 import { TranslatePipe } from "@ngx-translate/core";
 import { finalize } from "rxjs";
 
@@ -67,18 +68,19 @@ export class LoginComponent {
       .login(this.loginForm.getRawValue())
       .pipe(
         finalize(() => this.loading.set(false)),
-        takeUntilDestroyed(this._destroyRef)
+        takeUntilDestroyed(this._destroyRef),
       )
       .subscribe({
         next: (credentials) => {
           const route = defaultRolePage(credentials.user?.role);
-          this._router.navigate(
-            [this._route.snapshot.queryParams["redirect"] || route],
-            { replaceUrl: true }
-          );
+          const redirect = this._route.snapshot.queryParams["redirect"] as
+            string | undefined;
+          void this._router.navigate([redirect || route], { replaceUrl: true });
         },
-        error: (error) => {
-          this._notify.errorMessage(error?.error?.message || error?.message);
+        error: (error: ApiError & { error?: ApiError }) => {
+          this._notify.errorMessage(
+            error.error?.message || error.message || "",
+          );
         },
       });
   }

@@ -28,13 +28,13 @@ export interface Handles<M extends Command<unknown> | Query<unknown>> {
 }
 
 /** What UseCase knows of the handler it runs for. */
-export type UseCaseOf = {
+export interface UseCaseOf {
   // What its runs are logged, timed and audited under: the command's class
   // name, or the query's without "Query" (WoodBatchQuery runs as WoodBatch)
   name: string;
   // Commands are audited, queries aren't
   command: boolean;
-};
+}
 
 // The handlers' classes, marked by the decorators
 const useCases = new WeakMap<object, UseCaseOf>();

@@ -20,7 +20,7 @@ export class CellDefDirective<Row> {
   /* eslint-disable @typescript-eslint/no-unused-vars */
   static ngTemplateContextGuard<Row>(
     _directive: CellDefDirective<Row>,
-    context: unknown
+    context: unknown,
   ): context is { $implicit: Row } {
     return true;
   }

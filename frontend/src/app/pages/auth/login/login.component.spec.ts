@@ -6,7 +6,7 @@ import { Router, RouterModule } from "@angular/router";
 import { Credentials, ROLE } from "@app/models/credentials.entity";
 import { LoginComponent } from "@app/pages/auth/login/login.component";
 import { AuthenticationService } from "@app/services/authentication.service";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
 import { usePtBR } from "@app/shared/utils/test/translations";
@@ -18,7 +18,7 @@ import {
 } from "@openng/spectator/vitest";
 import { of, Subject, throwError } from "rxjs";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 // The language selector loads the default language, pt-BR, unless another
 // spec left a language in localStorage (cleared before each test)
@@ -60,8 +60,8 @@ describe("LoginComponent", () => {
     httpMock = spectator.inject(HttpTestingController);
     authenticationServiceMock.login.mockClear();
     inputs = {
-      email: spectator.query("input[name='email']") as HTMLInputElement,
-      password: spectator.query("input[name='password']") as HTMLInputElement,
+      email: spectator.query("input[name='email']")!,
+      password: spectator.query("input[name='password']")!,
     };
   });
   afterEach(() => {
@@ -100,14 +100,14 @@ describe("LoginComponent", () => {
     fillIn("admin@admin.com", "password");
     const notifications = spectator.inject(NotificationService);
     authenticationServiceMock.login.mockReturnValueOnce(
-      throwError(() => new Error("message"))
+      throwError(() => new Error("message")),
     );
     // Act
     spectator.click("button[name='login']");
     // Assert
     expect(authenticationServiceMock.login).toHaveBeenCalledTimes(1);
     expect(notifications.errorMessage).toHaveBeenCalledExactlyOnceWith(
-      "message"
+      "message",
     );
     expect(spectator.component.loading()).toBe(false);
   });
@@ -117,14 +117,22 @@ describe("LoginComponent", () => {
     fillIn("admin@admin.com", "password");
     const notifications = spectator.inject(NotificationService);
     authenticationServiceMock.login.mockReturnValueOnce(
-      throwError(() => ({ error: { message: "Credenciais inválidas" } }))
+      throwError(() => ({ error: { message: "Credenciais inválidas" } })),
     );
     // Act
     spectator.click("button[name='login']");
     // Assert
     expect(notifications.errorMessage).toHaveBeenCalledWith(
-      "Credenciais inválidas"
+      "Credenciais inválidas",
     );
+  });
+
+  it("Should show an empty message when the error has none", () => {
+    fillIn("admin@admin.com", "password");
+    const notifications = spectator.inject(NotificationService);
+    authenticationServiceMock.login.mockReturnValueOnce(throwError(() => ({})));
+    spectator.click("button[name='login']");
+    expect(notifications.errorMessage).toHaveBeenCalledWith("");
   });
 
   it("Should show the errors and not login when submitted empty", () => {
@@ -156,7 +164,7 @@ describe("LoginComponent", () => {
     expect(inputs.password).toHaveAttribute("type", "text");
     expect(spectator.query("button[name='togglePassword']")).toHaveAttribute(
       "aria-label",
-      "Esconder senha"
+      "Esconder senha",
     );
     // Act
     spectator.click("button[name='togglePassword']");

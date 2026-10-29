@@ -63,7 +63,7 @@ export class AuditLogComponent {
   readonly columns = computed(() =>
     this.isSmallScreen()
       ? ["recordedAt", "user", "useCase", "input"]
-      : ["recordedAt", "user", "useCase", "recordId", "input"]
+      : ["recordedAt", "user", "useCase", "recordId", "input"],
   );
   readonly inputText = inputText;
 
@@ -75,9 +75,9 @@ export class AuditLogComponent {
         catchError((error: unknown) => {
           log.error(error);
           return of([]);
-        })
+        }),
       ),
-    { initialValue: [] }
+    { initialValue: [] },
   );
 
   readonly filters = this._fb.nonNullable.group<AuditQuery>({
@@ -92,7 +92,7 @@ export class AuditLogComponent {
       sort: { property: "recordedAt", order: "desc" },
       displayedColumns: this.columns(),
       pageSize: 25,
-    }
+    },
   );
 
   /** Whether the period ends before it starts. */

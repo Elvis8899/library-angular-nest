@@ -38,10 +38,10 @@ export class SuggestionsComponent {
   private readonly _typed = toSignal(
     toObservable(this.control).pipe(
       switchMap((control) =>
-        control.valueChanges.pipe(startWith(control.value))
-      )
+        control.valueChanges.pipe(startWith(control.value)),
+      ),
     ),
-    { initialValue: "" }
+    { initialValue: "" },
   );
 
   readonly shown = computed(() => matching(this.values(), this._typed() ?? ""));

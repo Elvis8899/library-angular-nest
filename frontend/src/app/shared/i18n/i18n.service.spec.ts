@@ -1,5 +1,5 @@
 import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { I18nService, textFiles } from "@app/shared/i18n/i18n.service";
 import { enUS } from "@app/shared/i18n/translations/en-US";
 import { enUSPages } from "@app/shared/i18n/translations/pages.en-US";
@@ -16,7 +16,7 @@ import {
 import { noop, Subject } from "rxjs";
 import { vi, type Mock } from "vitest";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 const defaultLanguage = "en-US";
 const supportedLanguages = ["eo", "en-US", "fr-FR"];
@@ -29,7 +29,7 @@ class MockTranslateService {
     return this.currentLang;
   }
 
-  instant: (key: string) => string = vi.fn((key) => key);
+  instant: (key: string) => string = vi.fn((key: string) => key);
 
   setTranslation = noop;
   use(language: string) {
@@ -156,7 +156,7 @@ describe("I18nService", () => {
       const router = spectator.inject(Router);
       const event = new NavigationEnd(1703, `/users/list`, "/");
       (router.events as unknown as Subject<Event>).next(
-        event as unknown as Event
+        event as unknown as Event,
       );
       // Assert
       expect(spy).toHaveBeenCalled();
@@ -263,7 +263,7 @@ describe("I18nService", () => {
       expect(translateService.setTranslation).toHaveBeenCalledExactlyOnceWith(
         "en-US",
         enUS,
-        true
+        true,
       );
       expect(translateService.use).toHaveBeenLastCalledWith("en-US");
     });
@@ -277,12 +277,12 @@ describe("I18nService", () => {
       expect(translateService.setTranslation).toHaveBeenCalledWith(
         "pt-BR",
         ptBRPages,
-        true
+        true,
       );
       expect(translateService.setTranslation).toHaveBeenCalledWith(
         "en-US",
         enUSPages,
-        true
+        true,
       );
       // pt-BR's pages, en-US's core and pages
       expect(translateService.setTranslation).toHaveBeenCalledTimes(3);
@@ -292,7 +292,7 @@ describe("I18nService", () => {
       await spectator.service.init("pt-BR", languages);
       let loaded: (texts: TranslationObject) => void = noop;
       vi.spyOn(textFiles["en-US"], "core").mockReturnValueOnce(
-        new Promise((resolve) => (loaded = resolve))
+        new Promise((resolve) => (loaded = resolve)),
       );
       const slower = spectator.service.setLanguage("en-US");
       await spectator.service.setLanguage("pt-BR");
@@ -313,7 +313,7 @@ describe("I18nService", () => {
       expect(translateService.setTranslation).toHaveBeenCalledWith(
         "pt-BR",
         ptBRPages,
-        true
+        true,
       );
     });
   });

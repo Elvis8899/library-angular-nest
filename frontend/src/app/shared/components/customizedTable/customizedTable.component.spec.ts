@@ -1,7 +1,7 @@
 import { MatTableModule } from "@angular/material/table";
 import { Page, PageRequest } from "@app/models/utils/pageRequest.entity";
 import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { CustomizedTableComponent } from "@app/shared/components/customizedTable/customizedTable.component";
 import { PaginatedDataSource } from "@app/shared/components/customizedTable/paginatedDataSource";
 import { provideTranslateService } from "@ngx-translate/core";
@@ -9,7 +9,7 @@ import { createHostFactory, SpectatorHost } from "@openng/spectator/vitest";
 import { Observable, of } from "rxjs";
 
 const log = new Logger("CustomizedTableComponent");
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 interface T {
   id: number;
@@ -19,30 +19,26 @@ interface Q {
   name: string;
 }
 
-class MockService {
-  static testData: T[] = [
-    { id: 1, name: "Item 1" },
-    { id: 2, name: "Item 2" },
-    { id: 3, name: "Item 3" },
-  ];
+const testData: T[] = [
+  { id: 1, name: "Item 1" },
+  { id: 2, name: "Item 2" },
+  { id: 3, name: "Item 3" },
+];
 
-  static getPaginated = vi.fn(
+const MockService = {
+  getPaginated: vi.fn(
     (req?: PageRequest<T, Q>): Observable<PaginatedResponse<T>> => {
-      const page = req?.page || 0;
-      const limit = req?.limit || 1;
-      const testData = MockService.testData.slice(
-        page * limit,
-        (page + 1) * limit
-      );
+      const page = req?.page ?? 0;
+      const limit = req?.limit ?? 1;
       return of({
-        data: testData,
+        data: testData.slice(page * limit, (page + 1) * limit),
         page,
         limit,
-        count: MockService.testData.length,
+        count: testData.length,
       });
-    }
-  );
-}
+    },
+  ),
+};
 
 describe("CustomizedTableComponent", () => {
   let spectator: SpectatorHost<CustomizedTableComponent<T, Q>>;
@@ -75,10 +71,10 @@ describe("CustomizedTableComponent", () => {
               },
               displayedColumns: ["name"],
               pageSize: 1,
-            }
+            },
           ),
         },
-      }
+      },
     ) as SpectatorHost<CustomizedTableComponent<T, Q>>;
 
     spectator.detectChanges();
@@ -127,7 +123,7 @@ describe("CustomizedTableComponent", () => {
   });
 
   it("Should hide the paginator without a page", () => {
-    spectator.component.data()["page$"].next(null as unknown as Page<T>);
+    spectator.component.data().page$.next(null as unknown as Page<T>);
     spectator.detectChanges();
     expect(spectator.query(".mat-mdc-paginator-navigation-next")).toBeFalsy();
   });

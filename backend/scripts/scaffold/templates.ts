@@ -8,9 +8,13 @@ export type Guard = "roles" | "auth";
 export type SpecKind = "unit" | "e2e" | "none";
 export type Method = "get" | "post" | "put" | "delete";
 
-export type Field = { name: string; type: FieldType; optional: boolean };
+export interface Field {
+  name: string;
+  type: FieldType;
+  optional: boolean;
+}
 
-export type ScaffoldOptions = {
+export interface ScaffoldOptions {
   module: string;
   useCase: string;
   kind: UseCaseKind;
@@ -21,15 +25,15 @@ export type ScaffoldOptions = {
   spec: SpecKind;
   // The Swagger tag, from the module's other controllers when there are some
   tag: string;
-};
+}
 
 /** A file to create, or text to add to a file that may already exist. */
-export type ScaffoldFile = {
+export interface ScaffoldFile {
   path: string;
   content: string;
   // Added to the end of an existing file, with `imports` added on top
   append?: { imports: string[] };
-};
+}
 
 const fieldTypes: FieldType[] = [
   "string",

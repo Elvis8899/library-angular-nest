@@ -19,7 +19,7 @@ import { Socket } from "socket.io-client";
 const credentialsOf = (
   id: string,
   accessToken = `access-${id}`,
-  role: typeof ROLE.ADMIN | typeof ROLE.CLIENT = ROLE.ADMIN
+  role: typeof ROLE.ADMIN | typeof ROLE.CLIENT = ROLE.ADMIN,
 ): Credentials => ({
   accessToken,
   refreshToken: "refresh",

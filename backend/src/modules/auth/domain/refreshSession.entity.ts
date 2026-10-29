@@ -14,10 +14,10 @@ export const RefreshSession = z.object({
 
 export type RefreshSession = z.infer<typeof RefreshSession>;
 
-export type RotateRefreshSession = {
+export interface RotateRefreshSession {
   id: string;
   /** jti of the refresh token being used */
   jti: string;
   newJti: string;
   expiresAt: Date;
-};
+}

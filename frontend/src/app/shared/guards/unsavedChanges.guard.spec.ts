@@ -33,8 +33,8 @@ describe("unsavedChangesGuard", () => {
           : ({ hasUnsavedChanges: () => dirty } satisfies HasUnsavedChanges),
         {} as ActivatedRouteSnapshot,
         {} as RouterStateSnapshot,
-        {} as RouterStateSnapshot
-      )
+        {} as RouterStateSnapshot,
+      ),
     );
 
   beforeEach(() => {
@@ -70,11 +70,11 @@ describe("unsavedChangesGuard", () => {
     const answers: boolean[] = [];
     // Act
     (leave(true) as Observable<boolean>).subscribe((answer) =>
-      answers.push(answer)
+      answers.push(answer),
     );
     // Assert
     expect(confirm).toHaveBeenCalledWith(
-      expect.objectContaining({ message: "unsavedChanges.message" })
+      expect.objectContaining({ message: "unsavedChanges.message" }),
     );
     expect(answers).toEqual([false]);
   });

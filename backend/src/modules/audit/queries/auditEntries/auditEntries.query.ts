@@ -26,11 +26,11 @@ export class AuditEntriesQuery extends Query<AuditPage> {
   }
 }
 
-export type AuditPage = {
+export interface AuditPage {
   page: Paginated<AuditEntry>;
   /** The names of the users the page shows. */
   names: ReadonlyMap<string, string>;
-};
+}
 
 @QueryHandler(AuditEntriesQuery)
 export class AuditEntriesQueryHandler extends UseCaseHandler<AuditEntriesQuery> {

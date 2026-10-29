@@ -21,10 +21,10 @@ export const textFiles: Record<
   Record<Part, () => Promise<TranslationObject>>
 > = {
   [LanguagesEnum.PT_BR]: {
-    core: async () => ptBR,
+    core: () => Promise.resolve(ptBR),
     pages: () =>
       import("@app/shared/i18n/translations/pages.pt-BR").then(
-        (m) => m.ptBRPages
+        (m) => m.ptBRPages,
       ),
   },
   [LanguagesEnum.EN_US]: {
@@ -32,7 +32,7 @@ export const textFiles: Record<
       import("@app/shared/i18n/translations/en-US").then((m) => m.enUS),
     pages: () =>
       import("@app/shared/i18n/translations/pages.en-US").then(
-        (m) => m.enUSPages
+        (m) => m.enUSPages,
       ),
   },
 };
@@ -68,11 +68,11 @@ export class I18nService {
       });
     this.ready = this.init(
       environment.defaultLanguage,
-      environment.supportedLanguages
+      environment.supportedLanguages,
     );
 
     const onNavigationEnd = this._router.events.pipe(
-      filter((event) => event instanceof NavigationEnd)
+      filter((event) => event instanceof NavigationEnd),
     );
 
     merge(this._translateService.onLangChange, onNavigationEnd)
@@ -81,7 +81,7 @@ export class I18nService {
   }
 
   private getTitleRecursive(route: ActivatedRoute): string[] {
-    const routeTitle: string = route.snapshot.data?.["title"];
+    const routeTitle = route.snapshot.data?.["title"] as string | undefined;
     const titleFragments: string[] = routeTitle ? [routeTitle] : [];
     const routeChild = route?.firstChild;
     if (routeChild) {
@@ -121,7 +121,7 @@ export class I18nService {
       newLanguage = newLanguage.split("-")[0];
       newLanguage =
         this.supportedLanguages().find((supportedLanguage) =>
-          supportedLanguage.startsWith(newLanguage)
+          supportedLanguage.startsWith(newLanguage),
         ) || "";
       isSupportedLanguage = Boolean(newLanguage);
     }
@@ -166,7 +166,7 @@ export class I18nService {
           // Tried again next time, as a failed chunk is (a new deploy, offline)
           this._loads.delete(key);
           throw error;
-        }
+        },
       );
     this._loads.set(key, loading);
     return loading;
@@ -198,7 +198,7 @@ export class I18nService {
     if (titles.length) {
       const translatedTitles = titles.map(translator);
       const allTitlesSame = translatedTitles.every(
-        (title, _, arr) => title === arr[0]
+        (title, _, arr) => title === arr[0],
       );
       title = allTitlesSame
         ? translatedTitles[0]

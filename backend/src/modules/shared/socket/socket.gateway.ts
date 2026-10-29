@@ -16,7 +16,9 @@ import { roomsFor, roomsOf } from "@shared/socket/socketRooms";
 import { Server, Socket } from "socket.io";
 
 type ServerEvents = LiveUpdateEvents;
-type SocketData = { user: RequestJWTPayload };
+interface SocketData {
+  user: RequestJWTPayload;
+}
 export type SocketServer = Server<
   Record<string, never>,
   ServerEvents,

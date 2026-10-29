@@ -18,7 +18,7 @@ const keysOf = (tree: Tree, prefix = ""): string[] =>
   Object.entries(tree).flatMap(([key, value]) =>
     typeof value === "string"
       ? [prefix + key]
-      : keysOf(value, `${prefix}${key}.`)
+      : keysOf(value, `${prefix}${key}.`),
   );
 
 const sourceFiles = (dir: string): string[] =>
@@ -38,7 +38,7 @@ const namespaces = [...Object.keys(ptBR), ...Object.keys(ptBRPages)].join("|");
 // A quoted string starting with a namespace: "common.cancel", 'nav.users'
 const keyPattern = new RegExp(
   `["'\`]((?:${namespaces})(?:\\.\\w+)+)["'\`]`,
-  "g"
+  "g",
 );
 
 const keysIn = (file: string) =>
@@ -74,14 +74,14 @@ describe("Translation keys", () => {
   it("Should use every key", () => {
     // errors.<code> keys are built from the API's codes, checked below
     const unused = keys.filter(
-      (key) => !usedKeys.has(key) && !apiErrorKeys.includes(key)
+      (key) => !usedKeys.has(key) && !apiErrorKeys.includes(key),
     );
     expect(unused).toEqual([]);
   });
 
   it("Should translate every API error code, and only those", () => {
     expect([...apiErrorKeys].sort()).toEqual(
-      errorCodes.map((code) => `errors.${code}`).sort()
+      errorCodes.map((code) => `errors.${code}`).sort(),
     );
   });
 
@@ -91,7 +91,7 @@ describe("Translation keys", () => {
 
   it("Should keep each namespace in one part", () => {
     expect(
-      Object.keys(ptBRPages).filter((namespace) => namespace in ptBR)
+      Object.keys(ptBRPages).filter((namespace) => namespace in ptBR),
     ).toEqual([]);
   });
 
@@ -100,7 +100,7 @@ describe("Translation keys", () => {
     const pageKeys = outsidePages.flatMap((file) =>
       keysIn(file)
         .filter((key) => pageNamespaces.includes(key.split(".")[0]))
-        .map((key) => `${file}: ${key}`)
+        .map((key) => `${file}: ${key}`),
     );
     expect(outsidePages.length).toBeGreaterThan(10);
     expect(pageKeys).toEqual([]);

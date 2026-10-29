@@ -1,5 +1,5 @@
 /** What a use case's run did. */
-export type UseCaseRun = {
+export interface UseCaseRun {
   name: string;
   command: boolean;
   succeeded: boolean;
@@ -7,7 +7,7 @@ export type UseCaseRun = {
   published: readonly string[];
   // A command that wrote nothing on purpose (nothingChangedRTE)
   changedNothing: boolean;
-};
+}
 
 /**
  * Told of every run, after it ends. The app's does nothing; specs bind one

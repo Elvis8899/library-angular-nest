@@ -56,7 +56,7 @@ export const appConfig: ApplicationConfig = {
         scrollPositionRestoration: "enabled",
         anchorScrolling: "enabled",
       }),
-      withPreloading(PreloadAllModules)
+      withPreloading(PreloadAllModules),
     ),
 
     provideAppInitializer(() => {
@@ -75,7 +75,7 @@ export const appConfig: ApplicationConfig = {
     // provideHttpClient is required for Angular's HttpClient with additional configuration, which includes interceptors from DI (dependency injection) , means to use class based interceptors
     provideHttpClient(
       withXhr(),
-      withInterceptors([authHttpInterceptor, errorHandlerInterceptor])
+      withInterceptors([authHttpInterceptor, errorHandlerInterceptor]),
     ),
     // The paginators' labels in the selected language
     { provide: MatPaginatorIntl, useClass: TranslatedPaginatorIntl },

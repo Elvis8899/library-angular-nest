@@ -12,7 +12,7 @@ import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 import { BehaviorSubject, of, throwError } from "rxjs";
 
 const entry = (
-  overrides: Partial<AuditEntryEntity> = {}
+  overrides: Partial<AuditEntryEntity> = {},
 ): AuditEntryEntity => ({
   id: "e1",
   userId: "u1",
@@ -69,7 +69,7 @@ describe("AuditLogComponent", () => {
         count: 2,
         page: 0,
         limit: 25,
-      })
+      }),
     );
     users.getPaginatedUsers.mockReset().mockReturnValue(
       of({
@@ -77,14 +77,14 @@ describe("AuditLogComponent", () => {
         count: 1,
         page: 0,
         limit: 1000,
-      })
+      }),
     );
     spectator = createComponent();
   });
 
   it("Should list the entries, newest first, with who and what", () => {
     expect(audit.getEntries).toHaveBeenCalledWith(
-      expect.objectContaining({ page: 0, limit: 25, query: noAuditFilters })
+      expect.objectContaining({ page: 0, limit: 25, query: noAuditFilters }),
     );
     expect(users.getPaginatedUsers).toHaveBeenCalledWith({
       page: 0,
@@ -134,7 +134,7 @@ describe("AuditLogComponent", () => {
     expect(
       spectator
         .queryAll("mat-option", { root: true })
-        .map((option) => text(option))
+        .map((option) => text(option)),
     ).toEqual(["audit.anyone", "Ana"]);
   });
 

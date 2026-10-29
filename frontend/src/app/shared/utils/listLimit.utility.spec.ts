@@ -11,7 +11,9 @@ describe("injectListLimit", () => {
 
   it("Should keep the list's own limit", () => {
     expect(
-      createInjectionContext().runInInjectionContext(() => injectListLimit(200))
+      createInjectionContext().runInInjectionContext(() =>
+        injectListLimit(200),
+      ),
     ).toBe(200);
   });
 });
@@ -23,7 +25,9 @@ describe("provideListLimit", () => {
 
   it("Should lower every list's limit", () => {
     expect(
-      createInjectionContext().runInInjectionContext(() => injectListLimit(200))
+      createInjectionContext().runInInjectionContext(() =>
+        injectListLimit(200),
+      ),
     ).toBe(3);
   });
 });

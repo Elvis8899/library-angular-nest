@@ -105,15 +105,15 @@ export class AddBooksComponent {
                   log.error(error);
                   this._notify.error("books.form.coverNotSaved");
                   return of(false);
-                })
+                }),
               )
-            : of(true)
-        )
+            : of(true),
+        ),
       ),
       (withCover) => {
         if (withCover) this._notify.success("books.created");
-        this._router.navigate(["/books/list"]);
-      }
+        void this._router.navigate(["/books/list"]);
+      },
     );
   }
 }

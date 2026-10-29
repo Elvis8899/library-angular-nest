@@ -23,7 +23,7 @@ import {
 } from "rxjs/operators";
 
 export function prepare<T>(
-  callback: () => void
+  callback: () => void,
 ): (source: Observable<T>) => Observable<T> {
   return (source: Observable<T>): Observable<T> =>
     defer(() => {
@@ -33,12 +33,12 @@ export function prepare<T>(
 }
 
 export function indicate<T>(
-  indicator: Subject<boolean>
+  indicator: Subject<boolean>,
 ): (source: Observable<T>) => Observable<T> {
   return (source: Observable<T>): Observable<T> =>
     source.pipe(
       prepare(() => indicator.next(true)),
-      finalize(() => indicator.next(false))
+      finalize(() => indicator.next(false)),
     );
 }
 
@@ -74,7 +74,7 @@ export class PaginatedDataSource<T, Q> implements SimpleDataSource<T> {
       log: Logger;
       query?: Q;
       pageSize?: number;
-    }
+    },
   ) {
     this.displayedColumns = config.displayedColumns;
     this.sort = new BehaviorSubject<PaginatedSort<T>>(config.sort);
@@ -94,12 +94,12 @@ export class PaginatedDataSource<T, Q> implements SimpleDataSource<T> {
               catchError((error) => {
                 config.log.error(error);
                 return of({ data: [], count: 0, limit: 0, page: 0 });
-              })
-            )
-          )
-        )
+              }),
+            ),
+          ),
+        ),
       ),
-      share()
+      share(),
     );
     param$.subscribe({
       next: (page) => {

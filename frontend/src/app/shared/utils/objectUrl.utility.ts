@@ -6,7 +6,7 @@ import { computed, effect, Signal } from "@angular/core";
  * component goes. Call it in an injection context.
  */
 export const objectUrlOf = (
-  blob: Signal<Blob | null>
+  blob: Signal<Blob | null>,
 ): Signal<string | null> => {
   const url = computed(() => {
     const current = blob();

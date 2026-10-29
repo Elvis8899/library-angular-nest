@@ -5,7 +5,7 @@ import { ROLE } from "@app/models/credentials.entity";
 import { UserEntity } from "@app/models/user.entity";
 import { PaginatedResponse } from "@app/models/utils/paginatedResponse.entity";
 import { ChooseUserDialogComponent } from "@app/pages/books/listBooks/chooseUserDialog/chooseUser.dialog.component";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { UserService } from "@app/services/user.http.service";
 import { provideTranslateService } from "@ngx-translate/core";
 import {
@@ -15,14 +15,14 @@ import {
 } from "@openng/spectator/vitest";
 import { noop, of, Subject, throwError } from "rxjs";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 describe("ChooseUserDialogComponent", () => {
   let spectator: Spectator<ChooseUserDialogComponent>;
   const user = (
     id: string,
     name: string,
-    role: UserEntity["role"] = ROLE.CLIENT
+    role: UserEntity["role"] = ROLE.CLIENT,
   ): UserEntity => ({
     id,
     name,
@@ -60,7 +60,7 @@ describe("ChooseUserDialogComponent", () => {
     dialogRefMock.close.mockClear();
     userServiceMock.getPaginatedUsers.mockReset();
     userServiceMock.getPaginatedUsers.mockReturnValue(
-      of({ data: users, count: 3, limit: 1000, page: 0 })
+      of({ data: users, count: 3, limit: 1000, page: 0 }),
     );
   });
 
@@ -94,7 +94,7 @@ describe("ChooseUserDialogComponent", () => {
     });
     expect(spectator.component.clients().map((u) => u.id)).toEqual(["1", "2"]);
     expect(spectator.query(".intro")).toContainText(
-      "rentals.rent.chooseClient"
+      "rentals.rent.chooseClient",
     );
     expect(spectator.query("mat-progress-bar")).toHaveClass("hidden");
   });
@@ -102,7 +102,7 @@ describe("ChooseUserDialogComponent", () => {
   it("Should show the progress bar while loading", () => {
     // Arrange
     userServiceMock.getPaginatedUsers.mockReturnValue(
-      new Subject<PaginatedResponse<UserEntity>>()
+      new Subject<PaginatedResponse<UserEntity>>(),
     );
     // Act
     spectator = createComponent();
@@ -116,7 +116,7 @@ describe("ChooseUserDialogComponent", () => {
   it("If loading the users fails, should close", () => {
     // Arrange
     userServiceMock.getPaginatedUsers.mockReturnValue(
-      throwError(() => new Error())
+      throwError(() => new Error()),
     );
     // Act
     spectator = createComponent();

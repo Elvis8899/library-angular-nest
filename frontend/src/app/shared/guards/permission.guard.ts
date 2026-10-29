@@ -25,7 +25,7 @@ import { CredentialsService } from "@app/services/credentials.service";
  * of that function, which is typically a redirect to an unauthorized page or action.
  */
 export const permissionGuard: CanActivateFn & CanActivateChildFn = (
-  route: ActivatedRouteSnapshot
+  route: ActivatedRouteSnapshot,
 ) => {
   const credentialsService = inject(CredentialsService);
   const router = inject(Router);
@@ -47,6 +47,6 @@ export const permissionGuard: CanActivateFn & CanActivateChildFn = (
 
 // Utility function to handle unauthorized access
 function handleUnauthorized(router: Router): boolean {
-  router.navigate(["/unauthorized"]);
+  void router.navigate(["/unauthorized"]);
   return false;
 }

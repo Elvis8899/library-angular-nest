@@ -75,7 +75,7 @@ export class NotificationService {
     const ref = this._open(
       this._translate.instant(message.key),
       this._translate.instant(message.actionKey),
-      { politeness: "polite" }
+      { politeness: "polite" },
     );
     ref.onAction().subscribe(() => {
       this._persistent = null;

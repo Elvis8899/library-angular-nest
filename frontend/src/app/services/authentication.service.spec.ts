@@ -55,7 +55,9 @@ describe("AuthService", () => {
     // When saving the credentials
     spectator.service.login(loginContext).subscribe();
 
-    expect(credentialServiceMock.setCredentials).toBeCalledWith(credential);
+    expect(credentialServiceMock.setCredentials).toHaveBeenCalledWith(
+      credential,
+    );
   });
 
   it("On logout, should clear credentials", () => {
@@ -63,7 +65,7 @@ describe("AuthService", () => {
     let res = false;
     spectator.service.logout().subscribe({ next: (v) => (res = v) });
 
-    expect(credentialServiceMock.clearCredentials).toBeCalled();
+    expect(credentialServiceMock.clearCredentials).toHaveBeenCalled();
     expect(res).toBe(true);
   });
 
@@ -76,8 +78,12 @@ describe("AuthService", () => {
     // When refreshing
     const res = await firstValueFrom(spectator.service.refresh());
 
-    expect(userServiceMock.refresh).toBeCalledWith(credential.refreshToken);
-    expect(credentialServiceMock.setCredentials).toBeCalledWith(newCredential);
+    expect(userServiceMock.refresh).toHaveBeenCalledWith(
+      credential.refreshToken,
+    );
+    expect(credentialServiceMock.setCredentials).toHaveBeenCalledWith(
+      newCredential,
+    );
     expect(res).toEqual(newCredential);
   });
 
@@ -106,7 +112,7 @@ describe("AuthService", () => {
     const res = await firstValueFrom(spectator.service.refresh());
 
     // Then the single-use token is not sent again
-    expect(userServiceMock.refresh).not.toBeCalled();
+    expect(userServiceMock.refresh).not.toHaveBeenCalled();
     expect(res).toEqual(otherTabCredential);
   });
 
@@ -117,21 +123,21 @@ describe("AuthService", () => {
     });
 
     await expect(firstValueFrom(spectator.service.refresh())).rejects.toThrow();
-    expect(userServiceMock.refresh).not.toBeCalled();
+    expect(userServiceMock.refresh).not.toHaveBeenCalled();
   });
 
   it("On refresh, should hold the lock shared between tabs", async () => {
     // Given a browser with the Web Locks API
     const request = vi.fn((_name: string, task: () => Promise<Credentials>) =>
-      task()
+      task(),
     );
-    vi.stubGlobal("navigator", { ...navigator, locks: { request } });
+    vi.stubGlobal("navigator", { locks: { request } });
     credentialServiceMock.castToWritable().credentials = credential;
     userServiceMock.refresh.mockReturnValue(of(credential));
 
     await firstValueFrom(spectator.service.refresh());
 
-    expect(request).toBeCalledWith("auth-refresh", expect.any(Function));
+    expect(request).toHaveBeenCalledWith("auth-refresh", expect.any(Function));
   });
 
   it("On refresh without refresh token, should fail", () => {
@@ -141,7 +147,7 @@ describe("AuthService", () => {
     spectator.service.refresh().subscribe({ error: () => (failed = true) });
 
     expect(failed).toBe(true);
-    expect(userServiceMock.refresh).not.toBeCalled();
+    expect(userServiceMock.refresh).not.toHaveBeenCalled();
   });
 
   it("On logout while authenticated, should revoke tokens on the server", () => {
@@ -152,20 +158,20 @@ describe("AuthService", () => {
     spectator.service.logout().subscribe({ next: (v) => (res = v) });
 
     expect(userServiceMock.logout).toHaveBeenCalledTimes(1);
-    expect(credentialServiceMock.clearCredentials).toBeCalled();
+    expect(credentialServiceMock.clearCredentials).toHaveBeenCalled();
     expect(res).toBe(true);
   });
 
   it("On logout, should clear credentials even if the server call fails", () => {
     credentialServiceMock.isAuthenticated.mockReturnValue(true);
     userServiceMock.logout.mockReturnValue(
-      throwError(() => new Error("offline"))
+      throwError(() => new Error("offline")),
     );
 
     let res = false;
     spectator.service.logout().subscribe({ next: (v) => (res = v) });
 
-    expect(credentialServiceMock.clearCredentials).toBeCalled();
+    expect(credentialServiceMock.clearCredentials).toHaveBeenCalled();
     expect(res).toBe(true);
   });
 });

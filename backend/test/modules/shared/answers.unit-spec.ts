@@ -51,7 +51,7 @@ describe("[Unit] Answers", () => {
 
     expect(status).toBe(HttpStatus.CREATED);
     expect(responses[HttpStatus.CREATED]?.description).toBe("Ok");
-    expect(String(responses[HttpStatus.CREATED]?.schema["$ref"])).toContain(
+    expect(String(responses[HttpStatus.CREATED]?.schema.$ref)).toContain(
       "AuthResponse",
     );
   });
@@ -66,6 +66,6 @@ describe("[Unit] Answers", () => {
   it("Should document one of several contracts", () => {
     const { responses } = metadataOf("either");
 
-    expect(responses[HttpStatus.OK]?.schema["oneOf"]).toHaveLength(2);
+    expect(responses[HttpStatus.OK]?.schema.oneOf).toHaveLength(2);
   });
 });

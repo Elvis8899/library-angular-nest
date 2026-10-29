@@ -10,7 +10,7 @@ A library (book lending) app for Brazilian users: UI text, Swagger docs and erro
 - `frontend/`: Angular 22 (standalone, zoneless), Angular Material, ngx-translate (pt-BR, en-US), Vitest on happy-dom.
 - `packages/contracts/`: `@library/contracts`, what travels over HTTP (Zod schemas, enums) and the rules both apps apply.
 
-TypeScript 6.0 (Angular and typescript-eslint don't support 7 yet); Node 24 (`.nvmrc`; run `source ~/.nvm/nvm.sh && nvm use` first).
+TypeScript 6.0 (Angular and typescript-eslint don't support 7 yet); Node 26 (the root `.nvmrc`; run `source ~/.nvm/nvm.sh && nvm use` first).
 
 The repository is also a seed. `shared`, `auth`, `user` and `audit` (backend) and the `auth`, `home`, `users` and `audit` pages are the **core**; `book` and `rental` (`books`, `rentals` pages) are the **lending example**. The example lives in its own folders; the few lines it needs in core files carry a `Lending example` comment (`git grep -i "lending example"` lists them). Keep it that way: no unmarked example code in core files, and core code and specs never use the example. The example follows the core's patterns, so it can be copied.
 
@@ -20,7 +20,7 @@ The repository is also a seed. `shared`, `auth`, `user` and `audit` (backend) an
 # Repo root
 yarn install                  # everything; builds the contracts, installs the pre-commit hook (Prettier on the staged files of both apps and the contracts)
 yarn contracts:watch          # rebuild the contracts while editing them (the apps import the build)
-yarn build | yarn lint | yarn lint:check | yarn typecheck | yarn test   # all packages (lint: the contracts' Prettier too)
+yarn build | yarn lint | yarn lint:check | yarn typecheck | yarn test   # all packages (lint: the contracts' Prettier too; typecheck: the backend and the frontend specs, which ng test doesn't check)
 
 # backend/ — tests need Postgres and SeaweedFS: docker compose -f ../.docker/docker-compose-dev.yml up postgres storage -d
 yarn test:migrate             # migrate the library-test database (yarn test:docker:up also resets and reseeds it)
@@ -49,7 +49,8 @@ While working, check with `lint:changed` and `test:module` (they only report); l
 - No relative imports. Aliases: backend `@src/ @test/ @shared/ @modules/ @db/ @scripts/` (defined in both `tsconfig.json` and `vitest.config.mts`); frontend `@app/ @shared/ @pages/ @env/`; `@library/contracts` in both.
 - File and folder names camelCase with a role suffix (`createUser.command.ts`), except locale files and migrations.
 - No `as` in the backend (`as const` is fine): type precisely or parse with Zod; a needed cast is `FPF.unsafeCoerce`.
-- Prettier with organize-imports, double quotes.
+- Both apps lint with typescript-eslint's `strictTypeChecked` and `stylisticTypeChecked`; each config says why it relaxes a rule (the frontend's Angular idioms, the specs' `any` matchers and spies).
+- Prettier with organize-imports (the root `.prettierrc`), double quotes.
 
 ## Backend
 

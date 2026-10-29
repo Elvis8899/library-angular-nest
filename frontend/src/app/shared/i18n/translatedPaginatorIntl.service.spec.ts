@@ -54,8 +54,8 @@ describe("TranslatedPaginatorIntl", () => {
       translate.use("pt-BR");
       // Assert
       expect(spectator.service.getRangeLabel(page, pageSize, length)).toBe(
-        label
+        label,
       );
-    }
+    },
   );
 });

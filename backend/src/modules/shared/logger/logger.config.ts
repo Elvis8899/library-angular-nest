@@ -5,10 +5,10 @@ import { LoggerOptions, stdTimeFunctions } from "pino";
 import { GenReqId, Options } from "pino-http";
 import { v4 as uuidv4 } from "uuid";
 
-type LoggerEnv = {
+interface LoggerEnv {
   prettify: boolean;
   level: "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "silent";
-};
+}
 
 export const loggerEnv: LoggerEnv = {
   prettify: get("LOG_PRETTIFY").required().asBool(),

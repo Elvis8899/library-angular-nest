@@ -26,12 +26,12 @@ export class UserService {
     return this._http.post<Credentials>(
       "/v1/refresh",
       { refreshToken },
-      { headers: { noauth: "true" } }
+      { headers: { noauth: "true" } },
     );
   }
 
   getPaginatedUsers(
-    req?: PageRequest<UserEntity, object>
+    req?: PageRequest<UserEntity, object>,
   ): Observable<PaginatedResponse<UserEntity>> {
     const params = PageRequestUtility.toHttpParams(req);
     return this._http.get<PaginatedResponse<UserEntity>>("/v1/users", {

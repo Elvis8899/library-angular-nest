@@ -38,7 +38,10 @@ export const refreshVerifyOptions: JwtVerifyOptions = {
 };
 
 /** Identifies the refresh token to issue: its session and its jti. */
-export type RefreshTokenRef = { sessionId: string; jti: string };
+export interface RefreshTokenRef {
+  sessionId: string;
+  jti: string;
+}
 
 /** Expiration of a refresh session issued or rotated now. */
 export const refreshSessionExpiry = (): Date =>

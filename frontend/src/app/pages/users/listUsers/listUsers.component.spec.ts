@@ -15,7 +15,7 @@ import {
   RESOURCE,
   ResourceChange,
 } from "@app/services/liveUpdates.service";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { UserService } from "@app/services/user.http.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
@@ -28,7 +28,7 @@ import {
 } from "@openng/spectator/vitest";
 import { BehaviorSubject, of, Subject, throwError } from "rxjs";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 describe("ListUsersComponent", () => {
   let spectator!: Spectator<ListUsersComponent>;
@@ -48,7 +48,7 @@ describe("ListUsersComponent", () => {
   ];
   const userServiceMock = createSpyObject(UserService);
   userServiceMock.getPaginatedUsers.mockReturnValue(
-    of({ data: users, count: 1, limit: 10, page: 0 })
+    of({ data: users, count: 1, limit: 10, page: 0 }),
   );
   userServiceMock.deactivateUser.mockReturnValue(of(undefined));
   userServiceMock.reactivateUser.mockReturnValue(of(undefined));
@@ -181,7 +181,7 @@ describe("ListUsersComponent", () => {
       formatDate(
         at,
         "short",
-        spectator.component.locale() ?? spectator.inject(LOCALE_ID)
+        spectator.component.locale() ?? spectator.inject(LOCALE_ID),
       ),
       "users.list.neverLoggedIn",
     ]);
@@ -214,11 +214,11 @@ describe("ListUsersComponent", () => {
         expect.objectContaining({
           messageParams: { name: "test" },
           destructive: true,
-        })
+        }),
       );
       expect(userServiceMock.deactivateUser).toHaveBeenCalledWith(users[0]);
       expect(
-        spectator.inject(NotificationService).success
+        spectator.inject(NotificationService).success,
       ).toHaveBeenCalledWith("users.deactivated");
       expect(refresh).toHaveBeenCalled();
     });
@@ -241,7 +241,7 @@ describe("ListUsersComponent", () => {
 
       expect(userServiceMock.reactivateUser).toHaveBeenCalledWith(inactive);
       expect(
-        spectator.inject(NotificationService).success
+        spectator.inject(NotificationService).success,
       ).toHaveBeenCalledWith("users.reactivated");
       expect(refresh).toHaveBeenCalled();
     });
@@ -272,7 +272,7 @@ describe("ListUsersComponent", () => {
   it("should call getPaginatedUsers on refresh", () => {
     expect(userServiceMock.getPaginatedUsers).toHaveBeenCalledTimes(1);
     userServiceMock.getPaginatedUsers.mockReturnValueOnce(
-      of({ data: [], count: 0, limit: 10, page: 1 })
+      of({ data: [], count: 0, limit: 10, page: 1 }),
     );
 
     spectator.component.refresh();

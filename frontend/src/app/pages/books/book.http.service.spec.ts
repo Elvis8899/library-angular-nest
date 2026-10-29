@@ -37,7 +37,7 @@ describe("BookService", () => {
       .subscribe((page) => (result = page));
 
     const req = http.expectOne(
-      (r) => r.method === "GET" && r.url === "/v1/bookInfos"
+      (r) => r.method === "GET" && r.url === "/v1/bookInfos",
     );
     expect(req.request.params.get("page")).toBe("1");
     expect(req.request.params.get("limit")).toBe("10");
@@ -74,10 +74,10 @@ describe("BookService", () => {
 
     const req = http.expectOne((r) => r.url === "/v1/bookInfos");
     expect(req.request.params.get("createdFrom")).toBe(
-      new Date(2026, 9, 13).toISOString()
+      new Date(2026, 9, 13).toISOString(),
     );
     expect(req.request.params.get("createdBefore")).toBe(
-      new Date(2026, 9, 14).toISOString()
+      new Date(2026, 9, 14).toISOString(),
     );
     req.flush({ data: [], count: 0, limit: 10, page: 0 });
   });

@@ -1,6 +1,8 @@
+import { textOf } from "@app/shared/utils/text.utility";
+
 /** Text made safe inside an HTML page's text or attributes. */
 export const escapeHtml = (text: unknown): string =>
-  String(text ?? "")
+  textOf(text)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -26,7 +28,7 @@ export const printDocument = (html: string, document: Document): void => {
       view?.focus();
       view?.print();
     },
-    { once: true }
+    { once: true },
   );
   document.body.appendChild(frame);
 };

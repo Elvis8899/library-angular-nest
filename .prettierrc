@@ -1,0 +1,10 @@
+{
+  "plugins": ["prettier-plugin-organize-imports"],
+  "organizeImportsSkipDestructiveCodeActions": true,
+  "overrides": [
+    {
+      "files": "*.html",
+      "options": { "parser": "angular" }
+    }
+  ]
+}

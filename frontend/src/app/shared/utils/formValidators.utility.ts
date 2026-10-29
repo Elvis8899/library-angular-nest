@@ -10,7 +10,7 @@ const normalizeDocument = (v: string) =>
 const checkDigit = (base: string, weights: number[]) => {
   const sum = weights.reduce(
     (acc, weight, i) => acc + (base.charCodeAt(i) - 48) * weight,
-    0
+    0,
   );
   const rest = sum % 11;
   return rest < 2 ? 0 : 11 - rest;
@@ -19,7 +19,7 @@ const checkDigit = (base: string, weights: number[]) => {
 const hasValidCheckDigits = (
   doc: string,
   firstWeights: number[],
-  secondWeights: number[]
+  secondWeights: number[],
 ) =>
   checkDigit(doc, firstWeights) === Number(doc.at(-2)) &&
   checkDigit(doc, secondWeights) === Number(doc.at(-1));
@@ -37,29 +37,36 @@ const isValidCNPJ = (doc: string) =>
   !/^(\d)\1*$/.test(doc) &&
   hasValidCheckDigits(doc, CNPJ_WEIGHTS, [6, ...CNPJ_WEIGHTS]);
 
-export class FormValidatorUtility {
-  static removeNonNumeric = (v: string) => v.replace(/\D/g, "");
+// A time or date field's value
+const timeOf = (group: AbstractControl, name: string) =>
+  group.get(name)?.value as string | Date | null | undefined;
 
-  static isValidDocument = (v: string) => {
+export const FormValidatorUtility = {
+  removeNonNumeric: (v: string) => v.replace(/\D/g, ""),
+
+  isValidDocument: (v: string) => {
     const doc = normalizeDocument(v);
     return isValidCPF(doc) || isValidCNPJ(doc);
-  };
+  },
 
   /** A CPF or CNPJ with valid check digits; empty values pass. */
-  static validateDocument(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null =>
-      control.value && !FormValidatorUtility.isValidDocument(control.value)
+  validateDocument(): ValidatorFn {
+    return ({
+      value,
+    }: AbstractControl<string | null>): ValidationErrors | null =>
+      value && !FormValidatorUtility.isValidDocument(value)
         ? { document: true }
         : null;
-  }
+  },
 
-  static arrayNotEmptyValidator(): ValidatorFn {
-    return (control: AbstractControl): Record<string, unknown> | null => {
-      const isArray = Array.isArray(control.value);
-      const isEmpty = isArray && control.value.length === 0;
-      return isEmpty ? { arrayNotEmpty: { value: control.value } } : null;
-    };
-  }
+  arrayNotEmptyValidator(): ValidatorFn {
+    return ({
+      value,
+    }: AbstractControl<unknown>): Record<string, unknown> | null =>
+      Array.isArray(value) && value.length === 0
+        ? { arrayNotEmpty: { value } }
+        : null;
+  },
 
   /**
    * Creates a validator function to validate that one time is in the future relative to another.
@@ -67,13 +74,13 @@ export class FormValidatorUtility {
    * @param endControlName The form control name for the end time.
    * @returns A validator function.
    */
-  static timeRangeValidator(
+  timeRangeValidator(
     startControlName: string,
-    endControlName: string
+    endControlName: string,
   ): ValidatorFn {
     return (group: AbstractControl): ValidationErrors | null => {
-      const startTime = group.get(startControlName)?.value;
-      const endTime = group.get(endControlName)?.value;
+      const startTime = timeOf(group, startControlName);
+      const endTime = timeOf(group, endControlName);
       if (startTime && endTime) {
         const getHourMinute = (time: string | Date) =>
           new Date(time).toTimeString().split(":").map(Number);
@@ -94,7 +101,7 @@ export class FormValidatorUtility {
       group.get(endControlName)?.setErrors(null);
       return null; // Return null if no validation errors
     };
-  }
+  },
 
   /**
    * Creates a generic validator function to check if one date is after another within the same FormGroup.
@@ -102,13 +109,13 @@ export class FormValidatorUtility {
    * @param endControlName The form control name for the end date.
    * @returns A validator function that adds an error if the end date is not after the start date.
    */
-  static dateRangeValidator(
+  dateRangeValidator(
     startControlName: string,
-    endControlName: string
+    endControlName: string,
   ): ValidatorFn {
     return (group: AbstractControl): ValidationErrors | null => {
-      const startDate = group.get(startControlName)?.value;
-      const endDate = group.get(endControlName)?.value;
+      const startDate = timeOf(group, startControlName);
+      const endDate = timeOf(group, endControlName);
 
       // Check if both dates are present before comparing
       if (startDate && endDate) {
@@ -128,5 +135,5 @@ export class FormValidatorUtility {
       // Return null if no validation errors
       return null;
     };
-  }
-}
+  },
+};

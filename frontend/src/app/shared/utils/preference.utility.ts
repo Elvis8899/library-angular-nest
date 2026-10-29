@@ -5,7 +5,7 @@
 export const readPreference = <T extends string>(
   key: string,
   allowed: readonly T[],
-  fallback: T
+  fallback: T,
 ): T => {
   try {
     const stored = localStorage.getItem(key);

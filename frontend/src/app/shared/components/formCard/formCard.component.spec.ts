@@ -17,7 +17,7 @@ describe("FormCardComponent", () => {
           <input name="name" />
           <button formActions name="save" type="submit">Save</button>
         </app-form-card>
-      </form>`
+      </form>`,
     );
     // Assert
     expect(spectator.query("h1")).toHaveText("users.create");
@@ -25,18 +25,18 @@ describe("FormCardComponent", () => {
     expect(spectator.query(".fields input[name='name']")).toBeTruthy();
     // Still inside the <form>, so it submits it
     expect(
-      spectator.query(".actions button[name='save']")?.closest("form")
+      spectator.query(".actions button[name='save']")?.closest("form"),
     ).toBeTruthy();
   });
 
   it("Should show the subtitle when given", () => {
     // Act
     spectator = createHost(
-      `<app-form-card title="users.create" subtitle="users.form.subtitle" />`
+      `<app-form-card title="users.create" subtitle="users.form.subtitle" />`,
     );
     // Assert
     expect(spectator.query("mat-card-subtitle")).toHaveText(
-      "users.form.subtitle"
+      "users.form.subtitle",
     );
   });
 });

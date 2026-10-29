@@ -36,10 +36,11 @@ export default defineConfig(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    ignores: ["build/**", "coverage/**", "resources/**"],
+    ignores: ["coverage/**"],
     extends: [
       eslint.configs.recommended,
       tseslint.configs.strictTypeChecked,
+      tseslint.configs.stylisticTypeChecked,
       prettierlint,
       comments.recommended,
       eslintPluginPrettierRecommended,
@@ -57,16 +58,12 @@ export default defineConfig(
         "error",
         { allowOptionalChaining: true },
       ],
-      "@typescript-eslint/no-explicit-any": "error",
       // Casts go through FPF.unsafeCoerce, which makes them easy to spot;
       // `as const` is still allowed
       "@typescript-eslint/consistent-type-assertions": [
         "error",
         { assertionStyle: "never" },
       ],
-      // // TS errors
-      "@typescript-eslint/no-misused-new": "error",
-      "@typescript-eslint/no-non-null-assertion": "error",
       "@eslint-community/eslint-comments/require-description": [
         "error",
         { ignore: [] },
@@ -79,10 +76,15 @@ export default defineConfig(
           caughtErrorsIgnorePattern: "^_",
         },
       ],
-      // // Eslint off
       "@typescript-eslint/no-extraneous-class": "off",
-
-      // // Eslint errors
+      // `text.trim() || null`: an empty text means none
+      "@typescript-eslint/prefer-nullish-coalescing": [
+        "error",
+        { ignorePrimitives: { string: true } },
+      ],
+      // Its rewrite of `x === null || x.y === null` (`x?.y === null`) is false
+      // for a null x
+      "@typescript-eslint/prefer-optional-chain": "off",
       "no-restricted-syntax": [
         "error",
         {

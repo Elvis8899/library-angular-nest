@@ -23,7 +23,7 @@ export const alreadyLoggedCheckGuard: CanActivateFn = () => {
   if (isAuthenticated) {
     const role = credentialsService.getRole();
     const page = defaultRolePage(role);
-    router.navigateByUrl(page);
+    void router.navigateByUrl(page);
     return false;
   }
   return true;
@@ -33,7 +33,7 @@ export const alreadyLoggedCheckGuard: CanActivateFn = () => {
 to the login page if not. */
 export const authenticationGuard: CanActivateFn = (
   route: ActivatedRouteSnapshot,
-  state: RouterStateSnapshot
+  state: RouterStateSnapshot,
 ) => {
   const credentialsService = inject(CredentialsService);
   const router = inject(Router);
@@ -42,7 +42,7 @@ export const authenticationGuard: CanActivateFn = (
   }
 
   log.debug("Not authenticated, redirecting and adding redirect url...");
-  router.navigate(["/login"], {
+  void router.navigate(["/login"], {
     queryParams: { redirect: state.url },
     replaceUrl: true,
   });

@@ -31,7 +31,7 @@ import {
   RESOURCE,
   ResourceChange,
 } from "@app/services/liveUpdates.service";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { UserService } from "@app/services/user.http.service";
 import { ConfirmDialog } from "@app/shared/components/confirmDialog/confirm.dialog.component";
@@ -44,7 +44,7 @@ import {
 } from "@openng/spectator/vitest";
 import { BehaviorSubject, of, Subject, throwError } from "rxjs";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 describe("ListBooksComponent", () => {
   let spectator: Spectator<ListBooksComponent>;
@@ -95,7 +95,7 @@ describe("ListBooksComponent", () => {
 
   const bookServiceMock = createSpyObject(BookService);
   bookServiceMock.getPaginatedBooks.mockReturnValue(
-    of({ data: books, count: 2, limit: 10, page: 0 })
+    of({ data: books, count: 2, limit: 10, page: 0 }),
   );
   let rentalService: SpyObject<RentalService>;
   const dialogReturn = vi.fn(() => of("1" as string | undefined));
@@ -185,11 +185,11 @@ describe("ListBooksComponent", () => {
     spectator.detectChanges();
     // Assert
     expect(
-      spectator.queryAll("th").map((th) => th.textContent?.trim())
+      spectator.queryAll("th").map((th) => th.textContent?.trim()),
     ).toEqual(["common.book", "common.actions"]);
     expect(rows()[0].querySelector(".secondary")).toHaveText("R$100.00");
     expect(rows()[0].querySelector(".book-text .chip")).toHaveClass(
-      "chip-success"
+      "chip-success",
     );
   });
 
@@ -197,7 +197,7 @@ describe("ListBooksComponent", () => {
     // Assert
     expect(rows()[0].querySelector(".chip")).toHaveClass("chip-success");
     expect(rows()[1].querySelector(".chip")).toHaveText(
-      "books.availability.allRented"
+      "books.availability.allRented",
     );
   });
 
@@ -207,7 +207,7 @@ describe("ListBooksComponent", () => {
     spectator.detectChanges();
     // Assert
     expect(rows()[0].querySelector(".chip")).toHaveText(
-      "books.availability.none"
+      "books.availability.none",
     );
   });
 
@@ -265,8 +265,8 @@ describe("ListBooksComponent", () => {
       "dateChange",
       new MatDatepickerInputEvent(
         datepickerInput,
-        spectator.query("input[name='createdAt']")!
-      )
+        spectator.query("input[name='createdAt']")!,
+      ),
     );
     // Assert
     expect(queryBySpy).toHaveBeenCalledWith({ createdAt: date });
@@ -284,7 +284,7 @@ describe("ListBooksComponent", () => {
     spectator.triggerEventHandler(
       MatSelect,
       "selectionChange",
-      new MatSelectChange(spectator.query(MatSelect)!, "name")
+      new MatSelectChange(spectator.query(MatSelect)!, "name"),
     );
     // Assert
     expect(sortBySpy).toHaveBeenCalledWith({ property: "name" });
@@ -297,7 +297,7 @@ describe("ListBooksComponent", () => {
     spectator.triggerEventHandler(
       MatButtonToggleGroup,
       "change",
-      new MatButtonToggleChange(spectator.query(MatButtonToggle)!, "asc")
+      new MatButtonToggleChange(spectator.query(MatButtonToggle)!, "asc"),
     );
     // Assert
     expect(sortBySpy).toHaveBeenCalledWith({ order: "asc" });
@@ -317,7 +317,7 @@ describe("ListBooksComponent", () => {
     spectator.component.openRentBookDialog(books[1]);
     // Assert
     expect(notifications.error).toHaveBeenCalledExactlyOnceWith(
-      "rentals.rent.noneAvailable"
+      "rentals.rent.noneAvailable",
     );
     expect(rentalService.rentBook).not.toHaveBeenCalled();
   });
@@ -335,7 +335,7 @@ describe("ListBooksComponent", () => {
       spectator.click("button[name='rentBook']");
       // Assert
       expect(confirmDialogMock.confirm).toHaveBeenCalledWith(
-        expect.objectContaining({ messageParams: { book: "Book Name" } })
+        expect.objectContaining({ messageParams: { book: "Book Name" } }),
       );
       expect(matDialogMock.open).not.toHaveBeenCalled();
       expect(rentalService.rentBook).toHaveBeenCalledExactlyOnceWith({
@@ -358,13 +358,13 @@ describe("ListBooksComponent", () => {
       // Arrange
       const notifications = spectator.inject(NotificationService);
       rentalService.rentBook.mockReturnValue(
-        throwError(() => new Error("Error"))
+        throwError(() => new Error("Error")),
       );
       // Act
       spectator.click("button[name='rentBook']");
       // Assert
       expect(notifications.errorMessage).toHaveBeenCalledExactlyOnceWith(
-        "Error"
+        "Error",
       );
     });
 
@@ -413,22 +413,22 @@ describe("ListBooksComponent", () => {
         // Act
         openMenu();
         spectator.click(
-          spectator.query("button[name='changeCover']", { root: true })!
+          spectator.query("button[name='changeCover']", { root: true })!,
         );
         pick(png);
         // Assert
         expect(clicked).toHaveBeenCalledOnce();
         expect(bookServiceMock.changeCover).toHaveBeenCalledExactlyOnceWith(
           "1",
-          png
+          png,
         );
         expect(notifications.success).toHaveBeenCalledWith(
-          "books.cover.changed"
+          "books.cover.changed",
         );
         // Without a cover there's none to remove
         openMenu();
         expect(
-          spectator.query("button[name='removeCover']", { root: true })
+          spectator.query("button[name='removeCover']", { root: true }),
         ).toBeNull();
       });
 
@@ -443,7 +443,7 @@ describe("ListBooksComponent", () => {
         pick(new File(["%PDF"], "capa.pdf", { type: "application/pdf" }));
         // Assert
         expect(notifications.error).toHaveBeenCalledExactlyOnceWith(
-          "books.form.coverType"
+          "books.form.coverType",
         );
         expect(bookServiceMock.changeCover).not.toHaveBeenCalled();
       });
@@ -452,14 +452,14 @@ describe("ListBooksComponent", () => {
         // Arrange
         const notifications = spectator.inject(NotificationService);
         bookServiceMock.changeCover.mockReturnValue(
-          throwError(() => new Error("A capa deve ter até 5 MB."))
+          throwError(() => new Error("A capa deve ter até 5 MB.")),
         );
         // Act
         spectator.component.pickCover(books[0], coverInput());
         pick(png);
         // Assert
         expect(notifications.errorMessage).toHaveBeenCalledWith(
-          "A capa deve ter até 5 MB."
+          "A capa deve ter até 5 MB.",
         );
       });
 
@@ -473,26 +473,26 @@ describe("ListBooksComponent", () => {
         // Act
         openMenu();
         spectator.click(
-          spectator.query("button[name='removeCover']", { root: true })!
+          spectator.query("button[name='removeCover']", { root: true })!,
         );
         // Assert
         expect(confirmDialogMock.confirm).toHaveBeenCalledWith(
-          expect.objectContaining({ message: "books.cover.removeConfirm" })
+          expect.objectContaining({ message: "books.cover.removeConfirm" }),
         );
         expect(bookServiceMock.removeCover).toHaveBeenCalledExactlyOnceWith(
-          "1"
+          "1",
         );
         expect(notifications.success).toHaveBeenCalledWith(
-          "books.cover.removed"
+          "books.cover.removed",
         );
         // Act: a failure shows the API's message
         bookServiceMock.removeCover.mockReturnValue(
-          throwError(() => new Error("Livro sem capa."))
+          throwError(() => new Error("Livro sem capa.")),
         );
         spectator.component.removeCover(books[0]);
         // Assert
         expect(notifications.errorMessage).toHaveBeenCalledWith(
-          "Livro sem capa."
+          "Livro sem capa.",
         );
         vi.restoreAllMocks();
       });
@@ -523,7 +523,7 @@ describe("ListBooksComponent", () => {
       spectator.click("button[name='createBook']");
       // Assert
       expect(spectator.inject(Router).navigateByUrl).toHaveBeenCalledWith(
-        "/books/add"
+        "/books/add",
       );
     });
 
@@ -542,10 +542,10 @@ describe("ListBooksComponent", () => {
       spectator.click("button[name='removeBook']");
       // Assert
       expect(confirmDialogMock.confirm).toHaveBeenCalledWith(
-        expect.objectContaining({ destructive: true })
+        expect.objectContaining({ destructive: true }),
       );
       expect(bookServiceMock.deleteBookItem).toHaveBeenCalledExactlyOnceWith(
-        "1"
+        "1",
       );
       expect(spectator.inject(NotificationService).success).toHaveBeenCalled();
     });
@@ -563,10 +563,10 @@ describe("ListBooksComponent", () => {
       // Arrange
       const notifications = spectator.inject(NotificationService);
       bookServiceMock.addBookItem.mockReturnValueOnce(
-        throwError(() => new Error("Add error"))
+        throwError(() => new Error("Add error")),
       );
       bookServiceMock.deleteBookItem.mockReturnValueOnce(
-        throwError(() => new Error("Remove error"))
+        throwError(() => new Error("Remove error")),
       );
       // Act
       spectator.click("button[name='addBook']");
@@ -586,7 +586,7 @@ describe("ListBooksComponent", () => {
       spectator.click("button[name='more']");
       spectator.inject(ApplicationRef).tick();
       spectator.click(
-        spectator.query("button[name='addBook']", { root: true })!
+        spectator.query("button[name='addBook']", { root: true })!,
       );
       // Assert
       expect(bookServiceMock.addBookItem).toHaveBeenCalledExactlyOnceWith({
@@ -596,11 +596,11 @@ describe("ListBooksComponent", () => {
       spectator.click("button[name='more']");
       spectator.inject(ApplicationRef).tick();
       spectator.click(
-        spectator.query("button[name='removeBook']", { root: true })!
+        spectator.query("button[name='removeBook']", { root: true })!,
       );
       // Assert
       expect(bookServiceMock.deleteBookItem).toHaveBeenCalledExactlyOnceWith(
-        "1"
+        "1",
       );
     });
 
@@ -609,14 +609,14 @@ describe("ListBooksComponent", () => {
       breakpoints.next({ matches: true, breakpoints: {} });
       spectator.detectChanges();
       // Act: the second book's menu
-      spectator.click(spectator.queryAll("button[name='more']")[1]!);
+      spectator.click(spectator.queryAll("button[name='more']")[1]);
       spectator.inject(ApplicationRef).tick();
       // Assert
       expect(
-        spectator.query("button[name='addBook']", { root: true })
+        spectator.query("button[name='addBook']", { root: true }),
       ).toExist();
       expect(
-        spectator.query("button[name='removeBook']", { root: true })
+        spectator.query("button[name='removeBook']", { root: true }),
       ).toBeNull();
     });
 
@@ -629,7 +629,7 @@ describe("ListBooksComponent", () => {
       spectator.component.removeBookItem(books[1]);
       // Assert
       expect(notifications.error).toHaveBeenCalledExactlyOnceWith(
-        "books.copies.noneToRemove"
+        "books.copies.noneToRemove",
       );
       expect(confirmDialogMock.confirm).not.toHaveBeenCalled();
       expect(bookServiceMock.deleteBookItem).not.toHaveBeenCalled();

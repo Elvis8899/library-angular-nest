@@ -27,10 +27,10 @@ import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service
 import { PinoLogger } from "nestjs-pino";
 
 /** What a handler's pipeline reads: the logger and the event publisher. */
-export type UseCaseEnv = {
+export interface UseCaseEnv {
   logger: PinoLogger;
   events: RunEvents;
-};
+}
 
 /** A run's publisher: the app's, keeping what the run published (and
  * whether it changed nothing on purpose) for the observer. */

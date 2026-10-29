@@ -22,7 +22,7 @@ export class LayoutComponent {
     inject(Router)
       .events.pipe(
         filter((event) => event instanceof NavigationEnd),
-        takeUntilDestroyed(inject(DestroyRef))
+        takeUntilDestroyed(inject(DestroyRef)),
       )
       .subscribe(() => this.closeMenu());
   }

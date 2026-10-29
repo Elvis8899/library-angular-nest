@@ -4,7 +4,7 @@ import { Paginated } from "@shared/utils/database/repository.port";
 import { PageWindow } from "@shared/utils/domain/query.base";
 
 /** What the audit screen filters by; every field optional. */
-export type AuditFilter = {
+export interface AuditFilter {
   userId?: string;
   // Part of the handler's name, any case ("worker" finds UpdateWorker)
   useCase?: string;
@@ -12,7 +12,7 @@ export type AuditFilter = {
   // The instants the period covers, from included to before excluded
   from?: Date;
   before?: Date;
-};
+}
 
 /** Where the audit entries are kept: written once, never changed. */
 export abstract class AuditLog {

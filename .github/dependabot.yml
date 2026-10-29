@@ -28,8 +28,32 @@ updates:
       # Angular and typescript-eslint don't support TypeScript 7 yet
       - dependency-name: typescript
         update-types: [version-update:semver-major]
-      # Follows the Node version in .nvmrc (24)
+      # Follows the Node version in .nvmrc (26)
       - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+
+  # The images' bases (node, nginx)
+  - package-ecosystem: docker
+    directories:
+      - /backend/.docker
+      - /frontend/.docker
+    schedule:
+      interval: weekly
+    ignore:
+      # Follows .nvmrc; odd majors are never LTS
+      - dependency-name: node
+        update-types: [version-update:semver-major]
+
+  # The stacks' services (Postgres, nginx, Grafana, Prometheus…)
+  - package-ecosystem: docker-compose
+    directory: /.docker
+    schedule:
+      interval: weekly
+    ignore:
+      # A new major can't read the old one's data without pg_upgrade
+      - dependency-name: postgres
+        update-types: [version-update:semver-major]
+      - dependency-name: node
         update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions

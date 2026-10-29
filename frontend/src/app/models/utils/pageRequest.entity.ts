@@ -20,5 +20,5 @@ export interface Page<T> {
 }
 
 export type PaginatedEndpoint<T, Q> = (
-  pageable: PageRequest<T, Q>
+  pageable: PageRequest<T, Q>,
 ) => Observable<Page<T>>;

@@ -8,12 +8,12 @@ import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
     in a respective repository.
 */
 
-export type Paginated<T> = {
+export interface Paginated<T> {
   count: number;
   limit: number;
   page: number;
   data: T[];
-};
+}
 
 export interface RepositoryFindAllPort<Entity> {
   findAll(): TE.TaskEither<Error, Entity[]>;

@@ -59,7 +59,7 @@ const endFormats: readonly (ReportFormat | undefined)[] = ["money", "qty"];
 export const summedTotals = <Row>(
   label: TranslationKey,
   columns: readonly ReportColumn<Row>[],
-  rows: readonly Row[]
+  rows: readonly Row[],
 ): ReportTotals => ({
   label,
   values: Object.fromEntries(
@@ -68,7 +68,7 @@ export const summedTotals = <Row>(
       .map((column) => [
         column.key,
         rows.reduce((sum, row) => sum + Number(column.value?.(row) ?? 0), 0),
-      ])
+      ]),
   ),
 });
 
@@ -90,7 +90,7 @@ export class ReportCellDirective<Row> {
   /* eslint-disable @typescript-eslint/no-unused-vars */
   static ngTemplateContextGuard<Row>(
     _directive: ReportCellDirective<Row>,
-    context: unknown
+    context: unknown,
   ): context is { $implicit: Row } {
     return true;
   }
@@ -131,7 +131,7 @@ export class ReportTableComponent<Row> {
     return this.columns().filter((column) => !(small && column.wideOnly));
   });
   readonly withHeader = computed(() =>
-    this.shown().some((column) => column.header)
+    this.shown().some((column) => column.header),
   );
   readonly cells = computed(
     () =>
@@ -139,8 +139,8 @@ export class ReportTableComponent<Row> {
         this._cellTemplates().map((cell) => [
           cell.appReportCell(),
           cell.template,
-        ])
-      )
+        ]),
+      ),
   );
   private readonly _formats = computed(() => {
     const locale = this._locale();
@@ -163,7 +163,7 @@ export class ReportTableComponent<Row> {
 
   translation(
     column: ReportColumn<Row>,
-    row: Row
+    row: Row,
   ): { key: TranslationKey; params?: Record<string, unknown> } | null {
     const translation = column.translated?.(row) ?? null;
     return typeof translation === "string" ? { key: translation } : translation;

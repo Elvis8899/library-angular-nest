@@ -98,12 +98,12 @@ export const createHandlerModule = async (
   return { module, get: typedGet(module) };
 };
 
-export type HandlerModuleOptions = {
+export interface HandlerModuleOptions {
   providers: Provider[];
   imports?: ModuleMetadata["imports"];
   /** Runs module.init(), which registers CQRS event handlers. */
   init?: boolean;
-};
+}
 
 /**
  * Rebuilds the handler module before each test and returns the providers

@@ -6,7 +6,7 @@ import { ApplicationRef } from "@angular/core";
 import { Router, RouterModule } from "@angular/router";
 import { AddBooksComponent } from "@app/pages/books/addBook/addBook.component";
 import { BookService } from "@app/pages/books/book.http.service";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { NotificationService } from "@app/services/notification.service";
 import { MockComponent } from "@app/shared/utils/test/mockComponent";
 import { provideTranslateService } from "@ngx-translate/core";
@@ -17,7 +17,7 @@ import {
 } from "@openng/spectator/vitest";
 import { defer, of, Subject, throwError } from "rxjs";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 describe("AddBooksComponent", () => {
   let spectator: Spectator<AddBooksComponent>;
@@ -40,9 +40,9 @@ describe("AddBooksComponent", () => {
     bookServiceMock.addBook.mockReturnValue(of({ id: "b1" }));
     bookServiceMock.changeCover.mockReturnValue(of(undefined));
     inputs = {
-      name: spectator.query("input[name='name']") as HTMLInputElement,
-      price: spectator.query("input[name='price']") as HTMLInputElement,
-      cover: spectator.query("input[name='cover']") as HTMLInputElement,
+      name: spectator.query("input[name='name']")!,
+      price: spectator.query("input[name='price']")!,
+      cover: spectator.query("input[name='cover']")!,
     };
   });
 
@@ -64,7 +64,7 @@ describe("AddBooksComponent", () => {
     });
     spectator.dispatchFakeEvent(inputs.cover, "change");
   }
-  const cover = () => spectator.query("img.cover") as HTMLImageElement;
+  const cover = () => spectator.query("img.cover")!;
 
   it("Should have a title", () => {
     // Assert
@@ -87,10 +87,10 @@ describe("AddBooksComponent", () => {
     });
     expect(bookServiceMock.changeCover).toHaveBeenCalledExactlyOnceWith(
       "b1",
-      png
+      png,
     );
     expect(notifications.success).toHaveBeenCalledExactlyOnceWith(
-      "books.created"
+      "books.created",
     );
     expect(navigateSpy).toHaveBeenCalledWith(["/books/list"]);
     expect(spectator.component.saving()).toBe(false);
@@ -115,7 +115,7 @@ describe("AddBooksComponent", () => {
     const navigateSpy = vi.spyOn(spectator.inject(Router), "navigate");
     const notifications = spectator.inject(NotificationService);
     bookServiceMock.changeCover.mockReturnValue(
-      throwError(() => new Error("A capa deve ter até 5 MB."))
+      throwError(() => new Error("A capa deve ter até 5 MB.")),
     );
     fillIn("Dom Casmurro", "10");
     pick(png);
@@ -123,7 +123,7 @@ describe("AddBooksComponent", () => {
     spectator.click("button[name='save']");
     // Assert
     expect(notifications.error).toHaveBeenCalledExactlyOnceWith(
-      "books.form.coverNotSaved"
+      "books.form.coverNotSaved",
     );
     expect(notifications.success).not.toHaveBeenCalled();
     expect(navigateSpy).toHaveBeenCalledWith(["/books/list"]);
@@ -135,7 +135,7 @@ describe("AddBooksComponent", () => {
     const revoked = vi.spyOn(URL, "revokeObjectURL").mockReturnValue();
     expect(cover().getAttribute("src")).toBe("images/no-image.png");
     expect(spectator.query("button[name='pickCover']")).toHaveText(
-      "books.form.pickCover"
+      "books.form.pickCover",
     );
     // Act
     pick(png);
@@ -143,7 +143,7 @@ describe("AddBooksComponent", () => {
     // Assert
     expect(cover().getAttribute("src")).toBe("blob:capa");
     expect(spectator.query("button[name='pickCover']")).toHaveText(
-      "books.cover.change"
+      "books.cover.change",
     );
     // Act
     spectator.click("button[name='clearCover']");
@@ -164,13 +164,13 @@ describe("AddBooksComponent", () => {
     pick(
       new File([new Uint8Array(6 * 1024 * 1024)], "big.png", {
         type: "image/png",
-      })
+      }),
     );
     spectator.component.pickCover(new Event("change"));
     // Assert
     expect(clicked).toHaveBeenCalledOnce();
     expect(notifications.error).toHaveBeenCalledExactlyOnceWith(
-      "books.form.coverTooLarge"
+      "books.form.coverTooLarge",
     );
     expect(spectator.component.cover()).toBeNull();
   });
@@ -179,7 +179,7 @@ describe("AddBooksComponent", () => {
     // Arrange
     const notifications = spectator.inject(NotificationService);
     bookServiceMock.addBook.mockReturnValueOnce(
-      throwError(() => new Error("Erro"))
+      throwError(() => new Error("Erro")),
     );
     fillIn("Dom Casmurro", "100");
     // Act
@@ -209,7 +209,7 @@ describe("AddBooksComponent", () => {
     // Assert
     expect(bookServiceMock.addBook).not.toHaveBeenCalled();
     expect(
-      spectator.queryAll("mat-error").map((e) => e.textContent?.trim())
+      spectator.queryAll("mat-error").map((e) => e.textContent?.trim()),
     ).toEqual(["books.form.priceInvalid"]);
   });
 
@@ -222,7 +222,7 @@ describe("AddBooksComponent", () => {
       defer(() => {
         sent++;
         return response;
-      })
+      }),
     );
     fillIn("Dom Casmurro", "100");
     // Act
@@ -243,7 +243,7 @@ describe("AddBooksComponent", () => {
     // Assert
     expect(spectator.query("a[name='cancel']")).toHaveAttribute(
       "href",
-      "/books/list"
+      "/books/list",
     );
   });
 });

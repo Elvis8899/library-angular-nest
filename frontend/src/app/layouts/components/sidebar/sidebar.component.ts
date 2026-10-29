@@ -46,7 +46,7 @@ export class SidebarComponent {
 
   // The layout only exists while logged in, so the role can't change here
   readonly items = sidebarMenuItems.filter((item) =>
-    this._credentialsService.hasRole(item.roles)
+    this._credentialsService.hasRole(item.roles),
   );
   readonly rows = menuRows(this.items);
   readonly logoutItem = sidebarLogoutItem;
@@ -54,16 +54,16 @@ export class SidebarComponent {
   private readonly _path = toSignal(
     this._router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
-      map(() => this._router.url)
+      map(() => this._router.url),
     ),
-    { initialValue: this._router.url }
+    { initialValue: this._router.url },
   );
 
   // The group of the current page, which opens on reaching it
   readonly currentGroup = computed(() => {
     const path = this._path().split(/[?#]/)[0];
     return this.items.find(
-      ({ route }) => path === route || path.startsWith(`${route}/`)
+      ({ route }) => path === route || path.startsWith(`${route}/`),
     )?.group;
   });
 

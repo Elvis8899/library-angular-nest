@@ -39,7 +39,7 @@ export class CustomizedTableComponent<T, Q> implements AfterContentInit {
   // the data source's displayedColumns
   readonly columns = input<string[]>();
   readonly shownColumns = computed(
-    () => this.columns() ?? this.data().displayedColumns
+    () => this.columns() ?? this.data().displayedColumns,
   );
 
   // The data source's requests stay RxJS (switchMap cancels a stale one);
@@ -47,7 +47,7 @@ export class CustomizedTableComponent<T, Q> implements AfterContentInit {
   private readonly _data$ = toObservable(this.data);
   readonly loading = toSignal(
     this._data$.pipe(switchMap((data) => data.loading$)),
-    { initialValue: false }
+    { initialValue: false },
   );
   readonly page = toSignal(this._data$.pipe(switchMap((data) => data.page$)));
 

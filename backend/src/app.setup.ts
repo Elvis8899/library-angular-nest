@@ -36,7 +36,7 @@ export const configureApp = async (
     // Fastify's request type doesn't declare the user the guards set
     const request: { user?: Partial<RequestJWTPayload> } =
       FPF.unsafeCoerce(req);
-    request.user = request.user || {};
+    request.user ??= {};
     next();
   });
   // Every answered request, by its route's pattern, for the metrics

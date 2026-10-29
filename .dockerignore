@@ -6,8 +6,6 @@
 **/.yarn-cache
 # Settings are passed in at runtime, never built into an image
 **/.env*
-# …but this one is source: the frontend's version (ngx-scripts env)
-!frontend/src/environments/.env.ts
 backend/prisma/generated
 .git
 .github

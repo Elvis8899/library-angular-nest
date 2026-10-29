@@ -10,12 +10,12 @@ import {
 import { PaginatedQueryParams } from "@shared/utils/domain/query.base";
 
 // The queries every model's delegate has, as the reads below call them
-type ReadDelegate = {
+interface ReadDelegate {
   findUnique: (args: object) => Promise<unknown>;
   findFirst: (args: object) => Promise<unknown>;
   findMany: (args: object) => Promise<unknown[]>;
   count: (args: object) => Promise<number>;
-};
+}
 
 // A delegate's findMany argument, from which the filter's and order's types
 // come (Prisma.WorkerWhereInput, Prisma.WorkerOrderByWithRelationInput…)
@@ -29,13 +29,13 @@ type WhereOf<Delegate> =
 type OrderOf<Delegate> =
   FindManyArgs<Delegate> extends { orderBy?: infer Order } ? Order : never;
 
-export type RowReadsOptions = {
+export interface RowReadsOptions {
   /** Prisma's `include` (or `select`) for every read, e.g.
    * `{ lines: true } satisfies Prisma.WoodBatchInclude`. */
   include?: object;
   /** The order of the lists, e.g. `{ name: "asc" }`. */
   orderBy?: object;
-};
+}
 
 /**
  * The reads most repositories have, written once:

@@ -1,10 +1,10 @@
 import { RouterModule } from "@angular/router";
 import { AppComponent } from "@app/app.component";
-import { Logger } from "@app/services/logger.service";
+import { Logger, LogLevel } from "@app/services/logger.service";
 import { provideTranslateService } from "@ngx-translate/core";
 import { createComponentFactory, Spectator } from "@openng/spectator/vitest";
 
-Logger.level = 0;
+Logger.level = LogLevel.Off;
 
 describe("AppComponent", () => {
   let spectator: Spectator<AppComponent>;

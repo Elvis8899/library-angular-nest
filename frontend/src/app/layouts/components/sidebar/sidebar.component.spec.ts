@@ -41,7 +41,7 @@ describe("SidebarComponent", () => {
   // Its rows: a group's title, or a page's
   const rowTitles = (forRole: ROLE) =>
     menuRows(itemsFor(forRole)).map((row) =>
-      row.kind === "group" ? row.group.title : row.item.title
+      row.kind === "group" ? row.group.title : row.item.title,
     );
   const adminGroup = () => spectator.query("button.menu-group");
 
@@ -79,7 +79,7 @@ describe("SidebarComponent", () => {
       expect(
         spectator
           .queryAll(".menu-group-items .menu-label")
-          .map((label) => label.textContent?.trim())
+          .map((label) => label.textContent?.trim()),
       ).toEqual(["nav.users", "nav.audit"]);
 
       spectator.click(adminGroup()!);
@@ -95,7 +95,7 @@ describe("SidebarComponent", () => {
       expect(adminGroup()).toHaveAttribute("aria-expanded", "true");
       expect(spectator.query("a.menu-link.active")).toHaveAttribute(
         "href",
-        "/users"
+        "/users",
       );
       expect(adminGroup()).not.toHaveClass("active");
 
@@ -148,7 +148,7 @@ describe("SidebarComponent", () => {
       // Only icons are shown, so the title names the page
       expect(spectator.query("a.menu-link")).toHaveAttribute(
         "title",
-        "nav.books"
+        "nav.books",
       );
 
       spectator.click("button.toggle");
@@ -167,7 +167,7 @@ describe("SidebarComponent", () => {
       expect(spectator.query(".brand-name")).toHaveText("Biblioteca");
       expect(spectator.query("button.toggle")).toHaveAttribute(
         "aria-label",
-        "Mostrar ou esconder o menu"
+        "Mostrar ou esconder o menu",
       );
     });
   });

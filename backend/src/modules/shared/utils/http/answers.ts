@@ -5,11 +5,11 @@ import { z } from "zod";
 
 type Status = HttpStatus.OK | HttpStatus.CREATED;
 
-type Options = {
+interface Options {
   // OK by default; a create answers CREATED
   status?: Status;
   description?: string;
-};
+}
 
 /** A method decorator for routes that answer `T`. */
 type Answering<T> = <M extends (...args: never[]) => Promise<T>>(

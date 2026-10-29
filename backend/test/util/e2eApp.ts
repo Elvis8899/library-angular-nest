@@ -15,7 +15,7 @@ import { typedGet, TypedGet } from "@test/util/typedGet";
 import { PinoLogger } from "nestjs-pino";
 import request from "supertest";
 
-export type E2eOptions = {
+export interface E2eOptions {
   /** Replaces AuthGuard, usually a MockAuthGuardBuilder. Without it,
    * requests need a real token. */
   authGuard?: CanActivate | MockAuthGuardBuilder;
@@ -25,9 +25,9 @@ export type E2eOptions = {
   /** Empties the database and resets the MockAuthGuardBuilder before each
    * test, before the spec's own hooks, as most specs need. */
   resetEachTest?: boolean;
-};
+}
 
-export type E2eApp = {
+export interface E2eApp {
   app: NestFastifyApplication;
   module: TestingModule;
   prisma: PrismaService;
@@ -35,7 +35,7 @@ export type E2eApp = {
   get: TypedGet;
   /** A supertest request against the app: e2e.http().get("/v1/users") */
   http: () => ReturnType<typeof request>;
-};
+}
 
 /** Builds the full app as main.ts does, with a silent logger. */
 export const buildE2eApp = async (options: E2eOptions): Promise<E2eApp> => {

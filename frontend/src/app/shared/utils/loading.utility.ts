@@ -26,7 +26,7 @@ export const reportError =
  * the notifications). */
 export const orNull = <T>(
   log: Logger,
-  notify?: NotificationService
+  notify?: NotificationService,
 ): OperatorFunction<T, T | null> =>
   catchError<T, Observable<null>>((error: ApiError | null) => {
     if (notify) reportError(log, notify)(error);
@@ -38,7 +38,7 @@ export const orNull = <T>(
  * the value, or null when it fails. */
 export const loading = <T>(
   log: Logger,
-  notify?: NotificationService
+  notify?: NotificationService,
 ): OperatorFunction<T, T | null | undefined> =>
   pipe(startWith(undefined), orNull<T | undefined>(log, notify));
 
@@ -49,11 +49,11 @@ export const reloaded = <T>(
   triggers: readonly Observable<unknown>[],
   request: () => Observable<T>,
   log: Logger,
-  notify?: NotificationService
+  notify?: NotificationService,
 ): Signal<T | null | undefined> =>
   toSignal(
     merge(...triggers).pipe(
       startWith(null),
-      switchMap(() => request().pipe(orNull(log, notify)))
-    )
+      switchMap(() => request().pipe(orNull(log, notify))),
+    ),
   );

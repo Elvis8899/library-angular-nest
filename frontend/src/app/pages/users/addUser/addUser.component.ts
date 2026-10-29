@@ -73,8 +73,8 @@ export class AddUsersComponent implements HasUnsavedChanges {
       () => {
         this._notify.success("users.created");
         this.addUserForm.markAsPristine();
-        this._router.navigate(["/users/list"]);
-      }
+        void this._router.navigate(["/users/list"]);
+      },
     );
   }
 }

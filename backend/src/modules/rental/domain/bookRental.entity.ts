@@ -127,7 +127,7 @@ export const getRentalFines = (now: Date) => (rental: BookRental) => {
   const overdue = days > 0;
   const fixed = overdue ? rentalPolicy.fixedFine : 0;
   const perDayValue = roundToCentavo(
-    (rental.bookItem?.book?.price || 0) * rentalPolicy.dailyFineRate,
+    (rental.bookItem?.book?.price ?? 0) * rentalPolicy.dailyFineRate,
   );
   const total = roundToCentavo(fixed + perDayValue * days);
   return {

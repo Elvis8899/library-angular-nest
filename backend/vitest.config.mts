@@ -75,7 +75,7 @@ export default defineConfig({
       provider: "v8",
       include: ["src/**/*.ts"],
       // main.ts only listens; the e2e tests run src/app.setup.ts
-      exclude: ["src/configs/**", "src/main.ts"],
+      exclude: ["src/main.ts"],
       reporter: ["json", "text-summary", "lcov", "clover", "json-summary"],
       thresholds: {
         branches: 100,
