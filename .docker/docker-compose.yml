@@ -185,7 +185,7 @@ services:
   # Probes https://<DOMAIN>/check/status the way users reach it (DNS, the
   # certificate, nginx, the API), for the "site" job
   blackbox-exporter:
-    image: prom/blackbox-exporter:v0.29.0
+    image: prom/blackbox-exporter:v0.29.1
     restart: always
     networks:
       - "nginx_network"

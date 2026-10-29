@@ -147,7 +147,7 @@ services:
 
   # Probes the site (nginx's /check/status) for the "site" job
   blackbox-exporter:
-    image: prom/blackbox-exporter:v0.29.0
+    image: prom/blackbox-exporter:v0.29.1
 
   # Comes with the Prometheus data source and the dashboards
   # (grafana/provisioning)
