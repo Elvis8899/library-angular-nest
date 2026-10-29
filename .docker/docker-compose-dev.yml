@@ -32,7 +32,8 @@ services:
       HUSKY: "0"
     volumes:
       - ..:/usr/src/app
-    command: yarn install --frozen-lockfile
+    # Node 26's image comes without Yarn: npx fetches the packageManager version
+    command: npx --yes yarn@1.22.22 install --frozen-lockfile
 
   # Angular dev server, served by nginx at /. The browser calls /v1 on the
   # same origin, so nginx sends those to the API and proxy.conf.json is unused
@@ -44,7 +45,7 @@ services:
       NG_CLI_ANALYTICS: "false"
     volumes:
       - ..:/usr/src/app
-    command: yarn ng serve --host 0.0.0.0 --port 4200
+    command: npx ng serve --host 0.0.0.0 --port 4200
     depends_on:
       install:
         condition: service_completed_successfully

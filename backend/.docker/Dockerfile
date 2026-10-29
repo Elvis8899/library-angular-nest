@@ -6,6 +6,9 @@ FROM node:26-slim AS base
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends openssl dumb-init \
   && rm -rf /var/lib/apt/lists/*
+# Node 26's images come without Yarn (or Corepack): install the root
+# package.json's packageManager version
+RUN npm install -g yarn@1.22.22
 WORKDIR /app
 
 # The workspace's manifests with only the API and the contracts in it

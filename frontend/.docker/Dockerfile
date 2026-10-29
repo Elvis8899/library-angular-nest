@@ -4,6 +4,9 @@
 # frontend-image job); the server only pulls it.
 
 FROM node:26-slim AS builder
+# Node 26's images come without Yarn (or Corepack): install the root
+# package.json's packageManager version
+RUN npm install -g yarn@1.22.22
 WORKDIR /app
 # The workspace's manifests with only the web app and the contracts in it
 COPY package.json yarn.lock .docker/pruneWorkspace.js ./
