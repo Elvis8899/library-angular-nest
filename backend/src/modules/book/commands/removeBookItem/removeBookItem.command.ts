@@ -7,7 +7,7 @@ import {
 import { ensureAvailable } from "@modules/book/domain/bookItem.entity";
 import { bookItemRemoved } from "@modules/book/domain/events/bookItemRemoved.event";
 import { Command, CommandHandler } from "@shared/utils/application/cqrs";
-import { inputsRTE } from "@shared/utils/application/fromInput";
+import { inputRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { orFail, perform } from "@shared/utils/application/perform";
 import {
@@ -35,10 +35,10 @@ export class RemoveBookItemHandler extends UseCaseHandler<RemoveBookItem> {
 
   protected pipeline(command: RemoveBookItem) {
     return FPF.pipe(
-      inputsRTE({ id: [UUID, "id", command.props] }),
+      inputRTE(UUID, "id", command.props),
 
       //Validate BookItem exists and is available
-      RTE.chain(({ id }) =>
+      RTE.chain((id) =>
         orFail(
           perform(this.bookInfoRepository).findBookItemById(id),
           bookItemNotFoundException,

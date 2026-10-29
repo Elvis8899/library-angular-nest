@@ -8,7 +8,7 @@ import {
 import { FileStorage } from "@shared/storage/fileStorage";
 import { removeUnusedRTE } from "@shared/storage/storedFiles";
 import { Command, CommandHandler } from "@shared/utils/application/cqrs";
-import { inputsRTE } from "@shared/utils/application/fromInput";
+import { inputRTE } from "@shared/utils/application/fromInput";
 import { FPF, O, RTE } from "@shared/utils/application/monads";
 import { orFail, perform } from "@shared/utils/application/perform";
 import { changedRTE, UseCaseHandler } from "@shared/utils/application/useCase";
@@ -35,8 +35,8 @@ export class RemoveBookCoverHandler extends UseCaseHandler<RemoveBookCover> {
 
   protected pipeline({ id }: RemoveBookCover) {
     return FPF.pipe(
-      inputsRTE({ id: [UUID, "id", id] }),
-      RTE.chain(({ id }) =>
+      inputRTE(UUID, "id", id),
+      RTE.chain((id) =>
         orFail(
           perform(this.bookInfoRepository).findById(id),
           bookInfoNotFoundException,

@@ -2,7 +2,7 @@ import { PageQuery, QueryString } from "@library/contracts";
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { User } from "@modules/user/domain/user.entity";
 import { Query, QueryHandler } from "@shared/utils/application/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
+import { inputRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { perform } from "@shared/utils/application/perform";
 import { UseCaseHandler } from "@shared/utils/application/useCase";
@@ -35,9 +35,7 @@ export class PaginatedUsersQueryHandler extends UseCaseHandler<PaginatedUsersQue
    */
   protected pipeline(query: PaginatedUsersQuery) {
     return FPF.pipe(
-      query.params,
-      fromInputRE(PageRequestSchema, "PaginatedUsersQuery"),
-      RTE.fromReaderEither,
+      inputRTE(PageRequestSchema, "PaginatedUsersQuery", query.params),
       RTE.chain(perform(this.userRepository).findAllPaginated),
     );
   }

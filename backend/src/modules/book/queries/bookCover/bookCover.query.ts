@@ -6,7 +6,7 @@ import {
 } from "@modules/book/domain/bookInfo.errors";
 import { FileStorage, StoredFile } from "@shared/storage/fileStorage";
 import { Query, QueryHandler } from "@shared/utils/application/cqrs";
-import { inputsRTE } from "@shared/utils/application/fromInput";
+import { inputRTE } from "@shared/utils/application/fromInput";
 import { FPF, O, RTE } from "@shared/utils/application/monads";
 import { orFail, perform } from "@shared/utils/application/perform";
 import { UseCaseHandler } from "@shared/utils/application/useCase";
@@ -34,8 +34,8 @@ export class BookCoverQueryHandler extends UseCaseHandler<BookCoverQuery> {
 
   protected pipeline({ id }: BookCoverQuery) {
     return FPF.pipe(
-      inputsRTE({ id: [UUID, "id", id] }),
-      RTE.chain(({ id }) =>
+      inputRTE(UUID, "id", id),
+      RTE.chain((id) =>
         orFail(
           perform(this.bookInfoRepository).findById(id),
           bookInfoNotFoundException,

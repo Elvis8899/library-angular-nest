@@ -15,8 +15,8 @@ import { PasswordHasher } from "@modules/user/domain/passwordHasher.port";
 import { JwtService } from "@nestjs/jwt";
 import { Clock } from "@shared/clock/clock";
 import { Command, CommandHandler } from "@shared/utils/application/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
-import { B, FPF, RE, RTE, TE } from "@shared/utils/application/monads";
+import { inputRTE } from "@shared/utils/application/fromInput";
+import { B, FPF, RTE, TE } from "@shared/utils/application/monads";
 import { orFail, perform } from "@shared/utils/application/perform";
 import { UseCaseHandler } from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
@@ -46,11 +46,7 @@ export class LoginCommandHandler extends UseCaseHandler<LoginCommand> {
 
   protected pipeline(command: LoginCommand) {
     return FPF.pipe(
-      //Data validation
-      RE.of(command.props),
-
-      RE.chain(fromInputRE(LoginInput, "LoginInput")),
-      RTE.fromReaderEither,
+      inputRTE(LoginInput, "LoginInput", command.props),
 
       //Validate User exists
       RTE.chain((data) =>

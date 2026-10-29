@@ -15,8 +15,8 @@ import { UserRepository } from "@modules/user/database/user.repository.port";
 import { JwtService } from "@nestjs/jwt";
 import { Clock } from "@shared/clock/clock";
 import { Command, CommandHandler } from "@shared/utils/application/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
-import { B, E, FPF, RE, RTE, TE } from "@shared/utils/application/monads";
+import { inputRTE } from "@shared/utils/application/fromInput";
+import { B, E, FPF, RTE, TE } from "@shared/utils/application/monads";
 import { orFail, perform } from "@shared/utils/application/perform";
 import { UseCaseHandler } from "@shared/utils/application/useCase";
 import { RealUUIDGeneratorService } from "@shared/uuid/realUUIDGenerator.service";
@@ -45,9 +45,7 @@ export class RefreshTokenCommandHandler extends UseCaseHandler<RefreshTokenComma
 
   protected pipeline(command: RefreshTokenCommand) {
     return FPF.pipe(
-      RE.of(command.props),
-      RE.chain(fromInputRE(RefreshTokenInput, "RefreshTokenInput")),
-      RTE.fromReaderEither,
+      inputRTE(RefreshTokenInput, "RefreshTokenInput", command.props),
 
       //Validate refresh token signature, expiration, audience and issuer
       RTE.chainTaskEitherKW(({ refreshToken }) =>

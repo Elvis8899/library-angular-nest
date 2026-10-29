@@ -8,7 +8,7 @@ import { bookRentalNotFoundException } from "@modules/rental/domain/bookRental.e
 import { bookReturned } from "@modules/rental/domain/events/bookReturned.event";
 import { Clock } from "@shared/clock/clock";
 import { Command, CommandHandler } from "@shared/utils/application/cqrs";
-import { inputsRTE } from "@shared/utils/application/fromInput";
+import { inputRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { orFail, perform } from "@shared/utils/application/perform";
 import {
@@ -46,10 +46,10 @@ export class ReturnBookCommandHandler extends UseCaseHandler<ReturnBookCommand> 
 
   protected pipeline(command: ReturnBookCommand) {
     return FPF.pipe(
-      inputsRTE({ id: [UUID, "id", command.bookRentalId] }),
+      inputRTE(UUID, "id", command.bookRentalId),
 
       //Validate BookRental exists and belongs to the requester
-      RTE.chain(({ id }) =>
+      RTE.chain((id) =>
         orFail(
           perform(this.bookRentalRepository).findById(id),
           bookRentalNotFoundException,

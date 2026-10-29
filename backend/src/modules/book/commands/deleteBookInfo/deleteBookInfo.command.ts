@@ -6,7 +6,7 @@ import { bookInfoDeleted } from "@modules/book/domain/events/bookInfoDeleted.eve
 import { FileStorage } from "@shared/storage/fileStorage";
 import { removeUnusedRTE } from "@shared/storage/storedFiles";
 import { Command, CommandHandler } from "@shared/utils/application/cqrs";
-import { inputsRTE } from "@shared/utils/application/fromInput";
+import { inputRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { orFail, perform } from "@shared/utils/application/perform";
 import {
@@ -37,10 +37,10 @@ export class DeleteBookInfoHandler extends UseCaseHandler<DeleteBookInfo> {
 
   protected pipeline(command: DeleteBookInfo) {
     return FPF.pipe(
-      inputsRTE({ id: [UUID, "id", command.props] }),
+      inputRTE(UUID, "id", command.props),
 
       //Validate BookInfo exists
-      RTE.chain(({ id }) =>
+      RTE.chain((id) =>
         orFail(
           perform(this.bookInfoRepository).findById(id),
           bookInfoNotFoundException,

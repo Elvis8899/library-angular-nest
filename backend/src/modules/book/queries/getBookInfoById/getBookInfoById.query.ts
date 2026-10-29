@@ -2,7 +2,7 @@ import { BookInfoRepository } from "@modules/book/database/bookInfo.repository.p
 import { BookInfo } from "@modules/book/domain/bookInfo.entity";
 import { bookInfoNotFoundException } from "@modules/book/domain/bookInfo.errors";
 import { Query, QueryHandler } from "@shared/utils/application/cqrs";
-import { inputsRTE } from "@shared/utils/application/fromInput";
+import { inputRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { orFail, perform } from "@shared/utils/application/perform";
 import { UseCaseHandler } from "@shared/utils/application/useCase";
@@ -28,8 +28,8 @@ export class GetBookInfoByIdQueryHandler extends UseCaseHandler<GetBookInfoByIdQ
    */
   protected pipeline(query: GetBookInfoByIdQuery) {
     return FPF.pipe(
-      inputsRTE({ id: [UUID, "id", query.id] }),
-      RTE.chain(({ id }) =>
+      inputRTE(UUID, "id", query.id),
+      RTE.chain((id) =>
         orFail(
           perform(this.bookInfoRepository).findById(id),
           bookInfoNotFoundException,

@@ -2,7 +2,7 @@ import { UserRepository } from "@modules/user/database/user.repository.port";
 import { User } from "@modules/user/domain/user.entity";
 import { userNotFoundException } from "@modules/user/domain/user.errors";
 import { Query, QueryHandler } from "@shared/utils/application/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
+import { inputRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { orFail, perform } from "@shared/utils/application/perform";
 import { UseCaseHandler } from "@shared/utils/application/useCase";
@@ -28,9 +28,7 @@ export class GetUserByIdQueryHandler extends UseCaseHandler<GetUserByIdQuery> {
    */
   protected pipeline(query: GetUserByIdQuery) {
     return FPF.pipe(
-      query.id,
-      fromInputRE(UUID, "UUID"),
-      RTE.fromReaderEither,
+      inputRTE(UUID, "UUID", query.id),
       RTE.chain((key) =>
         orFail(
           perform(this.userRepository).findById(key),

@@ -5,7 +5,7 @@ import { reactivateUser } from "@modules/user/domain/user.entity";
 import { userNotFoundException } from "@modules/user/domain/user.errors";
 import { Clock } from "@shared/clock/clock";
 import { Command, CommandHandler } from "@shared/utils/application/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
+import { inputRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { orFail, perform } from "@shared/utils/application/perform";
 import {
@@ -36,10 +36,7 @@ export class ReactivateUserHandler extends UseCaseHandler<ReactivateUser> {
 
   protected pipeline(command: ReactivateUser) {
     return FPF.pipe(
-      //Data validation
-      command.id,
-      fromInputRE(UUID, "id"),
-      RTE.fromReaderEither,
+      inputRTE(UUID, "id", command.id),
 
       //Validate User exists
       RTE.chain((key) =>

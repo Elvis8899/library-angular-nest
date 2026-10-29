@@ -1,7 +1,7 @@
 import { UserRepository } from "@modules/user/database/user.repository.port";
 import { Clock } from "@shared/clock/clock";
 import { Command, CommandHandler } from "@shared/utils/application/cqrs";
-import { fromInputRE } from "@shared/utils/application/fromInput";
+import { inputRTE } from "@shared/utils/application/fromInput";
 import { FPF, RTE } from "@shared/utils/application/monads";
 import { perform } from "@shared/utils/application/perform";
 import { UseCaseHandler } from "@shared/utils/application/useCase";
@@ -29,9 +29,7 @@ export class LogoutCommandHandler extends UseCaseHandler<LogoutCommand> {
 
   protected pipeline(command: LogoutCommand) {
     return FPF.pipe(
-      command.userId,
-      fromInputRE(UUID, "uuid"),
-      RTE.fromReaderEither,
+      inputRTE(UUID, "uuid", command.userId),
       RTE.chain((userId) =>
         perform(this.userRepository).revokeTokens({
           userId,
