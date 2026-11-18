@@ -27,7 +27,7 @@ services:
   # Renews the certificate twice a day when it's close to expiring. The first
   # one is issued by `make dockerCertificate`
   certbot:
-    image: certbot/certbot:v5.9.0
+    image: certbot/certbot:v5.10.0
     restart: always
     environment:
       DOMAIN: ${DOMAIN:?Set DOMAIN in .docker/.env}
